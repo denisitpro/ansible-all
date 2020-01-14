@@ -1,0 +1,21 @@
+[Unit]
+Description=Prometheus telegram bot
+Documentation=https://github.com/inCaller/prometheus_bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{telegrambot_user}}
+Group={{telegrambot_group}}
+WorkingDirectory={{app_path}}
+
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/prometheus_bot -c {{app_path}}/config.yaml -t {{app_path}}/template.tmpl
+SyslogIdentifier=telegrambot
+
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target

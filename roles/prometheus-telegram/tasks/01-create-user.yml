@@ -1,0 +1,15 @@
+---
+- name: Create private group
+  group:
+    name: "{{telegrambot_group}}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{telegrambot_user}}"
+    group: "{{telegrambot_group}}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "telegram bot user"
+    state: present

@@ -1,0 +1,5 @@
+---
+- hosts: prometheus_telegram
+  become: yes
+  roles:
+    - prometheus-telegram

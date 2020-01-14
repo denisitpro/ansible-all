@@ -1,0 +1,5 @@
+.ssh/
+.bash_history
+*.retry
+*.idea
+.DS_Store

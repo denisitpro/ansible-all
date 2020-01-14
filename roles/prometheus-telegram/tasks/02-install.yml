@@ -1,0 +1,45 @@
+---
+- name: create path
+  file:
+    path: "{{app_path}}"
+    state: directory
+    mode: '0754'
+    owner: "{{telegrambot_user}}"
+    group: "{{telegrambot_group}}"
+
+- name: Copy telegram-bot
+  copy:
+    src: prometheus_bot
+    dest: /usr/local/bin/prometheus_bot
+    owner: "{{telegrambot_user}}"
+    group: "{{telegrambot_group}}"
+    mode: '0555'
+  notify: restart telegram-bot
+
+- name: copy unit apps
+  template:
+    src: "telegram-bot.service.j2"
+    dest: "/etc/systemd/system/telegram-bot.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart telegram-bot
+
+- name: copy config
+  template:
+    src: "{{item}}.j2"
+    dest: "{{app_path}}/{{item}}"
+    owner: "{{telegrambot_user}}"
+    group: "{{telegrambot_group}}"
+    mode: 0644
+  with_items:
+    - config.yaml
+    - template.tmpl
+  notify: restart telegram-bot
+
+- name: enable telegram-bot  unit
+  systemd:
+    name: "telegram-bot"
+    enabled: yes
+    daemon_reload: yes
+  notify: restart telegram-bot

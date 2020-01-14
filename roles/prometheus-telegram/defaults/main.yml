@@ -1,0 +1,5 @@
+---
+telegrambot_user: telegrambot
+telegrambot_group: "{{telegrambot_user}}"
+
+app_path: /opt/telegram-bot

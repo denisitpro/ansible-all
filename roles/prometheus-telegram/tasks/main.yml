@@ -1,0 +1,5 @@
+---
+- include: 01-create-user.yml
+  tags: telegram-bot
+- include: 02-install.yml
+  tags: telegram-bot
