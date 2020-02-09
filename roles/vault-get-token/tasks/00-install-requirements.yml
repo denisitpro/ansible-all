@@ -1,0 +1,6 @@
+---
+### for use curl and jq
+#- name: install requirement software
+#  yum:
+#    name:
+#      - jq

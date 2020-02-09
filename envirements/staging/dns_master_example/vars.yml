@@ -1,0 +1,13 @@
+---
+### all address example !!!!
+dns:
+  zones:
+    - {name: "example.com", type: master, transfer: {1.2.3.4, 5.6.7.8}, notify: "yes" }
+    - {name: "10.in-addr.arpa", type: slave, transfer: {192.268.0.21}, notify: "yes", master: 192.268.98.43}
+
+iptables:
+  rules:
+    - { name: "dns client port", protocol: udp, port: 53}
+    - { name: "ntp", protocol: udp, port: 123}
+    - { name: "dns server port", protocol: tcp, port: 53, source: 1.2.3.4}
+    - { name: "dns server port", protocol: tcp, port: 53, source: 5.6.7.8}

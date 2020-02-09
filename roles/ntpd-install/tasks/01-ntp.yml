@@ -1,0 +1,18 @@
+---
+#### CentOS section
+- name: install ntpd  - centos
+  yum:
+    name:
+      - ntp
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: copy ntp.conf
+  template:
+    src: "ntp.conf.j2"
+    dest: "/etc/ntp.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify: restart ntpd

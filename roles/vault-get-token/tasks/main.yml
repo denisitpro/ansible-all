@@ -1,0 +1,11 @@
+---
+#- include: 00-install-requirements.yml
+- include: 01-get-access-token.yml
+  tags:
+   - reconfigure
+   - db_management
+   - users
+   - cert
+   - install
+   - env
+   - compose

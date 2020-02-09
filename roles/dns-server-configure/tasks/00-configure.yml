@@ -1,0 +1,36 @@
+---
+- name: create paths
+  file:
+    path: "{{item}}"
+    owner: named
+    group: named
+    mode: '0755'
+    state: directory
+  with_items:
+    - "/var/log/named/"
+    - "/var/named/master"
+    - "/var/named/slave"
+
+#- debug:
+#    msg: System {{ item.name }}
+#  with_items: "{{dns.zones}}"
+
+- name: allow statistic port
+  shell: "semanage port -a -t dns_port_t -p tcp 8053"
+  ignore_errors: True
+
+- name: copy named.conf
+  template:
+    src: "named.conf.j2"
+    dest: "/etc/named.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify: restart named
+  tags:
+    - config
+
+- name: Enable
+  systemd:
+    name: named
+    enabled: yes

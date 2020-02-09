@@ -1,0 +1,9 @@
+---
+- name: install dns
+  yum:
+    name:
+      - bind
+      - bind-utils
+      - dnstop
+    state: latest
+    update_cache: yes

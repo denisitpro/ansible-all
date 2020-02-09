@@ -1,0 +1,4 @@
+---
+- include: 01-ntp.yml
+  tags:
+    - ntpd

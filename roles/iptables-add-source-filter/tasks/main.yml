@@ -1,0 +1,18 @@
+---
+- name: add rule to /etc/iptables.sh
+  lineinfile:
+      path: /etc/iptables.sh
+      regexp: '^\$IPT\s+-A\s+INPUT\s+-i\s+\$WAN0\s+-p\s+{{item.protocol}}\s+-s\s+{{item.source|default("0.0.0.0/0")}} --dport\s+{{item.port}}(.*)-j\s+ACCEPT\s+-m\s+comment\s+--comment\s+"{{item.name}}"$'
+      line: '$IPT -A INPUT -i $WAN0 -p {{item.protocol}} -s {{item.source|default("0.0.0.0/0")}} --dport {{item.port}} -j ACCEPT -m comment --comment "{{item.name}}"'
+      state: present
+      insertbefore: 'custom rules insert below'
+  with_items: "{{iptables.rules}}"
+  tags:
+    - reconfigure
+    - iptables
+
+- name: start iptables rules
+  shell: /etc/iptables.sh
+  tags:
+    - reconfigure
+    - iptables

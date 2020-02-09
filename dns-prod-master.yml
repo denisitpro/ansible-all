@@ -1,0 +1,9 @@
+---
+- hosts: dns_master_example
+  become: yes
+  roles:
+    - common
+    - named-install
+    - dns-server-configure
+    - ntpd-install
+    - iptables-add-source-filter

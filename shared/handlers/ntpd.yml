@@ -1,0 +1,5 @@
+---
+- name: restart ntpd
+  systemd:
+    name: ntpd
+    state: restarted

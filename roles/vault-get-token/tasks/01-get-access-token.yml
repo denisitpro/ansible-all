@@ -1,0 +1,25 @@
+---
+#### old method
+#- name: curl get access token
+#  shell: 'curl -s --request POST --data ''{"password": "{{vault_password}}"}'' {{vault_url}}/v1/auth/ldap/login/{{vault_login}} | jq ".auth" | jq -r ".client_token"'
+#  args:
+#    warn: false
+#  register: vault_access_token
+
+- name: get vault access token
+  uri:
+    url: "{{vault_url}}/v1/auth/ldap/login/{{vault_login}}"
+    body_format: json
+    method: POST
+    body: '{"password": "{{vault_password}}"}'
+  register: vault_access_token
+
+#- name: debug token vars
+#  debug: msg="{{vault_access_token.json.auth.client_token}}"
+
+- name: set acces token
+  set_fact:
+     vault_normalized_access_token: "{{vault_access_token.json.auth.client_token}}"
+
+#- name: debug normalize token
+#  debug: msg="{{vault_normalized_access_token}}"
