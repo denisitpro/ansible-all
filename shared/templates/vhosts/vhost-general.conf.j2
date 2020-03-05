@@ -1,0 +1,79 @@
+##### ANSIBLE generate config
+##### not change hands
+####  your changes will be lost
+
+server {
+        listen {{item.http_port}};
+        server_name {{item.servername}};
+
+# set url for lets encrypt
+        location /.well-known/ {
+        allow all;
+        alias   /var/lib/letsencrypt/;
+        default_type "text/plain";
+        try_files $uri =404;
+        }
+
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen  {{item.https_ports}} ssl;
+        server_name {{item.servername}};
+
+# set url for lets encrypt
+        location /.well-known/ {
+        allow all;
+        alias   /var/lib/letsencrypt/;
+        default_type "text/plain";
+        try_files $uri =404;
+        }
+
+# log project use  include
+        access_log  {{nginx_log_path}}/{{item.servername.split(' ')[0]}}-access.log  {{nginx_log_format}};
+        error_log   {{nginx_log_path}}/{{item.servername.split(' ')[0]}}-error.log;
+
+## include ssl certificate
+### start ansible management SSL
+{% if nginx.vhosts %}
+{% if item.cert_type == "wild" %}
+#### wild
+    ssl_certificate  {{nginx_ssl_path}}/{{item.domain}}/{{item.certname}};
+    ssl_certificate_key {{nginx_ssl_path}}/{{item.domain}}/{{item.privkey}};
+{% endif %}
+{% if item.cert_type == "personal" %}
+#### personal
+    ssl_certificate  {{nginx_ssl_path}}/{{item.servername.split(' ')[0]}}/{{item.certname}};
+    ssl_certificate_key {{nginx_ssl_path}}/{{item.servername.split(' ')[0]}}/{{item.privkey}};
+{% endif %}
+{% endif %}
+### end ansible management SSL
+
+# Ansible management
+{% for included in  nginx.include %}
+    include  {{ included }};
+{% endfor %}
+### end ansible management
+
+{% if nginx.size_upload_files  is defined %}
+{% for included in  nginx.size_upload_files %}
+# Ansible management max upload size
+    client_max_body_size  {{ included.client_max_body_size }};
+{% endfor %}
+{% endif %}
+### end ansible management
+
+
+     location / {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass {{item.upstream_protocol}}://{{item.upstream_name}};
+##        allow all;
+   }
+}
+
+### end generate config

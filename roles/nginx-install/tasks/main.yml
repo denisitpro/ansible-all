@@ -1,0 +1,3 @@
+---
+- include: 00-add-repo.yml
+- include: 01-install-nginx.yml

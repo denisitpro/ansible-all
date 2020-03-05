@@ -1,0 +1,13 @@
+---
+- name: delete nginx rotate file
+  file:
+    path: /etc/logrotate.d/nginx
+    state: absent
+
+- name: create nginx rotation file
+  template:
+    src: nginx-logrotate.j2
+    dest: /etc/logrotate.d/nginx
+    owner: root
+    group: root
+    mode: 0644

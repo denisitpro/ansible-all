@@ -1,0 +1,12 @@
+---
+- name: enable elrepo  - https://certbot.eff.org/lets-encrypt/centosrhel7-nginx
+  command: yum-config-manager --enable rhui-REGION-rhel-server-extras rhui-REGION-rhel-server-optional
+
+- name: install dependens
+  yum:
+    name:
+      - certbot
+      - python2-certbot-nginx
+      - certbot-dns-cloudflare
+    state: latest
+    update_cache: yes

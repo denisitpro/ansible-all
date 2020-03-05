@@ -1,0 +1,21 @@
+{{nginx_log_path}}/*.log {
+	daily
+	missingok
+	rotate {{nginx_logrotate_days}}
+	dateext
+	compress
+	delaycompress
+	notifempty
+{% if ansible_distribution == 'CentOS' %}
+	create {{nginx_logrotate_permission}} {{nginx_logrotate_user}} {{nginx_logrotate_group}}
+{% endif %}
+{% if ansible_distribution == 'Ubuntu' %}
+	create {{nginx_logrotate_permission}} www-data adm
+{% endif %}
+    sharedscripts
+    postrotate
+            if [ -f /var/run/nginx.pid ]; then
+                   kill -USR1 `cat /var/run/nginx.pid`
+            fi
+    endscript
+}

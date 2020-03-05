@@ -1,0 +1,24 @@
+---
+- name: create folder for certbot
+  file:
+    path: "/root/.secrets/certbot"
+    recurse: yes
+    state: directory
+    owner: root
+    group: root
+    mode: 0600
+
+
+- name: Check that the /root/.secrets/certbot/cloudflare.ini exists
+  stat:
+    path: /root/.secrets/certbot/cloudflare.ini
+  register: stat_result
+
+- name: Create the file, if it doesnt exist already
+  template:
+    src: cloudflare.ini.j2
+    dest: /root/.secrets/certbot/cloudflare.ini
+    owner: root
+    group: root
+    mode: 600
+  when: stat_result.stat.exists == False

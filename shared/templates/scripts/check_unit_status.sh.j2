@@ -1,0 +1,12 @@
+#!/bin/bash
+
+status=$(systemctl show -p ExecMainCode {{company_name}}-{{appname}} | cut -d'=' -f2)
+echo $status
+
+if [ "$status" == 0 ];then
+  NOTIFY_STATUS="✅ unit $COMPANY_NAME-$APPNAME_SHORT startup complete success"
+  echo $NOTIFY_STATUS
+else
+  NOTIFY_STATUS="❌ unit $COMPANY_NAME-$APPNAME_SHORT failed start"
+  echo $NOTIFY_STATUS
+fi

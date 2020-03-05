@@ -1,0 +1,18 @@
+---
+- name: copy files
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/nginx/include/{{item}}"
+    owner: root
+    group: root
+    mode: 644
+  with_items:
+    - log_format.conf
+    - pci-dss_2018.conf
+    - requestid_dmz.conf
+    - requestid_proxy.conf
+    - ssl-user-auth.conf
+    - stapling_v2.conf
+    - ssl-session-v1.conf
+  tags:
+    nginx_include

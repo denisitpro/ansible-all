@@ -1,0 +1,47 @@
+---
+#### EXAMPLE VARS
+cert_env: "staging"
+nginx_default_domain: "{{internal_domain}}"
+
+nginx:
+  upstreams:
+    - { name: "ipa-02", server: ipa-02, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
+    - { name: "rack-01", server: rack-01, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
+    - { name: "lt-zbx-01", server: lt-zbx-01, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
+    - { name: "grafana-01", server: grafana-01, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
+  vhosts:
+    - { servername: "ipa.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
+        http_port: 80, https_ports: 443, config_file: "ipa.conf.j2",
+        certname: "{{nginx_cert_name}}",privkey: "{{nginx_privkey_name}}",
+        upstream_protocol: https, upstream_name: ipa-02, ssl_rewrite: "yes" , cert_type: "wild"}
+
+    - { servername: "rack.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
+        http_port: 80, https_ports: 443, config_file: "vhost-general.conf.j2",
+        certname: "{{nginx_cert_name}}",privkey: "{{nginx_privkey_name}}",
+        upstream_protocol: https, upstream_name: rack-01, ssl_rewrite: "yes" , cert_type: "wild"}
+
+    - { servername: "zbx-01.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
+        http_port: 80, https_ports: 443, config_file: "vhost-general.conf.j2",
+        certname: "{{nginx_cert_name}}",privkey: "{{nginx_privkey_name}}",
+        upstream_protocol: https, upstream_name: lt-zbx-01, ssl_rewrite: "yes" , cert_type: "wild"}
+
+    - { servername: "grafana-lnd.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
+        http_port: 80, https_ports: 443, config_file: "vhost-general.conf.j2",
+        certname: "{{nginx_cert_name}}",privkey: "{{nginx_privkey_name}}",
+        upstream_protocol: https, upstream_name: grafana-01, ssl_rewrite: "yes" , cert_type: "wild"}
+
+  include:
+    - "/etc/nginx/include/pci-dss_2018.conf"
+
+zabbix:
+  apply_tag:
+    - linux
+    - nginx
+
+
+iptables:
+  rules:
+    - { name: "nginx", protocol: tcp, port: "80" }
+    - { name: "nginx", protocol: tcp, port: "443" }
+    - { name: "node_exporter", protocol: "tcp", port: "9100", source: "{{prometheus_addr}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{zbx_srv_addr}}"}

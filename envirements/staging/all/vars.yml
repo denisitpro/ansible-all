@@ -1,0 +1,27 @@
+---
+# ENV section
+global:
+  environment: "staging"
+  domain: "example.com"
+
+# type stand - see https://example.com/docs/stands
+stand_type: "fatal_error"
+
+
+dc_location: "NY"
+
+internal_domain: example.com
+
+# system section
+dns1: 1.2.3.4
+dns2: 5.6.7.8
+searchdomain: example.com
+ntp1: ntp.example.com
+zserver: zmon.example.com
+zserveractive: zmon.example.com
+
+wan0_export: export WAN0={{ ansible_default_ipv4.interface }}
+rotate_day_default: 7
+
+# vault section
+vault_url: https://vault.example.com

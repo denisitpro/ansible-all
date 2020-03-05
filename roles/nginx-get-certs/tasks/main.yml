@@ -1,0 +1,9 @@
+---
+- include: 00-create-path.yml
+  tags:
+    - nginx-sites
+    - cert
+- include: 01-vault-get-data.yml
+  tags:
+    - nginx-sites
+    - cert

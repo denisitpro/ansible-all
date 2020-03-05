@@ -1,0 +1,2 @@
+---
+- include: shared/handlers/nginx.yml

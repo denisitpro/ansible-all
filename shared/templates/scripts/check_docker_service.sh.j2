@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ "$1" == 1 ];then
+  NOTIFY_STATUS="✅ {{appname}} startup complete success"
+  echo $NOTIFY_STATUS
+else
+  NOTIFY_STATUS="❌ {{appname}} failed start"
+  echo $NOTIFY_STATUS
+fi

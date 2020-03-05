@@ -1,0 +1,38 @@
+---
+- name: enable nginx repo - centos
+  template:
+    src: nginx.repo.j2
+    dest: /etc/yum.repos.d/nginx.repo
+    owner: root
+    group: "root"
+    mode: 0644
+  when: ansible_distribution == 'CentOS'
+
+
+- name: enable nginx repo - centos
+  shell: yum-config-manager --enable nginx
+  when: ansible_distribution == 'CentOS'
+
+## ubuntu
+- name: add requiremensts - ubuntu
+  apt:
+    name:
+      - curl
+      - gnupg2
+      - ca-certificates
+      - lsb-release
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add signed key - ubuntu
+  apt_key:
+    url: https://nginx.org/keys/nginx_signing.key
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add repository - ubuntu - {{ansible_distribution_release}}
+  apt_repository:
+    repo: deb http://nginx.org/packages/mainline/ubuntu {{ansible_distribution_release}} nginx
+    state: present
+  when: ansible_distribution == 'Ubuntu'

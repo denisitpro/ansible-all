@@ -1,0 +1,3 @@
+upstream {{ item.name }} {
+        server {{item.server}}.{{item.domain}}:{{item.port}}  fail_timeout={{item.fail_timeout}};
+}

@@ -1,0 +1,22 @@
+---
+- name: copy upstreams config
+  template:
+    src: "shared/templates/upstreams/{{item.conf}}"
+    dest: "/etc/nginx/upstream.d/{{ item.name }}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ nginx.upstreams }}"
+
+- name: copy vhosts
+  template:
+    src: "shared/templates/vhosts/{{ item.config_file}}"
+    dest: "/etc/nginx/sites-enabled/{{ item.servername.split(' ')[0]}}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ nginx.vhosts }}"
+
+
+
+

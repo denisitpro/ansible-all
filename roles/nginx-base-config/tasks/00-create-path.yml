@@ -1,0 +1,15 @@
+---
+- name: create path folder
+  file:
+     path: "{{item}}"
+     state: directory
+     owner: nginx
+     group: nginx
+     recurse: yes
+  with_items:
+    - "/etc/nginx/conf.d"
+    - "/etc/nginx/include"
+    - "{{nginx_log_path}}"
+    - "{{nginx_ssl_path}}"
+    - "/etc/nginx/upstream.d"
+    - "/etc/nginx/sites-enabled"

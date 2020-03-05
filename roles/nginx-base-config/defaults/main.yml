@@ -1,0 +1,6 @@
+---
+nginx_logrotate_days: 7
+nginx_logrotate_user: "nginx"
+nginx_logrotate_group: nginx
+nginx_logrotate_permission: "0644"
+
