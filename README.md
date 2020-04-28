@@ -9,3 +9,9 @@ for use hashicorp vault role requirements
 - Vault enable LDAP access
 - Vault configure policy ACL for ldap group
 - Ldap account use role has access to a secret
+
+example vars
+```vault:
+  secret:
+    - {kv: "dev", appname: clickhouse, server: "ch-001", key_name: "default" }
+    - {kv: "dev", appname: clickhouse, server: "ch-001", key_name: "user1" }``
