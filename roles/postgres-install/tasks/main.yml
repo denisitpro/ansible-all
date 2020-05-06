@@ -1,0 +1,7 @@
+---
+- include: 00-add-repo.yml
+  tags:
+    - pg_server_configure
+- include: 01-install-pg11.yml
+  tags:
+    - pg_server_configure

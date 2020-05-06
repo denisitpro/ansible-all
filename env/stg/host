@@ -1,0 +1,5 @@
+[dns_master_example]
+dns01.example.com
+
+[pg_example]
+pg.example.com

@@ -1,0 +1,10 @@
+#!/bin/bash
+# script backup postgresql databases
+
+# Ansible management
+{% for backup in postgres.databases %}
+{% if backup.backup == True %}
+pg_dump -Fc -h {{backup.host| default('127.0.0.1')}} -p {{backup.port| default('5432')}} -U {{backup.user | default('postgres')}} -w  {{ backup.name }} | gzip > {{pg_backup_path}}/{{backup.name}}_$(date +"%Y%m%d-%H%M%S").dump.gz
+{% endif %}
+{% endfor %}
+# end management

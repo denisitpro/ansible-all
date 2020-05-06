@@ -1,0 +1,10 @@
+---
+- include: 00-configure-db.yml
+  tags:
+    - db_management
+    - reconfigure
+- include: 01-configure-pg_hba.yml
+  tags:
+    - pg_server_configure
+    - db_management
+    - reconfigure

@@ -1,0 +1,89 @@
+---
+#- name: debug pg_pass
+#  debug: msg="{{vault_dict_users_secret.pg_postgres_pass}}"
+
+- name: set postgres user database password
+  postgresql_user:
+    db: postgres
+    user: postgres
+    password: "{{vault_dict_users_secret.pg_postgres_pass}}"
+  become_user: postgres
+  # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
+  vars:
+    ansible_ssh_pipelining: true
+  ignore_errors: yes
+
+### kostili ubuntu todo HAR-365
+- name: copy defaul pg_hba
+  copy:
+    src: pg_hba.conf
+    dest: "{{pg_data}}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  when: ansible_distribution == 'Ubuntu'
+
+- name: copy postgresql.conf - ubuntu
+  template:
+    src: "postgresql.conf.j2"
+    dest: "{{pg_data}}/postgresql.conf"
+    owner: "postgres"
+    group: "postgres"
+    mode: 0600
+  when: ansible_distribution == 'Ubuntu'
+  notify: restart postgresql-11
+  tags:
+    - pg_config
+
+- name: disable psql history
+  copy:
+    src: psqlrc
+    dest: "{{pg_path}}/.psqlrc"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  when: ansible_distribution == 'Ubuntu'
+
+
+# costili centos
+- name: copy defaul pg_hba - CentOS
+  copy:
+    src: pg_hba.conf
+    dest: "/var/lib/pgsql/11/data/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  when: ansible_distribution == 'CentOS'
+
+- name: copy postgresql.conf - CentOS
+  template:
+    src: "postgresql.conf.j2"
+    dest: "/var/lib/pgsql/11/data/postgresql.conf"
+    owner: "postgres"
+    group: "postgres"
+    mode: 0600
+  when: ansible_distribution == 'CentOS'
+  notify: restart postgresql-11
+  tags:
+    - pg_config
+
+- name: disable psql history
+  copy:
+    src: psqlrc
+    dest: "/var/lib/pgsql/.psqlrc"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  when: ansible_distribution == 'CentOS'
+
+- name: restart postgresql - centos
+  service:
+    name: postgresql-11
+    state: restarted
+  when: ansible_distribution == 'CentOS'
+
+- name: restart postgresql - Ubuntu
+  service:
+    name: postgresql
+    state: restarted
+  when: ansible_distribution == 'Ubuntu'

@@ -1,0 +1,9 @@
+#### hostname:port:database:username:password
+# Ansible management
+{% for backup in postgres.databases %}
+{% if backup.backup == True %}
+{{backup.host| default('127.0.0.1')}}:{{backup.port| default('5432')}}:{{backup.name}}:{{backup.user| default('postgres')}}:{{backup.password | default(vault_dict_users_secret.pg_postgres_pass) }}
+{% endif %}
+{% endfor %}
+# end management
+

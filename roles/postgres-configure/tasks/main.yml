@@ -1,0 +1,4 @@
+---
+- include: 01-configure-server.yml
+  tags:
+    - pg_server_configure

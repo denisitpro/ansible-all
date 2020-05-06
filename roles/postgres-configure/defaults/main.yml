@@ -1,0 +1,4 @@
+---
+# set log query running very 5m
+log_min_duration_statement: 300000
+max_connections: 1000

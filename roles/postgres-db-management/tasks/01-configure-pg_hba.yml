@@ -1,0 +1,21 @@
+---
+### kostili todo HAR-365
+- name: Configure host based authentication (if entries are configured).
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "/var/lib/pgsql/11/data/pg_hba.conf"
+    owner: "postgres"
+    group: "postgres"
+    mode: 0600
+  notify: reload postgresql-11
+  when: ansible_distribution == 'CentOS'
+
+- name: Configure host based authentication (if entries are configured).
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{pg_data}}/pg_hba.conf"
+    owner: "postgres"
+    group: "postgres"
+    mode: 0600
+  notify: reload postgresql
+  when: ansible_distribution == 'Ubuntu'

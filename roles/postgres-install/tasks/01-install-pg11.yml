@@ -1,0 +1,79 @@
+---
+- name: Check if PostgreSQL database is initialized.
+  stat:
+    path: "{{ pg_data }}/PG_VERSION"
+  register: pgdata_dir_version
+
+#### start centos section
+- name: Install postgres - centos
+  yum:
+    name:
+      - postgresql11
+      - postgresql11-server
+      - postgresql11-contrib
+      - postgresql11-libs
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: Install requirements - centos
+  yum:
+    name:
+      - python-psycopg2
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: Initiate database
+  command: "/usr/pgsql-11/bin/postgresql-11-setup initdb"
+  args:
+    creates: /var/lib/pgsql/11/data/postgresql.conf
+  when: ansible_distribution == 'CentOS'
+
+- name: Ensure PostgreSQL is started and enabled on boot.
+  service:
+    name: postgresql-11
+    state: started
+    enabled: yes
+  when: ansible_distribution == 'CentOS'
+
+
+###### end centos section
+###### start ubuntu section
+- name: install postgres - ubuntu
+  apt:
+    name:
+      - postgresql-11
+      - postgresql-client-11
+      - postgresql-contrib-11
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install requirements - ubuntu
+  apt:
+    name:
+      - python-psycopg2
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Ensure PostgreSQL database is initialized - {{pg_data}}
+  become: true
+  become_user: "{{ postgresql_user }}"
+  command: "/usr/lib/postgresql/{{ pg_version }}/bin/initdb -D {{ pg_data }}"
+  # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
+  vars:
+    ansible_ssh_pipelining: true
+  ignore_errors: yes
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - not pgdata_dir_version.stat.exists
+
+- name: Ensure PostgreSQL is started and enabled on boot.
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+  when: ansible_distribution == 'Ubuntu'
+###### end ubuntu section

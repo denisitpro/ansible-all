@@ -1,0 +1,48 @@
+---
+pg_version: 11
+
+### ubuntu path
+#pg_data: "/var/lib/postgresql/{{pg_version}}/main"
+
+## centos path - example; rewrite to level inventory
+pg_data: "/var/lib/pgsql/{{pg_version}}/data"
+
+pg_login_host: 127.0.0.1
+pg_admin_user: postgres
+pg_backup_path: /mnt/pgbackup
+
+postgres:
+  listen_addresses: '127.0.0.1, {{ ansible_default_ipv4.address }}'
+  listen_port: 5432
+  hba_entries:
+    - { type: local, database: all, user: postgres, address: "", auth_method: md5 }
+    - { type: host, database: all, user: postgres, address: '127.0.0.1/32', auth_method: md5 }
+    - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
+    - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
+    - { type: host, database: all, user: all, address: '10.1.2.0/24', auth_method: md5 }
+  databases:
+    - { name: "database1", owner: "user01", backup: False}
+  users:
+    - { name: "user01"}
+
+
+
+# set slow query 5s
+log_min_duration_statement: 5000
+
+vault:
+  appname: postgres
+  server: "pg-01"
+  secret:
+    - {key_name: pg_postgres_pass}
+    - {key_name: "user01"}
+
+iptables:
+  rules:
+    - { name: "postgres_all_access", protocol: tcp, port: 5432, source: "0.0.0.0/0" }
+    - { name: "node_exporter", protocol: "tcp", port: "9100", source: "{{prometheus_ip}}"}
+
+zabbix:
+  apply_tag:
+    - linux
+    - postgres

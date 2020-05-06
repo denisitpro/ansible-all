@@ -1,0 +1,33 @@
+---
+- name: mkdir folders
+  file:
+    path: "{{item}}"
+    owner: root
+    group: root
+    state: directory
+  with_items:
+    - "{{scripts_path}}"
+    - "{{pg_backup_path}}"
+
+- name: copy script
+  template:
+    src: "backup-pg.sh.j2"
+    dest: "{{scripts_path}}/backup-pg.sh"
+    owner: "root"
+    group: "root"
+    mode: 0700
+
+- name: copy pgpass
+  template:
+    src: "pgpass.j2"
+    dest: "/root/.pgpass"
+    owner: "root"
+    group: "root"
+    mode: 0600
+
+- name: add task to cront
+  cron:
+    name: "backup db"
+    minute: "{{backup_cron.minutes| default('15')}}"
+    hour: "{{backup_cron.hour| default('1') }}"
+    job: "/bin/bash {{scripts_path}}/backup-pg.sh"

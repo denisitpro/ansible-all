@@ -1,0 +1,11 @@
+{{ ansible_managed | comment }}
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+#
+# See: https://www.postgresql.org/docs/current/static/auth-pg-hba-conf.html
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+{% for client in postgres.hba_entries %}
+{{ client.type }} {{ client.database }} {{ client.user }} {{ client.address|default('127.0.0.1/32') }}  {{ client.auth_method|default('md5') }} {{ client.auth_options|default("") }}
+{% endfor %}

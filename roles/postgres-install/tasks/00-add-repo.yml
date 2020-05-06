@@ -1,0 +1,19 @@
+---
+- name: Add postgres repository - centos
+  yum:
+    name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Add signed key - ubuntu
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add postgres repository - ubuntu
+  apt_repository:
+    repo: deb https://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
