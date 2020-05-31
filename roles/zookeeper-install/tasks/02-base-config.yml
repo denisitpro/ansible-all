@@ -1,0 +1,36 @@
+---
+- name: copy  zoo.cfg
+  template:
+    src: "zoo.cfg.j2"
+    dest: "{{zookeeper_app_path}}/conf/zoo.cfg"
+    owner: "{{zookeeper_user}}"
+    group: "{{zookeeper_group}}"
+    mode: 0640
+
+
+- name: copy  zookeeper unit file
+  template:
+    src: "zookeeper.service.j2"
+    dest: /etc/systemd/system/zookeeper.service
+    owner: root
+    group: root
+    mode: 0640
+
+- name: create log link
+  file:
+    src: "{{zookeeper_log_path}}/"
+    dest: '/var/log/zookeeper'
+    state: link
+    force: yes
+
+
+- name: reload service
+  systemd:
+    daemon_reload: yes
+
+- name: enable uints
+  systemd:
+    name: "{{item}}"
+    enabled: yes
+  with_items:
+    - zookeeper

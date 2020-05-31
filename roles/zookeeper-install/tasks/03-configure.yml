@@ -1,0 +1,27 @@
+---
+- name: Set DNS variable zoo
+  shell: dig -x {{  ansible_default_ipv4.address }} +short
+  register: zoo_node_name
+
+- debug:
+    msg: "{{zoo_node_name.stdout}}"
+
+- name: copy  myid
+  template:
+    src: "myid.j2"
+    dest: "{{zookeeper_app_path}}/data/myid"
+    owner: "{{zookeeper_user}}"
+    group: "{{zookeeper_group}}"
+    mode: 0664
+  notify:
+    - restart zookeeper
+
+- name: copy  zoo.cfg
+  template:
+    src: "zoo.cfg.j2"
+    dest: "{{zookeeper_app_path}}/conf/zoo.cfg"
+    owner: "{{zookeeper_user}}"
+    group: "{{zookeeper_group}}"
+    mode: 0640
+  notify:
+    - restart zookeeper

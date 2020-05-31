@@ -1,0 +1,15 @@
+---
+- name: Create private group
+  group:
+    name: "{{zookeeper_group}}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{zookeeper_user}}"
+    group: "{{ zookeeper_group }}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "zookeeper non-privileged user"
+    state: present

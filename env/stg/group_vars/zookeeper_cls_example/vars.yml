@@ -1,0 +1,27 @@
+---
+stand_type: "dev"
+
+#### . (dot_ for end - IMPORTAL
+zookeeper:
+  nodes:
+    - {id: 1, name: "zoo1.example.com.", port1: 2888, port2: 3888 }
+    - {id: 2, name: "zoo2.example.com.", port1: 2888, port2: 3888 }
+    - {id: 3, name: "zoo3.example.com.", port1: 2888, port2: 3888 }
+
+
+# example rules access
+iptables:
+  rules:
+    - { name: "ch-01", protocol: tcp, port: 2181, source: "1.2.3.4" }
+    - { name: "ch-02", protocol: tcp, port: 2181, source: "1.2.3.5." }
+    - { name: "zookeeper cluster port", protocol: tcp, port: 2888, source: "1.2.3.4.24" }
+    - { name: "zookeeper cluster port", protocol: tcp, port: 3888, source: "1.2.3.4.24" }
+    - { name: "zookeeper cluster port", protocol: tcp, port: 2888, source: "1.2.3.4.25" }
+    - { name: "zookeeper cluster port", protocol: tcp, port: 3888, source: "1.2.3.4.25" }
+    - { name: "zookeeper cluster port", protocol: tcp, port: 2888, source: "1.2.3.4.26" }
+    - { name: "zookeeper cluster port", protocol: tcp, port: 3888, source: "1.2.3.4.26" }
+
+zabbix:
+  apply_tag:
+    - linux
+    - zookeeper

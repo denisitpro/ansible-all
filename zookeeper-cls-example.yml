@@ -1,0 +1,11 @@
+---
+# readme playbook required used another roles
+- hosts: zookeeper_cls_example
+  become: yes
+  roles:
+    - common
+    - firewall-configure
+    - zabbix-agent
+    - node-exporter
+    - zookeeper-install
+    - iptables-add-source-filter

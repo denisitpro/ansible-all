@@ -1,0 +1,6 @@
+{% for zoo_n in  zookeeper.nodes %}
+{% if zoo_n.name == zoo_node_name.stdout %}
+{{zoo_n.id}}
+{% endif %}
+{% endfor %}
+

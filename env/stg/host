@@ -3,3 +3,8 @@ dns01.example.com
 
 [pg_example]
 pg.example.com
+
+[zookeeper_cls_example]
+zoo1.example.com
+zoo2.example.com
+zoo3.example.com

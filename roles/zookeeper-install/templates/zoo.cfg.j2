@@ -1,0 +1,15 @@
+tickTime={{zookeeper_ticktime}}
+initLimit={{zookeeper_initlimit}}
+syncLimit={{zookeeper_synclimit}}
+dataDir={{zookeeper_data_path}}
+clientPort={{zookeeper_port}}
+maxClientCnxns={{zookeeper_maxclientcnxns}}
+autopurge.snapRetainCount={{zookeeper_autopurge_snap_retain_count}}
+autopurge.purgeInterval={{zookeeper_autopurge_purge_interval}}
+
+#### ANSIBLE MANAGEMENT ######
+##### zookeeper nodes ########
+{% for zoo in  zookeeper.nodes  %}
+server.{{zoo.id}}={{zoo.name}}:{{zoo.port1}}:{{zoo.port2}}
+{% endfor %}
+#### ANSIBLE MANAGEMENT END   ######
