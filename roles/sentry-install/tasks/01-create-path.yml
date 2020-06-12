@@ -1,0 +1,13 @@
+---
+- name: mkdir folders
+  file:
+    path: "{{item}}"
+    owner: root
+    group: root
+    state: directory
+  with_items:
+    - "{{sentry_path}}"
+
+# Install specified python requirements in indicated (virtualenv).
+#- pip:
+#    virtualenv: "{{sentry_path}}"

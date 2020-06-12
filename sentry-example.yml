@@ -1,0 +1,53 @@
+---
+# INSTALL ALL COMPONENTS TO ONE SERVER; Serer include redis, postgresql, sentry
+# README - maximize server preparation SENTRY FOR python; Install to ubuntu 18
+# official docs: https://docs.sentry.io/server/installation/python/
+#
+#
+- hosts: sentry_example
+  become: yes
+  vars_prompt:
+    - name: vault_login
+      prompt: "What is your LDAP  login ?"
+      private: no
+    - name: vault_password
+      prompt: "What is your LDAP password ?"
+  roles:
+    - common
+    - zabbix-agent
+    - nodejs-install
+    - redis-install
+    - postgres-install
+    - vault-get-token
+    - vault-get-users-secrets-v2
+    - postgres-configure
+    - postgres-db-management
+    - postgres-backup
+    - sentry-install
+    - sentry-configure
+    - nginx-install
+    - nginx-base-config
+    - nginx-get-certs
+    - nginx-vhosts-configure
+    - iptables-add-rules
+
+####### HANDLE TASK - todo autmoation
+# psql -U postgres -h 127.0.0.1
+# \c db_sentry_sandbox
+# CREATE EXTENSION IF NOT EXISTS citext;
+#
+#cd /opt/sentry
+#virtualenv /opt/sentry/
+#source /opt/sentry/bin/activate
+#pip install -U sentry
+#
+# SENTRY_CONF=/etc/sentry sentry init
+#
+#  set DB configuration
+# nano /etc/sentry/sentry.conf.py
+#
+# UPDATE CONFIGURATION
+# SENTRY_CONF=/etc/sentry sentry upgrade --no-input
+# ##create admin user
+# SENTRY_CONF=/etc/sentry sentry createuser --email dev@null.null --superuser --password 123 --no-input
+## deactivate

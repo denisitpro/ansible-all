@@ -8,3 +8,6 @@ pg.example.com
 zoo1.example.com
 zoo2.example.com
 zoo3.example.com
+
+[sentry_example]
+sentry.example.com

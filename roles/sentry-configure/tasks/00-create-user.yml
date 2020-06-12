@@ -1,0 +1,15 @@
+---
+- name: Create private group
+  group:
+    name: "{{sentry_group}}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{sentry_user}}"
+    group: "{{ sentry_group }}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "sentry non-privileged user"
+    state: present

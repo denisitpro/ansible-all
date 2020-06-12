@@ -19,6 +19,7 @@ searchdomain: example.com
 ntp1: ntp.example.com
 zserver: zmon.example.com
 zserveractive: zmon.example.com
+prometheus_ip: 1.2.3.4
 
 wan0_export: export WAN0={{ ansible_default_ipv4.interface }}
 rotate_day_default: 7

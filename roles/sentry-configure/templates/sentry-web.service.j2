@@ -1,0 +1,16 @@
+[Unit]
+Description=Sentry Main Service
+After=network.target
+Requires=sentry-worker.service
+Requires=sentry-cron.service
+
+[Service]
+Type=simple
+User={{sentry_user}}
+Group={{sentry_group}}
+WorkingDirectory={{sentry_path}}
+Environment=SENTRY_CONF={{sentry_conf}}
+ExecStart=/{{sentry_path}}/bin/sentry run web
+
+[Install]
+WantedBy=multi-user.target

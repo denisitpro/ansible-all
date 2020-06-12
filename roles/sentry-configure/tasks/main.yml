@@ -1,0 +1,4 @@
+---
+- include: 00-create-user.yml
+- include: 01-systemd.yml
+- include: 03-permission.yml

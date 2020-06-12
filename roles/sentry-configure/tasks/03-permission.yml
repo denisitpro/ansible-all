@@ -1,0 +1,11 @@
+---
+- name: Recursively change ownership of a directory
+  file:
+    path: "{{item}}"
+    state: directory
+    recurse: yes
+    owner: "{{sentry_user}}"
+    group: "{{sentry_group}}"
+  with_items:
+    - "{{sentry_path}}"
+    - "{{sentry_conf}}"
