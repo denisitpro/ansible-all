@@ -1,0 +1,10 @@
+---
+zbx_agent_path: "/etc/zabbix/zabbix_agentd.d"
+zbx_ch_user: "zbx_{{server_name_short}}"
+ch_host_type: "master"
+zbx_log_size: 30
+
+rpm_repo_path8: https://repo.zabbix.com/zabbix/5.0/rhel/8/x86_64/zabbix-release-5.0-1.el8.noarch.rpm
+rpm_repo_path7: https://repo.zabbix.com/zabbix/4.4/rhel/7/x86_64/zabbix-release-4.4-1.el7.noarch.rpm
+
+websocat_package_url: https://github.com/vi/websocat/releases/download/v1.6.0/websocat_1.6.0_ssl1.1_amd64.deb

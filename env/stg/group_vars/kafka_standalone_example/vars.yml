@@ -1,0 +1,26 @@
+---
+stand_type: "stg"
+
+# very importal set last separator ""
+zookeeper:
+  servers:
+   - {name: zoo.example.com, separator: ""}
+
+kafka:
+  topics:
+    - {name: topic1}
+    - {name: topoc2}
+ 
+
+zabbix:
+  apply_tag:
+    - linux
+    - kafka
+
+iptables:
+  rules:
+    - { name: "node_exporter", protocol: "tcp", port: "9100", source: "{{example_net}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{example_net}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{example_net}}"}
+    - { name: "kafka", protocol: "tcp", port: "9092", source: "{{example_net}}"}
+

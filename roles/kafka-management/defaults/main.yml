@@ -1,0 +1,6 @@
+---
+kafka_path: /opt/kafka
+kafka_botstrap_hosts:  127.0.0.1
+kafka_botstrap_port: 9092
+kafka_replication_factor: 1
+kafka_partitions: 1

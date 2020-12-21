@@ -1,0 +1,5 @@
+---
+- include: 00-topics-create.yml
+  tags:
+    - topics-create
+    - kafka

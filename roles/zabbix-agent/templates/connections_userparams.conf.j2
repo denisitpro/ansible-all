@@ -1,0 +1,4 @@
+#nginx connection count
+UserParameter=connections.all,/bin/netstat -tan | wc -l
+UserParameter=connections.time_wait,/bin/netstat -nat | grep TIME_WAIT | wc -l
+UserParameter=connections.established,/bin/netstat -nat | grep ESTABLISHED | wc -l

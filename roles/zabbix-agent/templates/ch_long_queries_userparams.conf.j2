@@ -1,0 +1,10 @@
+#long_queries
+UserParameter=clickhouse.long_queries_count,/opt/db-scripts/monitoring/long_queries.sh --user {{ zbx_ch_user }} --password {{ vault_dict_users_secret[zbx_ch_user] }} --host {{ ansible_nodename }}
+
+#query_count
+UserParameter=clickhouse.query_count,/opt/db-scripts/monitoring/query_count.sh --user {{ zbx_ch_user }} --password {{ vault_dict_users_secret[zbx_ch_user] }} --host {{ ansible_nodename }}
+
+#connection count
+UserParameter=connections.all,/bin/netstat -tan | wc -l
+UserParameter=connections.time_wait,/bin/netstat -nat | grep TIME_WAIT | wc -l
+UserParameter=connections.established,/bin/netstat -nat | grep ESTABLISHED | wc -l

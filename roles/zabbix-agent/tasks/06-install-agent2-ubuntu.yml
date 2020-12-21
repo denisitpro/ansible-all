@@ -1,0 +1,25 @@
+---
+- name: Add an Apt signing key, uses  is at the URL
+  apt_key:
+    url: https://repo.zabbix.com/zabbix-official-repo.key
+    state: present
+
+- name: get zabbix repo - ubuntu {{ ansible_distribution_release }}
+  apt_repository:
+    repo: "deb https://repo.zabbix.com/zabbix/5.0/ubuntu/ {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: yes
+
+- name: install zabbix-agent - ubutnu
+  apt:
+    name:
+      - zabbix-agent2
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  notify: restart zabbix-agent2
+
+- name: enable autostart zabbix-agent2
+  systemd:
+    name: zabbix-agent2
+    enabled: yes

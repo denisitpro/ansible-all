@@ -1,0 +1,29 @@
+---
+- name: Add an rpm signing key, uses  is at the URL
+  rpm_key:
+    state: present
+    key: https://repo.zabbix.com/zabbix-official-repo.key
+
+
+- name: install zabbix-agent2 - centos 8
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    update_cache: yes
+  with_items:
+      - { name: "{{rpm_repo_path8}}", state: "present" }
+      - { name: "zabbix-agent2", state: "latest" }
+
+
+- name: disable zabbix selinux
+  shell: "semanage permissive -a zabbix_agent_t"
+  when:
+    - selinux_zabbix_disable is defined
+    - selinux_zabbix_disable
+  tags:
+    - selinux
+
+- name: enable autostart zabbix-agent2
+  systemd:
+    name: zabbix-agent2
+    enabled: yes

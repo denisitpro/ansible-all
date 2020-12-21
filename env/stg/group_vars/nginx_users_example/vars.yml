@@ -7,7 +7,7 @@ nginx:
   upstreams:
     - { name: "ipa-02", server: ipa-02, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
     - { name: "rack-01", server: rack-01, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
-    - { name: "lt-zbx-01", server: lt-zbx-01, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
+    - { name: "zbx-01", server: zbx-01, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
     - { name: "grafana-01", server: grafana-01, domain: "{{internal_domain}}", port: 443, fail_timeout: 0, conf: "nginx-default-upstream.conf.j2"}
   vhosts:
     - { servername: "ipa.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
@@ -23,7 +23,7 @@ nginx:
     - { servername: "zbx-01.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
         http_port: 80, https_ports: 443, config_file: "vhost-general.conf.j2",
         certname: "{{nginx_cert_name}}",privkey: "{{nginx_privkey_name}}",
-        upstream_protocol: https, upstream_name: lt-zbx-01, ssl_rewrite: "yes" , cert_type: "wild"}
+        upstream_protocol: https, upstream_name: zbx-01, ssl_rewrite: "yes" , cert_type: "wild"}
 
     - { servername: "grafana-lnd.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
         http_port: 80, https_ports: 443, config_file: "vhost-general.conf.j2",

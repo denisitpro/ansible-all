@@ -1,0 +1,63 @@
+- name: copy zabbix_agent.conf
+  template:
+      src: zabbix_agentd.conf.j2
+      dest: /etc/zabbix/zabbix_agentd.conf
+  notify: restart zabbix-agent
+  tags:
+    - zabbix-conf
+    - conf-update
+
+- name: zabbix agent to permissive selinux
+  selinux_permissive:
+    name: zabbix_agent_t
+    permissive: true
+  ignore_errors: true
+  notify: restart zabbix-agent
+  tags:
+    - zabbix-conf
+
+
+- name: copy *_userparams.conf.j2 - template
+  template:
+      src: "{{item}}.j2"
+      dest: "{{zbx_agent_path}}/{{item}}"
+      mode: 0640
+      owner: zabbix
+      group: zabbix
+  when: zabbix.templates is defined
+  with_items: "{{ zabbix.templates }}"
+  notify: restart zabbix-agent
+  tags:
+    - zabbix-conf
+
+
+- name: copy userparams files
+  copy:
+      src: "conf/{{item}}"
+      dest: /etc/zabbix/zabbix_agentd.d/
+      force : True
+  notify: restart zabbix-agent
+  with_items: "{{ zabbix.configs }}"
+  when: zabbix.configs is defined
+  tags:
+    - zabbix-conf
+
+- name: create scripts dir
+  file:
+    path: "{{ zabbix_scripts_path }}"
+    state: directory
+    recurse: yes
+  when: zabbix.configs is defined or zabbix.templates is defined
+  tags:
+    - zabbix-conf
+    
+- name: copy user scripts
+  copy:
+      src: scripts/
+      dest: "{{ zabbix_scripts_path }}"
+      force : True
+      mode: a+rx
+  when: zabbix.configs is defined or zabbix.templates is defined
+  notify: restart zabbix-agent
+  tags:
+    - zabbix-conf

@@ -1,0 +1,3 @@
+---
+- include: shared/handlers/zabbix-agent.yml
+- include: shared/handlers/zabbix-agent2.yml

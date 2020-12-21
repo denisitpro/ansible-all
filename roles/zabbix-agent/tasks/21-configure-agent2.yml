@@ -1,0 +1,43 @@
+---
+- name: copy zabbix_agent2.conf
+  template:
+      src: zabbix_agent2.conf.j2
+      dest: /etc/zabbix/zabbix_agent2.conf
+  notify: restart zabbix-agent2
+  tags:
+    - zabbix-conf
+    - conf-update
+
+- name: copy *_userparams.conf.j2 - template
+  template:
+      src: "{{item}}.j2"
+      dest: "/etc/zabbix/zabbix_agent2.d/{{item}}"
+#      dest: "{{zbx_agent_path}}/{{item}}"
+      mode: 0640
+      owner: zabbix
+      group: zabbix
+  when: zabbix.templates is defined
+  with_items: "{{ zabbix.templates }}"
+  notify: restart zabbix-agent2
+  tags:
+    - zabbix-conf
+
+- name: create scripts dir
+  file:
+    path: "{{ zabbix_scripts_path }}"
+    state: directory
+    recurse: yes
+  when: zabbix.configs is defined or zabbix.templates is defined
+  tags:
+    - zabbix-conf
+
+- name: copy user scripts
+  copy:
+      src: scripts/
+      dest: "{{ zabbix_scripts_path }}"
+      force : True
+      mode: a+rx
+  when: zabbix.configs is defined or zabbix.templates is defined
+  notify: restart zabbix-agent2
+  tags:
+    - zabbix-conf

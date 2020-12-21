@@ -1,0 +1,51 @@
+---
+- name: Add an rpm signing key, uses  is at the URL
+  rpm_key:
+    state: present
+    key: "{{item}}"
+  with_items:
+    - https://repo.zabbix.com/zabbix-official-repo.key
+    - https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-A14FE591-EL5
+    - https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-A14FE591
+    - https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-79EA5ED4
+    - https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX
+
+- name: copy repo file
+  copy:
+    src: repo/zabbix44_legacy.repo
+    dest: /etc/yum.repos.d/zabbix.repo
+
+- name: install zabbix-agent - centos
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    update_cache: yes
+  with_items:
+    - { name: "zabbix-agent-4.4.10-1.el7", state: "latest" }
+  tags: [install_agent]
+
+
+- name: copy zabbix_agent.conf
+  template:
+      src: zabbix_agentd.conf.j2
+      dest: /etc/zabbix/zabbix_agentd.conf
+  tags:
+    - zbx_conf
+
+- name: unmask unit zabbix agent
+  shell: "systemctl unmask zabbix-agent.service"
+  
+- name: disable zabbix selinux
+  shell: "semanage permissive -a zabbix_agent_t"
+  when: 
+    - selinux_zabbix_disable is defined
+    - selinux_zabbix_disable
+  tags: 
+    - selinux
+
+- name: restart zabbix-agent
+  systemd:
+      name: zabbix-agent
+      state: restarted
+      daemon_reload: yes
+      enabled: yes

@@ -1,0 +1,16 @@
+---
+- debug:
+    msg: topic - item.name
+  with_items:
+   - "{{kafka.topics}}"
+
+- name: force start kafka
+  systemd:
+    name: kafka
+    state: started
+
+- name: create topics
+  command: "{{kafka_path}}/bin/kafka-topics.sh --create --bootstrap-server {{kafka_botstrap_hosts}}:{{kafka_botstrap_port}} --replication-factor {{kafka_replication_factor}}  --partitions {{kafka_partitions}}  --topic {{item.name}}"
+  ignore_errors: yes
+  with_items:
+   - "{{kafka.topics}}"

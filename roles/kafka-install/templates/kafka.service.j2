@@ -1,0 +1,14 @@
+[Unit]
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{kafka_user}}
+Group={{kafka_group}}
+ExecStart=/bin/sh -c '{{kafka_app_path}}/bin/kafka-server-start.sh {{kafka_app_path}}/config/server.properties > {{kafka_log_path}}/kafka.log 2>&1'
+ExecStop={{kafka_app_path}}/bin/kafka-server-stop.sh
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target

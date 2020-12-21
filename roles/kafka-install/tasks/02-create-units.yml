@@ -1,0 +1,39 @@
+---
+- name: copy  zookeeper unit file
+  template:
+    src: "zookeeper.service.j2"
+    dest: /etc/systemd/system/zookeeper.service
+    owner: root
+    group: root
+    mode: 0640
+  when: kafka_local_zoo
+
+- name: copy kafka unit file
+  template:
+    src: "kafka.service.j2"
+    dest: /etc/systemd/system/kafka.service
+    owner: root
+    group: root
+    mode: 0640
+
+- name: create log link
+  file:
+    src: "{{kafka_log_path}}/kafka.log"
+    dest: '/var/log/kafka.log'
+    state: link
+    force: yes
+
+- name: reload service
+  systemd:
+    daemon_reload: yes
+
+- name: enable uints kafka
+  systemd:
+    name: kafka
+    enabled: yes
+
+- name: enable uints zookeeper
+  systemd:
+    name: zookeeper
+    enabled: yes
+  when: kafka_local_zoo

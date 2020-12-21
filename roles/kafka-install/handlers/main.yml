@@ -1,0 +1,3 @@
+---
+- include: shared/handlers/kafka.yml
+- include: shared/handlers/zookeeper.yml

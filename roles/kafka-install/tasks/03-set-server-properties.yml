@@ -1,0 +1,11 @@
+---
+- name: copy  config
+  template:
+    src: "server.properties.j2"
+    dest: "{{kafka_app_path}}/config/server.properties"
+    owner: "{{kafka_user}}"
+    group: "{{kafka_group}}"
+    mode: 0664
+  notify:
+#    - restart zookeeper
+    - restart kafka
