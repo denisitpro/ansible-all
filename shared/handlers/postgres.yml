@@ -1,0 +1,41 @@
+---
+- name: restart postgresql
+  become: true
+  systemd:
+    name: postgresql
+    state: restarted
+
+- name: restart postgresql-11
+  become: true
+  systemd:
+    name: postgresql-11
+    state: restarted
+
+- name: reload postgresql-11
+  become: true
+  systemd:
+    name: postgresql-11
+    state: reloaded
+
+- name: reload postgresql
+  systemd:
+    name: postgresql
+    state: reloaded
+
+
+- name: restart postgresql-12
+  become: true
+  systemd:
+    name: postgresql-12
+    state: restarted
+
+- name: reload postgresql-12
+  become: true
+  systemd:
+    name: postgresql-12
+    state: reloaded
+
+- name: reload postgresql
+  systemd:
+    name: postgresql
+    state: reloaded

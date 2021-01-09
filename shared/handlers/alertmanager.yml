@@ -1,0 +1,10 @@
+---
+- name: restart alertmanager
+  systemd:
+    name: alertmanager
+    state: restarted
+
+- name: reload alertmanager
+  systemd:
+    name: alertmanager
+    state: reloaded

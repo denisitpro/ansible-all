@@ -1,0 +1,5 @@
+---
+- name: restart brubeck
+  systemd:
+    name: brubeck
+    state: restarted

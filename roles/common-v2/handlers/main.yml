@@ -1,0 +1,6 @@
+---
+- include: shared/handlers/systemd-resolved.yml
+- include: shared/handlers/rsyslog.yml
+- include: shared/handlers/sshd.yml
+- include: shared/handlers/network.yml
+- include: shared/handlers/chrony.yml

@@ -1,0 +1,10 @@
+---
+- name: Set DNS variable ubuntu and centos 8 -  hetzner
+  shell: dig -x {{ ansible_facts[second_interface_name].ipv4.address }} +short @{{dns1}}
+  register: dig_result
+
+- debug:
+    var: dig_result
+
+- name: set hostname {{ dig_result.stdout }}
+  shell: hostnamectl set-hostname  {{ dig_result.stdout }}

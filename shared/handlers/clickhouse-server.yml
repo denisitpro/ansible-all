@@ -1,0 +1,4 @@
+- name: restart clickhouse-server
+  systemd:
+    name: clickhouse-server
+    state: restarted

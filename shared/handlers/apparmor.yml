@@ -1,0 +1,5 @@
+---
+- name: restart apparmor
+  systemd:
+    name: apparmor
+    state: restarted

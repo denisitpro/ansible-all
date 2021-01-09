@@ -1,0 +1,4 @@
+- name: restart carbon-cache
+  systemd:
+    name: carbon-cache
+    state: restarted

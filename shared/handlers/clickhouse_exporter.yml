@@ -1,0 +1,6 @@
+---
+- name: restart clickhouse_exporter
+  systemd:
+    name: clickhouse_exporter
+    state: restarted
+    daemon_reload: yes

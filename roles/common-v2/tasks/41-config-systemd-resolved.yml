@@ -1,0 +1,15 @@
+---
+- name: create path
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    state: directory
+  with_items:
+    - "/usr/lib/systemd/resolved.conf.d"
+
+- name: copy {{company_name}}.conf
+  template:
+      src:  systemd_resolved_resolv.conf.j2
+      dest: "/usr/lib/systemd/resolved.conf.d/{{company_name}}.conf"
+  notify: restart systemd-resolved

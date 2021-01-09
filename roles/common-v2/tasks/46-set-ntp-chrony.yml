@@ -1,0 +1,33 @@
+---
+- name: copy chrony conf
+  template:
+      src: chrony.conf.j2
+      dest: /etc/chrony.conf
+  notify: restart chronyd
+  when: ntp_server is not defined
+
+- name: remove /etc/localtime
+  file:
+    path: /etc/localtime
+    state: absent
+
+- name: create symlink
+  file:
+    src: /usr/share/zoneinfo/UTC
+    dest: /etc/localtime
+    owner: root
+    group: root
+    state: link
+  notify: restart chronyd
+
+- name: copy adjtime
+  copy:
+    src: adjtime
+    dest: /etc/adjtime
+    force: True
+  notify: restart chronyd
+
+- name: set status enabled
+  systemd:
+    name: chronyd
+    enabled: yes

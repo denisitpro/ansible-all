@@ -1,0 +1,12 @@
+---
+- name: restart network
+  systemd:
+    name: systemd-networkd
+    state: restarted
+  when: ansible_distribution == 'Ubuntu'
+
+- name: restart network
+  systemd:
+    name: network
+    state: restarted
+  when: ansible_distribution == 'CentOS'

@@ -1,0 +1,39 @@
+---
+- name: remove /etc/hosts
+  file:
+    path: /etc/hosts
+    state: absent
+- name: re-create /etc/hosts
+  file:
+    path: /etc/hosts
+    owner: root
+    group: root
+    mode: 0644
+    state: touch
+- lineinfile:
+    path: /etc/hosts
+    line:  '127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4'
+- lineinfile:
+    path: /etc/hosts
+    line: '# The following lines are desirable for IPv6 capable hosts'
+- lineinfile:
+    path: /etc/hosts
+    line: '::1         ip6-localhost ip6-loopback'
+- lineinfile:
+    path: /etc/hosts
+    line: 'fe00::0         ip6-localnet6'
+- lineinfile:
+    path: /etc/hosts
+    line: 'ff00::0         ip6-mcastprefix'
+
+- lineinfile:
+    path: /etc/hosts
+    line: 'ff02::1         ip6-allnodes'
+
+- lineinfile:
+    path: /etc/hosts
+    line: 'ff02::2         ip6-allrouters'
+
+- lineinfile:
+    path: /etc/hosts
+    line: 'ff02::3         ip6-allhosts'

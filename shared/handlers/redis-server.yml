@@ -1,0 +1,12 @@
+---
+- name: restart redis-server
+  systemd:
+    name: redis-server
+    state: restarted
+  when: ansible_distribution == 'Ubuntu'
+
+- name: restart redis
+  systemd:
+    name: redis
+    state: restarted
+  when: ansible_distribution == 'CentOS'

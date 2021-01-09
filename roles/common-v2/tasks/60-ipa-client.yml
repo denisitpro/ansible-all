@@ -1,0 +1,14 @@
+---
+- name: install ipa client - ubuntu
+  apt:
+    name: freeipa-client
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install ipa client - centos
+  yum:
+    name: freeipa-client
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'

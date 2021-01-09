@@ -1,0 +1,29 @@
+---
+- name: isntall rsyslog for centos 8
+  yum:
+    name:
+      - rsyslog
+    state: latest
+    update_cache: yes
+  when: "ansible_distribution == 'CentOS'  and dc_location != 'example_dc'"
+
+- name: copy rsyslog.conf
+  template:
+      src:  "rsyslog-lnd.conf.j2"
+      dest: "/etc/rsyslog.conf"
+  notify: restart rsyslog
+  when: "ansible_distribution == 'CentOS'  and dc_location != 'example_dc'"
+
+
+- name: copy file log-format.conf
+  copy:
+    src: log-format.conf
+    dest: /etc/rsyslog.d/30-log-format.conf
+    force: True
+  when: "(ansible_distribution_major_version == '8'  and dc_location != 'lnd')"
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
+

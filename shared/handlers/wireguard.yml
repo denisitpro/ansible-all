@@ -1,0 +1,5 @@
+---
+- name: restart wg-quick@wg0
+  systemd:
+    name: wg-quick@wg0
+    state: restarted

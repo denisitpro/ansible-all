@@ -1,0 +1,4 @@
+- name: restart percona
+  systemd:
+    name: mysql
+    state: restarted

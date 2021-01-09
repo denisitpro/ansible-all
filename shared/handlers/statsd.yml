@@ -1,0 +1,5 @@
+---
+- name: restart statsd
+  systemd:
+    name: statsd
+    state: restarted

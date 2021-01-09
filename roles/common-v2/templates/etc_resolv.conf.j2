@@ -1,0 +1,13 @@
+{% if local_dns is defined %}
+{% if local_dns == 'dnsmasq' %}
+nameserver 127.0.0.1
+{% endif %}
+{% if local_dns == 'systemd-resolved' %}
+nameserver 127.0.0.53
+{% endif %}
+{% else %}
+nameserver {{dns2}}
+nameserver {{dns1}}
+{% endif %}
+
+search {{ searchdomain }}

@@ -1,0 +1,4 @@
+- name: restart status_logger
+  systemd:
+    name: status_logger
+    state: restarted

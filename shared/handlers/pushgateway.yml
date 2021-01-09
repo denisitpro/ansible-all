@@ -1,0 +1,6 @@
+---
+- name: restart pushgateway
+  systemd:
+    name: pushgateway
+    state: restarted
+

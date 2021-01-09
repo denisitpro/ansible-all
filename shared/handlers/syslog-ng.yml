@@ -1,0 +1,13 @@
+---
+- name: restart syslog-ng
+  become: true
+  systemd:
+    name: syslog-ng
+    state: restarted
+
+- name: reload syslog-ng
+  become: true
+  systemd:
+    name: syslog-ng
+    state: reloaded
+

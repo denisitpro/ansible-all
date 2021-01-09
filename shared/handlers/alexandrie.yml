@@ -1,0 +1,5 @@
+---
+- name: restart alexandrie
+  systemd:
+    name: alexandrie
+    state: restarted

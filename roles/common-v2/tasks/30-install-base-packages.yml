@@ -1,0 +1,60 @@
+- name: install base software - ubuntu
+  apt:
+    name:
+      - nano
+      - net-tools
+      - chrony
+      - lsof
+      - wget
+      - telnet
+      - netcat
+      - mlocate
+      - git
+      - vim
+      - htop
+      - iotop
+      - tcpdump
+      - lvm2
+      - dnsutils
+      - unzip
+      - nfs-common
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_distribution == 'Ubuntu'
+
+
+#### CentOS section
+- name: install epel release - centos
+  yum:
+    name:
+      - epel-release
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: install base software - centos
+  yum:
+    name:
+      - nano
+      - bind-utils
+      - net-tools
+      - lsof
+      - wget
+      - telnet
+      - nc
+      - mlocate
+      - yum-utils
+      - chrony
+      - git
+      - vim
+      - htop
+      - iotop
+      - wireshark
+      - tar
+      - tcpdump
+      - unzip
+      - ufw
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'

@@ -1,0 +1,5 @@
+---
+- name: restart td-agent-bit
+  systemd:
+    name: td-agent-bit
+    state: restarted
