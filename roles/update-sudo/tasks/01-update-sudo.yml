@@ -1,0 +1,26 @@
+---
+- name: Update sudo package to the latest version - Ubuntu
+  apt:
+    name: sudo
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_distribution == 'Ubuntu'
+  
+- name: Update sudo package to the latest version - Centos
+  yum:
+   name: 'sudo'
+   state: latest
+   update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: check sudo for vulnerability
+  command:
+    cmd: "sudoedit -s '/'"
+  register: command_output
+  ignore_errors: yes
+  no_log: true
+     
+- name: Patch result
+  debug:
+   msg : "result: {{ansible_distribution}} {{ansible_distribution_major_version}}: {{ 'sudo has vulnerability!' if ( 'not a regular file' in command_output.stderr  ) else ( 'sudo is ok' if ( 'usage: sudoedit' in command_output.stderr ) else command_output.stderr ) }}"

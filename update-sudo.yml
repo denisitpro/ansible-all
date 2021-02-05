@@ -1,0 +1,5 @@
+---
+- hosts: update_hosts_example
+  become: yes
+  roles:
+    - update-sudo
