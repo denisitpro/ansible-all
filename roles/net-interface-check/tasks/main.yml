@@ -1,0 +1,31 @@
+---
+- include: 20-interface-addr.yml
+  when: dc_location == 'fsn'
+  tags:
+    - route
+    - default
+    - node_exporter_configure
+    - zabbix-conf
+    - reconfigure
+    - vhosts
+    - env
+    - consul_reg
+    - config
+    - consul
+    - core-deploy
+    - pg_config
+    - pg_hba
+    - vhosts
+    - pushgateway
+    - backup
+    - node_exporter_run
+    - zabbix-agent2
+    - conf-update
+    - script
+    - db_management
+    - start
+    - stop
+
+# README
+# register vars  second_interface_name
+# check address second interface  {{ ansible_facts[second_interface_name].ipv4.address }}

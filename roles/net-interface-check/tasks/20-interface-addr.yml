@@ -1,0 +1,48 @@
+---
+- name: register all interface system
+  debug: msg="{{ansible_interfaces}}"
+  register: interface_system_list
+  when:  "dc_location == 'hetzner'"
+
+- debug:
+    msg: "list {{ interface_system_list.msg }}"
+
+
+- name: check exist ens10 interface
+  set_fact:
+     second_interface_name: "ens10"
+     interface_bool: True
+  when:  "'ens10' in interface_system_list.msg  and dc_location == 'hetzner'"
+
+- name: check exist enp7s0 interface
+  set_fact:
+     second_interface_name: "enp7s0"
+  when:  "('enp7s0' in interface_system_list.msg  and dc_location == 'hetzner') and (interface_bool is not defined)"
+
+- name: check exist wg0 interface
+  set_fact:
+     second_interface_name: "wg0"
+  when:  "('wg0' in interface_system_list.msg  and dc_location == 'hetzner') and (interface_bool is not defined)"
+
+
+
+- debug:
+    msg: "interface name  {{ second_interface_name }}"
+  when:  "dc_location == 'hetzner'"
+
+- name: check exist {{ second_interface_name }} interface
+  set_fact:
+     check_interface_status: False
+  when:  "second_interface_name not in interface_system_list.msg  and dc_location == 'hetzner'"
+
+- debug:
+    msg: "check_interface_status {{ check_interface_status }}"
+  when: check_interface_status is defined
+
+- name: stop if interface not exist
+  fail: msg="{{ second_interface_name }} for internal network communication not exis"
+  when: "check_interface_status is defined and dc_location == 'hetzner'"
+
+- name: show ip address
+  debug: msg="ip address {{ ansible_facts[second_interface_name].ipv4.address }}"
+  when:  "dc_location == 'hetzner'"
