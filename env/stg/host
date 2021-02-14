@@ -11,3 +11,6 @@ zoo3.example.com
 
 [sentry_example]
 sentry.example.com
+
+[logrotate_example]
+logrotate.example.com
