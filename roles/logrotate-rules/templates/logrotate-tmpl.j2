@@ -1,13 +1,6 @@
 {{item.log_path}}/{{item.log_mask}} {
     daily
     rotate {{item.log_depth}}
-{% if item.app_type == 'zstd' %}
-    sharedscripts
-    postrotate
-        systemctl reload zubr-{{appname}}
-    endscript
-    size {{item.log_size}}
-{% endif %}
     compress
     dateext
     {{ item.rotate_option|default('copytruncate')}}
