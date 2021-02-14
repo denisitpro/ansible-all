@@ -1,0 +1,7 @@
+---
+- hosts: logrotate_example
+  become: yes
+  roles:
+    - common-v2
+    - zabbix-agent
+    - logrotate-rules

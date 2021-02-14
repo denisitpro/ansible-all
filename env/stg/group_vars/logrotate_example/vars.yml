@@ -1,0 +1,7 @@
+---
+logrotate:
+  - {name: example_app, log_path: /opt/example/data, log_mask: "*.log", log_depth: 7}
+
+zabbix:
+  apply_tag:
+    - linux

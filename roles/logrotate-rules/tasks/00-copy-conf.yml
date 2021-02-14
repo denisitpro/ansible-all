@@ -1,0 +1,6 @@
+---
+- name: copy logrotate files
+  template:
+    src: logrotate-tmpl.j2
+    dest: "/etc/logrotate.d/{{item.name}}"
+  with_items: "{{ logrotate }}"

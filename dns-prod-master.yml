@@ -2,7 +2,8 @@
 - hosts: dns_master_example
   become: yes
   roles:
-    - common
+    - common-v2
+    - zabbix-agent
     - named-install
     - dns-server-configure
     - ntpd-install
