@@ -1,0 +1,11 @@
+---
+- name: copy rsyslog rules files ufw
+  template:
+    src: "20-ufw.conf.j2"
+    dest: "/etc/rsyslog.d/20-ufw.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart rsyslog
+  tags:
+    - rsyslog

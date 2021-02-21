@@ -1,0 +1,55 @@
+---
+- name: stop service uwf
+  service:
+    name: ufw
+    state: stopped
+    enabled: no
+  when: ansible_distribution == 'Ubuntu'
+  ignore_errors: yes
+
+- name: stop service firewalld
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: ansible_distribution == 'CentOS'
+  ignore_errors: yes
+
+- name: Check that the iptables.sh exists
+  stat:
+    path: /etc/iptables.sh
+  register: iptables_sh_result
+
+- name: copy config iptables.sh - ubuntu
+  template:
+    src: iptables_ubuntu.sh.j2
+    dest: /etc/iptables.sh
+    owner: root
+    group: root
+    force: yes
+    mode: 0755
+  when:
+   - iptables_sh_result.stat.exists == False
+   - ansible_distribution == 'Ubuntu'
+
+- name: copy config iptables.sh - centos
+  template:
+    src: iptables_centos.sh.j2
+    dest: /etc/iptables.sh
+    owner: root
+    group: root
+    force: yes
+    mode: 0755
+  when:
+   - iptables_sh_result.stat.exists == False
+   - ansible_distribution == 'CentOS'
+
+- name: execute iptables custom
+  command: /etc/iptables.sh
+  when: iptables_sh_result.stat.exists == False
+
+- name: enable service iptables - centos
+  service:
+    name: iptables
+    enabled: yes
+  when: ansible_distribution == 'CentOS'

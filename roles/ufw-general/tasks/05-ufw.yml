@@ -1,0 +1,26 @@
+---
+- name: ufw management rules
+  ufw:
+    rule: "{{ item.rule| default('allow') }}"
+    proto: "{{item.protocol}}"
+    src: "{{ item.source | default('0.0.0.0/0') }}"
+    port: "{{item.port}}"
+    comment: "{{item.name}}"
+  with_items:
+    - "{{ iptables.rules }}"
+  when:
+    - item.iface is not defined
+    
+- name: ufw management rules with interface
+  ufw:
+    rule: "{{ item.rule| default('allow') }}"
+    interface: "{{item.iface}}"
+    direction: "{{item.direction|default('in')}}"
+    proto: "{{item.protocol}}"
+    src: "{{ item.source | default('0.0.0.0/0') }}"
+    port: "{{item.port}}"
+    comment: "{{item.name}}"
+  with_items:
+    - "{{ iptables.rules }}"
+  when:
+    - item.iface is defined
