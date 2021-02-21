@@ -1,0 +1,24 @@
+---
+- name: ufw add custom rule
+  lineinfile:
+      path: /etc/ufw/after.rules
+      regexp: '^{{item.arguments}} -m\s+comment\s+--comment\s+"{{item.name}}"$'
+      line: '{{item.arguments}} -m comment --comment "{{item.name}}"'
+      state: present
+      insertbefore: "don't delete the 'COMMIT'"
+  with_items:
+    - "{{ iptables.custom_rules }}"
+  notify:
+    - reload ufw
+
+- name: ufw add before custom rule
+  lineinfile:
+      path: /etc/ufw/before.rules
+      regexp: '^{{item.arguments}} -m\s+comment\s+--comment\s+"{{item.name}}"$'
+      line: '{{item.arguments}} -m comment --comment "{{item.name}}"'
+      state: present
+      insertafter: "End required lines"
+  with_items:
+    - "{{ iptables.before_rules }}"
+  notify:
+    - reload ufw

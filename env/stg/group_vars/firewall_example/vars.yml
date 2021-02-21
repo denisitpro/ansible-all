@@ -1,0 +1,13 @@
+---
+stand_type: "dev"
+appname: app_example
+
+iptables:
+  rules:
+#### system rules
+    - { name: "admin_mgmt_net", protocol: "tcp", port: "22", source: "192.168.1.0/24"}
+####  mon rules
+    - { name: "node_exporter", protocol: "tcp", port: "9100", source: "{{192.168.2.0/24}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{192.168.2.0/24}}"}
+####  apps rules
+    - { name: "grpc_{{appname}}", protocol: "tcp", port: "12345", source: "192.168.3.0/24"}

@@ -14,3 +14,6 @@ sentry.example.com
 
 [logrotate_example]
 logrotate.example.com
+
+[firewall_example]
+ufw.example.com

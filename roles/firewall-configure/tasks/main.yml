@@ -1,0 +1,15 @@
+---
+- include: 05-firewall.yml
+  when: "dc_location == 'dc2' and  ansible_distribution_major_version == '7'"
+
+- include: 15-ufw.yml
+  tags:
+    - ufw
+  when: not (dc_location == 'dc2' and  ansible_distribution_major_version == '7')
+
+- include: 20-ufw-log.yml
+  tags:
+    - ufw
+    - log
+  when: not (dc_location == 'dc2' and  ansible_distribution_major_version == '7')
+

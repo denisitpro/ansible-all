@@ -1,0 +1,2 @@
+- include: shared/handlers/rsyslog.yml
+- include: shared/handlers/ufw.yml
