@@ -1,0 +1,4 @@
+---
+- include: 10-configure.yml
+  tags:
+    - docker_configure

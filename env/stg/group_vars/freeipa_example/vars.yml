@@ -1,0 +1,38 @@
+---
+stand_type: "stg"
+
+force_dns_ext: true
+freeipa_srv: true
+ipa_hostname: ipa.example.com
+
+# only first init
+# readme  https://denisitpro.wordpress.com/2021/03/07/deploy-freeipa-use-docker-compose-files/
+ds_password: changeme_only_init
+admin_password: changeme_only_init
+freeipa_init: true
+
+
+iptables:
+  rules:
+#### system rules
+    - { name: "fsn_admin_mgmt_net", protocol: "tcp", port: "22", source: "{{fsn_admin_mgmt_net}}"}
+## mon access
+    - { name: "node_exporter", protocol: "tcp", port: "9100", source: "{{fsn_mon_net}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{fsn_mon_net}}"}
+####  apps rules
+    - { name: "freeipa_web", protocol: "tcp", port: "80", source: "{{internal_net_access}}" }
+    - { name: "freeipa_web", protocol: "tcp", port: "443", source: "{{internal_net_access}}" }
+    - { name: "freeipa_ldap", protocol: "tcp", port: "389", source: "{{internal_net_access}}" }
+    - { name: "freeipa_ldap", protocol: "tcp", port: "636", source: "{{internal_net_access}}" }
+    - { name: "freeipa_kerberos", protocol: "tcp", port: "88", source: "{{internal_net_access}}" }
+    - { name: "freeipa_kerberos", protocol: "tcp", port: "464", source: "{{internal_net_access}}" }
+##    - { name: "freeipa_bind", protocol: "tcp", port: "53", source: "{{internal_net_access}}" }
+#    - { name: "freeipa_bind", protocol: "udp", port: "53", source: "{{internal_net_access}}" }
+#    - { name: "freeipa_ntp", protocol: "udp", port: "123", source: "{{internal_net_access}}" }
+    - { name: "freeipa_kerberos", protocol: "udp", port: "88", source: "{{internal_net_access}}" }
+    - { name: "freeipa_kerberos", protocol: "udp", port: "464", source: "{{internal_net_access}}" }
+
+zabbix:
+  apply_tag:
+    - linux
+    - freeipa

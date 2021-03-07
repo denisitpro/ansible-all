@@ -1,0 +1,11 @@
+---
+- name: copy freeipa compose
+  template:
+    src: docker-compose-ipa.yml.j2
+    dest: "{{docker_compose_path}}/docker-compose.yml"
+    mode: 0644
+
+- name: run docker-compose file
+  shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{docker_compose_path}}"

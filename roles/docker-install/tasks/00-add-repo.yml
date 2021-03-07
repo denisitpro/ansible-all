@@ -1,0 +1,30 @@
+---
+- name: Import Docker CE repository gpg key - Centos
+  rpm_key:
+    key: https://download.docker.com/linux/centos/gpg
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Add Docker CE repository - Centos
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: ansible_distribution == 'CentOS'
+
+- name: enable docker-ce repo - Centos
+  shell: yum-config-manager --enable docker-ce-stable
+  when: ansible_distribution == 'CentOS'
+
+- name: Add Docker GPG key - Ubuntu
+  apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add Docker APT repository - Ubuntu
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/{{ansible_distribution|lower}} {{ansible_distribution_release}} stable
+  when: ansible_distribution == 'Ubuntu'
+
