@@ -17,3 +17,6 @@ logrotate.example.com
 
 [firewall_example]
 ufw.example.com
+
+[freeipa_example]
+ipa.example.com

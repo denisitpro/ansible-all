@@ -1,0 +1,5 @@
+- include: 00-add-repo.yml
+- include: 01-install-docker.yml
+- include: 02-configure-docker.yml
+- include: 03-docker-login-requirements.yml
+  when: ansible_distribution == 'CentOS'

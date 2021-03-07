@@ -1,0 +1,14 @@
+---
+- hosts: freeipa_example
+  become: yes
+  roles:
+    - net-interface-check
+    - common-v2
+    - zabbix-agent
+    - node-exporter
+    - docker-install
+    - docker-compose
+    - docker-disable-firewall-v2
+    - freeipa-server-install
+    - firewall-configure
+    - ufw-general
