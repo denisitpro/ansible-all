@@ -1,0 +1,6 @@
+---
+- include: 00-tasks.yml
+  when: cron is defined
+  tags:
+    - cron
+

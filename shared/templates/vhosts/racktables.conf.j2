@@ -1,33 +1,18 @@
-##### ANSIBLE generate config
+##### ANSIBLE generated config
+## {{ ansible_managed }} ##
 ##### not change hands
 ####  your changes will be lost
 
 server {
-        listen {{item.http_port}};
+        listen {{ nginx_bind_addr }}:{{item.http_port}};
         server_name {{item.servername}};
-
-# set url for lets encrypt
-        location /.well-known/ {
-        allow all;
-        alias   /var/lib/letsencrypt/;
-        default_type "text/plain";
-        try_files $uri =404;
-        }
 
         return 301 https://$host$request_uri;
 }
 
 server {
-        listen  {{item.https_ports}} ssl;
+        listen  {{ nginx_bind_addr }}:{{item.https_ports}} ssl;
         server_name {{item.servername}};
-
-# set url for lets encrypt
-        location /.well-known/ {
-        allow all;
-        alias   /var/lib/letsencrypt/;
-        default_type "text/plain";
-        try_files $uri =404;
-        }
 
 # log project use  include
         access_log  {{nginx_log_path}}/{{item.servername.split(' ')[0]}}-access.log  {{nginx_log_format}};
@@ -54,7 +39,7 @@ server {
     include  {{ included }};
 {% endfor %}
 ### end ansible management
-    root /var/www/html/wwwroot/;
+    root {{ racktables_path }};
     index index.php;
 
      location / {

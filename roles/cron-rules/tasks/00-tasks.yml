@@ -1,0 +1,11 @@
+---
+- name: add task to cron
+  cron:
+    name: "{{item.name}}"
+    minute: "{{item.minute}}"
+    hour: "{{item.hour}}"
+    job: "{{item.job}}"
+  with_items:
+    - "{{cron.jobs}}"
+  tags:
+    - cron

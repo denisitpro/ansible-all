@@ -1,0 +1,8 @@
+---
+- include: 00-create-user.yml
+- include: 01-install.yml
+  when: ansible_distribution == 'Ubuntu'
+- include: 02-configure.yml
+  tags:
+   - reconfigure
+  when: ansible_distribution == 'Ubuntu'

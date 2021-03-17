@@ -1,0 +1,49 @@
+---
+- name: "Obtaining percona public key"
+  apt_key:
+    keyserver: "keyserver.ubuntu.com"
+    id: 9334A25F8507EFA5
+  when: "ansible_distribution == 'Ubuntu'"
+
+- name: "Adding percona repository"
+  apt_repository:
+    repo: "deb http://repo.percona.com/apt {{ ansible_distribution_release }} main"
+    state: "present"
+    update_cache: yes
+
+- name: "Install percona-release package (Percona 8)"
+  apt:
+    deb: "https://repo.percona.com/apt/percona-release_latest.{{ ansible_distribution_release }}_all.deb"
+    state: "present"
+
+- name: "Enable Percona repository (Percona version >= 8)"
+  command: "percona-release setup ps80"
+
+- name: "Install package dependencies for ansible MySQL modules (python 3)"
+  apt:
+    name:
+       - "python3-mysqldb"
+
+- name: "Install percona packages and dependencies on Ubuntu (Percona version >= 8)"
+  apt:
+    name:
+      - "percona-server-server=8.0*"
+      - "percona-server-client=8.0*"
+      - "percona-toolkit"
+    state: "present"
+
+- name: "Adjust permissions of datadir"
+  file:
+    path: "/var/lib/mysql"
+    owner: "{{percona_user}}"
+    group: "{{percona_group}}"
+    mode: 0700
+    state: "directory"
+
+- name: "Ensure that percona is running and enabled"
+  service:
+    name: "mysql"
+    state: "started"
+    enabled: "yes"
+  register: mysql_service
+  notify: restart percona

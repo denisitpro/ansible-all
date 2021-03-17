@@ -1,0 +1,15 @@
+---
+- name: Create private group
+  group:
+    name: "{{percona_group}}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{percona_user}}"
+    group: "{{ percona_group }}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "precona non-privileged user"
+    state: present

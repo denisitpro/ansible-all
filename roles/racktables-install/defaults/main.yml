@@ -1,0 +1,14 @@
+---
+percona_user: "mysql"
+percona_group: "mysql"
+
+mysql_root: "mysql_root"
+
+mysql_bind_addr: "127.0.0.1"
+
+racktables_db_name: "racktablesdb"
+racktables_user: "racktableuser"
+
+racktables_version: "RackTables-0.21.5"
+
+web_server_user: nginx
