@@ -1,0 +1,44 @@
+---
+# EXAMPLE VARS
+stand_type: "dev"
+cert_env: "dev"
+racktables_path: "/var/www/html/wwwroot"
+
+internal_domain: example.com
+
+
+nginx:
+  upstreams:
+    - { name: "rack9000", server: 127.0.0.1, domain: "{{internal_domain}}", port: 9000, fail_timeout: 0, conf: "nginx-localhost-upstream.conf.j2"}
+  vhosts:
+    - { servername: "rack.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
+        http_port: 80, https_ports: 443, config_file: "racktables.conf.j2",
+        certname: "{{nginx_cert_name}}",privkey: "{{nginx_privkey_name}}",
+        upstream_protocol: http, upstream_name: rack9000, ssl_rewrite: "yes" , cert_type: "personal"}
+  include:
+    - "/etc/nginx/include/tls1_2-tls1_3.conf"
+
+cron:
+  jobs:
+    - {name: backup, minute: "20", hour: "1", job: 'mysqldump --databases -u root  -p{{ vault_dict_users_secret.mysql_root }} racktablesdb | gzip > /mnt/nfs/backup/racktablesdb_`date +\%Y\%m\%d_\%H\%M\%S`.sql.gz'}
+
+zabbix:
+  apply_tag:
+    - linux
+    - nginx
+
+vault:
+  secret:
+    - {kv: "{{stand_type}}",  appname: mysql, server: "rack-01",  key_name: "mysql_root"}
+    - {kv: "{{stand_type}}",  appname: mysql, server: "rack-01",  key_name: "racktableuser"}
+
+iptables:
+  rules:
+#### system rules
+    - { name: "fsn_admin_mgmt_net", protocol: "tcp", port: "22", source: "{{admin_net}}"}
+## mon access
+    - { name: "node_exporter", protocol: "tcp", port: "9100", source: "{{mon_net}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{mon_net}}"}
+## apps rules
+    - { name: "nginx", protocol: "tcp", port: "80", source: "{{internal_net_access}}"}
+    - { name: "nginx", protocol: "tcp", port: "443", source: "{{internal_net_access}}"}

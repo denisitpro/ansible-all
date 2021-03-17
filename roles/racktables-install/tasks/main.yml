@@ -1,0 +1,4 @@
+---
+- include: 00-install.yml
+- include: 01-php-fpm.yml
+- include: 02-configure.yml

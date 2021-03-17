@@ -20,3 +20,6 @@ ufw.example.com
 
 [freeipa_example]
 ipa.example.com
+
+[racktables_example]
+rack.example.com

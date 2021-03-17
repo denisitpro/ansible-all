@@ -1,0 +1,71 @@
+---
+- name: Create database racktablesdb
+  mysql_db:
+    login_user: root
+    login_password: "{{ vault_dict_users_secret[mysql_root] }}"
+    name: "{{racktables_db_name}}"
+    state: present
+
+- name: Create database user with all database privileges
+  mysql_user:
+    login_user: root
+    login_password: "{{ vault_dict_users_secret[mysql_root] }}"
+    name: "{{racktables_user}}"
+    password: "{{ vault_dict_users_secret[racktables_user] }}"
+    priv: "{{racktables_db_name}}.*:ALL"
+    state: present
+
+- name: Create a directory racktables
+  file:
+    path: "{{ racktables_path }}"
+    state: directory
+    mode: '0755'
+
+- name: download racktables
+  shell: "wget -P /tmp/ https://downloads.sourceforge.net/project/racktables/{{racktables_version}}.tar.gz"
+  become: yes
+
+- name: extract racktables
+  shell: "tar -xopf /tmp/{{racktables_version}}.tar.gz -C /tmp/"
+  become: yes
+
+- name: Give insecure permissions to an existing file
+  file:
+    path: "/tmp/{{racktables_version}}"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: install racktables
+  shell: "cp -fr /tmp/{{racktables_version}}/wwwroot/. {{ racktables_path }}"
+  become: yes
+
+- name: Remove download file
+  file:
+    path: "/tmp/{{racktables_version}}.tar.gz"
+    state: absent
+
+- name: Remove tmp directory
+  file:
+    path: "/tmp/{{racktables_version}}"
+    state: absent
+
+- name: Git checkout repo plugin
+  ansible.builtin.git:
+    repo: 'https://github.com/RackTables/racktables-contribs.git'
+    dest: /tmp/racktables-contribs
+    version: master
+  tags: rack
+
+- name: Copy folder extension
+  ansible.builtin.copy:
+    src: /tmp/racktables-contribs/extensions/plugins
+    dest: /var/www/html/
+    remote_src: yes
+  tags: rack
+
+- name: delete temp folder
+  ansible.builtin.file:
+    path: /tmp/racktables-contribs/
+    state: absent
+  tags: rack

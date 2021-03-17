@@ -1,0 +1,25 @@
+---
+- hosts: racktables_example
+  become: yes
+  vars_prompt:
+    - name: vault_login
+      prompt: "What is your LDAP  login ?"
+      private: no
+    - name: vault_password
+      prompt: "What is your LDAP password ?"
+  roles:
+    - net-interface-check
+    - common-v2
+    - zabbix-agent
+    - node-exporter
+    - vault-get-token
+    - vault-get-users-secrets-v2
+    - percona-install
+    - racktables-install
+    - nginx-install
+    - nginx-base-config
+    - nginx-get-certs-v2
+    - nginx-vhosts-configure
+    - cron-rules
+    - firewall-configure
+    - ufw-general

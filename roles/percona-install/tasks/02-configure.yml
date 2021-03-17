@@ -1,0 +1,30 @@
+---
+- name: "Copy .my.cnf file into the root home folder"
+  template:
+    src: root-my-cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
+  notify: restart percona
+
+- name: "Copy mysql config file"
+  template:
+    src: mysql.cnf.j2
+    dest: /etc/mysql/conf.d/mysql.cnf
+    owner: "{{percona_user}}"
+    group: "{{percona_group}}"
+    mode: 0700
+  notify: restart percona
+
+- name: "Set the root password"
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    password: "{{ vault_dict_users_secret[mysql_root] }}"
+    check_implicit_admin: yes
+    state: present
+  with_items:
+    - "127.0.0.1"
+    - "::1"
+    - "localhost"
