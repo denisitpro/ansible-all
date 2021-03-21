@@ -21,4 +21,4 @@
     - nginx-get-certs-v2
     - nginx-vhosts-configure
     - firewall-configure
-    - 0505-ufw-general
+    - ufw-general
