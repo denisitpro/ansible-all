@@ -1,0 +1,39 @@
+
+-Xms2703m
+-Xmx2703m
+-XX:MaxDirectMemorySize=2703m
+-XX:+UnlockDiagnosticVMOptions
+-XX:+LogVMOutput
+-XX:LogFile={{nexus_data_dir}}/current/nexus3/log/jvm.log
+-XX:-OmitStackTraceInFastThrow
+-Djava.net.preferIPv4Stack=true
+-Dkaraf.home=.
+-Dkaraf.base=.
+-Dkaraf.etc=etc/karaf
+-Djava.util.logging.config.file=etc/karaf/java.util.logging.properties
+-Dkaraf.data={{nexus_data_dir}}/current/nexus3
+-Dkaraf.log={{nexus_data_dir}}/current/nexus3/log
+-Djava.io.tmpdir={{nexus_data_dir}}/current/nexus3/tmp
+-Dkaraf.startLocalConsole=false
+#
+# additional vmoptions needed for Java9+
+#
+# --add-reads=java.xml=java.logging
+# --add-exports=java.base/org.apache.karaf.specs.locator=java.xml,ALL-UNNAMED
+# --patch-module=java.base=lib/endorsed/org.apache.karaf.specs.locator-4.2.6.jar
+# --patch-module=java.xml=lib/endorsed/org.apache.karaf.specs.java.xml-4.2.6.jar
+# --add-opens=java.base/java.security=ALL-UNNAMED
+# --add-opens=java.base/java.net=ALL-UNNAMED
+# --add-opens=java.base/java.lang=ALL-UNNAMED
+# --add-opens=java.base/java.util=ALL-UNNAMED
+# --add-opens=java.naming/javax.naming.spi=ALL-UNNAMED
+# --add-opens=java.rmi/sun.rmi.transport.tcp=ALL-UNNAMED
+# --add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED
+# --add-exports=java.base/sun.net.www.protocol.https=ALL-UNNAMED
+# --add-exports=java.base/sun.net.www.protocol.jar=ALL-UNNAMED
+# --add-exports=jdk.xml.dom/org.w3c.dom.html=ALL-UNNAMED
+# --add-exports=jdk.naming.rmi/com.sun.jndi.url.rmi=ALL-UNNAMED
+#
+# comment out this vmoption when using Java9+
+#
+-Djava.endorsed.dirs=lib/endorsed

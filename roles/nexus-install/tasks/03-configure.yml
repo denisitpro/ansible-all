@@ -1,0 +1,85 @@
+---
+- name: copy nexus {{nexus_version}} to {{nexus_install_dir}}
+  copy:
+    src: "{{nexus_install_tmp_dir}}"
+    dest: "{{nexus_install_dir}}"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    remote_src: yes
+
+- name: copy data dir
+  copy:
+    src: "{{nexus_install_tmp_data_dir}}/"
+    dest: "{{nexus_data_dir}}/{{nexus_version}}"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    remote_src: yes
+
+
+- name: Create a symbolic to nexus
+  file:
+    src: "{{nexus_install_dir}}/{{nexus_install_tmp_dir_name}}"
+    dest: "{{nexus_install_dir}}/current"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    state: link
+    force: yes
+
+- name: Create a symbolic to nexus
+  file:
+    src: "{{nexus_data_dir}}/{{nexus_version}}"
+    dest: "{{nexus_data_dir}}/current"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    state: link
+    force: yes
+
+- name: copy unit file
+  template:
+    src: "nexus.service.j2"
+    dest: "/etc/systemd/system/nexus.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart nexus
+
+- name: enable nexus  unit
+  systemd:
+    name: "nexus"
+    enabled: yes
+    daemon_reload: yes
+
+- name: copy config nexus.vmoptions
+  template:
+    src: "nexus.vmoptions.j2"
+    dest: "{{nexus_install_dir}}/current/bin/nexus.vmoptions"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    mode: 0644
+  notify: restart nexus
+
+- name: create path nexus/etc
+  file:
+    path: "{{nexus_data_dir}}/current/nexus3/etc"
+    state: directory
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+
+- name: copy config nexus.properties
+  template:
+    src: "nexus.properties.j2"
+    dest: "{{nexus_data_dir}}/current/nexus3/etc/nexus.properties"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    mode: 0644
+  notify: restart nexus
+
+- name: copy nexus-file-limits.conf
+  template:
+    src: "nexus-file-limits.conf.j2"
+    dest: "/etc/security/limits.d/nexus.conf"
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+    mode: 0644
+  tags:
+    - limits

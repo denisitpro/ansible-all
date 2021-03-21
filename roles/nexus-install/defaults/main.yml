@@ -1,0 +1,19 @@
+---
+nexus_version: 3.30.0-01
+nexus_user: nexus
+nexus_group: "{{nexus_user}}"
+nexus_install_dir: /opt/nexus
+nexus_data_dir: /opt/sonatype-work
+nexus_port: 8081
+nexus_bind_interface: 127.0.0.1
+
+
+nexus_download_url: https://download.sonatype.com/nexus/3/nexus-{{nexus_version}}-unix.tar.gz
+nexus_download_target: /tmp/nexus-lates.tar.gz
+
+nexus_install_tmp_base_dir: /tmp
+nexus_install_tmp_dir_name: "nexus-{{ nexus_version }}"
+nexus_install_tmp_dir: "{{ nexus_install_tmp_base_dir }}/{{ nexus_install_tmp_dir_name }}"
+nexus_install_tmp_data_dir: "{{ nexus_install_tmp_base_dir }}/sonatype-work"
+
+

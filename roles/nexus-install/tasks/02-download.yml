@@ -1,0 +1,13 @@
+---
+- name: Download
+  get_url:
+    url: "{{nexus_download_url}}"
+    dest: "{{ nexus_download_target}}"
+    mode: 0755
+
+- name: Unarchive a file that is already on the remote machine
+  unarchive:
+    src: "{{ nexus_download_target}}"
+    dest: "{{nexus_install_tmp_base_dir}}"
+    remote_src: yes
+

@@ -1,0 +1,24 @@
+---
+# For Ubuntu 20.04 and hetzner use second interface
+
+
+- hosts: nexus_example
+  become: yes
+  vars_prompt:
+    - name: vault_login
+      prompt: "What is your LDAP  login ?"
+      private: no
+    - name: vault_password
+      prompt: "What is your LDAP password ?"
+  roles:
+    - net-interface-check
+    - common-v2
+    - zabbix-agent
+    - node-exporter
+    - nexus-install
+    - nginx-install
+    - nginx-base-config
+    - nginx-get-certs-v2
+    - nginx-vhosts-configure
+    - firewall-configure
+    - ufw-general
