@@ -1,0 +1,24 @@
+---
+- include: shared/tasks/install-openjdk.yml
+  tags:
+    - java_install
+
+- name: create path
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: "{{nexus_user}}"
+    group: "{{nexus_group}}"
+  with_items:
+    - "{{nexus_install_dir}}"
+    - "{{nexus_data_dir}}"
+    - "{{nexus_data_dir}}/{{nexus_version}}"
+
+#### CentOS section
+- name: install requirements
+  yum:
+    name:
+      - createrepo
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'

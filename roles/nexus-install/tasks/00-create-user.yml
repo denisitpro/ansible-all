@@ -1,0 +1,14 @@
+---
+- name: Create private group for - {{ nexus_group}}
+  group:
+    name: "{{ nexus_group}}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{ nexus_user}}"
+    group: "{{ nexus_group}}"
+    shell: "/bin/nologin"
+    system: yes
+    state: present

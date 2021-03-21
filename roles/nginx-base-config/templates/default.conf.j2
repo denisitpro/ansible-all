@@ -1,0 +1,9 @@
+server  {
+{% if dmz_nginx is not defined %}
+ listen {{ nginx_bind_addr }}:80 default_server;
+{% else %}
+ listen 80 default_server;
+{% endif %}
+ server_name _;
+ return 403;
+}

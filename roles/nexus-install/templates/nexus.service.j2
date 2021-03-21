@@ -1,0 +1,16 @@
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+ExecStart={{nexus_install_dir}}/current/bin/nexus start
+ExecStop={{nexus_install_dir}}/current/bin/nexus stop
+User={{nexus_user}}
+Group={{nexus_group}}
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target
