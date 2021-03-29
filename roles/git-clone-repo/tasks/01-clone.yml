@@ -1,0 +1,20 @@
+---
+- name: create user path
+  file:
+    path: "{{item.user_path}}"
+    state: directory
+  become: no
+  with_items:
+    - "{{git}}"
+
+- name: clone repo
+  git:
+    repo: "{{item.url}}"
+    dest: "{{item.user_path}}"
+    version: "{{item.version | default('master') }}"
+    force: yes
+    ssh_opts: -o ForwardAgent=yes
+    accept_hostkey: yes
+  become: no
+  with_items:
+    - "{{git}}"

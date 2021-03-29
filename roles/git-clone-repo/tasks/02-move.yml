@@ -1,0 +1,17 @@
+---
+- name: Copy file direcotry
+  copy:
+    src: "{{item.user_path}}"
+    dest: "{{item.target_path}}"
+    mode: 0755
+    remote_src: yes
+    force: yes
+  with_items:
+    - "{{git}}"
+
+- name: delete user_path
+  file:
+    path: "{{item.user_path}}"
+    state: absent
+  with_items:
+    - "{{git}}"

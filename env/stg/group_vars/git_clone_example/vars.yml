@@ -1,0 +1,3 @@
+---
+git:
+  - {url: "git@github.com:examplerepo/scripts.git" , user_path: "/tmp/scripts", target_path: "/opt" }
