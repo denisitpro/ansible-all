@@ -1,0 +1,10 @@
+---
+- include: 00-clean-old.yml
+  tags:
+    - git
+- include: 01-clone.yml
+  tags:
+    - git
+- include: 02-move.yml
+  tags:
+    - git

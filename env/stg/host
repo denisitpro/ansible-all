@@ -26,3 +26,6 @@ rack.example.com
 
 [nexus_example]
 nexus.example.com
+
+[git_clone_example]
+git-clone.example.com

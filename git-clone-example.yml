@@ -1,0 +1,5 @@
+---
+- hosts: git_clone_example
+  become: yes
+  roles:
+    - git-clone-repo

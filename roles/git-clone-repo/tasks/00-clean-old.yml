@@ -1,0 +1,7 @@
+---
+- name: delete user_path
+  file:
+    path: "{{item.user_path}}"
+    state: absent
+  with_items:
+    - "{{git}}"
