@@ -1,0 +1,23 @@
+- name: copy redis.conf - ubuntu
+  template:
+    src: "{{redis_conf_tmpl}}"
+    dest: "/etc/redis/redis.conf"
+    owner: "{{redis_user}}"
+    group: "{{redis_user}}"
+    mode: "0640"
+  when: ansible_distribution == 'Ubuntu'
+  notify: restart redis-server
+  tags:
+    - reconfigure
+
+- name: copy redis.conf - centos
+  template:
+    src: "{{redis_conf_tmpl}}"
+    dest: "/etc/redis.conf"
+    owner: "{{redis_user}}"
+    group: "{{redis_user}}"
+    mode: "0640"
+  when: ansible_distribution == 'CentOS'
+  notify: restart redis
+  tags:
+    - reconfigure

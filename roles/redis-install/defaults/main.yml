@@ -1,0 +1,6 @@
+---
+redis_user: redis
+redis_bind_addr: "{{global_bind_addr}}"
+redis_port: 6379
+redis_conf_tmpl: "redis-master.conf.j2"
+redis_bind_localhost: false

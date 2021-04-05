@@ -1,0 +1,15 @@
+---
+- include: 00-add-repo.yml
+  when: ansible_distribution == 'CentOS'
+  tags: [redis_install]
+
+- include: 01-install.yml
+  tags: [redis_install]
+
+- include: 03-tune-sysctl.yml
+  tags: [redis_install]
+
+- include: 04-configure.yml
+  tags: [redis_install]
+
+
