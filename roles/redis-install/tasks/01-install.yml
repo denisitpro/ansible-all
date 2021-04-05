@@ -1,0 +1,26 @@
+---
+- name: Ensure Redis is installed ubuntu
+  apt:
+    name: redis
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install redis - centos
+  yum:
+    name:
+      - redis
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: Enable redis-server to startup - Ubuntu
+  systemd:
+    name: redis-server
+    enabled: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Enable redis-server to startup - centos
+  systemd:
+    name: redis
+    enabled: yes
+  when: ansible_distribution == 'CentOS'
