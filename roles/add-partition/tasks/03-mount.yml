@@ -1,0 +1,76 @@
+---
+- name: Create mount dirs
+  file:
+    state: directory
+    path: "{{item.mount_dir}}"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: add start comment to fstab
+  lineinfile:
+      path: /etc/fstab
+      line: "{{ partitions_start_comment }}"
+      state: present
+      insertafter: EOF 
+
+- name: add end comment  to fstab
+  lineinfile:
+      path: /etc/fstab
+      line: "{{ partitions_end_comment }}"
+      state: present
+      insertafter: "{{ partitions_start_comment }}"
+
+- name: add volume mount point to fstab
+  lineinfile:
+      path: /etc/fstab
+      regexp: '^/dev/{{ item.volume_group }}/{{ item.volume }}\s+{{ item.mount_dir }}\s+{{ item.fs_type }}\s+{{ item.opts | default("defaults") }}\s+0\s+0$'
+      line: '/dev/{{ item.volume_group }}/{{ item.volume }} {{ item.mount_dir }} {{ item.fs_type }} {{ item.opts | default("defaults") }} 0 0'
+      state: present
+      insertbefore: "{{ partitions_end_comment }}"
+  when: 
+    - item.type == "volume"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: add other mount point to fstab
+  lineinfile:
+      path: /etc/fstab
+      regexp: '^{{ item.device }}\s+{{ item.mount_dir }}\s+{{ item.fs_type }}\s+{{ item.opts | default("defaults") }}\s+0\s+0$'
+      line: '{{ item.device }} {{ item.mount_dir }} {{ item.fs_type }} {{ item.opts | default("defaults") }} 0 0'
+      state: present
+      insertbefore: "{{ partitions_end_comment }}"
+  when: 
+    - item.type != "volume"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: activate volume mount points
+  ansible.posix.mount:
+    path: "{{item.mount_dir}}"
+    src: "/dev/{{ item.volume_group }}/{{ item.volume }}"
+    fstype: "{{ item.fs_type }}"
+    state: mounted
+    fstab: "/tmp/fstab"
+  when: 
+    - item.type == "volume"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: activate other mount points
+  ansible.posix.mount:
+    path: "{{item.mount_dir}}"
+    src: "{{ item.device }}"
+    fstype: "{{ item.fs_type }}"
+    state: mounted
+    fstab: "/tmp/fstab"
+  when: 
+    - item.type != "volume"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: remove tmp files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/fstab

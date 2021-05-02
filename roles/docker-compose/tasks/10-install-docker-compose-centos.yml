@@ -1,0 +1,31 @@
+---
+#- name : install docker composer with pip
+#  pip:
+#    name: docker-compose
+#    state: present
+
+#  method  https://docs.docker.com/compose/install/
+- name: download docker-compos
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{docker_compose_version}}/docker-compose-Linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    mode: 0755
+
+- name: Create a symbolic link docker-compose
+  file:
+    src: /usr/local/bin/docker-compose
+    dest: /usr/bin/docker-compose
+    owner: root
+    group: root
+    state: link
+
+- name: add autocompleate docker-compose
+  get_url:
+    url: https://raw.githubusercontent.com/docker/compose/{{docker_compose_version}}/contrib/completion/bash/docker-compose
+    dest: /etc/bash_completion.d/docker-compose.sh
+    mode: 0644
+
+- name: create docker compose directory
+  file:
+    path: "{{docker_compose_path}}"
+    state: directory
