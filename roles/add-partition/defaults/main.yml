@@ -1,0 +1,10 @@
+---
+
+partitions_start_comment: '## Ansible generated configuration after this line'
+partitions_end_comment: '## Ansible generated configuration before this line'
+
+# example
+# partitions: 
+#   - { type: "volume", device: "/dev/sdb", fs_type: "xfs", mount_dir: "/mnt/disk-data", volume_group: "vlg00", volume: "data", size: "100%free" }
+#   - { type: "device", device: "/dev/sdb", fs_type: "ext4", mount_dir: "/mnt/disk-data" }
+#   - { type: "nfs", device: "10.227.5.20:/mnt/data/remote/psql-25", fs_type: "nfs4", mount_dir: "/mnt/pgbackup", opts: "vers=4.1,noexec,nosuid,rw,async,soft,intr"}

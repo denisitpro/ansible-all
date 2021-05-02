@@ -1,0 +1,38 @@
+---
+- name: creave LVM volume groups
+  community.general.lvg:
+    vg: "{{ item.volume_group }}"
+    pvs: "{{ item.device }}"
+  when: 
+    - item.type == "volume"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: creave LVM logical volumes
+  community.general.lvol:
+    vg: "{{ item.volume_group }}"
+    lv: "{{ item.volume }}"
+    size: "{{ item.size | default('100%FREE') }}"
+    shrink: no
+  when: 
+    - item.type == "volume"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: Create a filesystems on volume
+  filesystem:
+    fstype: "{{item.fs_type}}"
+    dev: "/dev/{{ item.volume_group }}/{{ item.volume }}"
+  when: 
+    - item.type == "volume"
+  with_items: 
+    - "{{ partitions }}"
+    
+- name: Create a filesystems on device
+  filesystem:
+    fstype: "{{item.fs_type}}"
+    dev: "{{ item.device }}"
+  when: 
+    - item.type == "device"
+  with_items: 
+    - "{{ partitions }}"

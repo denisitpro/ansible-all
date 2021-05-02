@@ -1,0 +1,11 @@
+---
+- include: 02-create-partition.yml
+  when:
+    - partitions is defined
+  tags: 
+    - partitions
+- include: 03-mount.yml
+  when:
+    - partitions is defined
+  tags: 
+    - partitions
