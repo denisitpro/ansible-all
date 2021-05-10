@@ -1,0 +1,8 @@
+---
+- name: copy ufw
+  copy:
+    src: "ufw-defaults"
+    dest: "/etc/default/ufw"
+    owner: root
+    group: root
+    mode: 07644

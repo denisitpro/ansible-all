@@ -1,0 +1,15 @@
+[Unit]
+Description=iptables-docker autostart lauch
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+
+ExecStart=bash -c "{{docker_path}}/iptables.sh"
+
+[Install]
+WantedBy=multi-user.target
