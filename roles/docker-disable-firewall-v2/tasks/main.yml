@@ -2,3 +2,11 @@
 - include: 10-configure.yml
   tags:
     - docker_configure
+
+- include: 15-iptables-unit.yml
+  tags:
+    - docker_configure
+
+- include: 20-ufw-default.yml
+  tags:
+    - docker_configure

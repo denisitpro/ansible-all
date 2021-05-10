@@ -1,0 +1,25 @@
+---
+- include: shared/tasks/create-dir-docker-compose.yml
+
+- name: copy iptables.sh
+  copy:
+    src: "iptables.sh"
+    dest: "{{docker_path}}/iptables.sh"
+    owner: root
+    group: root
+    mode: 0700
+
+- name: copy iptables-docker unit file
+  template:
+    src: "iptables-docker.service.j2"
+    dest: "/etc/systemd/system/iptables-docker.service"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable iptables-docker unit
+  ansible.builtin.systemd:
+    name: "iptables-docker"
+    enabled: yes
+    state: started
+    daemon_reload: yes

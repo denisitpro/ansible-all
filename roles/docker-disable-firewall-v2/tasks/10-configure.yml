@@ -6,4 +6,8 @@
     owner: root
     group: root
     mode: 644
-  notify: restart docker
+
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted
