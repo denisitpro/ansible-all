@@ -1,0 +1,4 @@
+---
+- include: 05-prefly.yml
+- include: 10-install.yml
+- include: 15-configure.yml

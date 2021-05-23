@@ -1,0 +1,27 @@
+stand_type: "dev"
+vpn_sever: true
+strongswan_server: true
+
+strongswan:
+  peers:
+    - { name: "server1",  ip_src: 5.6.7.8, ip_dst: 1.2.3.4, left_subnet: "10.2.0.0/16", right_subnet: "10.1.0.0/16" }
+
+vault:
+  secret:
+    - {kv: "{{stand_type}}", appname: strongswan, server: "gw-01",  key_name: preshared}
+
+zabbix:
+  apply_tag:
+    - linux
+    - strongswan
+
+iptables:
+  rules:
+#### system rules
+    - { name: "admin_net", protocol: "tcp", port: "22", source: "{{admin_net}}"}
+## mon access
+    - { name: "node_exporter", protocol: "tcp", port: "9100", source: "{{mon_net}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{mon_net}}"}
+### apps rules
+    - { name: "tunnel_port", protocol: "udp", port: "500",source: "1.2.3.4" }
+    - { name: "tunnel_port", protocol: "udp", port: "4500", source: "5.6.7.8" }
