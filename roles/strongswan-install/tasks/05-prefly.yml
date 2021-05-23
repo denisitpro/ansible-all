@@ -1,0 +1,14 @@
+---
+- name: copy sysctl config for nat
+  copy:
+    src: "60-strongswan.conf"
+    dest: "/etc/sysctl.d/60-strongswan.conf"
+    owner: root
+    group: root
+#  notify: restart wg-quick@wg0
+  tags: [sysctl]
+
+- name: apply tune config
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/60-strongswan.conf
+#  notify: restart wg-quick@wg0
+  tags: [sysctl]

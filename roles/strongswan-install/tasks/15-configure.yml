@@ -1,0 +1,30 @@
+---
+- name: copy ipsec.secrets
+  template:
+    src: "ipsec.secrets.j2"
+    dest: "/etc/ipsec.secrets"
+    mode: 0600
+  notify: restart ipsec
+  tags:
+    - config
+    - reconfigure
+
+- name: copy ipsec.conf
+  template:
+    src: "ipsec.conf.j2"
+    dest: "/etc/ipsec.conf"
+    mode: 0644
+  notify: restart ipsec
+  tags:
+    - config
+    - reconfigure
+
+- name: copy ufw default
+  copy:
+    src: "ufw.default"
+    dest: "/etc/default/ufw"
+    mode: 0644
+  notify: restart ipsec
+  tags:
+    - config
+    - reconfigure
