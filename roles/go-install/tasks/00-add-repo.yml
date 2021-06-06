@@ -1,0 +1,18 @@
+---
+- name: Import  repository gpg key
+  rpm_key:
+    key: https://mirror.go-repo.io/centos/RPM-GPG-KEY-GO-REPO
+    state: present
+
+- name: Add  repository
+  get_url:
+    url: https://mirror.go-repo.io/centos/go-repo.repo
+    dest: /etc/yum.repos.d/go-repo.repo
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+
+
+- name: enable go-repo repo
+  shell: yum-config-manager --enable go-repo
