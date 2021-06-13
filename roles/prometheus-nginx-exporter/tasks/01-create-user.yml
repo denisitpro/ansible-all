@@ -1,0 +1,15 @@
+---
+- name: Create private group
+  group:
+    name: "{{prom_user}}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{prom_user}}"
+    group: "{{prom_user}}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "prometheus exporter application user"
+    state: present

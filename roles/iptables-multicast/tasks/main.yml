@@ -1,0 +1,10 @@
+---
+- include: 10-multicast-centos7.yml
+  when: "(ansible_distribution_major_version == '7')"
+  tags:
+    - iptables_multicast
+
+- include: 20-multicast-general.yml
+  when: "(ansible_distribution_major_version != '7')"
+  tags:
+    - iptables_multicast

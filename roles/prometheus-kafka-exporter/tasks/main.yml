@@ -1,0 +1,14 @@
+---
+- include: 00-download.yml
+  tags:
+    - kafka_exporter
+- include: 01-create-user.yml
+  tags:
+    - kafka_exporter
+- include: 03-configure.yml
+  tags:
+    - kafka_exporter
+- include: 04-consul-reg.yml
+  tags:
+    - kafka_exporter
+    - consul-reg

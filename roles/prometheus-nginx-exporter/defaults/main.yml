@@ -1,0 +1,14 @@
+---
+prom_user: prometheus
+
+nginx_exporter_version: 0.8.0
+nginx_exporter_dwnl_url: "https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v{{nginx_exporter_version}}/nginx-prometheus-exporter-{{nginx_exporter_version}}-linux-amd64.tar.gz"
+nginx_exporter_tmp_path: /tmp
+
+nginx_targer_srv: 127.0.0.1
+nginx_targer_port: 9092
+
+vault_stand: "stg"
+vault_application: "consul"
+vault_server: "consul-01"
+vault_item: "nginx_exporter_token"

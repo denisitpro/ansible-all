@@ -1,0 +1,12 @@
+---
+- name: Download binary file
+  get_url:
+    url: "{{kafka_exporter_dwnl_url}}"
+    dest: "{{kafka_exporter_tmp_path}}"
+
+- name: Unpack kafka exporter binary
+  become: false
+  unarchive:
+    src: "{{kafka_exporter_tmp_path}}/kafka_exporter-{{kafka_exporter_version}}.linux-amd64.tar.gz"
+    dest: "/tmp"
+    remote_src: yes

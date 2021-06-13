@@ -1,0 +1,17 @@
+---
+- include: 00-download.yml
+  tags:
+    - nginx_exporter
+- include: 01-create-user.yml
+  tags:
+    - nginx_exporter
+- include: 03-configure.yml
+  tags:
+    - nginx_exporter
+- include: 04-consul-reg.yml
+  tags:
+    - nginx_exporter
+    - consul-reg
+- include: 05-clean.yml
+  tags:
+    - nginx_exporter

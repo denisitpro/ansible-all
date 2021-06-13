@@ -1,0 +1,12 @@
+---
+- name: ufw management rules for gre tunnel multicast hetz
+  ufw:
+    rule: "{{ item.rule| default('allow') }}"
+    proto: "{{item.protocol}}"
+    src: "{{ item.source | default('0.0.0.0/0') }}"
+    comment: "{{item.name}}"
+  with_items:
+    - "{{ iptables.gre }}"
+  when:
+    - hetz_multicast is defined
+
