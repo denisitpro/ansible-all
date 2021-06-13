@@ -1,0 +1,30 @@
+---
+- name: ufw management rules 224.0.0.0/4
+  ufw:
+    rule: "allow"
+    proto: "udp"
+    src: "0.0.0.0/0"
+    dest: "224.0.0.0/4"
+    comment: "multicast 224.0.0.0/4"
+
+- name: ufw management rules 224.0.0.0/4
+  ufw:
+    rule: "allow"
+    proto: "udp"
+    src: "224.0.0.0/4"
+    dest: "0.0.0.0/0"
+    comment: "multicast 224.0.0.0/4"
+
+
+- name: copy before.rules
+  copy:
+    src: before.rules
+    dest: /etc/ufw/before.rules
+    owner: root
+    group: root
+    mode: 0644
+
+- name: restart ufw
+  systemd:
+    name: ufw
+    state: restarted

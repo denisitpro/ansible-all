@@ -1,0 +1,8 @@
+---
+- name: clean files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items  :
+    - "{{nginx_exporter_tmp_path}}/nginx-prometheus-exporter-{{nginx_exporter_version}}-linux-amd64.tar.gz"
+    - "{{nginx_exporter_tmp_path}}/nginx-prometheus-exporter"

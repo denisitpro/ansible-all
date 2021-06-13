@@ -1,0 +1,14 @@
+---
+prom_user: prometheus
+
+kafka_exporter_version: 1.2.0
+kafka_exporter_dwnl_url: "https://github.com/danielqsj/kafka_exporter/releases/download/v{{kafka_exporter_version}}/kafka_exporter-{{kafka_exporter_version}}.linux-amd64.tar.gz"
+kafka_exporter_tmp_path: /tmp
+
+kafka_targer_srv: 127.0.0.1
+kafka_targer_port: 9092
+
+vault_stand: "stg"
+vault_application: "consul"
+vault_server: "consul-01"
+vault_item: "kafka_exporter_token"

@@ -1,0 +1,44 @@
+---
+- name: Collect only facts returned by facter
+  setup:
+    gather_subset:
+      - 'all'
+
+- debug:
+    msg: System {{ ansible_fqdn }}
+
+
+#---------------------------------
+- name: get vault data
+  uri:
+    url: "{{vault_url}}/v1/{{vault_stand}}/data/{{vault_application}}/{{vault_server}}/{{vault_item}}"
+    body_format: json
+    headers:
+      Accept: 'application/json'
+      X-Vault-Token: "{{vault_normalized_access_token}}"
+    method: GET
+  register: key_value
+  no_log: True
+
+- name: check value is not null
+  fail: msg="secret {{vault_item}} null, check our permission and secret"
+  when: key_value.json.data.data.value | length == 0
+  no_log: True
+
+#- name: print
+#  debug:
+#    msg: System {{ key_value.json.data.data.value}}
+
+#---------------------------------
+
+- name: put data to consul
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ansible_default_ipv4.address}}", "Service": {"Service": "nginx_exporter", "Port": 9113, "Tags": ["nginx_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+      X-Consul-Token: '{{ key_value.json.data.data.value }}'
+    method: PUT
+  delegate_to: 127.0.0.1

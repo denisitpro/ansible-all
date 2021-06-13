@@ -1,0 +1,21 @@
+[Unit]
+Description=Prometheus
+Documentation=https://github.com/nginxinc/nginx-prometheus-exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{prom_user}}
+Group={{prom_user}}
+ExecStart=/usr/local/bin/nginx_exporter -nginx.scrape-uri http://127.0.0.1:8080/stub_status
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -SIGTERM $MAINPID
+
+SyslogIdentifier=nginx_exporter
+
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target

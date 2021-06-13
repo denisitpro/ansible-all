@@ -1,0 +1,12 @@
+---
+- name: Download binary file
+  get_url:
+    url: "{{nginx_exporter_dwnl_url}}"
+    dest: "{{nginx_exporter_tmp_path}}"
+
+- name: Unpack nginx exporter binary
+  become: false
+  unarchive:
+    src: "{{nginx_exporter_tmp_path}}/nginx-prometheus-exporter-{{nginx_exporter_version}}-linux-amd64.tar.gz"
+    dest: "/tmp"
+    remote_src: yes

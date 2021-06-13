@@ -1,0 +1,27 @@
+---
+- name: add rule INPUT to /etc/iptables.sh
+  lineinfile:
+      path: /etc/iptables.sh
+      regexp: '^\$IPT\s+-A\s+INPUT\s+-i\s+\$WAN0\s+-m\s+pkttype\s+--pkt-type\s+multicast\s+-j\s+ACCEPT$'
+      line: '$IPT -A INPUT -i $WAN0 -m pkttype --pkt-type multicast -j ACCEPT'
+      state: present
+      insertbefore: 'custom rules insert below'
+
+- name: add rule FORWARD to /etc/iptables.sh
+  lineinfile:
+      path: /etc/iptables.sh
+      regexp: '^\$IPT\s+-A\s+FORWARD\s+-i\s+\$WAN0\s+-m\s+pkttype\s+--pkt-type\s+multicast\s+-j\s+ACCEPT$'
+      line: '$IPT -A FORWARD -i $WAN0 -m pkttype --pkt-type multicast -j ACCEPT'
+      state: present
+      insertbefore: 'custom rules insert below'
+
+- name: add rule OUTPUT to /etc/iptables.sh
+  lineinfile:
+      path: /etc/iptables.sh
+      regexp: '^\$IPT\s+-A\s+OUTPUT\s+-m\s+pkttype\s+--pkt-type\s+multicast\s+-j\s+ACCEPT$'
+      line: '$IPT -A OUTPUT -m pkttype --pkt-type multicast -j ACCEPT'
+      state: present
+      insertbefore: 'custom rules insert below'
+
+- name: start iptables rules
+  shell: /etc/iptables.sh
