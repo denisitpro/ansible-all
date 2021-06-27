@@ -1,0 +1,3 @@
+---
+- include: shared/handlers/node_exporter.yml
+- include: shared/handlers/consul.yml

@@ -1,0 +1,26 @@
+---
+- name: Copy clickhouse_exporter
+  copy:
+    src: clickhouse_exporter
+    dest: /usr/local/bin/clickhouse_exporter
+    owner: "{{prom_user}}"
+    group: "{{prom_user}}"
+    mode: '0555'
+
+- name: copy unit apps
+  template:
+    src: "clickhouse_exporter.service.j2"
+    dest: "/etc/systemd/system/clickhouse_exporter.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart clickhouse_exporter
+  tags:
+    - env
+
+- name: enable clickhouse_exporter  unit
+  systemd:
+    name: "clickhouse_exporter"
+    enabled: yes
+    daemon_reload: yes
+  notify: restart clickhouse_exporter

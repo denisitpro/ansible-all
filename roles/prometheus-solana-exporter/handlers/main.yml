@@ -1,0 +1,1 @@
+- include: shared/handlers/solana_exporter.yml

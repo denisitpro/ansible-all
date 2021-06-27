@@ -1,0 +1,2 @@
+---
+- include: 04-consul-reg.yml

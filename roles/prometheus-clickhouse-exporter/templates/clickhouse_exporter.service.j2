@@ -1,0 +1,22 @@
+[Unit]
+Description=Prometheus
+Documentation=https://github.com/percona-lab/clickhouse_exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{prom_user}}
+Group={{prom_user}}
+Environment=CLICKHOUSE_USER=default
+Environment=CLICKHOUSE_PASSWORD={{ vault_dict_users_secret.default }}
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/clickhouse_exporter
+
+SyslogIdentifier=prometheus
+
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target

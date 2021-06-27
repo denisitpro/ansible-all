@@ -1,0 +1,93 @@
+---
+- name: create alertmanager directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: 0755
+  with_items:
+    - "{{ alertmanager_config_dir }}"
+    - "{{ alertmanager_config_dir }}/templates"
+    - "{{ alertmanager_db_dir }}"
+
+- name: Install unzip
+  package:
+    name: unzip
+    state: present
+
+- block:
+    - name: download alertmanager binary to local folder
+      become: false
+      get_url:
+        url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "/tmp/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}.tar.gz"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+      # run_once: true # <-- this can't be set due to multi-arch support
+      check_mode: false
+
+    - name: unpack alertmanager binaries
+      become: false
+      unarchive:
+        src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "/tmp"
+        creates: "/tmp/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}/alertmanager"
+        remote_src: yes
+      check_mode: false
+
+    - name: propagate official alertmanager and amtool binaries
+      copy:
+        src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        mode: 0755
+        owner: root
+        group: root
+        remote_src: yes
+      with_items:
+        - alertmanager
+        - amtool
+      notify:
+        - restart alertmanager
+  when: alertmanager_binary_local_dir | length == 0
+
+
+- name: propagate locally distributed alertmanager and amtool binaries
+  copy:
+    src: "{{ alertmanager_binary_local_dir }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+    owner: root
+    group: root
+    remote_src: yes
+  with_items:
+    - alertmanager
+    - amtool
+  when: alertmanager_binary_local_dir | length > 0
+  notify:
+    - restart alertmanager
+
+- name: Install SELinux dependencies on RedHat OS family
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ alertmanager_selinux_packages }}"
+  register: _install_packages
+  until: _install_packages is success
+  retries: 5
+  delay: 2
+  when:
+    - ansible_version.full is version_compare('2.4', '>=')
+    - ansible_selinux.status == "enabled"
+
+- name: Allow alertmanager to bind to port in SELinux on RedHat OS family
+  seport:
+    ports: "{{ alertmanager_web_listen_address.split(':')[1] }}"
+    proto: tcp
+    setype: http_port_t
+    state: present
+  when:
+    - ansible_version.full is version_compare('2.4', '>=')
+    - ansible_selinux.status == "enabled"

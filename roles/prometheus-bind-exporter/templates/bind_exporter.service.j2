@@ -1,0 +1,31 @@
+[Unit]
+Description=Prometheus
+Documentation=https://github.com/digitalocean/bind_exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{prom_user}}
+Group={{prom_user}}
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/bind_exporter \
+  --bind.pid-file=/var/run/named/named.pid \
+  --bind.timeout=20s \
+{% if ansible_distribution == 'CentOS' %}
+  --web.listen-address={{  ansible_default_ipv4.address }}:9153 \
+{% endif %}
+{% if ansible_distribution == 'Ubuntu' %}
+  --web.listen-address={{ ansible_facts[second_interface_name].ipv4.address }}:9153 \
+{% endif %}
+  --web.telemetry-path=/metrics \
+  --bind.stats-url=http://localhost:8053/ \
+  --bind.stats-groups=server,view,tasks
+
+SyslogIdentifier=prometheus
+
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target
