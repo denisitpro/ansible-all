@@ -1,0 +1,24 @@
+---
+- name: Copy bind_exporter
+  copy:
+    src: bind_exporter
+    dest: /usr/local/bin/bind_exporter
+    owner: "{{prom_user}}"
+    group: "{{prom_user}}"
+    mode: '0555'
+
+- name: copy unit apps
+  template:
+    src: "bind_exporter.service.j2"
+    dest: "/etc/systemd/system/bind_exporter.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart bind_exporter
+
+- name: enable bind_exporter  unit
+  systemd:
+    name: "bind_exporter"
+    enabled: yes
+    daemon_reload: yes
+  notify: restart bind_exporter

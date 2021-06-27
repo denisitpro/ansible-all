@@ -1,0 +1,9 @@
+---
+- include: 00-create-user.yml
+  tags: pushgateway
+- include: 01-preflight.yml
+  tags: pushgateway
+- include: 02-download.yml
+  tags: pushgateway
+- include: 03-config.yml
+  tags: pushgateway

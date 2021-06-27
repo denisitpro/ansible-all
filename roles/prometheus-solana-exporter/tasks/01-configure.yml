@@ -1,0 +1,24 @@
+---
+- name: Copy solana_exporter
+  copy:
+    src: solana_exporter
+    dest: /usr/local/bin/solana_exporter
+    owner: "{{prom_user}}"
+    group: "{{prom_user}}"
+    mode: '0555'
+
+- name: copy unit apps
+  template:
+    src: "solana_exporter.service.j2"
+    dest: "/etc/systemd/system/solana_exporter.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart solana_exporter
+
+- name: enable solana_exporter  unit
+  systemd:
+    name: "solana_exporter"
+    enabled: yes
+    daemon_reload: yes
+  notify: restart solana_exporter

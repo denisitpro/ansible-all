@@ -1,0 +1,22 @@
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{prom_user}}
+Group={{prom_user}}
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/solana_exporter \
+ -rpcURI=http://localhost:8899 \
+ -addr="{{global_bind_addr}}:{{solana_exporter_port}}"
+
+
+SyslogIdentifier=prometheus
+
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target

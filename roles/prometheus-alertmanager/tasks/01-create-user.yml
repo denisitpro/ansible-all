@@ -1,0 +1,15 @@
+---
+- name: Create private group
+  group:
+    name: "{{alertmanager_group}}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{alertmanager_user}}"
+    group: "{{alertmanager_group}}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "pushgateway user"
+    state: present

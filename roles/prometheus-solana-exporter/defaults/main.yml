@@ -1,0 +1,9 @@
+---
+prom_user: prometheus
+
+solana_exporter_port: "8080"
+
+vault_stand: "dev"
+vault_application: "consul"
+vault_server: "consul-01"
+vault_item: "solana_exporter_token"

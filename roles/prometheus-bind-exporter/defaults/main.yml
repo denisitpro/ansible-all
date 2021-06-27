@@ -1,0 +1,8 @@
+---
+prom_user: prometheus
+
+
+vault_stand: "dev"
+vault_application: "consul"
+vault_server: "consul-01"
+vault_item: "bind_exporter_token"

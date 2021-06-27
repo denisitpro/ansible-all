@@ -8,7 +8,7 @@ kafka_exporter_tmp_path: /tmp
 kafka_targer_srv: 127.0.0.1
 kafka_targer_port: 9092
 
-vault_stand: "stg"
+vault_stand: "dev"
 vault_application: "consul"
 vault_server: "consul-01"
 vault_item: "kafka_exporter_token"

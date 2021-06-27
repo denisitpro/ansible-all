@@ -1,0 +1,11 @@
+---
+- include: 00-create-user.yml
+  tags:
+    - solana_exporter
+- include: 01-configure.yml
+  tags:
+   - solana_exporter
+- include: 03-consul-reg.yml
+  tags:
+    - consul_reg
+    - solana_exporter

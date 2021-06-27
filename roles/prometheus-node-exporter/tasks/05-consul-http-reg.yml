@@ -1,0 +1,121 @@
+---
+- name: Collect only facts returned by facter
+  setup:
+    gather_subset:
+      - 'all'
+
+- debug:
+    msg: System {{ ansible_fqdn }}
+
+#---------------------------------
+- name: get vault data
+  uri:
+    url: "{{vault_url}}/v1/{{vault_stand}}/data/{{vault_application}}/{{vault_server}}/{{vault_item}}"
+    body_format: json
+    headers:
+      Accept: 'application/json'
+      X-Vault-Token: "{{vault_normalized_access_token}}"
+    method: GET
+  register: key_value
+  delegate_to: localhost
+  become: no
+  no_log: True
+
+- name: check value is not null
+  fail: msg="secret {{vault_item}} null, check our permission and secret"
+  when: key_value.json.data.data.value | length == 0
+  no_log: True
+
+
+#---------------------------------
+
+- name: put data to consul - London
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'fsn' ) else ansible_default_ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+      X-Consul-Token: '{{ key_value.json.data.data.value }}'
+    method: PUT
+  delegate_to: 127.0.0.1
+  when:
+    - "dc_location != 'fsn'"
+    - consul_reg_dc_name is not defined
+
+- name: put data to consul - London
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_reg_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'fsn' ) else ansible_default_ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+      X-Consul-Token: '{{ key_value.json.data.data.value }}'
+    method: PUT
+  delegate_to: 127.0.0.1
+  when:
+    - "dc_location != 'fsn'"
+    - consul_reg_dc_name is defined
+
+- name: put data to consul centos 7 - hetzner
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_eth1.ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+      X-Consul-Token: '{{ key_value.json.data.data.value }}'
+    method: PUT
+  delegate_to: 127.0.0.1
+  when:
+    - "dc_location == 'fsn' and ansible_distribution_major_version == '7'"
+    - consul_reg_dc_name is not defined
+
+- name: put data to consul centos 8 or Ubuntu - hetzner
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{  ansible_facts[second_interface_name].ipv4.address  }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+      X-Consul-Token: '{{ key_value.json.data.data.value }}'
+    method: PUT
+  delegate_to: 127.0.0.1
+  when:
+    - "(dc_location == 'fsn' and ansible_distribution_major_version == '8') or (dc_location == 'fsn' and ansible_distribution == 'Ubuntu') "
+    - consul_reg_dc_name is not defined
+
+
+- name: put data to consul centos 7 - hetzner
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_reg_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_eth1.ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+      X-Consul-Token: '{{ key_value.json.data.data.value }}'
+    method: PUT
+  delegate_to: 127.0.0.1
+  when:
+    - "dc_location == 'fsn' and ansible_distribution_major_version == '7'"
+    - consul_reg_dc_name is defined
+
+- name: put data to consul centos 8 or Ubuntu - hetzner
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_reg_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{  ansible_facts[second_interface_name].ipv4.address  }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+      X-Consul-Token: '{{ key_value.json.data.data.value }}'
+    method: PUT
+  delegate_to: 127.0.0.1
+  when:
+    - "(dc_location == 'fsn' and ansible_distribution_major_version == '8') or (dc_location == 'fsn' and ansible_distribution == 'Ubuntu') "
+    - consul_reg_dc_name is defined
