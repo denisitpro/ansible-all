@@ -1,0 +1,9 @@
+---
+appname: loki
+loki_ver: 1.5.0
+app_run_user: loki
+loki_config_path: /etc/loki
+loki_local_data_path: /opt/loki
+download_dir: /tmp
+download_url: "https://github.com/grafana/loki/releases/download/v{{loki_ver}}/loki-linux-amd64.zip"
+bin_path: /usr/local/bin

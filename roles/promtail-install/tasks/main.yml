@@ -1,0 +1,8 @@
+---
+- include: 00-prerequired.yml
+  tags: [promtail]
+- include: 01-install.yml
+  tags: [promtail]
+- include: 03-clean.yml
+  tags: [promtail]
+

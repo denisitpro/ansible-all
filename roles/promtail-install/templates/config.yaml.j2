@@ -1,0 +1,23 @@
+server:
+  http_listen_address: 127.0.0.1
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+
+  filename: /tmp/positions.yaml
+
+client:
+
+  url: http://{{loki_srv}}:{{loki_port}}/api/prom/push
+
+scrape_configs:
+
+  - job_name: nginx
+#    entry_parser: raw
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: nginx
+        __path__: /var/log/nginx/*.log

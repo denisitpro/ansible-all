@@ -1,0 +1,10 @@
+
+- name: add task to cron - reboot
+  cron:
+    name: "{{item.name}}"
+    special_time: reboot
+    job: "{{item.job}}"
+  with_items:
+    - "{{cron.jobs}}"
+  tags:
+    - cron

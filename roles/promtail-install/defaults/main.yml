@@ -1,0 +1,9 @@
+---
+appname: promtail
+promtail_ver: 1.5.0
+app_run_user: "{{appname}}"
+promtail_config_path: "/etc/{{appname}}"
+promtail_local_data_path: "/opt/{{appname}}"
+download_dir: /tmp
+download_url: "https://github.com/grafana/loki/releases/download/v{{promtail_ver}}/promtail-linux-amd64.zip"
+bin_path: /usr/local/bin
