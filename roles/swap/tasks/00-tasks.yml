@@ -1,0 +1,28 @@
+---
+- name: we take swap space used (megabytes)
+  shell : free -m | grep Swap | awk '{print $2}'
+  register: swap_used
+
+- name: Disable swap
+  shell: swapoff -a
+  when: swap_disable == true and (swap_used.stdout_lines[0] | int) > 0
+
+- name: Disable swap permanently
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
+    backup: no
+  when: swap_disable == true
+
+- name: Enable swap permanently
+  replace:
+    path: /etc/fstab
+    regexp: '^(^[#])([^\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '\2\3swap\4'
+    backup: no
+  when: swap_disable == false
+
+- name: Enable swap
+  shell: swapon -a
+  when: swap_disable == false and (swap_used.stdout_lines[0] | int) == 0

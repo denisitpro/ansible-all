@@ -1,0 +1,5 @@
+---
+- include: 00-tasks.yml
+  tags:
+    - swap
+

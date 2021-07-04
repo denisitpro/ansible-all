@@ -1,0 +1,36 @@
+---
+- name: Copy file promtail
+  copy:
+    src: "{{ download_dir }}/promtail-linux-amd64"
+    dest: "{{bin_path}}/promtail"
+    owner: root
+    group: root
+    mode: '0755'
+    remote_src: yes
+
+- name: copy config file
+  template:
+    src:  config.yaml.j2
+    dest: "{{promtail_config_path}}/config.yaml"
+    mode: 0640
+    owner: "{{app_run_user}}"
+    group: "{{app_run_user}}"
+  notify: restart promtail
+
+
+- name: copy systemd unit file
+  template:
+    src:  promtail.service.j2
+    dest: /etc/systemd/system/promtail.service
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart promtail
+  tags:
+    - unit
+
+- name: ensure promtail service is enabled
+  systemd:
+    daemon_reload: true
+    name: promtail
+    enabled: true

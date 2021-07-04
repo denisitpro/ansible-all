@@ -1,0 +1,30 @@
+---
+- include: shared/tasks/local-system-user.yml
+
+
+- name: create  directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{app_run_user}}"
+    group: "{{app_run_user}}"
+    mode: 0755
+    recurse: yes
+  with_items  :
+    - "{{loki_config_path}}"
+    - "{{loki_local_data_path}}/index"
+    - "{{loki_local_data_path}}/chunks"
+  tags:
+    - start
+
+- name: download loki
+  get_url:
+    url: "{{ download_url }}"
+    dest: "{{ download_dir }}"
+    mode: 0600
+
+- name: Unpack
+  unarchive:
+    src: "{{ download_dir }}/loki-linux-amd64.zip"
+    dest: "{{download_dir}}"
+    remote_src: yes
