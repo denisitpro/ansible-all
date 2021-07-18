@@ -1,0 +1,13 @@
+---
+- name: remove old access for ansible-management
+  file:
+    path: "/etc/sudoers.d/ansible-management-access"
+    state: absent
+
+- name: create files to sudoers.d
+  file:
+    path: "/etc/sudoers.d/ansible-management-access"
+    owner: root
+    group: root
+    mode: 0440
+    state: touch

@@ -1,0 +1,12 @@
+---
+- name: generate sudoers files for Ubuntu
+  lineinfile:
+    path: "/etc/sudoers.d/ansible-management-access"
+    state: present
+    line: '{{item.user}} ALL=NOPASSWD: {{item.command}}'
+    validate: visudo -cf %s
+  with_items:
+    - "{{sudoers_ubuntu}}"
+  when:
+    - sudoers_ubuntu is defined
+    - ansible_distribution == 'Ubuntu'

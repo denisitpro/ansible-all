@@ -1,0 +1,10 @@
+---
+- include: 00-sudoers-add.yml
+  tags:
+    - sudoers
+- include: 01-sudoers-common.yml
+  tags:
+    - sudoers
+- include: 02-sudoers-ubuntu.yml
+  tags:
+    - sudoers
