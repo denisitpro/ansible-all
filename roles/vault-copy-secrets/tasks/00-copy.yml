@@ -1,0 +1,12 @@
+---
+- name: login
+  become: false
+  command: "vault login -method=ldap username={{vault_login}} password={{vault_password}}"
+  delegate_to: localhost
+
+- name: copy secrets
+  become: false
+  command: "vault kv put {{item.kv}}/{{item.appname}}/{{item.server}}/{{item.key_name}}/ value={{ vault_dict_users_secret[item.key_name] }}"
+  with_items: "{{vault.secret}}"
+  delegate_to: localhost
+#  when: item.kv == 'example'
