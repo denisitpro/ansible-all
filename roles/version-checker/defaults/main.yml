@@ -1,0 +1,7 @@
+---
+version_file: "version.txt"
+version_table_name: version
+use_dynamic_docker_version_checker: false
+
+apps:
+    - {name: "{{appname}}", path: "{{app_path}}", ver_file: "{{version_file}}" }

@@ -1,0 +1,9 @@
+---
+- name: copy freeipa_notifier.sh
+  template:
+    src: "freeipa_notifier.sh.j2"
+    dest: "{{ notifier_script_path }}/freeipa_notifier.sh"
+    owner: root
+    group: root
+    mode: 0700
+

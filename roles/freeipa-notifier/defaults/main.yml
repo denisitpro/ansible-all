@@ -1,0 +1,11 @@
+---
+notifier_script_path: /opt/scripts/freeipa_notifier
+start_notify_before_days: 7
+freeipa_host: ipa-02.example.com
+
+smtp_link: 'smtp.eu.mailgun.org:587'
+mail_sender: 'postmaster@mg.example.com'
+
+cron:
+  jobs:
+    - {name: freeipa_notifier, minute: "0", hour: "10", job: "{{notifier_script_path}}/freeipa_notifier.sh"}

@@ -1,0 +1,83 @@
+#!/bin/bash
+
+shift_days={{start_notify_before_days}}
+
+#function to send mail
+send_mail () {
+  mail=$1
+  account=$2
+  date_exp=$3
+  #check email is valid format
+  if [[ "$mail" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
+  then
+    echo "$mail"
+    curl --url '{{smtp_link}}' \
+    --mail-from '{{mail_sender}}' \
+    --mail-rcpt "$mail" \
+    --user '{{mail_sender}}:{{vault_dict_users_secret["postmaster_token"]}}' \
+    -T <(echo -e "From: {{mail_sender}}\nTo: ${mail}\nSubject: IPA account ${account} \n\n Need to update LDAP password for account ${account}.  Password expire at ${date_exp}. \
+    \n Go to link: https://ipa.example.com/ipa/ui  " )
+
+   sleep 1
+  fi
+}
+
+# get data from ipa
+ret=$(timeout 3 ldapsearch -h {{freeipa_host}} -x -b "cn=users,cn=accounts,dc=example,dc=com" \
+-D "uid=s-ipa-cheker,cn=sysaccounts,cn=etc,dc=example,dc=com" \
+-w {{vault_dict_users_secret["account_pwd"]}} "(&(!(nsAccountLock=TRUE)))" \
+| grep -E '(krbPasswordExpiration|dn: uid|mail)')
+
+#echo $ret
+
+current_date=$(date +%Y%m%d)
+current_date_plus_shift=$(date -d "$current_date + $shift_days days" +%Y%m%d)
+
+echo "$current_date" | tee {{notifier_script_path}}/list.txt
+
+let "i=0"
+for part in ${ret}
+do
+  if [ $part = "dn:" ]
+  then
+    let "i=0"
+    next_uid=true
+  elif [ $part = "krbPasswordExpiration:" ]
+  then
+    next_date=true
+  elif [ $part = "mail:" ]
+  then
+    next_mail=true
+  elif [ $next_uid ]
+  then
+    unset next_uid
+    uid=$(echo $part | awk -F, '/uid=/ {print $1}' | awk -F= '/uid=/ {print $2}')
+    let "i=i+1"
+    echo "uid=$uid"
+  elif [ $next_date ]
+  then
+    unset next_date
+    date_uid=${part:0:8}
+    let "i=i+1"
+    echo "date=${date_uid}"
+  elif [ $next_mail ]
+  then
+    unset next_mail
+    mail=$part
+    let "i=i+1"
+    echo "mail=$mail"
+  fi
+
+# --------- send mail ----------
+  if [ $i -gt 2 ]
+  then
+    if [ $current_date_plus_shift -gt $date_uid ]
+    then
+      echo "for account $uid date $current_date_plus_shift > $date_uid -> need send email to $mail"
+      send_mail $mail $uid $date_uid
+      echo "$uid $date_uid $mail" | tee -a {{notifier_script_path}}/list.txt
+    #else
+      #echo "$current_date_plus_shift<= $date_uid"
+    fi
+  fi
+done

@@ -1,0 +1,25 @@
+---
+- name: add requiremensts - ubuntu
+  apt:
+    name:
+      - curl
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: add requiremensts - CentOS
+  yum:
+    name:
+      - curl
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+
+- name: create scrip dir
+  file:
+    path: "{{ notifier_script_path }}"
+    state: directory
+    owner: root
+    group: root
+

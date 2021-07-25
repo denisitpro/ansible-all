@@ -1,0 +1,17 @@
+#!/bin/bash
+# Dynamic version checker for DOCKER
+# Version 0.0.1
+
+# global variables
+FQDN=$(hostname)
+STAND={{stand_type}}
+
+for app in $(/usr/bin/docker ps | grep -E exampledevops | awk -F ' ' '{print $2}' | awk -F '/' '{print $NF}'); do
+    APPNAME=$(echo $app | cut -d ':' -f 1)
+    VER=$(echo $app | cut -d ':' -f 2)
+
+    # echo "APPNAME=$APPNAME, STAND=$STAND, FQDN=$FQDN, VER=$VER"
+    # send version to clickhouse
+    echo "('$APPNAME','$STAND','$FQDN','$VER')" | curl --data-binary "@-" "http://{{ch_version_user}}:{{ vault_dict_users_secret[ch_version_user] }}@{{ch_version_srv}}:{{ch_version_http_port}}/?query=INSERT+INTO+{{ch_version_db_name}}.{{version_table_name}}+(appname,+stand,+servername,+ver)+FORMAT+Values"
+
+done

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Version 0.6.0
+
+# variable
+VER=$(cat {{item.path}}/{{item.ver_file}})
+FQDN=$(hostname)
+APPNAME={{item.name}}
+STAND={{stand_type}}
+
+# send version to clickhouse
+echo "('$APPNAME','$STAND','$FQDN','$VER')" | curl --data-binary "@-" "http://{{ch_version_user}}:{{ vault_dict_users_secret[ch_version_user] }}@{{ch_version_srv}}:{{ch_version_http_port}}/?query=INSERT+INTO+{{ch_version_db_name}}.{{version_table_name}}+(appname,+stand,+servername,+ver)+FORMAT+Values"
