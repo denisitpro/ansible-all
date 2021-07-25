@@ -1,0 +1,3 @@
+---
+docker_old_log_dir:  /mnt/example/dir
+docker_container_path: /var/lib/docker/containers

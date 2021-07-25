@@ -1,0 +1,11 @@
+---
+- name: create path
+  file:
+    path: /etc/systemd/journald.conf.d/
+    state: directory
+
+- name: copy journald-persistent.conf
+  template:
+      src: journald-persistent.conf.j2
+      dest: /etc/systemd/journald.conf.d/journald-persistent.conf
+  notify: restart systemd-journald

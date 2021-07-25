@@ -1,0 +1,17 @@
+---
+- include: shared/tasks/create-script-path.yml
+  tags:
+    - version
+
+- include: 00-ver.yml
+  tags:
+    - version
+  when:
+    - use_dynamic_docker_version_checker != true
+
+
+- include: 01-ver-dynamic-docker.yml
+  tags:
+    - version
+  when:
+    - use_dynamic_docker_version_checker == true

@@ -1,0 +1,9 @@
+{{docker_container_path}}/*/*.log {
+    daily
+    olddir {{docker_old_log_dir}}
+    rotate 3
+    compress
+    dateext
+    copytruncate
+    missingok
+}

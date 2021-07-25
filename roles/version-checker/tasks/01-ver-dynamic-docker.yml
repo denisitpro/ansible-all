@@ -1,0 +1,8 @@
+---
+- name: copy dymanic version checker script
+  template:
+    src:  dynamic-docker-version-checker.sh.j2
+    dest: "{{ scripts_path }}/dynamic-docker-version-checker.sh"
+    mode: 0700
+    owner: root
+    group: root

@@ -1,0 +1,17 @@
+---
+- name: create path
+  file:
+    path: "{{docker_old_log_dir}}"
+    state: directory
+    mode: '0755'
+  tags:
+    - logrotate
+
+- name: Copy logrotate config
+  template:
+    src: docker-log-rotation.conf.j2
+    dest: "/etc/logrotate.d/docker-log-rotation"
+    owner: root
+    group: root
+  tags:
+    - logrotate

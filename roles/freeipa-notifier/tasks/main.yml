@@ -1,0 +1,9 @@
+---
+- include: 00-required.yml
+  tags:
+    - install
+
+- include: 01-copy-scipts.yml
+  tags:
+    - install
+    - config
