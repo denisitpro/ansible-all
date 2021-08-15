@@ -1,0 +1,24 @@
+---
+- name: Check for existing binary
+  stat:
+    path: "{{ minio.binary_dir }}/minio"
+  register: minio_binary_stat_result
+
+- name: Download minio server - stat result {{ minio_binary_stat_result}}
+  get_url:
+    url: "{{ minio.download_url }}"
+    dest: "{{ minio.download_dir }}"
+    mode: 0755
+  when: minio.always_update_binary or not minio_binary_stat_result.stat.exists
+
+- name: Install minio binary
+  copy:
+    src: "{{ minio.download_dir }}/minio"
+    dest: "{{ minio.binary_dir }}/minio"
+    owner: "{{ minio.user }}"
+    group: "{{ minio.user }}"
+    mode: 0755
+    remote_src: true
+    force: "{{ minio.always_update_binary }}"
+  when: minio.always_update_binary or not minio_binary_stat_result.stat.exists
+  notify: restart minio

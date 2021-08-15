@@ -1,0 +1,10 @@
+---
+- name: copy sysctl minio-tune.conf
+  template:
+    src: 050-minio-tune.conf.j2
+    dest: "/etc/sysctl.d/050-minio-tune.conf"
+    owner: root
+    group: root
+
+- name: apply tune config
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/050-minio-tune.conf

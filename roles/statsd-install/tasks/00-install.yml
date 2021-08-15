@@ -1,0 +1,29 @@
+---
+- name: clone repo statsd
+  git:
+    repo: "https://github.com/statsd/statsd.git"
+    dest: "{{statsd_data_path}}"
+    update: yes
+
+- name: create statsd group
+  group:
+    name: "{{statsd_group}}"
+    state: present
+
+- name: create statsd user
+  user:
+    name: "{{statsd_user}}"
+    groups: "{{statsd_group}}"
+    comment: statsd service user
+    shell: /sbin/nologin
+    system: yes
+    state: present
+
+- name: create dir
+  file:
+    path: "{{statsd_conf_dir}}"
+    state: directory
+    owner: "{{statsd_user}}"
+    group: "{{statsd_group}}"
+  with_items:
+    - "{{statsd_conf_path}}"

@@ -1,0 +1,5 @@
+---
+- name: restart solana-health-check
+  systemd:
+    name: solana-health-check
+    state: restarted

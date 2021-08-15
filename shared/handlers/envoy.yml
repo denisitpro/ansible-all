@@ -1,0 +1,5 @@
+---
+- name: restart envoy
+  systemd:
+    name: envoy
+    state: restarted

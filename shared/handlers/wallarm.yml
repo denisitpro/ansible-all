@@ -1,0 +1,10 @@
+---
+- name: restart wallarm-collectd
+  systemd:
+    name: wallarm-collectd
+    state: restarted
+    
+- name: restart wallarm-tarantool
+  systemd:
+    name: wallarm-tarantool
+    state: restarted

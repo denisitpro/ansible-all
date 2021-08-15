@@ -1,0 +1,54 @@
+# Taken from https://github.com/minio/minio-service/blob/master/linux-systemd/minio.service and tweaked
+[Unit]
+Description={{ minio.unit_name }} - {{ minio.name }}
+Documentation=https://docs.minio.io
+Wants=network-online.target
+After=network-online.target
+AssertFileIsExecutable={{ minio.binary_dir }}/minio
+
+[Service]
+WorkingDirectory={{ minio.working_dir }}
+
+User={{ minio.user }}
+Group={{ minio.user }}
+
+PermissionsStartOnly=true
+
+EnvironmentFile=-/etc/default/{{minio.unit_name}}
+
+{% if minio_cluster is defined %}
+ExecStartPre=/bin/bash -c "[ -n \"${MINIO_HOST_VOLUME}\" ] || (echo \"Variable MINIO_HOST_VOLUME not set in /etc/default/{{minio.unit_name}}\" && exit 1)"
+
+ExecStart={{ minio.binary_dir }}/minio server --address {{ minio_cluster.bind_address }}:{{ minio_cluster.bind_port }} $MINIO_OPTS $MINIO_HOST_VOLUME
+{% else %}
+ExecStartPre=/bin/bash -c "[ -n \"${MINIO_VOLUMES}\" ] || (echo \"Variable MINIO_VOLUMES not set in /etc/default/{{minio.unit_name}}\" && exit 1)"
+
+ExecStart={{ minio.binary_dir }}/minio server --address {{ minio.bind_address }}:{{ minio.bind_port }} $MINIO_OPTS $MINIO_VOLUMES
+{% endif %}
+
+# Let systemd restart this service only if it has ended with the clean exit code or signal.
+Restart=on-success
+
+{% if minio.setup_logging %}
+StandardOutput=syslog
+StandardError=syslog
+{% else %}
+StandardOutput=journal
+StandardError=inherit
+{% endif %}
+
+# Specifies the maximum file descriptor number that can be opened by this process
+LimitNOFILE=65536
+
+# Disable timeout logic and wait until process is stopped
+TimeoutStopSec=infinity
+
+# SIGTERM signal is used to stop Minio
+KillSignal=SIGTERM
+
+SendSIGKILL=no
+
+SuccessExitStatus=0
+
+[Install]
+WantedBy=multi-user.target

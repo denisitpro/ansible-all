@@ -1,0 +1,47 @@
+---
+- name: Create minio binary dir if necesary
+  file:
+    path: "{{ minio.binary_dir }}"
+    state: directory
+
+- name: Create minio log dir if necessary
+  file:
+    path: "{{ minio.log_dir }}"
+    state: directory
+    owner: "{{ minio.user}}"
+    group: "{{ minio.user}}"
+
+- name: Create and set permissions on minio data directories
+  file:
+    path: "{{ minio.volumes }}"
+    state: directory
+    owner: "{{ minio.user }}"
+    group: "{{ minio.user }}"
+  when: minio_cluster is not defined
+
+- name: Create and set permissions on minio data directories (CLUSTER)
+  file:
+    path: "{{minio_cluster.volumes}}{{item}}"
+    state: directory
+    owner: "{{ minio.user }}"
+    group: "{{ minio.user }}"
+  loop: "{{ range(1, minio_cluster.disk_parts + 1, 1)|list }}"
+  when: minio_cluster is defined
+
+- name: create config directory
+  file:
+    path: "{{minio_conf_path}}"
+    state: directory
+    owner: "{{ minio.user }}"
+    group: "{{ minio.user }}"
+  tags:
+    - dir
+
+
+#- name: Create and set permissions on minio config directories
+#  file:
+#    path: "/home/{{ minio.user }}/.{{ minio.name}}"
+#    state: directory
+#    owner: "{{ minio.user }}"
+#    group: "{{ minio.user }}"
+

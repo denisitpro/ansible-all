@@ -1,0 +1,26 @@
+{
+  "samplers": [
+    {
+      "workers": 4,
+      "port": {{brubeck_port}},
+      "address": "0.0.0.0",
+      "type": "statsd"
+    }
+  ],
+  "backends": [
+    {
+      "legacy_namespace": false,
+      "namespacing": true,
+      "frequency": 10,
+      "port": {{graphite_carbon_port}},
+      "address": "{{ graphite_srv }}",
+      "type": "carbon"
+    }
+  ],
+  "http": ":{{brubeck_http_port}}",
+  "expire": 5,
+  "capacity": 15,
+  "dumpfile": "./brubeck.dump",
+  "server_name": "{{ansible_hostname}}",
+  "sharding": false
+}

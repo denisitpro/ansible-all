@@ -1,0 +1,12 @@
+---
+- name: Create cert and key
+  template:
+    src: "{{item}}.j2"
+    dest: "{{minio_conf_path}}/{{item}}"
+    owner: "{{minio.user}}"
+    group: "{{minio.user}}"
+  tags:
+    - env
+  with_items:
+    - "minio.crt"
+    - "minio.key"

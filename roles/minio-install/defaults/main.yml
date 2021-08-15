@@ -1,0 +1,25 @@
+minio:
+  name: example
+  unit_name: minio
+  name_separator: "-"
+  user: minio
+  download_url: https://dl.minio.io/server/minio/release/linux-amd64/minio
+  download_dir: /tmp
+  working_dir: /usr/local
+  binary_dir: /usr/local/bin
+  log_dir: /var/log/minio
+  always_update_binary: false
+  setup_logging: true
+  setup_logrotate: true
+
+  # Single tenant settings
+  bind_address: 127.0.0.1 # temp debug
+  bind_port: 9000
+  volumes: "/mnt/minio"
+  log_file_name: minio.log
+  region: us
+  browser: us
+
+minio_conf_path: /etc/minio
+minio_kes_crt: minio.crt
+minio_kes_key: minio.key

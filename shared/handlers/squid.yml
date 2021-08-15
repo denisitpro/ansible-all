@@ -1,0 +1,12 @@
+---
+- name: restart squid
+  become: true
+  systemd:
+    name: squid
+    state: restarted
+
+- name: reload squid
+  become: true
+  systemd:
+    name: squid
+    state: reloaded

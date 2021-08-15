@@ -1,0 +1,7 @@
+---
+- name: Copy logrotate config
+  template:
+    src: minio-logrotate.conf.j2
+    dest: "/etc/logrotate.d/minio.conf"
+    owner: root
+    group: root

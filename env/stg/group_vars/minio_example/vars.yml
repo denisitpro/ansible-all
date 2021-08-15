@@ -1,0 +1,45 @@
+---
+### example vars use minio + KES https://github.com/minio/kes
+
+
+stand_type: "example"
+cert_env: "example"
+
+minio_encyrpt: encrypt
+minio_kes_key_name: minio-key-example-01
+
+internal_domain: example.com
+nginx_default_domain: "{{internal_domain}}"
+nginx_log_format: "upstream_time" #for human read logs, else comment string and enabled general-json
+
+nginx:
+  upstreams:
+    - { name: "s3-9000", server: 127.0.0.1, domain: "{{internal_domain}}", port: 9000, fail_timeout: 0, conf: "nginx-localhost-upstream.conf.j2"}
+  vhosts:
+    - { servername: "minio.{{nginx_default_domain}}", domain: "{{nginx_default_domain}}",
+        http_port: 80, https_ports: 443, config_file: "s3.conf.j2",
+        certname: "{{nginx_cert_name}}",privkey: "{{nginx_privkey_name}}",
+        upstream_protocol: http, upstream_name: "s3-9000", ssl_rewrite: "yes" , cert_type: "wild"}
+  include:
+    - "/etc/nginx/include/pci-dss_2018.conf"
+
+vault:
+  secret:
+    - {kv: "{{stand_type}}",  appname: minio, server: "s3-exxample",  key_name: "access_key"}
+    - {kv: "{{stand_type}}",  appname: minio, server: "s3-example",  key_name: "secret_key"}
+    - {kv: "{{stand_type}}",  appname: kes, server: "kes-example",  key_name: "minio_crt"}
+    - {kv: "{{stand_type}}",  appname: kes, server: "kes-example",  key_name: "minio_key"}
+
+iptables:
+  rules:
+#### system rules
+    - { name: "hetz_admin_mgmt_net", protocol: "tcp", port: "22", source: "{{admin_net}}"}
+    - { name: "zabbix", protocol: "tcp", port: "10050", source: "{{mon_net}}"}
+####  apps rules
+    - { name: "nginx", protocol: "tcp", port: "80", source: "10.0.0.0/8"}
+    - { name: "nginx", protocol: "tcp", port: "443", source: "10.0.0.0/8"}
+
+zabbix:
+  apply_tag:
+    - linux
+    - s3_service

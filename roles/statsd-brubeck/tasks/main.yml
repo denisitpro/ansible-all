@@ -1,0 +1,6 @@
+---
+- include: 00-install.yml
+- include: 01-configure.yml
+  tags:
+    - reconfigure
+

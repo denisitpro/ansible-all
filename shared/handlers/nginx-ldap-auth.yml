@@ -1,0 +1,8 @@
+---
+- name: restart nginx-ldap-auth
+  become: true
+  systemd:
+    name: nginx-ldap-auth
+    state: restarted
+
+

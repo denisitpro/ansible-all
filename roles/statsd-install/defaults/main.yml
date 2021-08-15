@@ -1,0 +1,7 @@
+---
+statsd_user: statsd
+statsd_group: statsd
+statsd_data_path:  /opt/statsd
+statsd_conf_dir: /etc/statsd
+statsd_conf_path: "{{statsd_conf_dir}}/statsd_conf.js"
+statsd_port: 8125 #tcp

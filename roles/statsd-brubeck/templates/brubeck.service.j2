@@ -1,0 +1,30 @@
+[Unit]
+Description="brubeck service"
+Documentation=https://github.com/mhr3/brubeck
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User={{brubeck_user}}
+Group={{brubeck_group}}
+
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+SecureBits=keep-caps
+AmbientCapabilities=CAP_IPC_LOCK
+NoNewPrivileges=yes
+
+ExecStart=/usr/bin/brubeck --config={{brubeck_conf_dir}}/brubeck_conf.js
+ExecReload=/bin/kill --signal HUP
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+StartLimitBurst=3
+PIDFile=/var/run/brubeck.pid
+
+[Install]
+WantedBy=multi-user.target
