@@ -1,0 +1,5 @@
+---
+- name: restart solana_exporter
+  systemd:
+    name: solana_exporter
+    state: restarted

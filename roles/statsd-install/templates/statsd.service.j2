@@ -1,0 +1,27 @@
+[Unit]
+Description="statsd service"
+Documentation=https://github.com/statsd/statsd/wiki
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User={{statsd_user}}
+Group={{statsd_group}}
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+SecureBits=keep-caps
+AmbientCapabilities=CAP_IPC_LOCK
+NoNewPrivileges=yes
+ExecStart=/bin/node {{statsd_data_path}}/stats.js {{statsd_conf_path}}
+ExecReload=/bin/kill --signal HUP
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target

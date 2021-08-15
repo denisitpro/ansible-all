@@ -1,0 +1,55 @@
+---
+#### CentOS section
+- name: install requirents
+  yum:
+    name:
+      - jansson-devel
+      - libmicrohttpd-devel
+      - openssl-devel
+      - gcc
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+
+- name: clone repo brubek
+  git:
+    repo: "https://github.com/mhr3/brubeck.git"
+    dest: "{{brubeck_data_path}}"
+    update: yes
+
+- name: create brubeck group
+  group:
+    name: "{{brubeck_group}}"
+    state: present
+
+- name: create brubeck user
+  user:
+    name: "{{brubeck_user}}"
+    groups: "{{brubeck_group}}"
+    comment: brubeck service user
+    shell: /sbin/nologin
+    system: yes
+    state: present
+
+- name: create dir
+  file:
+    path: "{{brubeck_conf_dir}}"
+    state: directory
+    owner: "{{brubeck_user}}"
+    group: "{{brubeck_group}}"
+  with_items:
+    - "{{brubeck_conf_dir}}"
+
+- name: compiling
+  command: "./script/bootstrap"
+  args:
+    chdir: "{{ brubeck_data_path }}"
+
+- name: create symlink
+  file:
+    src: "{{brubeck_data_path}}/brubeck"
+    dest: /usr/bin/brubeck
+    owner: root
+    group: root
+    state: link

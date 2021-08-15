@@ -1,0 +1,24 @@
+---
+- name: copy unit file
+  template:
+    src: statsd.service.j2
+    dest: /etc/systemd/system/statsd.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart statsd
+
+- name: enable statsd
+  systemd:
+    name: statsd
+    daemon_reload: yes
+    enabled: yes
+
+- name: copy config file
+  template:
+    src: statsd_conf.js.j2
+    dest: "{{statsd_conf_path}}"
+    owner: "{{statsd_user}}"
+    group: "{{statsd_group}}"
+    mode: "0644"
+  notify: restart statsd

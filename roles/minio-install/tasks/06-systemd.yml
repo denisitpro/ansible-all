@@ -1,0 +1,30 @@
+---
+- name: Create default file
+  template:
+    src: minio-default.j2
+    dest: "/etc/default/{{minio.unit_name}}"
+    owner: root
+    group: root
+  tags:
+    - env
+  notify: restart minio
+
+
+- name: Copy systemd unit file
+  template:
+    src: minio-systemd-unit.j2
+    dest: "/etc/systemd/system/{{minio.unit_name}}.service"
+    owner: root
+    group: root
+  register: minio_service_results
+  notify: restart minio
+
+- name: reload_systemd
+  command: "systemctl daemon-reload"
+  when: minio_service_results.changed
+
+- name: Enable minio systemd - {{minio.unit_name}}
+  systemd:
+    name: "{{minio.unit_name}}"
+    state: started
+    enabled: yes

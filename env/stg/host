@@ -35,3 +35,6 @@ left.example.com
 
 [site2site_right]
 right.example.com
+
+[minio_example]
+minio.exampe.com

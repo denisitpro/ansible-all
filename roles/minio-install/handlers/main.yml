@@ -1,0 +1,3 @@
+---
+- include: shared/handlers/minio.yml
+- include: shared/handlers/rsyslog.yml

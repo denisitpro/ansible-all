@@ -1,0 +1,5 @@
+---
+- name: restart solana-validator
+  systemd:
+    name: solana-validator
+    state: restarted

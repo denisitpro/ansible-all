@@ -1,0 +1,5 @@
+---
+- name: restart solana
+  systemd:
+    name: solana
+    state: restarted

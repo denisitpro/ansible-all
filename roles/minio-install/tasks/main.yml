@@ -1,0 +1,13 @@
+---
+# required refactoring !!!
+- include: 00-create-user.yml
+- include: 01-create-directory.yml
+- include: 02-minio-download.yml
+  when: minio.setup_logging
+  tags:
+    - update
+- include: 03-configure.yml
+- include: 03-syslog-prefix.yml
+- include: 04-logrotate.yml
+- include: 05-sysctl-tune.yml
+- include: 06-systemd.yml

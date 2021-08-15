@@ -1,0 +1,20 @@
+MINIO_VOLUMES={{ minio.volumes }}
+
+MINIO_ACCESS_KEY={{ vault_dict_users_secret.access_key }}
+MINIO_SECRET_KEY={{ vault_dict_users_secret.secret_key }}
+
+{% if minio_cluster is defined %}
+MINIO_HOST_VOLUME=http://minio-{{stand_type}}-{1...{{ minio_cluster.count }}}:{{minio_cluster.bind_port}}{{minio_cluster.volumes}}{1...{{minio_cluster.disk_parts}}}
+MINIO_ROOT_USER={{ vault_dict_users_secret.access_key }}
+MINIO_ROOT_PASSWORD={{ vault_dict_users_secret.secret_key }}
+{% endif %}
+
+{% if minio_encyrpt == "encrypt" %}
+MINIO_KMS_KES_ENDPOINT=https://{{kes_srv}}:7373
+MINIO_KMS_KES_KEY_FILE={{minio_conf_path}}/{{minio_kes_key}}
+MINIO_KMS_KES_CERT_FILE={{minio_conf_path}}/{{minio_kes_crt}}
+MINIO_KMS_KES_KEY_NAME={{minio_kes_key_name}}
+MINIO_KMS_AUTO_ENCRYPTION=on
+{% endif %}
+
+MINIO_OPTS="--config-dir /home/{{ minio.user }}/.{{ minio.unit_name }}"

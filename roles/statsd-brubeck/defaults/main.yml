@@ -1,0 +1,7 @@
+---
+brubeck_user: brubeck
+brubeck_group: brubeck
+brubeck_data_path:  /opt/brubeck
+brubeck_conf_dir: /etc/brubeck
+brubeck_port: 8125 #tcp
+brubeck_http_port: 8080

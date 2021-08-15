@@ -1,0 +1,24 @@
+---
+- hosts: minio_example
+  become: yes
+  vars_prompt:
+    - name: vault_login
+      prompt: "What is your LDAP  login ?"
+      private: no
+    - name: vault_password
+      prompt: "What is your LDAP password ?"
+  roles:
+    - net-interface-check
+    - common-v2
+    - vault-get-token
+    - zabbix-agent
+    - node-exporter
+    - vault-get-users-secrets-v2
+    - minio-install
+    - nginx-install
+    - nginx-base-config
+    - nginx-get-certs-v2
+    - nginx-vhosts-configure
+    - cron-rules
+    - firewall-configure
+    - ufw-general

@@ -1,0 +1,26 @@
+---
+- name: copy unit file
+  template:
+    src: brubeck.service.j2
+    dest: /etc/systemd/system/brubeck.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart brubeck
+
+- name: enable brubeck
+  systemd:
+    name: brubeck
+    daemon_reload: yes
+    enabled: yes
+
+- name: copy config file
+  template:
+    src: brubeck_conf.js.j2
+    dest: "{{brubeck_conf_dir}}/brubeck_conf.js"
+    owner: "{{brubeck_user}}"
+    group: "{{brubeck_group}}"
+    mode: "0644"
+  notify: restart brubeck
+  tags:
+    - env

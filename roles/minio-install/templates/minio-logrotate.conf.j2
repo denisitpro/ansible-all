@@ -1,0 +1,10 @@
+{{minio.log_dir}}/*.log {
+    daily
+    rotate 30
+    compress
+    dateext
+    copytruncate
+    missingok
+    delaycompress
+
+}
