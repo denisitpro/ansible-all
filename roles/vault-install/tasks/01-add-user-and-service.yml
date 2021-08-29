@@ -1,0 +1,38 @@
+---
+# Similar to Vault, KES uses the mlock syscall on linux systems to prevent the OS from writing in-memory
+# data to disk (swapping). Therefore, you should give the KES executable the ability to use the mlock
+# syscall without running the process as root. To do so run
+
+- name: Allow mlock syscall
+  shell: setcap cap_ipc_lock=+ep $(readlink -f $(which vault))
+
+- name: add autocompliate
+  shell: "/usr/bin/vault -autocomplete-install"
+  ignore_errors: yes
+
+- name: create vault user - {{vaul_user}}
+  user:
+    name: "{{vaul_user}}"
+    comment: vault service user
+    shell: /sbin/nologin
+    home: "{{vault_data_path}}"
+    create_home: yes
+    system: yes
+    state: present
+
+- name: Copy systemd unit file
+  template:
+    src: vault.service.j2
+    dest: "/etc/systemd/system/vault.service"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable boot vault.service
+  systemd:
+    name: "vault.service"
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  tags:
+    - update

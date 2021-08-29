@@ -1,0 +1,19 @@
+---
+- name: copy files
+  copy:
+    src: shared/files/repos/influxdb.repo
+    dest: /etc/yum.repos.d/influxdb.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name : install influxdb from package - centos
+  yum:
+    name: influxdb
+    state: present
+  notify: restart influxdb
+
+- name: ensure influxdn is enabled to start at boot
+  systemd:
+    name: influxdb
+    enabled: yes

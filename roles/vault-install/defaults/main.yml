@@ -1,0 +1,21 @@
+---
+vault_version: 1.8.2
+vault_dl_url: "https://releases.hashicorp.com/vault/{{vault_version}}/vault_{{vault_version}}_linux_amd64.zip"
+
+vaul_user: vault
+vault_data_path: /mnt/vault
+vault_raft_path: /mnt/raft
+vault_conf_path: /etc/vault
+
+
+vault_listener_addr: "127.0.0.1:8200"
+vault_cluster_addr:  "127.0.0.1:8201"
+vault_api_addr: "http://127.0.0.1:8200"
+
+
+
+#example for cluster
+#vault_cluster:
+#  nodes:
+#    - {id: 1, name: "srv.example.com", protocol: "https", port_api: "8201", port_cluster: "8201", cluster_hostname: "srv-cls.example.com"}
+#  tls_disable: "false"

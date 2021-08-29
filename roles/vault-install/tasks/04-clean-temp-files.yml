@@ -1,0 +1,8 @@
+---
+- name: clear to old files
+  file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "/opt/vault"
+    - "/tmp/vault_{{vault_version}}_linux_amd64.zip"

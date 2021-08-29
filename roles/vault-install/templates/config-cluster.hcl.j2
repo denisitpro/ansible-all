@@ -1,0 +1,43 @@
+disable_cache = true
+disable_mlock = true
+ui = true
+
+
+{% for node in vault_cluster.nodes %}
+{% if node.name == ansible_fqdn %}
+listener "tcp" {
+   address          = "{{ vault_listener_addr }}"
+   cluster_address  = "{{ vault_cluster_addr  }}"
+   tls_disable      = {{ vault_cluster.tls_disable }}
+   tls_cert_file    = "/etc/vault/ssl/example.com/fullchain.pem"
+   tls_key_file     = "/etc/vault/ssl/example.com/privkey.pem"
+}
+
+storage "raft" {
+  path  = "{{vault_raft_path}}-node{{node.id}}/"
+  node_id = "node{{node.id}}"
+
+    {% for node in vault_cluster.nodes %}
+    {% if node.name != ansible_fqdn %}
+    retry_join {
+    leader_api_addr = "{{node.protocol}}://{{node.name}}{% if node.port_api != '' %}:{% endif %}{{node.port_api}}"
+    }
+    {% endif %}
+    {% endfor %}
+
+}
+
+api_addr     = "{{node.protocol}}://{{node.name}}{% if node.port_api != '' %}:{% endif %}{{node.port_api}}"
+cluster_addr = "{{node.protocol}}://{{node.cluster_hostname}}{% if node.port_cluster != '' %}:{% endif %}{{node.port_cluster}}"
+
+{% endif %}
+{% endfor %}
+
+
+max_lease_ttl         = "10h"
+default_lease_ttl    = "10h"
+cluster_name         = "vault"
+raw_storage_endpoint     = true
+disable_sealwrap     = true
+disable_printable_check = true
+

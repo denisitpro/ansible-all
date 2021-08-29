@@ -1,0 +1,43 @@
+---
+
+- name: create path config - "{{vault_conf_path}}"
+  file:
+    path: "{{vault_conf_path}}"
+    state: directory
+    owner: "{{vaul_user}}"
+    group: "{{vaul_user}}"
+
+
+- name: debug ansible_fqdn
+  debug:
+    msg: "{{ ansible_fqdn }}"
+
+- name: debug test
+  debug:
+    msg: "{{vault_raft_path}}-node{{item.id}}"
+  when:
+    - "{{ ansible_fqdn in  item.name }} "
+  with_items:
+    - "{{ vault_cluster.nodes }}"
+
+
+- name: create path raft directory
+  file:
+    path: "{{vault_raft_path}}-node{{item.id}}"
+    state: directory
+    owner: "{{vaul_user}}"
+    group: "{{vaul_user}}"
+  when:
+    - "{{ ansible_fqdn in item.name }}"
+  with_items:
+    - "{{ vault_cluster.nodes }}"
+
+
+- name: copy config.hcl
+  template:
+    src: config-cluster.hcl.j2
+    dest: "{{vault_conf_path}}/config.hcl"
+    owner: "{{vaul_user}}"
+    group: "{{vaul_user}}"
+    mode: 0644
+

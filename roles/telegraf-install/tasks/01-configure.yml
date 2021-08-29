@@ -1,0 +1,35 @@
+---
+- name: Copy telegraf.conf
+  copy:
+    src: telegraf.conf
+    dest: /etc/telegraf/telegraf.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart telegraf
+
+- name: Copy files telegraf.d
+  copy:
+    src: telegraf.d
+    dest: /etc/telegraf
+    directory_mode: on
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart telegraf
+
+#- name: PRINT ALL  value
+#  debug:
+#    msg: "{{telegraf_key}}"
+
+- name: Config telegraf to output plugins
+  template:
+    src: "{{item}}.j2"
+    dest: "/etc/telegraf/telegraf.d/{{item}}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - outputs.graphite.conf
+  notify: restart telegraf
+
