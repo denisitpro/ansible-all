@@ -1,0 +1,36 @@
+---
+- include: 00-download.yml
+  tags:
+    - update
+    - install
+    - vault-install
+
+- include: 01-add-user-and-service.yml
+  tags:
+    - update
+    - install
+    - vault-install
+
+- include: 02-configure-single.yml
+  when:
+    - vault_cluster is not defined
+  tags:
+    - update
+    - install
+    - reconfigure
+    - vault-install
+
+- include: 03-configure-cluster.yml
+  when:
+    - vault_cluster is defined
+  tags:
+    - update
+    - install
+    - reconfigure
+    - vault-install
+
+- include: 04-clean-temp-files.yml
+  tags:
+    - update
+    - install
+    - vault-install

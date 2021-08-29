@@ -1,0 +1,38 @@
+---
+- name: install requirement software
+  yum:
+    name:
+      - unzip
+
+- name: Download vault files
+  get_url:
+    url: "{{vault_dl_url}}"
+    dest: "/tmp/vault_{{vault_version}}_linux_amd64.zip"
+    mode: '0440'
+
+- name: Unarchive vault a file that is already on the remote machine
+  unarchive:
+    src: "/tmp/vault_{{vault_version}}_linux_amd64.zip"
+    dest: "/opt/"
+    owner: root
+    group: root
+    remote_src: yes
+
+- name: Copy vaul user name version
+  copy:
+    src: /opt/vault
+    dest: "/usr/local/bin/vault-{{vault_version}}"
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+
+
+- name: Create a symbolic vault
+  file:
+    src: "/usr/local/bin/vault-{{vault_version}}"
+    dest: /usr/bin/vault
+    owner: root
+    group: root
+    state: link
+

@@ -1,0 +1,19 @@
+---
+
+- name: create path single
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: "{{vaul_user}}"
+    group: "{{vaul_user}}"
+  with_items:
+    - "{{vault_conf_path}}"
+    - "{{vault_data_path}}"
+
+- name: copy config.hcl
+  template:
+    src: config-single.hcl.j2
+    dest: "{{vault_conf_path}}/config.hcl"
+    owner: "{{vaul_user}}"
+    group: "{{vaul_user}}"
+    mode: 0644
