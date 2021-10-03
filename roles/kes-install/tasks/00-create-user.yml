@@ -1,0 +1,15 @@
+---
+- name: Create private group
+  group:
+    name: "{{ kes_group }}"
+    system: yes
+    state: present
+
+- name: Create  user
+  user:
+    name: "{{ kes_user }}"
+    group: "{{ kes_group}}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: " {{kes_user}} application user"
+    state: present

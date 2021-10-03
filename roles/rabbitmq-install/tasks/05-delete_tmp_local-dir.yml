@@ -1,0 +1,7 @@
+---
+- name: delete temp local dir
+  file:
+    path: "{{temp_dir_rabbit}}"
+    state: absent
+  delegate_to: localhost
+  become: no

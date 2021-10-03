@@ -1,0 +1,26 @@
+---
+- name: install graylog-server - centos
+  yum:
+    name:
+      - graylog-server
+      - pwgen
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+  notify: restart graylog-server
+
+- name: install graylog-server ubuntu
+  apt:
+    name:
+      - graylog-server
+      - pwgen
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+  notify: restart graylog-server
+
+
+- name: enable graylog
+  systemd:
+    name: graylog-server
+    enabled: True

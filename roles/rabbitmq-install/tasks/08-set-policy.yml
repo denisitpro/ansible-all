@@ -1,0 +1,9 @@
+---
+- name: set policy
+  shell:
+    cmd: rabbitmqctl set_policy --vhost "{{item.vhost}}" --apply-to {{item.applyto}}  {{item.name}} "{{item.pattern}}" '{{item.definition}}' --priority {{item.priority}}
+  with_items:
+    - "{{rabbitmq.policy}}"
+  when:
+    - rabbit_host_type == "rabbitmq_master"
+

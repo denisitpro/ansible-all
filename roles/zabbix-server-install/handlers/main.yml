@@ -1,0 +1,4 @@
+---
+- include: shared/handlers/php-fpm.yml
+- include: shared/handlers/nginx.yml
+- include: shared/handlers/zabbix.yml

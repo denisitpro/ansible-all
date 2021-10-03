@@ -1,0 +1,12 @@
+---
+- include: 01-pre-fly.yml
+  tags: [always]
+
+- include: 05-required.yml
+  when: stat_result_zbx_conf.stat.exists == False
+
+- include: 15-php-configure.yml
+  when: stat_result_zbx_conf.stat.exists == False
+
+- include: 20-telegram-bot.yml
+  when: stat_result_tgbot_conf.stat.exists == False

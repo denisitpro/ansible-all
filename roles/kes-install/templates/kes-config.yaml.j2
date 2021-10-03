@@ -1,0 +1,40 @@
+# The address:port of the kes server - i.e. on the local machine.
+address: {{kes_addr}}:7373
+root:    disabled  # We disable the root identity since we don't need it in this guide
+
+tls:
+  key:  {{kes_crt_path}}/{{kes_key}}
+  cert: {{kes_crt_path}}/{{kes_crt}}
+
+policy:
+  my-app:
+    paths:
+    - /v1/key/create/minio-*
+    - /v1/key/generate/minio-*
+    - /v1/key/decrypt/minio-*
+    identities:
+    - {{ vault_dict_users_secret.identity }}
+
+
+cache:
+  # Cache expiry specifies when cache entries expire.
+  expiry:
+    # Period after which any cache entries are discarded.
+    # It determines how often the KES server has to fetch
+    # a secret key from the KMS.
+    any: 5m0s
+    # Period after which all unused cache entries are discarded.
+    # It determines how often "not frequently" used secret keys
+    # must be fetched from the KMS.
+    unused: 20s
+
+keys:
+  vault:
+    endpoint: https://{{vault_srv}}
+    prefix: {{stand_type}}
+    approle:
+      id:     "{{ vault_dict_users_secret.approle_id }}" # Your AppRole ID
+      secret: "{{ vault_dict_users_secret.approle_secret }}" # Your AppRole Secret ID
+      retry:  15s
+    status:
+      ping: 10s

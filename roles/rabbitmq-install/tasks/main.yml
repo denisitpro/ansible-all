@@ -1,0 +1,66 @@
+---
+- include: 00-reinstall-rabbitmq.yml
+  tags: ['never', 'reinstall' ]
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 01-install-rabbitmq.yml
+  tags:
+    - install
+    - reinstall
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 02-add-users.yml
+  tags:
+    - users
+    - install
+    - reinstall
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 03-get-erlang-cookie.yml
+  tags:
+    - install
+    - reinstall
+    - config_rabbit
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 04-set-erlang-cookie-to-slave.yml
+  tags:
+    - install
+    - reinstall
+    - config_rabbit
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 05-delete_tmp_local-dir.yml
+  tags:
+    - install
+    - reinstall
+    - config_rabbit
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 06-add-plugins.yml
+  tags:
+    - install
+    - reinstall
+    - config_rabbit
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 07-add-to-cluster.yml
+  tags:
+    - install
+    - reinstall
+    - config_rabbit
+  when: ansible_distribution == 'Ubuntu'
+
+- include: 08-set-policy.yml
+  tags:
+    - install
+    - reinstall
+    - config_rabbit
+  when: ansible_distribution == 'Ubuntu'
+
+
+- include: 100-test.yml
+  tags: ['never', 'test' ]
+  when: ansible_distribution == 'Ubuntu'
+
+

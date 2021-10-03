@@ -1,0 +1,27 @@
+---
+- name: install php components
+  apt:
+    name:
+      - php-fpm
+      - php-mysql
+      - php-pdo
+      - php-gd
+      - php-mbstring
+      - php-bcmath
+      - php-cli
+      - php-ldap
+      - php-snmp
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  notify: restart php7.4-fpm
+  when: ansible_distribution == 'Ubuntu'
+
+- name: copy www.conf php config
+  template:
+    src: php-www.conf.j2
+    dest: "/etc/php/7.4/fpm/pool.d/www.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart php7.4-fpm

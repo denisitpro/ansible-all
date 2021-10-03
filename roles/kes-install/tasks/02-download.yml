@@ -1,0 +1,22 @@
+---
+- name: Download archive
+  get_url:
+    url: "{{ kes_dwnl_url }}"
+    dest: /tmp
+    mode: 0755
+
+- name: copy binary files
+  copy:
+    src: /tmp/kes-linux-amd64
+    dest: /usr/bin/kes
+    mode: 0700
+    remote_src: yes
+    owner: "{{kes_user}}"
+    group: "{{kes_group}}"
+
+
+- name: remove download file
+  file:
+    path: /tmp/kes-linux-amd64
+    state: absent
+

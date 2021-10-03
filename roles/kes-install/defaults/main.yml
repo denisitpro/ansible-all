@@ -1,0 +1,19 @@
+---
+kes_user: kes
+kes_group: "{{kes_user}}"
+
+kes_config_path: /etc/kes
+kes_dwnl_url: https://github.com/minio/kes/releases/latest/download/kes-linux-amd64
+
+kes_addr: "{{ ansible_facts[second_interface_name].ipv4.address  if ( dc_location == 'fsn' ) else ansible_default_ipv4.address }}"
+kes_port: 7373
+
+
+
+kes_crt_path: "/etc/nginx/ssl/{{internal_domain}}"
+kes_crt: "fullchain.pem"
+kes_key: "privkey.pem"
+
+kes_vault_status: "10s"
+
+nginx_skip_reload: true

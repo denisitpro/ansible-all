@@ -1,0 +1,34 @@
+---
+# app need to be started
+- name: start rabbit_app
+  shell:
+    cmd: 'rabbitmqctl start_app'
+
+- name: add users
+  shell:
+    cmd: 'rabbitmqctl add_user {{item.name}} {{vault_dict_users_secret[item.name]}}'
+  args:
+    warn: no
+  with_items:
+    - "{{rabbitmq.users}}"
+  ignore_errors: yes
+
+- name: set_user_tags
+  shell:
+    cmd: 'rabbitmqctl set_user_tags {{item.name}}  administrator'
+  args:
+    warn: no
+  with_items:
+    - "{{rabbitmq.users}}"
+
+- name: set_permissions for users
+  shell:
+    cmd: 'rabbitmqctl set_permissions -p / {{item.name}} ".*" ".*" ".*"'
+  args:
+    warn: no
+  with_items:
+    - "{{rabbitmq.users}}"
+
+
+
+

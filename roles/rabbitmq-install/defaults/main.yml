@@ -1,0 +1,11 @@
+---
+
+config_path: /etc/rabbitmq
+distribution: "bionic"
+temp_dir_rabbit: /tmp/rabbitmq
+
+
+zabbix:
+  apply_tag:
+    - rabbitmq
+    - linux

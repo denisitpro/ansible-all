@@ -1,0 +1,9 @@
+---
+- name: copy server.conf
+  template:
+    src: server.conf.j2
+    dest: /etc/graylog/server/server.conf
+    owner: root
+    group: root
+  notify: restart graylog-server
+

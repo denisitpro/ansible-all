@@ -1,0 +1,10 @@
+---
+- name: add nginx user to group www-data
+  ansible.builtin.user:
+    name: nginx
+    groups: "www-data"
+    append: yes
+  when:
+  notify:
+    - restart php7.4-fpm
+    - restart nginx

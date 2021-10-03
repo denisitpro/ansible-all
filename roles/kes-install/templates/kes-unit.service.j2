@@ -1,0 +1,16 @@
+[Unit]
+Description=KES
+Documentation=https://github.com/minio/kes/wiki
+After=network.target
+
+[Service]
+User={{kes_user}}
+Group={{kes_group}}
+Type=simple
+WorkingDirectory={{kes_config_path}}
+ExecStart=/usr/bin/kes server --config={{kes_config_path}}/kes-config.yaml --mlock --auth=off
+ExecReload=/bin/kill --signal HUP
+ExecStop=/bin/kill -TERM
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+---
+- include: shared/tasks/install-openjdk.yml
+- include: 00-add-repo.yml
+- include: 01-install.yml
+- include: 02-configure.yml
+  tags:
+    - reconfigure

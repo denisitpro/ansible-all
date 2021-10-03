@@ -1,0 +1,44 @@
+---
+
+- name: restart master rabbit_app
+  systemd:
+    name: rabbitmq-server
+    state: restarted
+  ignore_errors: yes
+#  when:
+#    - rabbit_host_type == "rabbitmq_master"
+
+- name: sleep for 30 seconds and continue with play
+  wait_for:
+    timeout: 30
+  delegate_to: localhost
+  become: no
+
+- name: stop rabbit_app
+  shell:
+    cmd: 'rabbitmqctl stop_app'
+
+- name: start master rabbit_app
+  shell:
+    cmd: 'rabbitmqctl start_app'
+  when:
+    - rabbit_host_type == "rabbitmq_master"
+
+- name: sleep for 30 seconds and continue with play
+  wait_for:
+    timeout: 30
+  delegate_to: localhost
+  become: no
+
+
+- name: join to cluster
+  shell:
+    cmd: 'rabbitmqctl join_cluster --disc rabbit@{{rabbit_master_host}}'
+  when:
+    - rabbit_host_type == "rabbitmq_slave"
+
+- name: start slave rabbit_app
+  shell:
+    cmd: 'rabbitmqctl start_app'
+  when:
+    - rabbit_host_type == "rabbitmq_slave"
