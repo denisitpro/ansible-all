@@ -1,0 +1,21 @@
+---
+- name: install graylog repo
+  yum:
+    name: "https://packages.graylog2.org/repo/packages/graylog-{{graylog_version}}-repository_latest.rpm"
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+
+- name: Download the Graylog repository package
+  get_url:
+    url: 'https://packages.graylog2.org/repo/packages/graylog-{{graylog_version}}-repository_latest.deb'
+    dest: '/tmp/graylog_repository.deb'
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install the Graylog repository package
+  apt:
+    deb: '/tmp/graylog_repository.deb'
+    state: present
+    dpkg_options: 'force-all'
+  register: install_repo
+  when: ansible_distribution == 'Ubuntu'

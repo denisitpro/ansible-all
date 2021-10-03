@@ -1,0 +1,29 @@
+---
+- name: get Erlang cookie
+  debug:
+    msg: "rabbit_host_type = {{rabbit_host_type}}"
+
+- name: create tmp folders
+  file:
+    path: "{{temp_dir_rabbit}}"
+    state: directory
+    recurse: yes
+  delegate_to: localhost
+  run_once: true
+  become: no
+
+- name: Store file into {{temp_dir_rabbit}}
+  fetch:
+    src: /var/lib/rabbitmq/.erlang.cookie
+    dest: "{{temp_dir_rabbit}}/"
+    flat: true
+  when:
+    - rabbit_host_type == "rabbitmq_master"
+
+- name: print cookie from master
+  shell:
+    cmd: 'cat {{temp_dir_rabbit}}/.erlang.cookie'
+  delegate_to: localhost
+  run_once: true
+  become: no
+

@@ -1,0 +1,29 @@
+---
+- name: add key
+  apt_key:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+    state: present
+
+- name: using key
+  shell: 'sudo apt-key adv --keyserver "hkps://keys.openpgp.org" --recv-keys "0x0A9AF2115F4687BD29803A206B73A36E6026DFCA"'
+  args:
+    warn: false
+
+
+- name: add internal APT repository
+  apt_repository:
+      filename : "bintray.rabbitmq"
+      repo: "{{ item }}"
+      state: present
+      update_cache: true
+  with_items:
+    - deb [arch=amd64] https://dl.bintray.com/rabbitmq-erlang/debian {{ distribution }} erlang
+    - deb [arch=amd64] https://dl.bintray.com/rabbitmq/debian {{ distribution }} main
+
+- name: Install Rabbitmq - {{ansible_distribution}}
+  apt:
+    name:
+      - rabbitmq-server
+      - erlang-eldap
+    update_cache: yes
+

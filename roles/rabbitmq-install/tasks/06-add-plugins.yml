@@ -1,0 +1,20 @@
+---
+- name: add plugin management GUI
+  shell:
+    cmd: 'rabbitmq-plugins enable rabbitmq_management'
+
+- name: add plugin LDAP
+  shell:
+    cmd: 'rabbitmq-plugins enable rabbitmq_auth_backend_ldap'
+
+- name: copy configs
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ config_path }}/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "rabbitmq.conf"
+    - "advanced.config"
+  notify: "restart rabbitmq"

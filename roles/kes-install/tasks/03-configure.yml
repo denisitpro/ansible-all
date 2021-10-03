@@ -1,0 +1,75 @@
+---
+
+# Similar to Vault, KES uses the mlock syscall on linux systems to prevent the OS from writing in-memory
+# data to disk (swapping). Therefore, you should give the KES executable the ability to use the mlock
+# syscall without running the process as root. To do so run
+
+- name: Allow mlock syscall
+  shell: "setcap cap_ipc_lock=+ep $(readlink -f $(which kes))"
+  tags:
+    - mlock
+
+- name: copy kes files and config
+  template:
+    src: "{{item}}.j2"
+    dest: "{{kes_config_path}}/{{item}}"
+    owner: "{{kes_user}}"
+    group: "{{kes_group}}"
+    mode: 0600
+  with_items:
+    - "kes-config.yaml"
+    - "minio.crt"
+    - "minio.key"
+  notify: restart kes
+  tags:
+    - env
+
+- name: copy kes unit file
+  template:
+    src: "kes-unit.service.j2"
+    dest: "/etc/systemd/system/kes.service"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - unit
+
+- name: Enable kes
+  systemd:
+    name: "kes"
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  tags:
+    - unit
+
+- name: set permision directory
+  file:
+    path: "{{kes_crt_path}}"
+    state: directory
+    owner: "{{kes_user}}"
+    group: "{{kes_group}}"
+    mode: 0755
+  notify: restart kes
+  tags:
+    - permission
+
+- name: set owner for kes cert
+  file:
+    path: "{{kes_crt_path}}/{{kes_crt}}"
+    owner: "{{kes_user}}"
+    group: "{{kes_group}}"
+    mode: 0444
+  notify: restart kes
+  tags:
+    - permission
+
+- name: set owner for kes key
+  file:
+    path: "{{kes_crt_path}}/{{kes_key}}"
+    owner: "{{kes_user}}"
+    group: "{{kes_group}}"
+    mode: 0440
+  notify: restart kes
+  tags:
+    - permission

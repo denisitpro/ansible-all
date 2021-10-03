@@ -1,0 +1,28 @@
+---
+- name: stop rabbit_app
+  systemd:
+    name: rabbitmq-server
+    state: stopped
+  ignore_errors: yes
+
+- name: delete rabbit dir
+  file:
+    path: "/var/lib/rabbitmq"
+    state: absent
+  ignore_errors: yes
+
+- name: delete rabbit config dir
+  file:
+    path: "{{config_path}}"
+    state: absent
+  ignore_errors: yes
+
+- name: Remove Rabbitmq - {{ansible_distribution}}
+  apt:
+    name:
+      - rabbitmq-server
+    update_cache: yes
+    state: absent
+  ignore_errors: yes
+
+

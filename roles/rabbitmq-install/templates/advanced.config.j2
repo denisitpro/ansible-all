@@ -1,0 +1,21 @@
+[{rabbitmq_auth_backend_ldap,[
+     {vhost_access_query,    {in_group,"cn=g_rabbitmq_users,cn=groups,cn=accounts,dc=example,dc=com"}},
+     {resource_access_query,
+      {for, [{permission, configure, {in_group, "cn=g_rabbitmq_writers,cn=groups,cn=accounts,dc=example,dc=com"}},
+             {permission, write,
+              {for, [{resource, queue,    {in_group, "cn= g_rabbitmq_writers,cn=groups,cn=accounts,dc=example,dc=com"}},
+                     {resource, exchange, {constant, true}}]}},
+             {permission, read,
+              {for, [{resource, exchange, {in_group, "cn=g_rabbitmq_users,cn=groups,cn=accounts,dc=example,dc=com"}},
+                     {resource, queue,    {constant, true}}]}}
+            ]
+      }},
+     {topic_access_query,
+      {for, [{permission, write, {in_group, "cn= g_rabbitmq_users,cn=groups,cn=accounts,dc=example,dc=com"}},
+             {permission, read,  {constant, true}}
+            ]
+      }},
+     {tag_queries,           [{administrator, {in_group, "cn=g_rabbitmq_admins,cn=groups,cn=accounts,dc=example,dc=com"}},
+                              {management,    {in_group, "cn=g_rabbitmq_users,cn=groups,cn=accounts,dc=example,dc=com"}}]}
+
+]}].

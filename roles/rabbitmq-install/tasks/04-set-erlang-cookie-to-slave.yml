@@ -1,0 +1,11 @@
+---
+- name: stop rabbit_app
+  shell:
+    cmd: 'rabbitmqctl stop_app'
+
+- name: set Erlang cookie to slave
+  copy:
+    src: "{{temp_dir_rabbit}}/.erlang.cookie"
+    dest: "/var/lib/rabbitmq/.erlang.cookie"
+  when:
+    - rabbit_host_type == "rabbitmq_slave"

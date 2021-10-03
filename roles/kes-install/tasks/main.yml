@@ -1,0 +1,7 @@
+---
+- include: 00-create-user.yml
+- include: 01-create-directory.yml
+- include: 02-download.yml
+  tags:
+    - premission
+- include: 03-configure.yml

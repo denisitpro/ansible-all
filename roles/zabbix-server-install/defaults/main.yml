@@ -1,0 +1,4 @@
+---
+
+zbx_version: 5.4
+download_url: "https://repo.zabbix.com/zabbix/{{zbx_version}}/ubuntu/pool/main/z/zabbix-release/zabbix-release_{{zbx_version}}-1+ubuntu20.04_all.deb"

@@ -1,0 +1,7 @@
+---
+- name: Create config direcotry
+  file:
+    path: "{{ kes_config_path }}"
+    state: directory
+    owner: "{{ kes_user }}"
+    group: "{{ kes_group }}"
