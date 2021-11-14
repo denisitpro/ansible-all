@@ -6,11 +6,11 @@
 
 - name: get zabbix repo - ubuntu {{ ansible_distribution_release }}
   apt_repository:
-    repo: "deb https://repo.zabbix.com/zabbix/5.0/ubuntu/ {{ ansible_distribution_release }} main"
+    repo: "deb https://repo.zabbix.com/zabbix/{{zabbix_agent_version}}/ubuntu/ {{ ansible_distribution_release }} main"
     state: present
     update_cache: yes
 
-- name: install zabbix-agent - ubutnu
+- name: install zabbix-agent2 - ubutnu
   apt:
     name:
       - zabbix-agent2

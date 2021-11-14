@@ -1,4 +1,14 @@
-#nginx connection count
+#all connections count
 UserParameter=connections.all,/bin/netstat -tan | wc -l
 UserParameter=connections.time_wait,/bin/netstat -nat | grep TIME_WAIT | wc -l
 UserParameter=connections.established,/bin/netstat -nat | grep ESTABLISHED | wc -l
+
+#node connections count
+UserParameter=connections_node.all,/bin/netstat -tan | grep :3210 | wc -l
+UserParameter=connections_node.time_wait,/bin/netstat -nat | grep :3210 | grep TIME_WAIT | wc -l
+UserParameter=connections_node.established,/bin/netstat -nat | grep :3210 | grep ESTABLISHED | wc -l
+
+#nginx connections count
+UserParameter=connections_nginx.all,/bin/netstat -tan | grep :443 | wc -l
+UserParameter=connections_nginx.time_wait,/bin/netstat -nat | grep :443 | grep TIME_WAIT | wc -l
+UserParameter=connections_nginx.established,/bin/netstat -nat | grep :443 | grep ESTABLISHED | wc -l

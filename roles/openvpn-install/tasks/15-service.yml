@@ -1,0 +1,12 @@
+---
+- name: service | ensure systemd unit exists
+  template:
+    src: openvpn.service
+    dest: /etc/systemd/system/openvpn.service
+  notify: restart openvpn
+
+- name: service | service openvpn enabled
+  service:
+    enabled: "{{ openvpn_service_enabled }}"
+    daemon_reload: yes
+    name: openvpn

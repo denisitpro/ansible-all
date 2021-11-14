@@ -24,13 +24,13 @@ ExecStart=/usr/local/bin/node_exporter \
 {% for collector in node_exporter_disabled_collectors %}
     --no-collector.{{ collector }} \
 {% endfor %}
-{% if dc_location != 'fsn'%}
+{% if dc_location != 'dc1'%}
     --web.listen-address={{  ansible_default_ipv4.address }}:9100
 {% endif %}
-{% if dc_location == 'fsn' and ansible_distribution_major_version == '7' %}
+{% if dc_location == 'dc1' and ansible_distribution_major_version == '7' %}
     --web.listen-address={{ ansible_eth1.ipv4.address }}:9100
 {% endif %}
-{% if (dc_location == 'fsn' and ansible_distribution_major_version == '8') or (dc_location == 'fsn' and ansible_distribution == 'Ubuntu')  %}
+{% if (dc_location == 'dc1' and ansible_distribution_major_version == '8') or (dc_location == 'dc1' and ansible_distribution == 'Ubuntu')  %}
     --web.listen-address={{  ansible_facts[second_interface_name].ipv4.address  }}:9100
 {% endif %}
 SyslogIdentifier=node_exporter

@@ -1,0 +1,79 @@
+---
+#- debug:
+#    msg: " {{vault_url}}/v1/{{cert_env}}/data/certificates/{{item.cert_type}}/{{item.servername}}/{{item.privkey}}"
+#  with_items: "{{ nginx.vhosts }}"
+
+- name: copy wildcard cers
+  copy:
+    src: "{{nginx_tmp_wild}}/{{item.domain}}-cert.pem"
+    dest: "{{nginx_ssl_path}}/{{item.domain}}/{{item.certname}}"
+    owner: root
+    group: root
+    mode: 0400
+    force: "{{item.ssl_rewrite}}"
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'wild'
+  with_items: "{{ cert.hosts }}"
+#  notify: reload nginx
+
+- name: copy wildcard privkey
+  copy:
+    src: "{{nginx_tmp_wild}}/{{item.domain}}-priv.pem"
+    dest: "{{nginx_ssl_path}}/{{item.domain}}/{{item.privkey}}"
+    owner: root
+    group: root
+    mode: 0400
+    force: "{{item.ssl_rewrite}}"
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'wild'
+  with_items: "{{ cert.hosts }}"
+ # notify: reload nginx
+
+
+##### copy personal
+
+- name: copy personal cers
+  copy:
+    src: "{{nginx_tmp_personal}}/{{item.servername}}-cert.pem"
+    dest: "{{nginx_ssl_path}}/{{item.servername}}/{{item.certname}}"
+    owner: root
+    group: root
+    mode: 0400
+    force: "{{item.ssl_rewrite}}"
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'personal'
+  with_items: "{{ cert.hosts }}"
+#  notify: reload nginx
+
+- name: copy personal privkey
+  copy:
+    src: "{{nginx_tmp_personal}}/{{item.servername}}-priv.pem"
+    dest: "{{nginx_ssl_path}}/{{item.servername}}/{{item.privkey}}"
+    owner: root
+    group: root
+    mode: 0400
+    force: "{{item.ssl_rewrite}}"
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'personal'
+  with_items: "{{ cert.hosts }}"
+#  notify: reload nginx
+
+
+## clean section
+
+- name: delete temp dir
+  file:
+    path: "{{item}}"
+    state: absent
+  delegate_to: localhost
+  become: no
+  with_items:
+    - "{{nginx_tmp_wild}}"
+    - "{{nginx_tmp_personal}}"
+
+#- name: debug certs
+#  debug: msg="{{cert_out}}"

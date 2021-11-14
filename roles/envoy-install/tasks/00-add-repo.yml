@@ -1,0 +1,47 @@
+---
+- name: add requiremensts - ubuntu
+  apt:
+    name:
+      - apt-transport-https
+      - curl
+      - gnupg-agent
+      - ca-certificates
+      - software-properties-common
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: add requiremensts - CentOS
+  yum:
+    name:
+      - yum-utils
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+
+- name: Add envoy GPG key - Ubuntu
+  apt_key: url=https://deb.dl.getenvoy.io/public/gpg.8115BA8E629CC074.key
+  when: ansible_distribution == 'Ubuntu'
+
+#- name: print ansible_distribution_release
+#  debug:
+#    msg: "{{ansible_distribution_release}}"
+
+- name: Add repository - ubuntu - {{ansible_distribution_release}}
+  apt_repository:
+    repo: deb https://deb.dl.getenvoy.io/public/deb/ubuntu focal main
+    #     repo: deb [arch=amd64] https://dl.bintray.com/tetrate/getenvoy-deb {{ansible_distribution_release}} stable
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add repository - CentOS
+  yum_repository:
+    name: envoy
+    description: envoy repo
+    enabled: false
+    gpgcheck: false
+    baseurl: "https://getenvoy.io/linux/centos/tetrate-getenvoy.repo"
+  when: ansible_distribution == 'CentOS'
+

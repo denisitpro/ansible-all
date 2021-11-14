@@ -1,37 +1,17 @@
 ---
-- include: 05-install-legacy.yml
-  when: "ansible_distribution_major_version == '7'"
-  tags:
-    - zabbix-agent
-
 - include: 06-install-agent2-ubuntu.yml
   when: "ansible_distribution == 'Ubuntu'"
   tags:
     - zabbix-agent2
 
-- include: 07-install-agent2-centos.yml
-  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'"
-  tags:
-    - zabbix-agent2
 
 - include: 08-install-requirements-ubuntu.yml
-  when: "ansible_distribution == 'Ubuntu'"
+  when: "ansible_distribution == 'Ubuntu' and extended_mon is defined"
   tags:
-    - zabbix-agent
     - zabbix-agent2
-
-- include: 09-install-requirements-centos.yml
-  when: "ansible_distribution == 'CentOS'"
-  tags:
-    - zabbix-agent
-    - zabbix-agent2
-
-- include: 20-configure-legacy.yml
-  when: "ansible_distribution_major_version == '7'"
-  tags:
-    - zabbix-agent
 
 - include: 21-configure-agent2.yml
-  when: "ansible_distribution_major_version != '7'  or ansible_distribution == 'Ubuntu'"
+  when: " ansible_distribution == 'Ubuntu'"
   tags:
     - zabbix-agent2
+    - zabbix-configure

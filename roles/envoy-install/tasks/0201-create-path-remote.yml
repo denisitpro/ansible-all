@@ -1,0 +1,24 @@
+---
+- name: create path for wild sers
+  file:
+     path: "/etc/nginx/ssl/{{item.domain}}"
+     state: directory
+     owner: root
+     group: root
+     recurse: yes
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'wild'
+  with_items: "{{ cert.hosts }}"
+
+- name: create ssl dir site folder
+  file:
+     path: "/etc/nginx/ssl/{{ item.servername.split(' ')[0]}}"
+     state: directory
+     owner: root
+     group: root
+     recurse: yes
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'personal'
+  with_items: "{{ cert.hosts }}"

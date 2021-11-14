@@ -1,0 +1,73 @@
+---
+- name: create tmp folders
+  file:
+     path: "{{item}}"
+     state: directory
+     recurse: yes
+  with_items:
+    - "{{nginx_tmp_wild}}"
+    - "{{nginx_tmp_personal}}"
+
+
+
+- name: curl get access token - {{vault_url}}
+  shell: 'curl -s --request POST --data ''{"password": "{{vault_password}}"}'' {{vault_url}}/v1/auth/ldap/login/{{vault_login}} | jq ".auth" | jq -r ".client_token"'
+  args:
+    warn: false
+  register: vault_access_token
+
+#- name: debug token vars
+#  debug: msg="{{vault_access_token.stdout}}"
+
+####### section wild
+
+- name: curl get certs - wild
+  shell: "{{curl_get_wild_cert}} > {{nginx_tmp_wild}}/{{item.domain}}-cert.pem"
+  args:
+    warn: false
+  register: cert_out
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'wild'
+  with_items: "{{ cert.hosts }}"
+
+- name: curl get privkey - wild
+  shell: "{{curl_get_wild_key}} > {{nginx_tmp_wild}}/{{item.domain}}-priv.pem"
+  args:
+    warn: false
+  register: cert_out
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'wild'
+  with_items: "{{ cert.hosts }}"
+
+
+
+####### section personal
+
+#- debug:
+#    msg: cert {{curl_get_personal_cert}}
+#  with_items: "{{ nginx.vhosts }}"
+
+- name: curl get certs - personal
+  shell: "{{curl_get_personal_cert}} > {{nginx_tmp_personal}}/{{item.servername}}-cert.pem"
+  args:
+    warn: false
+  register: cert_out
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'personal'
+  with_items: "{{ cert.hosts }}"
+
+- name: curl get privkey - personal
+  shell: "{{curl_get_personal_key}} > {{nginx_tmp_personal}}/{{item.servername}}-priv.pem"
+  args:
+    warn: false
+  register: cert_out
+  when:
+    - item.cert_type is defined
+    - item.cert_type == 'personal'
+  with_items: "{{ cert.hosts }}"
+
+
+

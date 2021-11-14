@@ -1,0 +1,13 @@
+---
+- name: include roles base common-v2
+  include_role:
+    name: common-v2
+    tasks_from: "{{item}}"
+  with_items:
+      - "20-update-installed-packages"
+      - "30-install-base-packages"
+      - "41-config-systemd-resolved"
+      - "42-set-dns-general.yml"
+      - "47-rsyslog"
+      - "55-hosts"
+      - "99-security"
