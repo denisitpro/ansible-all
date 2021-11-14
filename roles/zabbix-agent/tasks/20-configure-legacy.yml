@@ -15,7 +15,15 @@
   notify: restart zabbix-agent
   tags:
     - zabbix-conf
-
+    
+- name: copy clickhouse_userparams.conf
+  template:
+      src: clickhouse_userparams.conf.j2
+      dest: /etc/zabbix/zabbix_agentd.d/clickhouse_userparams.conf
+  when: ch_host_type == "clickhouse_slave"
+  notify: restart zabbix-agent
+  tags:
+    - zabbix-conf
 
 - name: copy *_userparams.conf.j2 - template
   template:

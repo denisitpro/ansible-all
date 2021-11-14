@@ -6,38 +6,66 @@
   notify: restart zabbix-agent2
   tags:
     - zabbix-conf
+    - zabbix_conf
     - conf-update
+    - zabbix
 
-- name: copy *_userparams.conf.j2 - template
+#- name: copy *_userparams.conf.j2 - template
+#  template:
+#      src: "{{item}}.j2"
+#      dest: "/etc/zabbix/zabbix_agent2.d/{{item}}"
+##      dest: "{{zbx_agent_path}}/{{item}}"
+#      mode: 0640
+#      owner: zabbix
+#      group: zabbix
+#  when: zabbix.templates is defined
+#  with_items: "{{ zabbix.templates }}"
+#  notify: restart zabbix-agent2
+#  tags:
+#    - zabbix-conf
+
+- name: copy ansible autogenerate userparams.conf
   template:
-      src: "{{item}}.j2"
-      dest: "/etc/zabbix/zabbix_agent2.d/{{item}}"
-#      dest: "{{zbx_agent_path}}/{{item}}"
+      src: "ansible_autogen.conf.j2"
+      dest: "/etc/zabbix/zabbix_agent2.d/ansible_autogen.conf"
       mode: 0640
       owner: zabbix
       group: zabbix
-  when: zabbix.templates is defined
-  with_items: "{{ zabbix.templates }}"
+  when: zabbix.params is defined
   notify: restart zabbix-agent2
   tags:
     - zabbix-conf
+
+#- name: copy clickhouse_userparams.conf
+#  template:
+#      src: clickhouse_userparams.conf.j2
+#      dest: "/etc/zabbix/zabbix_agent2.d/clickhouse_userparams.conf"
+#      mode: 0640
+#      owner: zabbix
+#      group: zabbix
+#  when: ch_host_type == "clickhouse_slave"
+#  notify: restart zabbix-agent2
+#  tags:
+#    - zabbix-conf
 
 - name: create scripts dir
   file:
     path: "{{ zabbix_scripts_path }}"
     state: directory
     recurse: yes
-  when: zabbix.configs is defined or zabbix.templates is defined
+  when: zabbix.scripts is defined
   tags:
     - zabbix-conf
 
 - name: copy user scripts
   copy:
-      src: scripts/
-      dest: "{{ zabbix_scripts_path }}"
+      src: "scripts/{{item}}"
+      dest: "{{ zabbix_scripts_path }}/{{item}}"
       force : True
       mode: a+rx
-  when: zabbix.configs is defined or zabbix.templates is defined
+  with_items:
+    - "{{ zabbix.scripts }}"
+  when: zabbix.scripts is defined
   notify: restart zabbix-agent2
   tags:
     - zabbix-conf

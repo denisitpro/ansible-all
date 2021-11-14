@@ -1,0 +1,6 @@
+## {{ ansible_managed }} ##
+{% if zabbix.params is defined %}
+{% for params in  zabbix.params %}UserParameter={{params}}
+{% endfor %}
+{% endif %}
+

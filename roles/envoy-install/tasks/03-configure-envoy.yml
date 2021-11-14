@@ -1,0 +1,33 @@
+---
+
+- name: Create config directory
+  file:
+    path: "{{config_path}}"
+    state: directory
+    mode: 0755
+
+- name: copy base config - envoy
+  template:
+    src: envoy.conf.yaml.j2
+    dest: "{{config_path}}/config.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart envoy
+  tags:
+    - config
+
+- name: set systemd envoy
+  template:
+    src: envoy.service.j2
+    dest: /etc/systemd/system/envoy.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart envoy
+
+
+- name: ensure envoy is enabled to start at boot
+  systemd:
+    name: envoy
+    enabled: yes

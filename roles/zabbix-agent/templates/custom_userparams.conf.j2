@@ -1,0 +1,18 @@
+# files
+UserParameter=files.size_max[*],du -bs $1*$2 | sort -nr | head -n 1 | cut -f 1
+
+# docker
+UserParameter=docker.ps_grep_count[*],docker ps | grep "$1" | wc -l
+UserParameter=docker.ps_filter_count[*],docker ps -f "$1" | tail -n +2 | wc -l
+
+# network
+UserParameter=network.established_count[*],netstat -natu | grep ESTABLISHED | egrep ':$1\\s' | wc -l
+UserParameter=network.established_count2[*],ss -t state established '( sport = $1 )' | tail -n +2 | wc -l
+
+#ssl
+UserParameter=ssl.check[*],bash -c "/opt/zabbix/cert-expire.sh $1 $2 $3"
+
+#available web
+UserParameter= webpage.check_code[*],curl -s -o /dev/null -w "%{http_code}" http://$1:$2
+
+

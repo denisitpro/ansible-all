@@ -3,20 +3,21 @@
 PidFile=/var/run/zabbix/zabbix_agent2.pid
 LogFile=/var/log/zabbix/zabbix_agent2.log
 
-{% if dc_location == 'example_dc' and  ansible_distribution_major_version == '7' and  ansible_hostname != 'zbx.example.com' %}
-ListenIP={{ ansible_eth1.ipv4.address if ( dc_location == 'example_dc' ) else ansible_default_ipv4.address }}
-{% endif %}
-{% if dc_location == 'example_dc' and  ansible_distribution_major_version != '7' and  ansible_hostname != 'zbx.example.com' %}
-ListenIP={{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'example_dc' ) else ansible_default_ipv4.address }}
-{% endif %}
-{% if ansible_hostname == 'zbx.example.com' %}
+{% if hostname_item is defined %}
 ListenIP=127.0.0.1
+{% else %}
+ListenIP={{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'fsn' ) else ansible_default_ipv4.address }}
 {% endif %}
 
 LogFileSize={{zbx_log_size}}
-Server={{ '127.0.0.1' if ( ansible_hostname == 'zbx.example.com' ) else zserver }}
-ServerActive={{ '127.0.0.1' if ( ansible_hostname == 'zbx.example.com' ) else zserveractive }}
+Server={{ '127.0.0.1' if ( hostname_item is defined ) else zserver }}
+ServerActive={{ '127.0.0.1' if ( hostname_item is defined ) else zserveractive }}
+{% if hostname_item is defined %}
+Hostname={{hostname_item}}
+{% else %}
 HostnameItem=system.hostname
+{% endif %}
+
 HostMetadata={% for zbx in  zabbix.apply_tag %}{{zbx}} {% endfor %}
 
 Timeout=30

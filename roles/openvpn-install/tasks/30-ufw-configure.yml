@@ -1,0 +1,9 @@
+---
+- name: allow forrward policy UFW
+  template:
+    src: default_ufw
+    dest: /etc/default/ufw
+
+- name: reload
+  community.general.ufw:
+    state: reloaded

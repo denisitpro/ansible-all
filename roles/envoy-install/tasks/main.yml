@@ -1,0 +1,34 @@
+---
+- include: 00-add-repo.yml
+  tags:
+    - install
+
+- include: 01-install-envoy.yml
+  tags:
+    - install
+
+
+- include: 0200-create-path.yml
+  delegate_to: localhost
+  become: no
+  tags:
+    - cert
+- include: 0201-create-path-remote.yml
+  tags:
+    - cert
+- include: 0202-vault-get-data.yml
+  delegate_to: localhost
+  become: no
+  tags:
+    - cert
+- include: 0203-copy-data.yml
+  tags:
+    - cert
+
+
+
+
+- include: 03-configure-envoy.yml
+  tags:
+    - install
+    - config

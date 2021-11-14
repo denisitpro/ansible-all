@@ -1,0 +1,14 @@
+[Unit]
+Description=Envoy Proxy
+Documentation=https://www.envoyproxy.io/
+After=network-online.target
+#Requires=envoy-auth-server.service
+#Wants=nginx.service
+
+[Service]
+User=root
+Restart=on-failure
+ExecStart=/usr/bin/envoy --config-path {{config_path}}/config.yaml
+
+[Install]
+WantedBy=multi-user.target

@@ -34,14 +34,14 @@
   uri:
     url: "https://{{consul_prom_server}}/v1/catalog/register"
     body_format: json
-    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'fsn' ) else ansible_default_ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'dc1' ) else ansible_default_ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
     headers:
       Accept: 'application/json'
       X-Consul-Token: '{{ key_value.json.data.data.value }}'
     method: PUT
   delegate_to: 127.0.0.1
   when:
-    - "dc_location != 'fsn'"
+    - "dc_location != 'dc1'"
     - consul_reg_dc_name is not defined
 
 - name: put data to consul - London
@@ -49,14 +49,14 @@
   uri:
     url: "https://{{consul_prom_server}}/v1/catalog/register"
     body_format: json
-    body: {"Datacenter": "{{consul_reg_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'fsn' ) else ansible_default_ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
+    body: {"Datacenter": "{{consul_reg_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ ansible_facts[second_interface_name].ipv4.address if ( dc_location == 'dc1' ) else ansible_default_ipv4.address }}", "Service": {"Service": "node_exporter", "Port": 9100, "Tags": ["node_exporter","prometheus","{{stand_type}}"] }}
     headers:
       Accept: 'application/json'
       X-Consul-Token: '{{ key_value.json.data.data.value }}'
     method: PUT
   delegate_to: 127.0.0.1
   when:
-    - "dc_location != 'fsn'"
+    - "dc_location != 'dc1'"
     - consul_reg_dc_name is defined
 
 - name: put data to consul centos 7 - hetzner
@@ -71,7 +71,7 @@
     method: PUT
   delegate_to: 127.0.0.1
   when:
-    - "dc_location == 'fsn' and ansible_distribution_major_version == '7'"
+    - "dc_location == 'dc1' and ansible_distribution_major_version == '7'"
     - consul_reg_dc_name is not defined
 
 - name: put data to consul centos 8 or Ubuntu - hetzner
@@ -86,7 +86,7 @@
     method: PUT
   delegate_to: 127.0.0.1
   when:
-    - "(dc_location == 'fsn' and ansible_distribution_major_version == '8') or (dc_location == 'fsn' and ansible_distribution == 'Ubuntu') "
+    - "(dc_location == 'dc1' and ansible_distribution_major_version == '8') or (dc_location == 'dc1' and ansible_distribution == 'Ubuntu') "
     - consul_reg_dc_name is not defined
 
 
@@ -102,7 +102,7 @@
     method: PUT
   delegate_to: 127.0.0.1
   when:
-    - "dc_location == 'fsn' and ansible_distribution_major_version == '7'"
+    - "dc_location == 'dc1' and ansible_distribution_major_version == '7'"
     - consul_reg_dc_name is defined
 
 - name: put data to consul centos 8 or Ubuntu - hetzner
@@ -117,5 +117,5 @@
     method: PUT
   delegate_to: 127.0.0.1
   when:
-    - "(dc_location == 'fsn' and ansible_distribution_major_version == '8') or (dc_location == 'fsn' and ansible_distribution == 'Ubuntu') "
+    - "(dc_location == 'dc1' and ansible_distribution_major_version == '8') or (dc_location == 'dc1' and ansible_distribution == 'Ubuntu') "
     - consul_reg_dc_name is defined

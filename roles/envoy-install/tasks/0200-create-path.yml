@@ -1,0 +1,9 @@
+---
+- name: create tmp folders
+  file:
+     path: "{{item}}"
+     state: directory
+     recurse: yes
+  with_items:
+    - "{{nginx_tmp_wild}}"
+    - "{{nginx_tmp_personal}}"
