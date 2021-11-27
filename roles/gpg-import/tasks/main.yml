@@ -1,0 +1,5 @@
+---
+- include: 00-preflay.yml
+  when: backup_encrypted is defined
+  tags:
+    - pubkey-gpg

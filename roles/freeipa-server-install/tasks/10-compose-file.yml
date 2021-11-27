@@ -1,6 +1,6 @@
 ---
 - name: copy freeipa compose
-  template:
+  ansible.builtin.template:
     src: docker-compose-ipa.yml.j2
     dest: "{{docker_compose_path}}/docker-compose.yml"
     mode: 0644

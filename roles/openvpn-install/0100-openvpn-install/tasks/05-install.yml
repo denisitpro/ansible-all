@@ -1,0 +1,71 @@
+---
+# vim: ft=ansible:
+
+- name: install | ensure direcotries is created
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items: "{{ openvpn_server_dirs }}"
+
+- name: install | install packages
+  apt:
+    pkg: "{{ openvpn_server_packages }}"
+
+- name: install | create easy-rsa tools
+  shell: "/usr/bin/make-cadir server"
+  args:
+    chdir: "{{ openvpn_root_path }}"
+    creates: "server"
+
+- name: install | easy-rsa vars
+  template:
+    src: easy-rsa-vars
+    dest: "{{ openvpn_root_path }}/server/vars"
+    mode: 0755
+  notify: restart openvpn
+  tags:
+    - vars-config
+- name: install | create 'ccd' directory
+  file:
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+    path: "{{ openvpn_root_path }}/server/ccd"
+
+- name: install | configure openvpn servers
+  template:
+    src: "server.conf"
+    owner: "root"
+    group: "root"
+    mode:  "0644"
+    dest: "{{ openvpn_root_path }}/server.conf"
+  notify: restart openvpn
+
+- name: install | ensure openvpn client template exists
+  template:
+    src: "client.template.conf"
+    dest: "{{ openvpn_root_path }}/client.template.conf"
+  notify: restart openvpn
+  tags:
+    - reconfigure
+
+- name: install | ensure make users tools exists
+  template:
+    src: ovpn_make_user.sh
+    dest: /usr/local/bin/ovpn_make_user.sh
+    mode: 0755
+
+- name: install | ensure google auth PAM is configured
+  template:
+    src: pam.d/openvpn
+    dest: /etc/pam.d/openvpn
+  notify: restart openvpn
+  when: openvpn_google_auth_enabled
+
+- name: install | ensure google auth OTP directory exists
+  file:
+    path: "{{ openvpn_root_path }}/server/otp"
+    state: directory
+  notify: restart openvpn
+  when: openvpn_google_auth_enabled

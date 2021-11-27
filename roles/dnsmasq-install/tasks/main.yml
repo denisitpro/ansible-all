@@ -1,8 +1,0 @@
----
-- include: 01-install.yml
-  tags: dnsmasq
-  when: "ansible_distribution == 'CentOS'"
-- include: 02-configure.yml
-  tags: dnsmasq
-  when: "ansible_distribution == 'CentOS'"
-

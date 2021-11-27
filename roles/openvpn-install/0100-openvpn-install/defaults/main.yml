@@ -1,0 +1,35 @@
+openvpn_server_packages:
+    - openvpn
+    - easy-rsa
+    - zip
+    - libpam-google-authenticator
+openvpn_server_public_address: vpn.example.com
+openvpn_google_auth_enabled: true
+openvpn_service_enabled: yes
+openvpn_server_name:  "{{openvpn_server_public_address}}"
+openvpn_server_push_routes: []
+openvpn_server_port: 4910
+openvpn_server_proto: udp
+openvpn_server_iface: tun
+openvpn_server_port_mng: 7505
+openvpn_server_subnet: 10.10.10.0/24
+openvpn_server_net: 10.10.10
+openvpn_server_gw: 10.10.10.1
+openvpn_server_netmask: 255.255.255.0
+openvpn_server_cidr: 24
+openvpn_route_all_traffic: false
+openvpn_root_path: /opt/openvpn
+openvpn_archive_path: "{{ openvpn_root_path }}/archive"
+openvpn_server_dirs:
+  - "{{ openvpn_root_path }}"
+  - "{{ openvpn_archive_path }}"
+
+# Users
+openvpn_users: []
+#- name: user1
+#  address: 10.10.0.2
+#  push_route: 
+#    - 10.0.10.43 255.255.255.255
+#    - 10.0.10.0 255.255.255.0
+#- name: user2
+#  address: 10.200.0.4

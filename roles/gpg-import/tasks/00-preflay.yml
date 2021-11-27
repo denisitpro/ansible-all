@@ -1,0 +1,32 @@
+---
+- name: check pubkey exist
+  stat:
+    path: "{{pubkey_path}}"
+  register: pubkey_result
+  tags:
+    - gpg-key
+
+- name: print pubkey status
+  ansible.builtin.debug:
+    msg: Pubkey {{ pubkey_result.stat.exists }}
+
+- name: create path
+  file:
+    path: "{{gpg_pubkey_path}}"
+    state: directory
+  when: pubkey_result.stat.exists == False
+
+- name: copy pubkey
+  copy:
+    src: "pubkey-example.txt"
+    dest: "{{gpg_pubkey_path}}/pubkey.txt"
+    owner: root
+    group: root
+    mode: 0644
+  when: pubkey_result.stat.exists == False
+
+- name: import pubkey
+  shell: "gpg --import pubkey.txt"
+  args:
+    chdir: "{{gpg_pubkey_path}}"
+  when: pubkey_result.stat.exists == False

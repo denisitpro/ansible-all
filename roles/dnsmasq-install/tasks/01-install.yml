@@ -1,8 +1,0 @@
----
-- name: install dnsmasq  - centos
-  yum:
-    name:
-      - dnsmasq
-    state: latest
-    update_cache: yes
-  when: ansible_distribution == 'CentOS'
