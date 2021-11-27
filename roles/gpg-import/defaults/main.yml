@@ -1,0 +1,3 @@
+---
+gpg_pubkey_path: /opt/gpg
+pubkey_path: "{{gpg_pubkey_path}}/pubkey.txt"

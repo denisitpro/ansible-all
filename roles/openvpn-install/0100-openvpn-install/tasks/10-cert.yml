@@ -1,0 +1,30 @@
+---
+- name: cert | easyrsa init-pki
+  shell: "./easyrsa init-pki"
+  args:
+    chdir: "{{ openvpn_root_path }}/server/"
+    creates: "{{ openvpn_root_path }}/server/pki"
+
+- name: cert | easyrsa build-ca
+  shell: "./easyrsa --batch build-ca nopass"
+  args:
+    chdir: "{{ openvpn_root_path }}/server/"
+    creates: "{{ openvpn_root_path }}/server/pki/ca.crt"
+
+- name: cert | easyrsa gen-dh
+  shell: "./easyrsa gen-dh"
+  args:
+    chdir: "{{ openvpn_root_path }}/server/"
+    creates: "{{ openvpn_root_path }}/server/pki/dh.pem"
+    
+- name: cert | easyrsa gen-crl
+  shell: "./easyrsa gen-crl"
+  args:
+    chdir: "{{ openvpn_root_path }}/server/"
+    creates: "{{ openvpn_root_path }}/server/pki/crl.pem"
+
+- name: cert | easyrsa build-server-full
+  shell: "./easyrsa build-server-full {{ openvpn_server_name }} nopass"
+  args:
+    chdir: "{{ openvpn_root_path }}/server/"
+    creates: "{{ openvpn_root_path }}/server/pki/private/{{ openvpn_server_name }}.key"

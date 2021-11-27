@@ -1,0 +1,13 @@
+---
+- name: copy sysctl config for nat
+  template:
+    src: "shared/templates/sysctl/050-wg-sysctl.conf.j2"
+    dest: "/etc/sysctl.d/050-wg.conf"
+    owner: root
+    group: root
+  notify: restart openvpn
+  tags: [sysctl]
+
+- name: apply tune config
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/050-wg.conf
+  tags: [sysctl]

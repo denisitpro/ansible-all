@@ -2,7 +2,7 @@ version: '3'
 
 services:
   freeipa:
-    image: freeipa/freeipa-server:centos-8
+    image: freeipa/freeipa-server:{{freeipa_image_version}}
     hostname: {{ipa_hostname}}
     sysctls:
       net.ipv6.conf.all.disable_ipv6: 0
@@ -32,11 +32,11 @@ services:
       - --admin-password={{admin_password}}
 {% endif %}
 #    environment:
-    restart: always
+#    restart: always
 #    logging:
 #      driver: "none"
-#    logging:
-#      driver: json-file
-#      options:
-#        max-size: 100m
-#        max-file: '2'
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
