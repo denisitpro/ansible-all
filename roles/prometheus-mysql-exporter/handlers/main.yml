@@ -1,0 +1,3 @@
+---
+- import_tasks: shared/handlers/mysqld_exporter.yml
+- import_tasks: shared/handlers/consul.yml

@@ -1,0 +1,18 @@
+[Unit]
+Description=Prometheus elasticsearch_exporter
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=200
+ExecStart = /usr/local/bin/elasticsearch_exporter \
+{% if ansible_distribution == 'CentOS' %}
+  --web.listen-address={{  ansible_default_ipv4.address }}:9114 \
+{% endif %}
+{% if ansible_distribution == 'Ubuntu' %}
+  --web.listen-address={{ ansible_facts[second_interface_name].ipv4.address }}:9114 \
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target

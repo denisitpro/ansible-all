@@ -1,0 +1,17 @@
+---
+- import_tasks: 00-create-user.yml
+  tags:
+    - mysqld-exporter
+    - mysql-exporter-user
+- import_tasks: 01-download.yml
+  tags:
+    - mysqld-exporter
+
+- import_tasks: 02-configure.yml
+  tags:
+   - mysqld-exporter
+
+- import_tasks: 03-consul-reg.yml
+  tags:
+    - consul-reg-mysqld
+    - mysqld-exporter

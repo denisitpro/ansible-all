@@ -1,0 +1,35 @@
+---
+- name: Collect only facts returned by facter
+  setup:
+    gather_subset:
+      - 'all'
+  when: consul_agent is not defined
+
+- debug:
+    msg: System {{ ansible_fqdn }}
+  when: consul_agent is not defined
+
+- name: put data to consul "https://{{consul_prom_server}}/v1/catalog/register"
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ansible_default_ipv4.address}}", "Service": {"Service": "mysql_exporter", "Port": 9104, "Tags": ["mysql_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+    method: PUT
+  delegate_to: 127.0.0.1
+  when: consul_agent is not defined
+  tags:
+    - reg
+
+
+- name: copy mysql_exporter consul config
+  template:
+    src: mysql_exporter.hcl.j2
+    dest: /etc/consul.d/mysql_exporter.hcl
+    owner: consul
+    group: consul
+    mode: 0644
+  notify: reload consul
+  when: consul_agent is defined

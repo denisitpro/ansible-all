@@ -1,0 +1,8 @@
+---
+- name: Add podman GPG key - Ubuntu
+  apt_key: url=https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key
+
+- name: Add podman APT repository - Ubuntu
+  apt_repository:
+    repo: deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /
+

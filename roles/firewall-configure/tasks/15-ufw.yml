@@ -32,26 +32,26 @@
   pause:
     seconds: 15
 
-- name: allow ssh access
+- name: allow ssh access default
   ufw:
     rule: "allow"
     proto: tcp
     src: "0.0.0.0/0"
     port: "22"
-    comment: open default ssh access
+    comment: "open default ssh access"
   when: iptables.rules is not defined
 
-- name: ufw management rules
-  ufw:
-    rule: "{{ item.rule| default('allow') }}"
-    proto: "{{item.protocol}}"
-    src: "{{ item.source | default('0.0.0.0/0') }}"
-    port: "{{item.port}}"
-    comment: "{{item.name}}"
-  with_items:
-    - "{{ iptables.rules }}"
-  when:
-    - item.iface is not defined
+#- name: ufw management rules
+#  ufw:
+#    rule: "{{ item.rule| default('allow') }}"
+#    proto: "{{item.protocol}}"
+#    src: "{{ item.source | default('0.0.0.0/0') }}"
+#    port: "{{item.port}}"
+#    comment: "{{item.name}}"
+#  with_items:
+#    - "{{ iptables.rules }}"
+#  when:
+#    - item.iface is not defined
     
 - name: remove temporary ssh access
   ufw:

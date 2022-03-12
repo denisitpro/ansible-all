@@ -1,0 +1,23 @@
+---
+- name: copy unit apps
+  template:
+    src: "mysqld_exporter.service.j2"
+    dest: "/etc/systemd/system/mysqld_exporter.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart mysqld_exporter
+
+- name: enable mysqld_exporter  unit
+  systemd:
+    name: "mysqld_exporter"
+    enabled: yes
+    daemon_reload: yes
+  notify: restart mysqld_exporter
+
+- name: copy config
+  template:
+    src: "mysqld_exporter.cnf.j2"
+    dest: "{{config_path}}/.mysqld_exporter.cnf"
+    mode: 0644
+  notify: restart mysqld_exporter

@@ -1,0 +1,38 @@
+---
+#- name: download mysqld exporter binary to local folder
+#  become: false
+#  get_url:
+#    url: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysqld_version }}/mysqld_exporter-{{ mysqld_version }}.linux-{{ go_arch }}.tar.gz"
+#    dest: "/tmp/mysqld_exporter-{{ mysqld_version }}.linux-{{ go_arch }}.tar.gz"
+#  register: _download_archive
+#  until: _download_archive is succeeded
+#  retries: 5
+#  delay: 2
+
+
+#- name: unpack mysqld binaries
+#  become: false
+#  unarchive:
+#    src: "/tmp/mysqld_exporter-{{ mysqld_version }}.linux-{{ go_arch }}.tar.gz"
+#    dest: "/tmp"
+#    creates: "/tmp/mysqld_exporter-{{ mysqld_version }}.linux-{{ go_arch }}"
+#    remote_src: yes
+
+- name: download mysqld exporter binary to local folder
+  become: false
+  get_url:
+    url: "https://nexus.example.com/repository/blob-store/mysqld_exporter/mysqld_exporter"
+    dest: "/tmp/mysqld_exporter"
+  retries: 5
+  delay: 2
+
+- name: propagate mysqld and promtool binaries
+  copy:
+    src: "/tmp/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+    remote_src: true
+  with_items:
+    - mysqld_exporter
+  notify:
+    - restart mysqld_exporter

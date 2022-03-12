@@ -1,0 +1,32 @@
+---
+- name: download elasticsearch exporter binary to local folder
+  become: false
+  get_url:
+    url: "https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v{{ es_exporter_version }}/elasticsearch_exporter-{{ es_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp/elasticsearch_exporter-{{ es_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+
+
+- name: unpack es_exporter binaries
+  become: false
+  unarchive:
+    src: "/tmp/elasticsearch_exporter-{{ es_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/elasticsearch_exporter-{{ es_exporter_version }}.linux-{{ go_arch }}"
+    remote_src: yes
+
+- name: propagate es_exporter and promtool binaries
+  copy:
+    src: "/tmp/elasticsearch_exporter-{{ es_exporter_version }}.linux-{{ go_arch }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+    owner: root
+    group: root
+    remote_src: true
+  with_items:
+    - elasticsearch_exporter
+  notify:
+    - restart elasticsearch_exporter

@@ -3,7 +3,7 @@ ipa_bind_addr: "{{ ansible_facts[second_interface_name].ipv4.address }}"
 ipa_hostname: ipa-01.example.com
 
 # UPPERCASE
-ipa_realm: IHERO.LIVE
+ipa_realm: EXAMPLE.COM
 ds_password: changeme
 admin_password: changeme
 
