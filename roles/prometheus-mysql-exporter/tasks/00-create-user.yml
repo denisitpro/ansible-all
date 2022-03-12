@@ -1,0 +1,12 @@
+---
+- name: Create users
+  community.mysql.mysql_user:
+    state: present
+    name: "{{vault_dict_users_secret.mysql_exporter_user}}"
+    host: "127.0.0.1"
+    password: "{{vault_dict_users_secret.mysql_exporter_password}}"
+    priv: "*.*:PROCESS,REPLICATION CLIENT"
+  when: enable_create_user is defined
+  notify: restart mysqld_exporter
+  tags:
+    - mysql-exporter-user

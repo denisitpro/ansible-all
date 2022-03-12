@@ -1,0 +1,7 @@
+---
+- import_tasks: 00-repo.yml
+  tags:
+    - runner
+- import_tasks: 01-install.yml
+  tags:
+    - runner

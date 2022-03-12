@@ -1,0 +1,20 @@
+---
+- name: Copy repo
+  copy:
+    src: runner_gitlab-runner.repo
+    dest: /etc/yum.repos.d/runner_gitlab-runner.repo
+  when: ansible_distribution == 'CentOS'
+
+- name: Add an Apt signing key, uses  is at the URL
+  apt_key:
+    url: https://packages.gitlab.com/runner/gitlab-runner/gpgkey
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: get gitlab repo - ubuntu {{ ansible_distribution_release }}
+  apt_repository:
+    repo: "deb https://packages.gitlab.com/runner/gitlab-runner/ubuntu/ {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+

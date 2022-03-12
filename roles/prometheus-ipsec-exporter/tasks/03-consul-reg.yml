@@ -1,0 +1,21 @@
+---
+- name: Collect only facts returned by facter
+  setup:
+    gather_subset:
+      - 'all'
+
+- debug:
+    msg: System {{ ansible_fqdn }}
+
+- name: put data to consul "https://{{consul_prom_server}}/v1/catalog/register"
+  become: false
+  uri:
+    url: "https://{{consul_prom_server}}/v1/catalog/register"
+    body_format: json
+    body: {"Datacenter": "{{consul_dc_name}}", "Node": "{{ansible_fqdn}}", "Address": "{{ansible_default_ipv4.address}}", "Service": {"Service": "ipsec_exporter", "Port": 9004, "Tags": ["ipsec_exporter","prometheus","{{stand_type}}"] }}
+    headers:
+      Accept: 'application/json'
+    method: PUT
+  delegate_to: 127.0.0.1
+  tags:
+    - reg

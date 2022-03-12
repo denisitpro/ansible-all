@@ -1,0 +1,11 @@
+---
+- import_tasks: 01-download.yml
+  tags:
+    - ipsec_exporter
+- import_tasks: 02-configure.yml
+  tags:
+   - ipsec_exporter
+- import_tasks: 03-consul-reg.yml
+  tags:
+    - ipsec_exporter
+    - consul_reg_ipsec

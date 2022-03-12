@@ -1,0 +1,8 @@
+---
+- name: create symlink
+  file:
+    src: /usr/bin/podman
+    dest: /usr/local/bin/docker
+    owner: root
+    group: root
+    state: link

@@ -2,7 +2,12 @@
 $ActionFileDefaultTemplate RSYSLOG_FileFormat
 
 # Log kernel generated UFW log messages to file
+{% if wg_ext is not defined %}
 :msg,contains,"[UFW " /var/log/ufw.log
+{% endif %}
+{% if wg_ext is  defined %}
+:msg,contains,"[UFW " /dev/null
+{% endif %}
 ##:msg,contains,"[UFW BLOCK]" /var/log/ufw.log
 & stop
 

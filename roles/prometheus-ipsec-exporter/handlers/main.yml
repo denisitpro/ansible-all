@@ -1,0 +1,2 @@
+---
+- import_tasks: shared/handlers/ipsec_exporter.yml

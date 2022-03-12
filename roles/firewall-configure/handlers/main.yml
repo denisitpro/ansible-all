@@ -1,2 +1,2 @@
-- include: shared/handlers/rsyslog.yml
-- include: shared/handlers/ufw.yml
+- import_tasks: shared/handlers/rsyslog.yml
+- import_tasks: shared/handlers/ufw.yml
