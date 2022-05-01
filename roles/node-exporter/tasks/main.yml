@@ -1,0 +1,22 @@
+---
+- import_tasks: 05-install.yml
+  tags:
+    - node-exporter
+
+- import_tasks: 10-configure.yml
+  tags:
+    - node-exporter
+    - node-exporter-conf
+
+
+- import_tasks: 25-consul-service.yml
+  tags:
+    - node-exporter
+    - consul-reg
+
+- import_tasks: 30-consul-http-reg.yml
+  when:
+    - consul_http_reg is defined
+  tags:
+    - node-exporter
+    - consul-reg

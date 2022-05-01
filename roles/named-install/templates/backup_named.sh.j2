@@ -1,0 +1,17 @@
+#!/bin/bash
+
+TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+DIR_PATH={{backup_dir}}/{{ansible_hostname}}_$TIMESTAMP
+echo " backup started to $DIR_PATH"
+
+mkdir $DIR_PATH
+{% if ansible_distribution == 'CentOS' %}
+cp -R /var/named  $DIR_PATH
+{% endif %}
+{% if ansible_distribution == 'Ubuntu' %}
+cp -R /etc/bind/named.conf  $DIR_PATH
+{% endif %}
+cp -R /var/named  $DIR_PATH
+tar czf {{backup_dir}}/{{ansible_hostname}}_$TIMESTAMP.tar.gz $DIR_PATH --remove-files $DIR_PATH
+chown {{backup_user}}.{{backup_user}} {{backup_dir}}
+chown {{backup_user}}.{{backup_user}} {{backup_dir}}/{{ansible_hostname}}_$TIMESTAMP.tar.gz

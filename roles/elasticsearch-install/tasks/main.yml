@@ -1,0 +1,17 @@
+---
+- import_tasks: 00-install-openjdk.yml
+- import_tasks: 01-add-repo.yml
+- import_tasks: 02-es-install.yml
+- import_tasks: 03-es-single-configure.yml
+  tags:
+    - reconfigure
+- import_tasks: 04-es-curator-install.yml
+  tags:
+    - curator
+- import_tasks: 05-curator-conf-action.yml
+  tags:
+    - curator
+- import_tasks: 06-max-shards.yml
+  tags:
+    - max_shards
+    - curator

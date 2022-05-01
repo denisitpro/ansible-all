@@ -1,0 +1,80 @@
+version: "3.7"
+services:
+  named:
+    image: internetsystemsconsortium/bind9:{{named_version}}
+    container_name: named
+    network_mode: host
+    restart: always
+    volumes:
+      - {{named_path}}:{{named_path}}
+      - /opt/gitlab/:/opt/gitlab/
+      - {{named_path}}/conf/named.conf:/etc/bind/named.conf
+      - {{named_path}}/data:/var/lib/bind
+      - {{named_path}}/cache:/var/cache/bind
+      - {{named_path}}/logs:/var/log/bind/
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{vector_srv}}:{{vector_port}}
+        tag: redis
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+
+{% if dns_server_ext is not defined %}
+  consul:
+    image: hashicorp/consul:{{consul_agent_image}}
+    container_name: consul
+    hostname: {{ansible_hostname}}.{{internal_domain}}
+    network_mode: host
+    volumes:
+      - /etc/consul.d/:/consul/config
+      - {{consul_data_path}}/data:/consul/data
+    restart: always
+    command: ["agent", "-client", "{{global_bind_addr}}","-bind", "{{global_bind_addr}}"]
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  node.exporter:
+    image: prom/node-exporter:{{node_exporter_version}}
+    container_name: node.exporter
+    network_mode: host
+    restart: always
+    command:
+      - '--web.listen-address={{named_listener_addr}}:9100'
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  bind.exporter:
+    image: prometheuscommunity/bind-exporter:{{bind_exporter_version}}
+    container_name: bind.exporter
+    network_mode: host
+    volumes:
+      - /etc/consul.d/:/consul/config
+      - {{consul_data_path}}/data:/consul/data
+    restart: always
+    command:
+      - '--bind.stats-url=http://127.0.0.1:8053'
+      - '--bind.stats-groups=server,view,tasks'
+      - '--web.listen-address={{named_listener_addr}}:9119'
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+
+
+
+
+

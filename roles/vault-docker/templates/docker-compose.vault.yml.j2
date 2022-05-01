@@ -1,0 +1,33 @@
+version: "3.7"
+
+networks:
+  vault:
+    driver: bridge
+    name: vault
+    attachable: true
+
+services:
+  vault:
+    image: {{vault_image}}
+    container_name: vault
+    networks:
+       - vault
+    ports:
+       - {{vault_listener_addr}}:{{vault_port}}:{{vault_port}}
+#    restart: always
+    environment:
+      - PORT={{vault_port}}
+    volumes:
+      - {{vault_conf_path}}:{{vault_conf_path}}
+    cap_add:
+      - IPC_LOCK
+
+    command: vault server -config={{vault_conf_path}}/config.hcl
+
+
+
+
+
+
+
+

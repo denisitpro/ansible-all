@@ -1,9 +1,9 @@
 ---
-- name: install dns
-  yum:
-    name:
-      - bind
-      - bind-utils
-      - dnstop
-    state: latest
-    update_cache: yes
+- import_tasks: 05-install.yml
+- import_tasks: 10-configure.yml
+  tags:
+    - named-config
+- import_tasks: 20-backup.yml
+  tags:
+    - backup
+  when: dnsbackup is defined

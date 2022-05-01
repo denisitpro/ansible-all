@@ -1,0 +1,3 @@
+---
+- import_tasks: shared/handlers/named.yml
+- import_tasks: shared/handlers/apparmor.yml

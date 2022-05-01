@@ -1,0 +1,8 @@
+cluster.name: {{es_cluster_name}}
+path.data: {{es_path_data}}
+path.logs: {{es_path_logs}}
+bootstrap.memory_lock: {{es_bootstrap_memory_lock}}
+network.host: [{{es_bind_addr}}]
+http.port: {{es_http_port}}
+### https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html#single-node-discovery
+discovery.type: single-node

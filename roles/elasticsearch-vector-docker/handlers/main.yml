@@ -1,0 +1,3 @@
+---
+- import_tasks: shared/handlers/elasticsearch.yml
+- import_tasks: shared/handlers/vector.yml

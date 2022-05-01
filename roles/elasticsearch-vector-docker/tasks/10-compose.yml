@@ -1,0 +1,12 @@
+---
+- name: copy compose  elasticsearch
+  template:
+    src: "docker-compose.elasticsearch.yml.j2"
+    dest: "{{docker_compose_path}}/docker-compose.yml"
+    mode: 0600
+
+
+- name: run restart compose
+  shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{docker_compose_path}}"

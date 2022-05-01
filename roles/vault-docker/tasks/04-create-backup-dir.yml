@@ -1,0 +1,8 @@
+---
+- name: create paths for backup files
+  file:
+    path: "{{backup_vault_dir_path}}"
+    owner: "{{bkp_user}}"
+    group: "{{bkp_user}}"
+    mode: '0755'
+    state: directory

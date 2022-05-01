@@ -1,0 +1,21 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-linits.yml
+
+- name: create folder redis-data
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0777'
+  with_items:
+    - "{{redis_node_data_path}}"
+
+
+
+- name: copy redis config
+  template:
+    src: "shared/configs/redis-master.conf.j2"
+    dest: "{{redis_node_data_path}}/redis.conf"
+    owner: root
+    group: root
+    mode: 0644

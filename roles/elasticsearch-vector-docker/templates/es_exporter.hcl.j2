@@ -1,0 +1,16 @@
+service {
+  name = "elasticsearch-exporter"
+  tags = ["elasticsearch-exporter", "prometheus", "{{stand_type}}"]
+  address = "{{global_bind_addr}}"
+  port = 9114
+{% if consul_agent_disabled is not defined %}
+  token = "{{ vault_dict_users_secret.consul_elasticsearch_exporter }}"
+{% endif %}
+  check = {
+    id = "elasticsearch_exporter"
+    name = "elasticsearch_exporter healthcheck"
+    tcp = "elasticsearch.exporter:9114"
+    interval =  "30s"
+    timeout =  "2s"
+    }
+}

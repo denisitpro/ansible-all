@@ -1,0 +1,18 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-linits.yml
+
+
+- name: create folder vault
+  ansible.builtin.file:
+    path: "{{vault_conf_path}}"
+    state: directory
+    mode: '0777'
+
+- name: copy vault config
+  template:
+    src: "config.hcl.j2"
+    dest: "{{vault_conf_path}}/config.hcl"
+    owner: root
+    group: root
+    mode: 0644

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+old_days="14"
+old_date=$(date -d "${old_days} days ago" +%s)
+
+{% for index in es_log_indexes %}
+for index in $(curl -s -XGET "http://localhost:9200/_cat/indices?index={{index}}-*" | cut -d" " -f 3); do
+indexdate=$(echo ${index}| cut -d"-" -f2 | sed 's|\.|-|g')
+indextimestamp=$(date -d ${indexdate} +%s)
+if (( ${indextimestamp} < ${old_date} )); then
+curl -XDELETE "http://localhost:9200/${index}"
+fi
+done
+
+{% endfor %}

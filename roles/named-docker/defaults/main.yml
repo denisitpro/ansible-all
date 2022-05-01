@@ -1,0 +1,9 @@
+---
+
+named_version: 9.16
+named_path: /opt/named
+named_data: "{{named_path}}/data"
+named_listener_addr: "{{global_bind_addr}}"
+named_publish_addr: "{{named_listener_addr}}"
+
+bind_exporter_version: v0.5.0

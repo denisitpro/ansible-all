@@ -1,0 +1,13 @@
+---
+- name: copy configs
+  template:
+    src: "{{item}}.j2"
+    dest: "{{elasticsearch_base_path}}/config/{{item}}"
+    mode: 0640
+  notify: restart-docker kibana
+  with_items:
+    - kibana.yml
+    - elasticsearch.yml
+    - jvm.options
+  tags:
+    - reconfig
