@@ -1,0 +1,18 @@
+---
+- import_tasks: 01-create.yml
+  tags:
+    - vault
+- import_tasks: 02-copy-compose.yml
+  tags:
+    - vault
+    - vault-compose
+
+- import_tasks: 03-lauch.yml
+  tags:
+    - vault
+    - vault-compose
+
+- import_tasks: 04-create-backup-dir.yml
+  when: backup_vault is defined
+  tags:
+    - backup-dir

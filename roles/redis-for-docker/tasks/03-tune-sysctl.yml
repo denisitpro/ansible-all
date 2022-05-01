@@ -1,0 +1,11 @@
+---
+- name: copy tune file
+  copy:
+    src: "035-redis-sysctl.conf"
+    dest: "/etc/sysctl.d/035-redis-sysctl.conf"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: apply sysctl.conf
+  shell: "sysctl -p /etc/sysctl.d/035-redis-sysctl.conf"

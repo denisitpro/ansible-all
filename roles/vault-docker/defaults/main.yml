@@ -1,0 +1,15 @@
+---
+service_env: dev
+service_name: vault
+service_state: present
+
+vault_port: 8200
+
+vault_conf_path: /opt/vault
+vault_data_path: "{{vault_conf_path}}/data"
+
+
+vault_image: vault:1.9.3
+
+vault_listener_addr: "{{global_bind_addr}}"
+vault_api_addr: http://127.0.0.1:8200

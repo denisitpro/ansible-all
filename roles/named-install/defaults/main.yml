@@ -1,0 +1,6 @@
+---
+backup_dir: /mnt/backup
+script_dir: /opt/scripts
+backup_user: local_backup
+
+named_dir_path: /var/named

@@ -1,0 +1,8 @@
+---
+- name: change max shards
+  uri:
+    url: "{{url}}"
+    method: "{{method}}"
+    body: "{{body}}"
+    status_code: "{{status_code}}"
+    body_format: "{{body_format}}"

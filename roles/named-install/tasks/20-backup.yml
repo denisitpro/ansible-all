@@ -1,0 +1,32 @@
+---
+- name: create paths - centos
+  file:
+    path: "{{item}}"
+    owner: named
+    group: named
+    mode: '0755'
+    state: directory
+  with_items:
+    - "{{backup_dir}}"
+    - "{{script_dir}}"
+  when: ansible_distribution == 'CentOS'
+
+- name: create paths - ubuntu
+  file:
+    path: "{{item}}"
+    owner: bind
+    group: bind
+    mode: '0755'
+    state: directory
+  with_items:
+    - "{{backup_dir}}"
+    - "{{script_dir}}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: create backup script
+  template:
+    src: "backup_named.sh.j2"
+    dest: "{{script_dir}}/backup-named.sh"
+    mode: 0744
+    owner: "root"
+    group: "root"

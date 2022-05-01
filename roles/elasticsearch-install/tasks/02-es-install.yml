@@ -1,0 +1,17 @@
+---
+- name: install es - centos
+  yum:
+    name: elasticsearch
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: install es
+  apt:
+    name: elasticsearch-oss={{es_version_full}}
+    state: present
+  when: ansible_distribution == 'Ubuntu' and es_version == 7
+
+- name: enable to boot elasticsearch
+  systemd:
+    name: elasticsearch
+    enabled: yes

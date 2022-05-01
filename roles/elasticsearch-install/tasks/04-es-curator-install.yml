@@ -1,0 +1,25 @@
+---
+- name: get curator repo {{ ansible_distribution_release }}
+  apt_repository:
+    repo: "deb [arch=amd64] https://packages.elastic.co/curator/5/debian stable main"
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: centos7  - add curator repo
+  copy:
+    src: 'curator5.repo'
+    dest: '/etc/yum.repos.d/curator.repo'
+  when: ansible_distribution == 'CentOS'
+
+- name: install es-curator - centos
+  yum:
+    name: elasticsearch-curator
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: install es-curator
+  apt:
+    name: elasticsearch-curator
+    state: present
+  when: ansible_distribution == 'Ubuntu'

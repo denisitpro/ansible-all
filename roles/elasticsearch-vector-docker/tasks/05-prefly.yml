@@ -1,0 +1,28 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-linits.yml
+
+- name: create  folders
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{elasticsearch_base_path}}"
+    - "{{elasticsearch_base_path}}/config"
+    - "{{ vector_data_path }}"
+  tags:
+    - elastic-dir
+    - vector
+
+
+- name: create folder elasticsearch
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0777'
+  with_items:
+    - "{{elasticsearch_base_path}}/data"
+    - "{{elasticsearch_base_path}}/logs"
+  tags:
+    - elastic-dir

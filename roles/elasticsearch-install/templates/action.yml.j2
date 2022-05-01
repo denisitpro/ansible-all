@@ -1,0 +1,19 @@
+actions:
+  1:
+    action: delete_indices
+    description: >-
+      Delete indices older than {{unit_count}} days (based on index name).
+    options:
+      ignore_empty_list: {{ignore_empty_list}}
+      disable_action: {{disable_action}}
+    filters:
+    - filtertype: {{filtertype_kind}}
+      kind: {{kind}}
+      value: '{{value}}'
+    - filtertype: {{filtertype}}
+      source: {{source}}
+      direction: {{direction}}
+      timestring: '{{timestring}}'
+      unit: {{unit}}
+      unit_count: {{unit_count}}
+

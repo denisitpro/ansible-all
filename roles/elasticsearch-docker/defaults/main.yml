@@ -1,0 +1,27 @@
+---
+
+docker_compose_app_path:  "{{docker_compose_path}}"
+elasticsearch_version: 7.17.1
+elasticsearch_base_path: /opt/elasticsearch
+elasticsearch_bind_addr: "{{global_bind_addr}}"
+
+kibana_version: 7.17.1
+kibana_http_port: 5601
+kibana_bind_addr: "0.0.0.0"
+kibana_name: "kibana-{{stand_type}}"
+
+kibana_public_base_url: https://kibana.example.com
+
+
+es_cluster_name: elastic
+es_path_data: "{{elasticsearch_base_path}}/data"
+es_path_logs: "{{elasticsearch_base_path}}/logs"
+es_bootstrap_memory_lock: true
+es_bind_addr: 0.0.0.0
+es_http_port: 9200
+es_limit_memlock: infinity
+
+es_heap_size: "4g"
+
+
+es_exporter_version: v1.3.0

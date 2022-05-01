@@ -1,0 +1,52 @@
+# set variable for default servers
+jdk_version: java-11-openjdk-devel
+es_user: elasticsearch
+es_group: elasticsearch
+es_version: 7
+es_version_full: 7.10.0
+es_cluster_name: elastic
+es_path_data: /var/lib/elasticsearch
+es_path_logs: /var/log/elasticsearch
+es_bootstrap_memory_lock: true
+es_http_port: 9200
+es_limit_memlock: infinity
+es_heap_size: "1g"
+es_bind_addr: "127.0.0.1, {{ansible_default_ipv4.address}} "
+opendistro_security: false
+
+##curator
+curator_path: /etc/curator
+
+
+#action curator
+action_1: close
+ignore_empty_list: True
+delete_aliases: False
+disable_action: False
+filtertype_kind: pattern
+kind: timestring
+value: '%Y-%m-%d'
+filtertype: age
+source: name
+direction: older
+timestring: '%Y-%m-%d'
+unit: days
+unit_count: 7
+action_2: delete_indices
+
+#config curator
+curator_host: 127.0.01
+curator_port: 9200
+use_ssl: false
+ssl_no_validate: false
+curator_timeout: 300
+master_only: false
+log_level: INFO
+log_format: default
+
+#elastic uri
+url: http://localhost:9200/_cluster/settings
+method: PUT
+body: '{"transient":{"cluster":{"max_shards_per_node":2000}}}'
+status_code: 200
+body_format: json

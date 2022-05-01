@@ -1,0 +1,39 @@
+---
+- name: create folder named 0755
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "{{named_path}}"
+    - "{{named_path}}/conf"
+    - "{{named_path}}/master"
+
+- name: create folder named 0777
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: 0777
+  with_items:
+    - "{{named_path}}/data"
+    - "{{named_path}}/logs"
+    - "{{named_data}}/dynamic"
+    - "{{named_data}}/slave"
+
+- name: copy named config
+  template:
+    src: "named.conf.j2"
+    dest: "{{named_path}}/conf/named.conf"
+  notify: restart-docker named
+  tags:
+    - config
+    - named-config
+
+- name: copy bind_exporter consul config
+  template:
+    src: bind_exporter.hcl.j2
+    dest: /etc/consul.d/bind_exporter.hcl
+  notify: restart-docker consul
+  when: dns_server_ext is not defined 
+  tags:
+    - consul

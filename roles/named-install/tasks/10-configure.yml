@@ -1,0 +1,84 @@
+---
+- name: create paths - centos
+  file:
+    path: "{{item}}"
+    owner: named
+    group: named
+    mode: '0755'
+    state: directory
+  with_items:
+    - "/var/log/named/"
+    - "/var/named/master"
+    - "/var/named/slave"
+  when: ansible_distribution == 'CentOS'
+
+
+- name: create paths
+  file:
+    path: "{{item}}"
+    owner: bind
+    group: bind
+    mode: '0755'
+    state: directory
+  with_items:
+    - "/var/log/named/"
+    - "/var/named/"
+    - "/var/named/master"
+    - "/var/named/slave"
+    - "/var/named/data/"
+    - "/var/named/dynamic"
+  when: ansible_distribution == 'Ubuntu'
+  tags: [dir]
+
+#- debug:
+#    msg: System {{ item.name }}
+#  with_items: "{{dns.zones}}"
+
+- name: allow statistic port
+  shell: "semanage port -a -t dns_port_t -p tcp 8053"
+  ignore_errors: True
+  when: ansible_distribution == 'CentOS'
+
+- name: copy named.conf - Centos
+  template:
+    src: "named.conf.j2"
+    dest: "/etc/named.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify: restart named
+  tags:
+    - config
+  when: ansible_distribution == 'CentOS'
+
+
+- name: copy named.conf - Ubuntu
+  template:
+    src: "named.conf.j2"
+    dest: "/etc/bind/named.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify: restart named
+  tags:
+    - config
+  when: ansible_distribution == 'Ubuntu'
+
+- name: copy  apparmor.d/usr.sbin.named
+  template:
+    src: "usr.sbin.named.j2"
+    dest: "/etc/apparmor.d/usr.sbin.named"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify:
+    - restart apparmor
+    - restart named
+  tags:
+    - config
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Enable
+  systemd:
+    name: named
+    enabled: yes

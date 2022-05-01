@@ -1,0 +1,5 @@
+---
+- import_tasks: 05-preflay.yml
+  tags:
+    - node-exporter
+    - consul

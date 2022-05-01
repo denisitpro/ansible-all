@@ -1,0 +1,121 @@
+version: "3.7"
+
+networks:
+  elasticsearch:
+    driver: bridge
+    name: elasticsearch
+    attachable: true
+
+services:
+  elasticsearch:
+    image: elasticsearch:{{elasticsearch_version}}
+    container_name: elasticsearch
+    networks:
+      - elasticsearch
+    ports:
+      - {{elasticsearch_bind_addr}}:9200:9200
+    volumes:
+      - {{elasticsearch_base_path}}:/opt/elasticsearch
+      - {{elasticsearch_base_path}}/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - {{elasticsearch_base_path}}/config/jvm.options:/usr/share/elasticsearch/config/jvm.options
+    environment:
+      - discovery.type=single-node
+#      - ES_JAVA_OPTS="-Xms4g -Xmx4g"
+{% if elasticsearch_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  kibana:
+    image: kibana:{{kibana_version}}
+    container_name: kibana
+    networks:
+      - elasticsearch
+    ports:
+      - 127.0.0.1:5601:5601
+    volumes:
+      - {{elasticsearch_base_path}}/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+#    environment:
+{% if elasticsearch_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  vector:
+    image: {{vector_image}}:{{vector_version}}
+    container_name: vector
+    hostname: vector-{{stand_type}}
+    networks:
+      - elasticsearch
+    ports:
+      - {{vector_bind_addr}}:{{vector_port}}:{{vector_port}} # vector port
+    volumes:
+      - {{vector_data_path}}:{{vector_data_path}}
+    command: --config /opt/vector/vector.toml
+{% if vector_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  elasticsearch.exporter:
+    image: prometheuscommunity/elasticsearch-exporter:{{es_exporter_version}}
+    container_name: elasticsearch.exporter
+    networks:
+      - elasticsearch
+    ports:
+      - {{global_bind_addr}}:9114:9114 # es exporter port
+    command:
+      - '--es.uri=http://elasticsearch:9200'
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  node.exporter:
+    image: prom/node-exporter:{{node_exporter_version}}
+    container_name: node.exporter
+    networks:
+      - elasticsearch
+    ports:
+      - {{global_bind_addr}}:9100:9100 # node exporter port
+{% if elasticsearch_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  consul:
+    image: hashicorp/consul:{{consul_agent_image}}
+    container_name: consul
+    hostname: {{ansible_hostname}}.{{internal_domain}}
+    networks:
+      - elasticsearch
+    ports:
+      - {{global_bind_addr}}:8301:8301
+      - {{global_bind_addr}}:8301:8301/udp
+    volumes:
+      - /etc/consul.d/:/consul/config
+      - {{consul_data_path}}/data:/consul/data
+    command: ["agent", "-client", "0.0.0.0","-bind", "0.0.0.0", "-advertise", "{{global_bind_addr}}"]
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

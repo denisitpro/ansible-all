@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - vault
+  template:
+    src: "docker-compose.vault.yml.j2"
+    dest: "{{docker_compose_path}}/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

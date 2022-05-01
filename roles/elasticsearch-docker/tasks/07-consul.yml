@@ -1,0 +1,7 @@
+---
+- name: copy elasticsearch_exporter consul config
+  template:
+    src: es_exporter.hcl.j2
+    dest: /etc/consul.d/elasticsearch_exporter.hcl
+    mode: 0644
+  notify: restart-docker consul

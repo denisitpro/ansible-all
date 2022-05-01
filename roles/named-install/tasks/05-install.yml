@@ -1,0 +1,20 @@
+---
+- name: install dns - centos
+  yum:
+    name:
+      - bind
+      - bind-utils
+      - dnstop
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: install dns - ubuntu
+  apt:
+    name:
+      - bind9
+      - bind9utils
+      - dnstop
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'

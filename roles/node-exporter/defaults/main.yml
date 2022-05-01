@@ -1,0 +1,19 @@
+---
+node_exporter_version: 1.3.1
+node_exporter_web_listen_address: "{{global_bind_addr}}:9100"
+node_exporter_bind_addr: "{{global_bind_addr}}"
+
+node_exporter_system_group: "node-exp"
+node_exporter_system_user: "{{ node_exporter_system_group }}"
+
+node_exporter_textfile_dir: "/var/lib/node_exporter"
+
+node_exporter_enabled_collectors:
+  - systemd
+  - textfile:
+      directory: "{{ node_exporter_textfile_dir }}"
+#  - filesystem:
+#      ignored-mount-points: "^/(sys|proc|dev)($|/)"
+#      ignored-fs-types: "^(sys|proc|auto)fs$"
+
+node_exporter_disabled_collectors: []

@@ -1,0 +1,80 @@
+---
+- name: copy elasticsearc.yml config
+  template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: "{{es_group}}"
+    mode: 0660
+  notify: restart elasticsearch
+
+- name: set limits
+  pam_limits:
+    domain: elasticsearch
+    limit_type: "-"
+    limit_item: nofile
+    value: 65535
+
+- name: create folder for systemd. unit
+  file:
+    path: "/etc/systemd/system/elasticsearch.service.d/"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy override conf
+  template:
+    src: override.conf.j2
+    dest:  /etc/systemd/system/elasticsearch.service.d/override.conf
+    owner: root
+    group: root
+
+- name: copy jvm options
+  template:
+    src: jvm.options.j2
+    dest:  /etc/elasticsearch/jvm.options
+    owner: root
+    group: "{{es_group}}"
+    mode: 0660
+  when: es_version == 6
+
+- name: copy jvm options
+  template:
+    src: jvm.options.es7.j2
+    dest:  /etc/elasticsearch/jvm.options
+    owner: root
+    group: "{{es_group}}"
+    mode: 0660
+  when: es_version == 7
+
+- name: daemon-reload
+  systemd:
+    daemon_reload: yes
+
+- name: restart elasticsearch
+  systemd:
+    name: elasticsearch
+    state: restarted
+  when: opendistro_security == false
+
+- name: create script paths
+  file:
+    path: "/opt/scripts"
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - cron
+    - script
+
+#- name: copy script for delete old indexes
+#  template:
+#    src: delete-old-indexes.sh.j2
+#    dest:  /opt/scripts/delete-old-indexes.sh
+#    owner: root
+#    group: root
+#    mode: 0744
+#  tags:
+#    - cron
+#    - script
