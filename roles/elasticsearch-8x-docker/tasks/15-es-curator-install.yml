@@ -1,0 +1,34 @@
+---
+- block: 
+  - name: "Add an Apt signing key, uses  is at the URL"
+    ansible.builtin.apt_key:
+      url: "https://packages.elastic.co/GPG-KEY-elasticsearch"
+      state: present
+
+  - name: "get curator repo {{ ansible_distribution_release }}"
+    ansible.builtin.apt_repository:
+      repo: "deb [arch=amd64] https://packages.elastic.co/curator/5/debian stable main"
+      state: present
+      update_cache: yes
+
+  - name: "install es-curator"
+    ansible.builtin.apt:
+      name: "elasticsearch-curator"
+      state: present
+
+  when: ansible_distribution == 'Ubuntu'
+  become: true
+
+- block:
+  - name: "centos7  - add curator repo"
+    ansible.builtin.copy:
+      src: 'curator5.repo'
+      dest: '/etc/yum.repos.d/curator.repo'
+
+  - name: "install es-curator - centos"
+    ansible.builtin.yum:
+      name: "elasticsearch-curator"
+      state: present
+
+  when: ansible_distribution == 'CentOS'
+  become: true

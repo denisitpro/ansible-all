@@ -1,0 +1,27 @@
+---
+#- import_tasks: shared/handlers/elasticsearch.yml
+
+- name: restart elasticsearch
+  systemd:
+    name: elasticsearch
+    state: restarted
+
+- name: restart-docker kibana
+  shell: "docker-compose restart kibana"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"
+
+- name: restart-docker elasticsearch
+  shell: "docker-compose restart elasticsearch"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"
+
+- name: restart-docker vector
+  shell: "docker-compose restart vector"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"
+
+- name: "restart-docker consul"
+  shell: "docker-compose restart consul"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"

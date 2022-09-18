@@ -1,0 +1,22 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-linits.yml
+- import_tasks: shared/tasks/create-backup-directory.yml
+
+- name: "create directories for grafana"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0755') }}"
+  with_items:
+    - { path: "{{ grafana_data_path }}" }
+    - { path: "{{ grafana_data_path }}/etc" }
+    - { path: "{{ grafana_data_path }}/etc/provisioning" }
+    - { path: "{{ grafana_data_path }}/etc/provisioning/dashboards" }
+    - { path: "{{ grafana_data_path }}/etc/provisioning/datasources" }
+    - { path: "{{ grafana_data_path }}/etc/provisioning/notifiers" }
+    - { path: "{{ grafana_data_path }}/etc/provisioning/plugins" }
+    - { path: "{{ grafana_data_path }}/data", owner: "{{ grafana_user_uid }}" }
+    - { path: "{{ docker_compose_path }}/grafana" }

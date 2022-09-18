@@ -1,0 +1,37 @@
+---
+grafana_data_path: /opt/grafana
+grafana_version: "9.1.5"
+grafana_image: 'grafana/grafana'
+grafana_bind_addr: '{{ global_bind_addr }}'
+grafana_bind_port: '3000'
+grafana_user_uid: '472'
+grafana_ipa_ca: '/etc/ipa/ca.crt'
+
+gf_app_mode: 'production'
+gf_instance_name: 'grafana'
+gf_auth_google_enabled: true
+gf_auth_google_client_id: '{{ vault_dict_users_secret.client_id }}'
+gf_auth_google_client_secret: '{{ vault_dict_users_secret.client_secret }}'
+gf_auth_google_scopes: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
+gf_auth_google_auth_url:  'https://accounts.google.com/o/oauth2/auth'
+gf_auth_google_token_url: 'https://accounts.google.com/o/oauth2/token'
+gf_auth_google_allow_sign_up: true
+gf_auth_ldap_enabled: true
+gf_auth_ldap_allow_sign_up: true
+gf_auth_ldap_config_file: '/etc/grafana/ldap.toml'
+gf_ldap_toml_servers_bind_password: '{{ vault_dict_users_secret.s_grafana_01 }}'
+gf_ldap_toml_servers_search_filter: '(uid=%s)'
+gf_ldap_toml_servers_search_base_dns: '["cn=users,cn=accounts,dc=example,dc=com"]'
+gf_ldap_toml_servers_port: '636'
+gf_ldap_toml_servers_use_ssl: 'true'
+gf_ldap_toml_servers_start_tls: 'false'
+gf_ldap_toml_servers_ssl_skip_verify: 'false'
+gf_ldap_toml_servers_root_ca_cert: '/etc/ca.crt'
+
+gf_ldap_toml_servers_group_mappings:
+  - role: 'Admin'
+    group_dn: "{{ gf_ldap_toml_servers_group_mapping_admin_dn }}"
+  - role: 'Editor'
+    group_dn: "{{ gf_ldap_toml_servers_group_mapping_editor_dn }}"
+  - role: 'Viewer'
+    group_dn: "{{ gf_ldap_toml_servers_group_mapping_viewer_dn }}"
