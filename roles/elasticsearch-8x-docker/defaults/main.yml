@@ -1,0 +1,102 @@
+---
+docker_compose_app_path:  "{{ docker_compose_path }}/elasticsearch"
+docker_compose_network_name: "elasticsearch"
+
+elasticsearch_docker_compose_path: "{{ docker_compose_path }}/elasticsearch"
+elasticsearch_version: "8.3.3"
+elasticsearch_base_path: /opt/elasticsearch
+elasticsearch_bind_addr: "{{ global_bind_addr }}"
+elasticsearch_container_name: "elasticsearch"
+
+elasticsearch_docker_user_uid: '1000'
+elasticsearch_docker_user_gid: '0'
+
+es_settings:
+  - "node.name={{ ansible_nodename }}"
+  - "cluster.name={{es_cluster_name | default('elastic-{{ stand_type }}') }}"
+  - "bootstrap.memory_lock={{ es_bootstrap_memory_lock }}"
+  - "xpack.security.enabled=false"
+  - "xpack.security.http.ssl.enabled=false"
+  - "xpack.security.transport.ssl.enabled=false"
+  - "discovery.type=single-node"
+  - "cluster.max_shards_per_node={{ max_shards_per_node }}"
+  - "path.data={{ es_path_data }}"
+  - "path.logs={{ es_path_logs }}"
+  - "network.host=[ {{ es_bind_addr }} ]"
+  - "http.port={{ es_http_port }}"
+  - "action.destructive_requires_name={{ es_destructive_requires_name }}"
+
+es_cluster_name: "elastic-{{ stand_type }}"
+es_path_data: "{{ elasticsearch_base_path }}/data"
+es_path_logs: "{{ elasticsearch_base_path }}/logs"
+es_bootstrap_memory_lock: true
+es_bind_addr: "0.0.0.0"
+es_http_port: 9200
+es_limit_memlock: "infinity"
+es_heap_size: "4g"
+es_destructive_requires_name: false
+
+kibana_version: "8.3.3"
+kibana_http_port: 5601
+kibana_bind_addr: "0.0.0.0"
+kibana_name: "kibana-{{ stand_type }}"
+kibana_container_name: "kibana"
+
+kibana_public_base_url: "https://kibana.example.com"
+
+kibana_settings:
+  - "elasticsearch.hosts=http://{{ elasticsearch_container_name }}:9200"
+  - "server.publicBaseUrl={{ kibana_public_base_url }}"
+  - "server.host={{ kibana_bind_addr }}"
+  - "server.port={{ kibana_http_port }}"
+  - "server.name={{ kibana_name }}"
+  - "elasticsearch.ssl.verificationMode=none"
+  - "newsfeed.enabled=false"
+  - "telemetry.optIn=false"
+  - "telemetry.enabled=false"
+  - "security.showInsecureClusterWarning=false"
+
+
+max_shards_per_node: 1000
+
+es_exporter_version: "v1.3.0"
+
+vector_sidecar: false
+vector_image: timberio/vector
+vector_version: 0.23.3-alpine
+vector_data_path: /opt/vector
+vector_bind_addr: "{{ global_bind_addr }}"
+vector_port: "{{ fluentd_port }}"
+vector_default_index_name: vector
+vector_metrics_port: '9598'
+vector_metrics: true
+
+##curator
+curator_path: "/etc/curator"
+
+
+#action curator
+action_1: close
+ignore_empty_list: True
+delete_aliases: False
+disable_action: False
+filtertype_kind: pattern
+kind: timestring
+value: '%Y-%m-%d'
+filtertype: age
+source: name
+direction: older
+timestring: '%Y-%m-%d'
+unit: days
+unit_count: 7
+action_2: delete_indices
+
+#config curator
+curator_host: "{{ elasticsearch_bind_addr }}"
+curator_port: 9200
+use_ssl: false
+ssl_no_validate: false
+curator_timeout: 300
+master_only: false
+log_level: INFO
+log_format: default

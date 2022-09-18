@@ -1,0 +1,19 @@
+client:
+  hosts:
+    - {{ curator_host }}
+  port: {{ curator_port }}
+  url_prefix:
+  use_ssl: {{ use_ssl }}
+  certificate:
+  client_cert:
+  client_key:
+  ssl_no_validate: {{ ssl_no_validate }}
+  http_auth:
+  timeout: {{ curator_timeout }}
+  master_only: {{ master_only }}
+
+logging:
+  loglevel: {{ log_level }}
+  logfile: 
+  logformat: {{ log_format }}
+  blacklist: ['elasticsearch', 'urllib3']

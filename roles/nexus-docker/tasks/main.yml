@@ -1,0 +1,12 @@
+---
+- import_tasks: 00-create-path.yml
+  tags:
+    - nexus
+- import_tasks: 01-copy-compose.yml
+  tags:
+    - nexus
+    - nexus-compose
+- import_tasks: 02-lauch.yml
+  tags:
+    - nexus
+    - nexus-compose

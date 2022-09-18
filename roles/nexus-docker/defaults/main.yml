@@ -1,0 +1,10 @@
+---
+appname: nexus
+app_path: /opt/docker
+nexus_user: nexus
+nexus_bind_addr: "{{global_bind_addr}}"
+nexus_port: 8081
+nexus_port_for_docker: 8181
+nexus_data_path: "/opt/nexus3"
+nexus_version: 3.40.1
+nexus_image: sonatype/nexus3

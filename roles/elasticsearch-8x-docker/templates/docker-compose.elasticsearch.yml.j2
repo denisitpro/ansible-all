@@ -1,0 +1,131 @@
+version: "3.7"
+
+networks:
+  {{ docker_compose_network_name }}:
+    driver: bridge
+    name: {{ docker_compose_network_name }}
+    attachable: true
+
+services:
+  elasticsearch:
+    image: elasticsearch:{{ elasticsearch_version }}
+    container_name: {{ elasticsearch_container_name }}
+    networks:
+      - {{ docker_compose_network_name }}
+    ports:
+      - {{ elasticsearch_bind_addr }}:9200:9200
+    volumes:
+      - {{ elasticsearch_base_path }}:{{ elasticsearch_base_path }}
+      - {{ elasticsearch_base_path }}/config/jvm.options.d:/usr/share/elasticsearch/config/jvm.options.d
+{% if es_settings is defined %}
+    environment:
+{% for e in es_settings %}
+      - {{ e }}
+{% endfor %}
+{% endif %}
+{% if elasticsearch_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  kibana:
+    image: kibana:{{ kibana_version }}
+    container_name: {{ kibana_container_name }}
+    networks:
+      - {{ docker_compose_network_name }}
+    ports:
+      - 127.0.0.1:5601:5601
+{% if kibana_settings is defined %}
+    environment:
+{% for k in kibana_settings %}
+      - {{ k }}
+{% endfor %}
+{% endif %}
+{% if elasticsearch_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  elasticsearch.exporter:
+    image: prometheuscommunity/elasticsearch-exporter:{{ es_exporter_version }}
+    container_name: elasticsearch.exporter
+    networks:
+      - {{ docker_compose_network_name }}
+    ports:
+      - {{ global_bind_addr }}:9114:9114 # es exporter port
+    command:
+      - '--es.uri=http://{{ elasticsearch_container_name }}:9200'
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+{% if vector_sidecar %}
+  vector:
+    image: {{ vector_image }}:{{ vector_version }}
+    container_name: vector
+    hostname: vector
+    networks:
+      - {{ docker_compose_network_name }}
+    ports:
+      - {{ global_bind_addr }}:{{ vector_port }}:{{ vector_port }} # vector port
+{% if vector_metrics is defined %}
+      - {{ vector_bind_addr }}:{{ vector_metrics_port }}:{{ vector_metrics_port }}
+{% endif %}
+    volumes:
+      - {{ vector_data_path }}:{{ vector_data_path }}
+    command: --config /opt/vector/vector.toml
+{% if vector_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: '100m'
+        max-file: '2'
+{% endif %}
+
+  node.exporter:
+    image: prom/node-exporter:{{ node_exporter_version }}
+    container_name: node.exporter
+    networks:
+      - {{ docker_compose_network_name }}
+    ports:
+      - {{ global_bind_addr }}:9100:9100 # node exporter port
+{% if elasticsearch_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  consul:
+    image: {{ consul_registry }}:{{ consul_agent_image }}
+    container_name: consul
+    hostname: {{ ansible_hostname }}.{{ internal_domain }}
+    networks:
+      - {{ docker_compose_network_name }}
+    ports:
+      - {{ global_bind_addr }}:8301:8301
+      - {{ global_bind_addr }}:8301:8301/udp
+    volumes:
+      - /etc/consul.d/:/consul/config
+      - {{ consul_data_path }}/data:/consul/data
+    command: ["agent", "-client", "0.0.0.0","-bind", "0.0.0.0", "-advertise", "{{ global_bind_addr }}"]
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

@@ -1,0 +1,11 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-linits.yml
+
+- name: create folder nexus-data
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{nexus_data_path}}"

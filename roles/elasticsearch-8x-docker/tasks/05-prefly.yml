@@ -1,0 +1,22 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-linits.yml
+
+- name: "create directories"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+  loop:
+    - { path: "{{ elasticsearch_docker_compose_path }}" }
+    - { path: "{{ vector_data_path }}" }
+    - { path: "{{ elasticsearch_base_path }}" }
+    - { path: "{{ elasticsearch_base_path }}/config" }
+    - { path: "{{ elasticsearch_base_path }}/config/jvm.options.d" }
+    - { path: "{{ elasticsearch_base_path }}/data", owner: "{{ elasticsearch_docker_user_uid }}", group: "{{ elasticsearch_docker_user_gid }}" }
+    - { path: "{{ elasticsearch_base_path }}/logs", owner: "{{ elasticsearch_docker_user_uid }}", group: "{{ elasticsearch_docker_user_gid }}" }
+  tags:
+    - elastic-dir
+  become: true

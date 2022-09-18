@@ -1,0 +1,11 @@
+---
+- name: copy config files
+  template:
+    src:  "{{ item }}.j2"
+    dest: "{{ grafana_data_path }}/etc/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  loop:
+    - "grafana.ini"
+    - "ldap.toml"

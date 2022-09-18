@@ -1,0 +1,12 @@
+---
+- name: "copy compose  elasticsearch"
+  ansible.builtin.template:
+    src: "docker-compose.elasticsearch.yml.j2"
+    dest: "{{ elasticsearch_docker_compose_path }}/docker-compose.yml"
+    mode: 0600
+
+
+- name: "run restart compose"
+  ansible.builtin.shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"

@@ -1,0 +1,31 @@
+[[ servers ]]
+host    =   "{{ gf_ldap_toml_servers_host }}"
+port    =   {{ gf_ldap_toml_servers_port }}
+use_ssl =   {{ gf_ldap_toml_servers_use_ssl }}
+start_tls   =   {{ gf_ldap_toml_servers_start_tls }}
+ssl_skip_verify =   {{ gf_ldap_toml_servers_ssl_skip_verify }}
+
+{% if gf_ldap_toml_servers_root_ca_cert is defined %}
+root_ca_cert    =   "{{ gf_ldap_toml_servers_root_ca_cert }}"
+{% endif %}
+
+bind_dn =   "{{ gf_ldap_toml_servers_bind_dn }}"
+bind_password   =   "{{ gf_ldap_toml_servers_bind_password }}"
+search_filter   =   "{{ gf_ldap_toml_servers_search_filter }}"
+search_base_dns =   {{ gf_ldap_toml_servers_search_base_dns }}
+
+[servers.attributes]
+name    =   "givenName"
+surname =   "sn"
+username    =   "uid"
+member_of   = "memberOf"
+email   = "email"
+
+{% if gf_ldap_toml_servers_group_mappings is defined %}
+{% for m in gf_ldap_toml_servers_group_mappings %}
+[[servers.group_mappings]]
+org_role    =   "{{ m.role }}"
+group_dn    =   "{{ m.group_dn }}"
+
+{% endfor %}
+{% endif %}

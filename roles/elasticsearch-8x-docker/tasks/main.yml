@@ -1,0 +1,29 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - elastic
+
+- import_tasks: 07-consul.yml
+  tags:
+    - elastic
+    - consul-reg
+    - es-exporter
+    - vector-exporter
+
+- import_tasks: 08-config.yml
+  tags:
+    - elastic
+
+- import_tasks: 10-compose.yml
+  tags:
+    - elastic
+    - elastic-compose
+
+- import_tasks: 15-es-curator-install.yml
+  tags:
+    - curator
+
+- import_tasks: 20-curator-conf-action.yml
+  tags:
+    - curator
+    - curator-conf

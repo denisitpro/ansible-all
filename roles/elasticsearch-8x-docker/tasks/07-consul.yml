@@ -1,0 +1,14 @@
+---
+- name: "copy elasticsearch_exporter consul config"
+  ansible.builtin.template:
+    src: "es_exporter.hcl.j2"
+    dest: "/etc/consul.d/elasticsearch_exporter.hcl"
+    mode: 0644
+  notify: restart-docker consul
+
+- name: "Copy vector-exporter consul config"
+  ansible.builtin.template:
+    src: "vector-exporter.hcl.j2"
+    dest: "/etc/consul.d/vector_exporter.hcl"
+    mode: 0644
+  notify: restart-docker consul

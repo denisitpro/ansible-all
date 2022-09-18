@@ -1,0 +1,44 @@
+---
+- name: "create paths for curator"
+  ansible.builtin.file:
+    path: "{{ curator_path }}"
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- name: "copy curator config"
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ curator_path }}/config.yml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - cron
+
+- name: copy curator action
+  ansible.builtin.template:
+    src: action.yml.j2
+    dest: "{{ curator_path }}/action.yml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - cron
+
+- name: print vars
+  ansible.builtin.debug:
+    msg: "{{ unit_count }}"
+  tags:
+    - cron
+
+- name: copy curator action
+  ansible.builtin.template:
+    src: action.yml.j2
+    dest: "{{ curator_path }}/action.yml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - cron

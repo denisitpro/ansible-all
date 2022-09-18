@@ -1,0 +1,20 @@
+version: "3.7"
+
+networks:
+  nexus:
+    driver: bridge
+    name: nexus
+    attachable: true
+
+services:
+  nexus:
+    image: {{nexus_image}}:{{nexus_version}}
+    container_name: nexus
+    networks:
+      - nexus
+    ports:
+      - {{nexus_bind_addr}}:{{nexus_port}}:{{nexus_port}}
+      - {{nexus_bind_addr}}:{{nexus_port_for_docker}}:{{nexus_port_for_docker}}
+    restart: always
+    volumes:
+      - {{nexus_data_path}}/:/nexus-data/

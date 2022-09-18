@@ -1,0 +1,13 @@
+server.publicBaseUrl: {{ kibana_public_base_url }}
+elasticsearch.ssl.verificationMode: none
+elasticsearch.hosts: http://elasticsearch:9200
+
+
+newsfeed.enabled: false
+telemetry.optIn: false
+telemetry.enabled: false
+security.showInsecureClusterWarning: false
+
+server.host: {{ kibana_bind_addr }}
+server.port: {{ kibana_http_port }}
+server.name: "{{ kibana_name }}"
