@@ -1,0 +1,41 @@
+---
+- name: copy script env nginx-ldap-auth
+  template:
+    src: "nginx-ldap-auth.j2"
+    dest: "{{ nginx_ldap_path }}/nginx-ldap-auth"
+    owner: root
+    group: root
+    mode: 0655
+  notify: reload nginx
+  tags:
+    - env
+    - reconfigure
+
+- name: copy unit apps
+  template:
+    src: "nginx-ldap-auth.service.j2"
+    dest: "/etc/systemd/system/nginx-ldap-auth.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nginx
+    - restart nginx-ldap-auth
+  tags:
+    - unit
+
+- name: copy logrotate files
+  template:
+    src: nginx-ldap-auth.logrotate.j2
+    dest: "/etc/logrotate.d/nginx-ldap-auth"
+
+- name: enable nginx-ldap-auth app unit
+  systemd:
+    name: "nginx-ldap-auth"
+    enabled: yes
+    daemon_reload: yes
+  notify:
+    - reload nginx
+    - restart nginx-ldap-auth
+  tags:
+    - unit

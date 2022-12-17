@@ -1,0 +1,57 @@
+---
+#  https://www.nomadproject.io/docs/integrations/consul-connect
+- name: Download cni plugin
+  get_url:
+    url: "{{nomad_cni_url}}"
+    dest: "{{ nomad_download_dir }}"
+    mode: 0644
+
+- name: create path
+  file:
+    path: "{{item}}"
+    state: directory
+    mode: 0700
+  with_items:
+    - "{{nomad_cni_bin_path}}"
+
+- name: Unarchive cni plugin
+  unarchive:
+    src: "{{ nomad_download_dir }}/cni-plugins-linux-amd64-v{{nomad_cni_version}}.tgz"
+    dest: "{{nomad_cni_bin_path}}"
+    owner: root
+    group: root
+    remote_src: yes
+
+
+- name: modprobe br_netfilter
+  shell: "modprobe br_netfilter"
+  tags: sysctl
+
+- name: sysctl -p /etc/sysctl.conf
+  shell: "sysctl -p /etc/sysctl.conf"
+  tags: sysctl
+
+- name: echo to bridge-nf-call-arptables
+  shell: "echo 1 | tee /proc/sys/net/bridge/bridge-nf-call-arptables"
+  tags: sysctl
+
+- name: echo to bridge-nf-call-ip6tables
+  shell: "echo 1 | tee /proc/sys/net/bridge/bridge-nf-call-ip6tables"
+
+- name: echo to bridge-nf-call-iptables
+  shell: "echo 1 | tee /proc/sys/net/bridge/bridge-nf-call-iptables"
+
+- name: copy sysctl config for nomad
+  template:
+    src: "060-nomad-cni.conf.j2"
+    dest: "/etc/sysctl.d/060-nomad-cni.conf"
+    owner: root
+    group: root
+
+- name: apply tune config
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/060-nomad-cni.conf
+
+- name: remove download file cni
+  file:
+    path: "{{ nomad_download_dir }}/cni-plugins-linux-amd64-v{{nomad_cni_version}}.tgz"
+    state: absent

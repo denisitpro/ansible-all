@@ -1,0 +1,10 @@
+---
+- import_tasks: 10-install.yml
+  tags:
+    - wireguard
+
+- import_tasks: 20-configure.yml
+  tags:
+    - wireguard
+    - wg-conf
+    - wg-config

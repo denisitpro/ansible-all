@@ -1,0 +1,18 @@
+[Unit]
+Description=LDAP authentication helper for Nginx
+After=network.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+WorkingDirectory={{ nginx_ldap_path }}
+EnvironmentFile={{ nginx_ldap_path }}/nginx-ldap-auth
+ExecStart={{ nginx_ldap_path }}/nginx-ldap-auth-daemon.py
+ExecStop=/bin/kill -SIGTERM $MAINPID
+
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

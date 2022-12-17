@@ -1,0 +1,29 @@
+---
+- name: install apache2-utils
+  apt:
+    name:
+      - apache2-utils
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - users
+
+- name: Make sure we can use htpasswd module
+  apt: "pkg=python3-passlib state=latest"
+
+- name: delete .htpasswd before update
+  file:
+    path: "{{ htpasswd_path }}"
+    state: absent
+  tags:
+    - users
+
+- name: Ensure htpasswd credentials are configured.
+  htpasswd:
+    path: "{{ htpasswd_path }}"
+    name: "{{ item }}"
+    password: "{{ vault_dict_users_secret[item] }}"
+  with_items: "{{ kibana_users }}"
+  tags:
+    - users

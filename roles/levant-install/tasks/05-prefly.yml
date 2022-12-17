@@ -1,0 +1,51 @@
+---
+- name: Check for existing binary
+  stat:
+    path: "{{ levant_binary_dir }}/{{levant_binary_name}}"
+  register: binary_stat_result
+
+- debug:
+    msg: binary_stat_result -  {{ binary_stat_result }}
+
+- name: Download
+  get_url:
+    url: "{{ levant_download_url }}"
+    dest: "{{ levant_download_dir }}"
+    mode: 0644
+  when: levant_always_update_binary or not binary_stat_result.stat.exists
+
+- name: Unarchive nomad a file that is already on the remote machine
+  unarchive:
+    src: "{{ levant_download_dir }}/levant_{{levant_version}}_linux_amd64.zip"
+    dest: "/tmp/"
+    owner: root
+    group: root
+    remote_src: yes
+
+- name: Install  binary
+  copy:
+    src: "{{ levant_download_dir }}/levant"
+    dest: "{{ levant_binary_dir }}/{{levant_binary_name}}-{{levant_version}}"
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: true
+    force: "{{ levant_always_update_binary }}"
+  when: levant_always_update_binary or not binary_stat_result.stat.exists
+
+- name: Create a symbolic levant
+  file:
+    src: "{{ levant_binary_dir }}/{{levant_binary_name}}-{{levant_version}}"
+    dest: "{{ levant_binary_dir }}/{{levant_binary_name}}"
+    owner: root
+    group: root
+    state: link
+
+- name: remove download files
+  file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "{{ levant_download_dir }}/levant_{{levant_version}}_linux_amd64.zip"
+    - "{{ levant_download_dir }}/levant"
+  tags: [clean]

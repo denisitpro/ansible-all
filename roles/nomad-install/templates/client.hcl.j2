@@ -1,0 +1,29 @@
+client {
+  enabled = true
+  network_interface = "{{second_interface_name}}"
+  options = {
+    "driver.allowlist" = "docker"
+  }
+}
+{% if consul_agent_disabled is not defined %}
+consul {
+  address = "{{ global_bind_addr }}:8500"
+  token = "{{ vault_dict_users_secret.consul_nomad_client_token }}"
+}
+{% endif %}
+
+{% if nomad_acl_disabled is not defined %}
+acl {
+  enabled = true
+  token_ttl = "30s"
+  policy_ttl = "60s"
+}
+{% endif %}
+{% if nomad_vault_disabled is not defined %}
+vault {
+  enabled     = true
+  address     = "{{vault_url}}"
+}
+{% endif %}
+
+

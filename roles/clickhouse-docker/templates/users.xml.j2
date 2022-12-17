@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<yandex>
+    <!-- Profiles of settings. -->
+    <profiles>
+        <!-- Default settings. -->
+        <default>
+            <!-- Maximum memory usage for processing single query, in bytes. -->
+{% if  ch_query_mem_limit is defined %}
+            <max_memory_usage>{{ch_query_mem_limit}}</max_memory_usage>
+{% else %}
+            <max_memory_usage>{{ ansible_memtotal_mb * 1024 * 1024 - 2048000000 }}</max_memory_usage>
+{% endif %}
+
+            <!-- Use cache of uncompressed blocks of data. Meaningful only for processing many of very short queries. -->
+            <use_uncompressed_cache>0</use_uncompressed_cache>
+
+            <!-- How to choose between replicas during distributed query processing.
+                 random - choose random replica from set of replicas with minimum number of errors
+                 nearest_hostname - from set of replicas with minimum number of errors, choose replica
+                  with minumum number of different symbols between replica's hostname and local hostname
+                  (Hamming distance).
+                 in_order - first live replica is choosen in specified order.
+            -->
+            <load_balancing>random</load_balancing>
+
+            <log_queries>1</log_queries>
+
+            {% if clickhouse.restrictions.max_execution_time is defined %}
+            <max_execution_time>{{ clickhouse.restrictions.max_execution_time }}</max_execution_time>
+            {% endif %}
+        </default>
+        <readonly>
+{% if  ch_query_mem_limit is defined %}
+            <max_memory_usage_for_all_queries>{{ ch_query_mem_limit }}</max_memory_usage_for_all_queries>
+{% else %}
+            <max_memory_usage_for_all_queries>{{ ansible_memtotal_mb * 1024 * 1024 - 2000000000 }}</max_memory_usage_for_all_queries>
+{% endif %}
+            <use_uncompressed_cache>0</use_uncompressed_cache>
+            <load_balancing>random</load_balancing>
+            <log_queries>1</log_queries>
+
+            <readonly>1</readonly>
+        </readonly>
+        <grafana>
+{% if  ch_query_mem_limit is defined %}
+            <max_memory_usage_for_all_queries>{{ ch_query_mem_limit}}</max_memory_usage_for_all_queries>
+{% else %}
+            <max_memory_usage_for_all_queries>{{ ansible_memtotal_mb * 1024 * 1024 - 2000000000 }}</max_memory_usage_for_all_queries>
+{% endif %}
+            <use_uncompressed_cache>0</use_uncompressed_cache>
+            <load_balancing>random</load_balancing>
+            <log_queries>1</log_queries>
+
+            <readonly>1</readonly>
+            <max_execution_time>10</max_execution_time>
+        </grafana>
+    </profiles>
+<!-- #################    ANSIBLE MANAGEMENT  #################  -->
+    <!-- Users and ACL. -->
+    <users>
+{% for user in  clickhouse.users  %}
+{% if not ( ( user.access | default("all") ) == "slave" and ( ch_master_host | default(ansible_hostname) ) == ansible_hostname ) %}
+        <{{user.name}}>
+            <password_sha256_hex>{{vault_dict_users_secret[user.name]|hash('sha256')}}</password_sha256_hex>
+            <networks incl="{{user.networks_incl|default('networks')}}" replace="{{user.networks_replace|default('replace')}}">
+{% if user.ip is defined %}
+{% for ip in  user.ip  %}
+                <ip>{{ip|default('::/0')}}</ip>
+{% endfor %}
+{% else %}
+                <ip>{{user.ip|default('::/0')}}</ip>
+{% endif %}
+            </networks>
+
+            <profile>{{user.profile|default('default')}}</profile>
+
+            <quota>{{user.quota|default('default')}}</quota>
+{% if 'default' == user.name %}
+            <access_management>1</access_management>
+{% endif %}
+
+{% if user.allow_databases is defined%}
+            <allow_databases>
+{% for database in user.allow_databases%}
+                <database>{{ database }}</database>
+{% endfor %}
+            </allow_databases>
+{% endif %}
+        </{{user.name}}>
+{% endif %}
+{% endfor %}
+    </users>
+<!-- #################    ANSIBLE MANAGEMENT END ################# -->
+
+    <!-- Quotas. -->
+    <quotas>
+        <!-- Name of quota. -->
+        <default>
+            <!-- Limits for time interval. You could specify many intervals with different limits. -->
+            <interval>
+                <!-- Length of interval. -->
+                <duration>3600</duration>
+                <!-- No limits. Just calculate resource usage for time interval. -->
+                <queries>0</queries>
+                <errors>0</errors>
+                <result_rows>0</result_rows>
+                <read_rows>0</read_rows>
+                <execution_time>0</execution_time>
+            </interval>
+        </default>
+    </quotas>
+</yandex>

@@ -1,0 +1,17 @@
+- import_tasks: 00-install-requirements.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - certbot
+    - install
+
+- import_tasks: 01-install-certbot.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - certbot
+    - install
+
+- import_tasks: 02-cloudflare.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - certbot
+    - config

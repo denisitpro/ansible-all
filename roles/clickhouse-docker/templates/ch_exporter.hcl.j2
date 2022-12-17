@@ -1,0 +1,16 @@
+service {
+  name = "clickhouse-exporter"
+  tags = ["clickhouse-exporter", "prometheus", "{{stand_type}}"]
+  address = "{{clickhouse_bind_addr}}"
+  port = 9116
+{% if consul_agent_disabled is not defined %}
+  token = "{{ vault_dict_users_secret.consul_clickhouse_exporter_token }}"
+{% endif %}
+  check = {
+    id = "clickhouse_exporter"
+    name = "clickhouse_exporter healthcheck"
+    tcp = "{{clickhouse_bind_addr}}:9116"
+    interval =  "30s"
+    timeout =  "2s"
+    }
+}

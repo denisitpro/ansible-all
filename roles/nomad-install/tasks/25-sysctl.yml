@@ -1,0 +1,12 @@
+---
+- name: "Set sysctl parameters for nomad"
+  tags:
+    - sysctl
+  ansible.posix.sysctl:
+    name: '{{ item.name }}'
+    value: '{{ item.value }}'
+    sysctl_set: yes
+    sysctl_file: '/etc/sysctl.d/061-nomad-tune.conf'
+  loop: '{{ nomad_sysctl }}'
+  when:
+    - nomad_mode == "client"

@@ -1,0 +1,17 @@
+---
+- name: create folder for certbot
+  file:
+    path: "/root/.secrets/certbot"
+    state: directory
+    owner: root
+    group: root
+    mode: 0600
+
+
+- name: Create the file
+  template:
+    src: cloudflare.ini.j2
+    dest: /root/.secrets/certbot/cloudflare.ini
+    owner: root
+    group: root
+    mode: 0600

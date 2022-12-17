@@ -1,0 +1,25 @@
+[Interface]
+PrivateKey = {{ wg_private_key }}
+Address = {{ wg_vpn_net_addr }}
+ListenPort = {{ wg_srv_port }}
+
+{% if wg_internet is not defined %}
+#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ ansible_facts[second_interface_name].device }} -j MASQUERADE
+#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ ansible_facts[second_interface_name].device }} -j MASQUERADET
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -i {{ ansible_facts[second_interface_name].device }}  -j ACCEPT
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -i {{ ansible_facts[second_interface_name].device }} -j ACCEPT
+{% endif %}
+
+{% if wg_internet is defined %}
+PostUp = iptables -t nat -I POSTROUTING 1 -s {{ wg_ext_client_net }} -o {{ wg_route_int }} -j MASQUERADE
+{% endif %}
+
+{% if wg.peer is defined %}
+{% for peer in  wg.peer %}
+### {{ peer.name }}
+[Peer]
+PublicKey = {{ peer.pub_key }}
+AllowedIPs = {{ peer.allow_ip }}
+
+{% endfor %}
+{% endif %}

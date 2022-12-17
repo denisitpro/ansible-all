@@ -1,0 +1,13 @@
+datacenter = "{{dc_location}}"
+data_dir = "/opt/nomad"
+bind_addr = "{{nomad_bind_addr}}"
+region = "{{nomad_region}}"
+{% if telemetry is defined %}
+telemetry {
+  collection_interval = "1s"
+  disable_hostname = true
+  prometheus_metrics = true
+  publish_allocation_metrics = true
+  publish_node_metrics = true
+}
+{% endif %}
