@@ -1,0 +1,29 @@
+---
+- name: Nomad stop
+  ansible.builtin.systemd:
+    name: nomad
+    state: stopped
+  tags:
+    - nomad-stop
+
+- name: Nomad start
+  ansible.builtin.systemd:
+    name: nomad
+    state: started
+  tags:
+    - nomad-start
+
+- name: Nomad restart
+  ansible.builtin.systemd:
+    name: nomad
+    state: restarted
+  throttle: 1
+  tags:
+    - nomad-restart
+
+- name: Nomad data files
+  ansible.builtin.file:
+    path: /opt/nomad/
+    state: absent
+  tags:
+    - nomad-clean

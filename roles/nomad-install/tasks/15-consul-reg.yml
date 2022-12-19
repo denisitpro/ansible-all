@@ -1,0 +1,25 @@
+---
+# legacy name remove
+- name:  remove old config directory
+  ansible.builtin.file:
+    path: /etc/consul.d/nomad_exporter.hcl
+    state: absent
+
+# - name: copy nomad_consul_service consul config
+#   template:
+#     src: nomad_consul_service.hcl.j2
+#     dest: /etc/consul.d/nomad_service.hcl
+#     owner: consul
+#     group: consul
+#     mode: 0644
+#   notify: restart consul
+
+- name: copy nomad_consul_service consul config
+  template:
+    src: nomad_consul_service.hcl.j2
+    dest: /etc/consul.d/nomad_service.hcl
+    owner: root
+    group: root
+    mode: 0644
+  # notify: restart consul
+  notify: restart-docker folder consul

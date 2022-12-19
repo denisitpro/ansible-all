@@ -1,0 +1,65 @@
+---
+- name: copy defaul_ufw
+  ansible.builtin.copy:
+    src: default_ufw
+    dest: /etc/default/ufw
+#  when: wg_ext is  defined
+  when: wg_type == "server"
+  tags:
+    - wg-default
+
+- name: copy wg.conf - server {{interface_device}}
+  template:
+    src: wg-srv.conf.j2
+    dest: "/etc/wireguard/wg0.conf"
+    owner: root
+    group: root
+    mode: 0600
+  notify: restart wg-quick@wg0
+  when: wg_type == "server"
+  tags:
+    - wg-server
+
+- name: copy wg.conf - client
+  template:
+    src: wg-client.conf.j2
+    dest: "/etc/wireguard/wg0.conf"
+    owner: root
+    group: root
+    mode: 0600
+  notify: restart wg-quick@wg0
+  when: wg_type == "client"
+  tags:
+    - wg-client
+
+- name: copy sysctl config for nat
+  template:
+    src: "050-wg-sysctl.conf.j2"
+    dest: "/etc/sysctl.d/050-wg.conf"
+    owner: root
+    group: root
+  notify: restart wg-quick@wg0
+  when: wg_type == "server"
+  tags: [sysctl]
+
+- name: apply tune config
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/050-wg.conf
+  notify: restart wg-quick@wg0
+  when: wg_type == "server"
+  tags: [sysctl]
+
+- name: enable wireguard autostart and lauch service
+  systemd:
+    name: "wg-quick@wg0"
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  tags:
+    - wg_client
+
+- name: sleep for 30 seconds and continue with play
+  wait_for:
+    timeout: 30
+  delegate_to: localhost
+  become: no
+  when: wg_type == "client"

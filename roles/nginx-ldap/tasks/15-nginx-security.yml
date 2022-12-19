@@ -1,0 +1,14 @@
+---
+- name: create directory for nginx auth
+  file:
+    path: /opt/nginx/html
+    state: directory
+
+- name: error 401 file
+  template:
+    src: "401.html.j2"
+    dest: "{{errors_path}}/401.html"
+    mode: 0755
+  tags:
+    - html
+

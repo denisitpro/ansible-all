@@ -1,0 +1,63 @@
+---
+- name: install depends Ubuntu
+  apt:
+    name:
+      - python-dev-is-python3
+      - libldap2-dev
+      - libsasl2-dev
+      - libssl-dev
+      - dh-exec
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: download pip
+  shell: "wget -P /tmp/ https://bootstrap.pypa.io/pip/2.7/get-pip.py"
+  become: yes
+
+- name: install pip
+  shell: "python /tmp/get-pip.py"
+  become: yes
+
+- name: install the package python-ldap
+  pip:
+    name: python-ldap
+    executable: pip
+    state: latest
+
+- name: Create a directory nginx-ldap-auth
+  file:
+    path: "{{ nginx_ldap_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Create a log directory nginx-ldap-auth
+  file:
+    path: "/var/log/nginx-ldap-auth"
+    state: directory
+    mode: '0644'
+
+- name: copy script nginx-ldap-auth old version
+  template:
+    src: "nginx-ldap-auth-daemon.py.j2"
+    dest: "{{ nginx_ldap_path }}/nginx-ldap-auth-daemon.py"
+    owner: root
+    group: root
+    mode: 0755
+  notify: reload nginx
+  when: ansible_distribution_version != '22.04'
+  tags:
+    - env
+    - reconfigure
+
+- name: copy script nginx-ldap-auth new version
+  template:
+    src: "nginx-ldap-auth-daemon.py.new.j2"
+    dest: "{{ nginx_ldap_path }}/nginx-ldap-auth-daemon.py"
+    owner: root
+    group: root
+    mode: 0755
+  notify: reload nginx
+  when: ansible_distribution_version == '22.04'
+  tags:
+    - env
+    - reconfigure

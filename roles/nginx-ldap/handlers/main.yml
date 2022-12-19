@@ -1,0 +1,2 @@
+- import_tasks: shared/handlers/nginx.yml
+- import_tasks: shared/handlers/nginx-ldap-auth.yml

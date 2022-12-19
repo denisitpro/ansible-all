@@ -1,0 +1,29 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - nomad
+
+- import_tasks: 10-configure.yml
+  tags:
+    - nomad
+    - nomad-config
+
+- import_tasks: 15-consul-reg.yml
+  when: consul_agent_disabled is not defined
+  tags:
+    - nomad
+    - consul-reg
+    - consul-nomad
+
+- import_tasks: 20-cni.yml
+  when: nomad_cni is  defined
+  tags:
+    - nomad
+    - nomad-cni
+    
+- import_tasks: 25-sysctl.yml
+  tags:
+    - nomad
+
+- import_tasks: 99-nomad-stop-start.yml
+  tags: [ 'never']

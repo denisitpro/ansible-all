@@ -1,0 +1,21 @@
+---
+- name: install snapd
+  apt:
+    name:
+      - snapd
+    state: latest
+    update_cache: yes
+
+- name: check version snap
+  command: "snap --version"
+  register: snap_version
+
+- name: print snap version
+  debug:
+    msg: " version snap={{snap_version}}"
+
+- name: Ensure that your version of snapd is up to date - 1
+  command: "snap install core"
+
+- name: Ensure that your version of snapd is up to date - 2
+  command: "snap refresh core"

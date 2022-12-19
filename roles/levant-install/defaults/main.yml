@@ -1,0 +1,17 @@
+levant_binary_name: levant
+levant_always_update_binary: true
+
+levant_binary_dir: /usr/local/bin/
+levant_version: 0.3.2
+levant_download_url: "https://releases.hashicorp.com/levant/{{levant_version}}/levant_{{levant_version}}_linux_amd64.zip"
+levant_download_dir: /tmp
+
+
+
+nomad_binary_name: nomad
+nomad_always_update_binary: true
+
+nomad_binary_dir: /usr/local/bin/
+nomad_version: 1.2.3
+nomad_download_url: "https://releases.hashicorp.com/nomad/{{nomad_version}}/nomad_{{nomad_version}}_linux_amd64.zip"
+nomad_download_dir: /tmp

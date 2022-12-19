@@ -1,0 +1,52 @@
+---
+- name: copy systemd unit file
+  template:
+    src:  nomad.service.j2
+    dest: /etc/systemd/system/nomad.service
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart nomad
+
+- name: copy nomad files
+  template:
+    src:  "{{item}}.j2"
+    dest: "{{nomad_config_dir}}/{{item}}"
+    mode: 0600
+  with_items:
+    - nomad.hcl
+  notify: restart nomad
+  tags:
+    - nomad-hcl
+
+- name: copy server.hcl - only server
+  template:
+    src:  "{{item}}.j2"
+    dest: "{{nomad_config_dir}}/{{item}}"
+    mode: 0600
+  with_items:
+    - server.hcl
+  notify:
+    - restart nomad
+    - restart consul
+  when: nomad_mode == "server"
+  tags:
+    - nomad-config
+
+- name: copy client.hcl - only clients
+  template:
+    src:  "{{item}}.j2"
+    dest: "{{nomad_config_dir}}/{{item}}"
+    mode: 0600
+  with_items:
+    - client.hcl
+  notify: restart nomad
+  when: nomad_mode == "client"
+  tags:
+    - nomad-config
+
+- name: ensure nomad service is enabled
+  systemd:
+    daemon_reload: true
+    name: nomad
+    enabled: true

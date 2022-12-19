@@ -1,0 +1,24 @@
+---
+- import_tasks: 03-consul-reg.yml
+  when: clickhouse_external is not defined
+  tags:
+    - consul-reg
+    - clickhouse
+
+- import_tasks: 05-prefly.yml
+  tags:
+    - clickhouse
+    - clickhouse-config
+
+- import_tasks: 10-configure.yml
+  tags:
+    - clickhouse
+    - clickhouse-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - clickhouse
+    - clickhouse-compose
+
+- import_tasks: 80-create-users.yml
+  tags: [ 'never', 'create-users' ]

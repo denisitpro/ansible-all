@@ -1,0 +1,27 @@
+server {
+  enabled = true
+  bootstrap_expect = {{ nomad_bootstrap_expect | default('3') }}
+}
+{% if nomad_vault_disabled is not defined %}
+vault {
+  enabled = true
+  address = "{{vault_url}}"
+  token       = "{{ vault_dict_users_secret.vault_nomad_integration_token }}"
+  create_from_role = "{{create_from_role}}"
+}
+{% endif %}
+
+{% if consul_agent_disabled is not defined %}
+consul {
+  address = "{{ global_bind_addr }}:8500"
+  token = "{{ vault_dict_users_secret.consul_nomad_master_token }}"
+}
+{% endif %}
+
+{% if nomad_acl_disabled is not defined %}
+acl {
+  enabled = true
+  token_ttl = "30s"
+  policy_ttl = "60s"
+}
+{% endif %}

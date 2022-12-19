@@ -1,0 +1,20 @@
+---
+- name: install certbot
+  command: "snap install --classic certbot"
+
+- name: Create a symbolic link
+  file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    owner: root
+    group: root
+    state: link
+
+- name: Confirm plugin containment level
+  command: "snap set certbot trust-plugin-with-root=ok"
+
+- name: Install correct DNS plugin - Cloudflare
+  command: "snap install certbot-dns-cloudflare"
+
+
+

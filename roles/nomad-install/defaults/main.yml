@@ -1,0 +1,34 @@
+---
+nomad_version: 1.4.2
+
+nomad_mode: client
+telemetry: true
+
+nomad_binary_name: nomad
+nomad_always_update_binary: true
+
+nomad_binary_dir: /usr/local/bin/
+nomad_download_url: "https://releases.hashicorp.com/nomad/{{nomad_version}}/nomad_{{nomad_version}}_linux_amd64.zip"
+nomad_download_dir: /tmp
+
+nomad_data_dir: /opt/nomad
+nomad_config_dir: /etc/nomad.d
+nomad_config_file: nomad.hcl
+
+nomad_bind_addr: "{{global_bind_addr}}"
+
+nomad_region: fsn
+
+create_from_role: nomad-cluster
+
+nomad_cni_version: 1.1.1
+nomad_cni_bin_path: /opt/cni/bin
+nomad_cni_url: "https://github.com/containernetworking/plugins/releases/download/v{{nomad_cni_version}}/cni-plugins-linux-amd64-v{{nomad_cni_version}}.tgz"
+
+nomad_sysctl:
+  - name: 'fs.inotify.max_user_watches'
+    value: '1048576'
+  - name: 'fs.inotify.max_user_instances'
+    value: '1024'
+  - name: 'fs.inotify.max_queued_events'
+    value: '163840'

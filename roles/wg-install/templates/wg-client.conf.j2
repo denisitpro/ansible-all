@@ -1,0 +1,21 @@
+[Interface]
+### Client's private key
+PrivateKey = {{ vault_dict_users_secret.private_key}}
+
+## Client ip address ##
+Address = {{wg.interface[0].addr}}
+
+{% if wg.peer is defined %}
+{% for peer in  wg.peer %}
+### {{peer.name}}
+[Peer]
+PublicKey = {{peer.pub_key}}
+AllowedIPs = {{peer.allow_ip}}
+{% endfor %}
+{% endif %}
+
+## Your Ubuntu 20.04 LTS server's public IPv4/IPv6 address and port ##
+Endpoint = {{wg_srv}}:{{wg_srv_port}}
+
+##  Key connection alive ##
+PersistentKeepalive = {{wg_persistent_keepalive}}

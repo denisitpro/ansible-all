@@ -1,0 +1,14 @@
+---
+- import_tasks: 00-install.yml
+  tags: nginx-ldap
+- import_tasks: 01-configure.yml
+  tags: nginx-ldap
+
+- import_tasks: 15-nginx-security.yml
+  when: kibana_ldap_auth_enable is defined
+  tags:
+    - nginx-ldap
+    - reconfigure
+    - users
+
+#- import_tasks: 20-nginx-httppass.yml
