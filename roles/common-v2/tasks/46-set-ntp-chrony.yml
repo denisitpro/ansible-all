@@ -1,10 +1,17 @@
 ---
-- name: copy chrony conf
-  template:
-      src: chrony.conf.j2
-      dest: /etc/chrony.conf
+# only Centos
+#- name: copy chrony conf
+#  template:
+#      src: chrony.conf.j2
+#      dest: /etc/chrony.conf
+#  notify: restart chronyd
+#  when: ntp_server is not defined
+
+- name: remove legacy chrony conf
+  file:
+    path: /etc/chrony.conf
+    state: absent
   notify: restart chronyd
-  when: ntp_server is not defined
 
 - name: remove /etc/localtime
   file:

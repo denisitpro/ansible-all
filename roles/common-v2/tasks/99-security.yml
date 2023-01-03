@@ -41,7 +41,7 @@
     backup: yes
   notify: restart sshd
   tags: [sshd]
-  when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version != '18')"
+  when: "(ansible_distribution == 'Ubuntu')"
 
 
 - name: copy sshd config ubuntu 20
@@ -55,30 +55,4 @@
     backup: yes
   tags: [sshd]
   notify: restart sshd
-  when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version != '18')"
-
-- name: copy sshd config ubuntu 18
-  template:
-    src: sshd_ubuntu18.conf.j2
-    dest: /etc/ssh/sshd_config
-    mode: 0644
-    owner: root
-    group: root
-    validate: "/usr/sbin/sshd -T -f %s"
-    backup: yes
-  tags: [sshd]
-  notify: restart sshd
-  when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '18')"
-
-- name: copy sshd config centos 8
-  template:
-    src: sshd_config_centos8.j2
-    dest: /etc/ssh/sshd_config
-    mode: 0644
-    owner: root
-    group: root
-    validate: "/usr/sbin/sshd -T -f %s"
-    backup: yes
-  tags: [sshd]
-  notify: restart sshd
-  when: "ansible_distribution == 'CentOS'"
+  when: "(ansible_distribution == 'Ubuntu')"

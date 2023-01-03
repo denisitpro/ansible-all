@@ -1,0 +1,7 @@
+[k8s_master]
+master-01.example.com
+master-02.example.com
+master-03.example.com
+
+[k8s_worker]
+worker-01.example.com

@@ -4,8 +4,8 @@ network:
   ethernets:
     {{second_interface_name}}:
       dhcp4: yes
+{% if '10.1' in ansible_facts[second_interface_name].ipv4.address and dc_location == 'fsn' %}
       routes:
-{% if '192.168' in ansible_facts[second_interface_name].ipv4.address and dc_location == 'example_dc'%}
-       - to: 1.2.0.0/16
-         via: 192.168.0.1
+       - to: 10.1.0.0/16
+         via: 10.1.0.1
 {% endif %}

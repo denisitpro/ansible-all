@@ -1,0 +1,12 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{second_interface_name_netplan}}:
+      dhcp4: yes
+{% if stand_type == 'example-dev'%}
+      routes:
+       - to: 10.2.0.0/16
+         via: 10.2.0.1
+{% endif %}
+

@@ -15,7 +15,12 @@ MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@op
 SyslogFacility AUTHPRIV
 
 # user sessions
+{% if wg_ext is not defined %}
 PermitRootLogin no
+{% endif %}
+{% if wg_ext is defined %}
+PermitRootLogin yes
+{% endif %}
 MaxAuthTries 3
 MaxSessions 5
 ClientAliveInterval 3600
@@ -65,3 +70,8 @@ PrintMotd no
 Compression no
 
 KbdInteractiveAuthentication yes
+
+{% if different_ssh_port is defined %}
+#different ssh port for gitlab work
+Port {{different_ssh_port}}
+{% endif %}

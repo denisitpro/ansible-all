@@ -1,5 +1,5 @@
 ---
-- name: copy netplan config
+- name: copy netplan config general
   template:
     src: 60-netplan-general.yaml.j2
     dest: "/etc/netplan/60-{{company_name}}.yaml"
@@ -7,8 +7,9 @@
     group: root
     force: yes
     mode: 644
-  when: "ansible_distribution == 'Ubuntu' and  dc_location == 'example_dc'"
+  when: strongswan_server is not defined
 
-- name: apply netplan config
+- name: apply netplan config general
   command: "/usr/sbin/netplan --debug apply"
-  when: "dc_location == 'example_dc' and ansible_distribution == 'Ubuntu'"
+  when: strongswan_server is not defined
+

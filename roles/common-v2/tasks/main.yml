@@ -1,66 +1,69 @@
 ---
-- include: 05-netplan.yml
-  when: "ansible_distribution == 'Ubuntu' and dc_location == 'example_dc' and second_interface_name != 'wg0'"
-  tags:
-    - route
-
-- include: 06-add-route.yml
-  when: "ansible_distribution == 'CentOS' and dc_location == 'example_dc' and second_interface_name != 'wg0'"
-  tags:
-    - route
-
-- include: 20-update-installed-packages.yml
-
-- include: 30-install-base-packages.yml
-  tags: [base]
-
-- include: 41-config-systemd-resolved.yml
-  when: "(ansible_distribution_major_version != '7')"
+- import_tasks: 41-config-systemd-resolved.yml
   tags:
     - dns
 
-- include: 42-set-dns-general.yml
-  when: "(ansible_distribution == 'CentOS' and  ansible_distribution_major_version != '7') or force_dns_ext is defined"
+- import_tasks: 42-set-dns-general.yml
+  when: "force_dns_ext is defined"
   tags: [dns]
 
-- include: 43-set-dns-centos7.yml
-  when: "ansible_distribution == 'CentOS' and dc_location != 'example_dc' and  ansible_distribution_major_version == '7'"
-  tags: [dns]
+- import_tasks: 05-netplan.yml
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - dc_location == 'fsn'
+    - wg_type is not defined
+    - netplan_route_all is not defined
+  tags:
+    - route
+    - netplan
 
-- include: 45-set-ntp-centos7.yml
-  when: "(ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7')"
+- import_tasks: 06-netplan-wg.yml
+  when: wg_type is defined and wg_type == 'server'
+  tags:
+    - route
+    - netplan
+    - wg-netplan
+
+- import_tasks: 07-netplan-gw.yml
+  when: strongswan_server_route_enabled is defined and  strongswan_server is defined
+  tags:
+    - route
+    - netplan
+
+- import_tasks: 20-update-installed-packages.yml
+  tags:
+    - os-update
+    - update-os
+
+- import_tasks: 30-install-base-packages.yml
+  tags: [base]
+
+
+- import_tasks: 46-set-ntp-chrony.yml
   tags: [ntp]
 
-- include: 46-set-ntp-chrony.yml
-  tags: [ntp]
-  when: "(ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8')  or (ansible_distribution == 'Ubuntu')"
-
-- include: 47-rsyslog.yml
+- import_tasks: 47-rsyslog.yml
   tags: [rsyslog]
 
-- include: 51-set-hostname-general.yml
+- import_tasks: 53-set-hostname-hetzner.yml
   tags: [hostname]
-  when: "dc_location != 'example_dc' and cloud is not defined"
+  when: hostname_ansible is not defined
 
-- include: 52-set-hostname-centos7.yml
-  tags: [hostname]
-  when: "dc_location == 'example_dc' and  ansible_distribution_major_version == '7' and cloud is not defined"
+- import_tasks: 55-hosts.yml
+  when: "ansible_distribution == 'Ubuntu' and dc_location == 'fsn'"
 
-- include: 53-set-hostname-hetzner.yml
-  tags: [hostname]
-  when: "dc_location == 'example_dc' and  ansible_distribution_major_version != '7' and cloud is not defined"
+- import_tasks: 60-ipa-client.yml
+  when: "cloud is not defined"
+  tags: [ipa_client]
 
-- include: 55-hosts.yml
-  when: "ansible_distribution == 'Ubuntu' and dc_location == 'example_dc'"
-
-- include: 60-ipa-client.yml
-  when: cloud is not defined
-
-- include: 65-portmapper.yml
+- import_tasks: 65-portmapper.yml
   tags:
     - portmapper
     - rpcbind
 
-- include: 99-security.yml
+- import_tasks: 99-security.yml
   tags:
     - sshd
+
+- import_tasks: 101-reboot.yml
+  tags: [ 'never', 'reboot' ]
