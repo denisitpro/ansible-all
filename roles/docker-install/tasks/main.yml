@@ -1,5 +1,19 @@
-- include: 00-add-repo.yml
-- include: 01-install-docker.yml
-- include: 02-configure-docker.yml
-- include: 03-docker-login-requirements.yml
-  when: ansible_distribution == 'CentOS'
+- import_tasks: 00-add-repo.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - docker
+
+- import_tasks: 01-install-docker.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - docker
+
+- import_tasks: 02-configure-docker.yml
+  tags:
+    - docker
+
+#- import_tasks: 05-version-checker.yml
+#  tags:
+#    - docker-version-checker
+#  when:
+#    - use_dynamic_docker_version_checker == true

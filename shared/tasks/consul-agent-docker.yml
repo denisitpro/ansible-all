@@ -1,0 +1,24 @@
+---
+- name: create directory consul
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+  with_items:
+    - "{{consul_data_path}}"
+    - "{{consul_data_path}}/config"
+    - "{{consul_data_path}}/data"
+  tags:
+    - consul-config
+
+- name: copy consul config
+  template:
+    src: "roles/2165-consul-install/templates/consul.hcl.j2"
+    dest: "{{consul_data_path}}/config/consul.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - consul-config

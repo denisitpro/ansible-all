@@ -1,15 +1,15 @@
 ---
-- include: 10-configure.yml
+- import_tasks: 10-configure.yml
   tags:
     - docker-configure
     - docker
 
-- include: 15-iptables-unit.yml
+- import_tasks: 15-iptables-unit.yml
   tags:
     - docker-configure
     - docker
 
-- include: 20-ufw-default.yml
+- import_tasks: 20-ufw-default.yml
   tags:
     - docker-configure
     - docker

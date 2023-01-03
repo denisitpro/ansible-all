@@ -1,0 +1,15 @@
+---
+- name: install openjdk {{jdk_version}} - centos
+  yum:
+    name: "{{jdk_version}}"
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: install openjdk {{jdk_version_ubuntu}} - Ubuntu
+  apt:
+    name: "{{jdk_version_ubuntu}}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_distribution == 'Ubuntu'

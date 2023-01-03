@@ -1,11 +1,5 @@
 ---
-- include: 10-install-docker-compose-centos.yml
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - docker-compose
-    - docker
-
-- include: 20-install-docker-compose-ubuntu.yml
+- import_tasks: 20-install-docker-compose-ubuntu.yml
   when: ansible_distribution == 'Ubuntu'
   tags:
     - docker-compose

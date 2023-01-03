@@ -1,4 +1,6 @@
 ---
+- import_tasks: shared/tasks/copy-security-limits.yml
+
 - name: copy sysctl file
   template:
     src: 051-docker-tune.conf.j2
@@ -7,13 +9,9 @@
     group: root
     mode: 0644
 
-- name: apply tune config - Centos
-  shell: /usr/sbin/sysctl -p /etc/sysctl.d/051-docker-tune.conf
-  when: ansible_distribution == 'CentOS'
 
 - name: apply tune config - Ubuntu
   shell: /sbin/sysctl -p /etc/sysctl.d/051-docker-tune.conf
-  when: ansible_distribution == 'Ubuntu'
 
 - name: create /etc/docker
   file:
@@ -43,5 +41,3 @@
     name: docker
     state: restarted
   when: stat_result.stat.exists == False
-
-

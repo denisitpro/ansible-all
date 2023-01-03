@@ -1,0 +1,9 @@
+- name: copy security limits
+  template:
+    src: "shared/templates/limits.d/security_limits_bitcoin.conf.j2"
+    dest: "/etc/security/limits.d/security_limits_bitcoin.conf"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - limits

@@ -1,2 +1,2 @@
 ---
-- include: shared/handlers/docker.yml
+- import_tasks: shared/handlers/docker.yml

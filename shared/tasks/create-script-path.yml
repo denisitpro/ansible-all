@@ -1,0 +1,7 @@
+---
+- name: create script directory
+  file:
+    path: "{{ scripts_path }}"
+    state: directory
+  tags:
+    - start
