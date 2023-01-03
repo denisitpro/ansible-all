@@ -1,0 +1,30 @@
+# import key fingerprint 4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
+- rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  when: ansible_distribution == 'CentOS'
+
+- name: centos7  - add Elasticsearch repo
+  copy:
+    src: 'shared/files/repos/elasticsearch{{es_version}}.repo'
+    dest: '/etc/yum.repos.d/elasticsearch{{es_version}}.repo'
+  when: ansible_distribution == 'CentOS'
+
+- name: enable elasticsearch{{es_version}} repo
+  shell: yum-config-manager --enable elasticsearch7
+  when: ansible_distribution == 'CentOS'
+
+# ubuntu section
+
+- name: Add an Apt signing key, uses  is at the URL
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: get repo {{ ansible_distribution_release }}
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/oss-{{es_version}}.x/apt stable main"
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'

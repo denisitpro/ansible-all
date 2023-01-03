@@ -1,3 +1,4 @@
 ---
-docker_compose_version: 1.29.1
+scripts_path: /opt/scripts
+
 docker_compose_path: /opt/docker

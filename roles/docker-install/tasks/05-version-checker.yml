@@ -1,0 +1,26 @@
+---
+- import_tasks: shared/tasks/create-script-path.yml
+
+- name: "copy dymanic version checker script"
+  ansible.builtin.template:
+    src:  "shared/templates/scripts/dynamic-docker-version-checker.sh.j2"
+    dest: "{{ scripts_path }}/dynamic-docker-version-checker.sh"
+    mode: 0700
+    owner: root
+    group: root
+
+- name: "Delete cron files for idemponents"
+  ansible.builtin.file:
+    path: "/etc/cron.d/{{ item }}"
+    state: absent 
+  loop:
+    - "{{ docker_version_checker_cron_file }}"
+
+- name: "Add cron job for version checker"
+  ansible.builtin.cron:
+    name: "dynamics_docker_version_checker"
+    minute: "*"
+    hour: "*"
+    user: root
+    job: "/bin/bash {{ scripts_path }}/dynamic-docker-version-checker.sh"
+    cron_file: "{{ docker_version_checker_cron_file }}"

@@ -1,0 +1,37 @@
+---
+- name: Install by YUM | Ensure clickhouse repo GPG key imported
+  rpm_key:
+    state: present
+    key: "{{ clickhouse_repo_key }}"
+  when: ansible_distribution == 'CentOS'
+
+- name: Add repository
+  yum_repository:
+    name: "{{clickhouse_repo_name}}"
+    description: "{{clickhouse_repo_name}}"
+    baseurl: "{{clickhouse_repo_url}}"
+    gpgcheck: 1
+    gpgkey: "{{ clickhouse_repo_key }}"
+    enabled: yes
+  when: ansible_distribution == 'CentOS'
+
+# old yandex repo gives an error: "Certificate verification failed: The certificate is NOT trusted. The certificate chain uses insecure algorithm"
+# TODO: remove this task after applying on all clickhouse servers
+- name: Remove bad yandex APT repo
+  apt_repository:
+      repo: "deb https://repo.yandex.ru/clickhouse/deb/stable/ main/"
+      state: absent
+
+- name: Install by APT | Apt-key add repo key
+  apt_key:
+    keyserver: "{{ clickhouse_repo_keyserver }}"
+    id: "{{ clickhouse_repo_key_id }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: add clickhouse repositary
+  apt_repository:
+    repo: "{{item}}"
+    state: present
+  loop:
+      - "deb [arch=amd64] https://repo.clickhouse.tech/deb/stable/ main/"
+  when: ansible_distribution == 'Ubuntu'

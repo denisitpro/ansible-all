@@ -1,0 +1,17 @@
+---
+- name: Create private group
+  group:
+    name: "{{local_user_name}}"
+    system: yes
+    state: present
+  when: local_user_name != "root"
+
+- name: Create  user
+  user:
+    name: "{{local_user_name}}"
+    group: "{{ local_user_name }}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "{{local_user_name}} non-privileged user"
+    state: present
+  when: local_user_name != "root"

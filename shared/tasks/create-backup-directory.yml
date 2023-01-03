@@ -1,0 +1,10 @@
+---
+- name: create directory for backup files
+  file:
+    path: "{{ backup_path }}"
+    owner: "{{ bkp_user | default ('root') }}"
+    group: "{{ bkp_user | default ('root') }}"
+    mode: '0755'
+    state: directory
+  tags:
+    - backup-directory

@@ -1,0 +1,6 @@
+---
+- name: docker-compose restart
+  shell: "docker-compose restart"
+  args:
+    chdir: "{{ docker_compose_path }}"
+  become: true

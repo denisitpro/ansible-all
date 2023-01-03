@@ -1,0 +1,5 @@
+---
+- name: docker-compose stop
+  shell: "docker-compose down"
+  args:
+    chdir: "{{docker_compose_path}}"

@@ -9,7 +9,7 @@ Type=oneshot
 User=root
 Group=root
 
-ExecStart=bash -c "{{docker_path}}/iptables.sh"
+ExecStart=bash -c "{{docker_compose_path}}/iptables.sh"
 
 [Install]
 WantedBy=multi-user.target

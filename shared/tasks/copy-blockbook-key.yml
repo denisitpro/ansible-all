@@ -1,0 +1,11 @@
+- name: Copy blockbook keys
+  ansible.builtin.copy:
+    src: "shared/files/blockbook/pki/{{item}}"
+    dest: "{{node_data_path}}/blockbook/{{item}}"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - "blockbook.crt"
+    - "blockbook.key"
+

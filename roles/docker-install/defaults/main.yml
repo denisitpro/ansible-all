@@ -1,0 +1,18 @@
+---
+docker_version_checker_cron_file: "docker_version_checker"
+
+# ClickHouse version checker
+ch_version_srv: "clickhouse.example.com"
+ch_version_http_port: 443
+ch_version_db_name: "infra"
+version_table_name: "version"
+ch_version_http_protocol: "https"
+
+ch_infra_external_srv: "ch-version.example.com"
+
+ch_version_user: "version_user"
+ch_version_pass: "SetPrivatePass"
+
+use_dynamic_docker_version_checker: true
+
+exceptions: "ID"

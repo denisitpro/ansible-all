@@ -5,11 +5,10 @@
       - docker-compose
     update_cache: yes
 
-- name: create symlinks to docker
-  file:
-    src: "/usr/bin/{{ item }}"
-    dest: "/bin/{{ item }}"
-    state: link
-  with_items:
-    - 'docker-compose'
-  when: dc_location == 'lnd' and ansible_distribution == 'Ubuntu'
+#- name: create symlinks to docker
+#  file:
+#    src: "/usr/bin/{{ item }}"
+#    dest: "/bin/{{ item }}"
+#    state: link
+#  with_items:
+#    - 'docker-compose'

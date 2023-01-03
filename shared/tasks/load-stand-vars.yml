@@ -1,0 +1,3 @@
+---
+- name: Include stand-specific variables - {{stand_type}}
+  include_vars: "shared/variables//stand_{{stand_type}}.yml"

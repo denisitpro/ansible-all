@@ -1,0 +1,10 @@
+- name: copy script for check status
+  template:
+    src: "shared/templates/scripts/{{item}}.j2"
+    dest: "/opt/docker/{{item}}"
+    mode: 0755
+  with_items:
+    - check_docker_service.sh
+    - replace_docker_tag.sh
+  tags:
+    - script

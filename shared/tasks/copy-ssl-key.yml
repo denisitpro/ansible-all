@@ -1,0 +1,17 @@
+---
+- name: create folder for ssl keys
+  ansible.builtin.file:
+    path: "{{ssl_key_app_path}}"
+    state: directory
+    mode: '0755'
+
+- name: Copy ssl keys
+  ansible.builtin.copy:
+    src: "shared/files/ssl/{{item}}"
+    dest: "{{ssl_key_app_path}}/{{item}}"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - "cert.pem"
+    - "key.pem"
