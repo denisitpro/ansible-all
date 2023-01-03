@@ -8,3 +8,4 @@
 
 - name: set hostname {{ dig_result.stdout }}
   shell: hostnamectl set-hostname  {{ dig_result.stdout }}
+  when: dig_result.stdout != ""

@@ -1,0 +1,13 @@
+---
+- hosts: k8s_master
+  become: yes
+#  vars_prompt:
+#    - name: vault_login
+#      prompt: "What is your LDAP  login ?"
+#      private: no
+#    - name: vault_password
+#      prompt: "What is your LDAP password ?"
+  roles:
+    - common-internet-v3
+    - firewall-configure
+    - ufw-general

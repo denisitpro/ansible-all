@@ -1,10 +1,10 @@
 ---
-- include: 05-ufw.yml
+- import_tasks: 05-ufw.yml
   tags:
     - iptables
     - ufw
     
-- include: 06-ufw-custom.yml
+- import_tasks: 06-ufw-custom.yml
   when: iptables.custom_rules is defined
   tags:
     - iptables

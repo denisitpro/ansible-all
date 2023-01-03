@@ -1,0 +1,17 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{second_interface_name}}:
+      dhcp4: yes
+{% if '10.3' in ansible_facts[second_interface_name].ipv4.address and dc_location == 'fsn'%}
+### Start stands section
+{% if strongswan_server_route_enabled is  defined %}
+      routes:
+       - to: 10.3.0.0/16
+         via: 10.3.0.1
+{% endif %}
+{% endif %}
+
+
+

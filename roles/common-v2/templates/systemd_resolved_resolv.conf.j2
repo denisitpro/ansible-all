@@ -1,11 +1,6 @@
 [Resolve]
 DNS={{dns1}} {{dns2}}
-FallbackDNS=1.2.3.4
-{% if ansible_distribution == 'CentOS' %}
-Domains=~example.com ~example.dev ~10.in-addr.arpa
-{% endif %}
-{% if ansible_distribution == 'Ubuntu' %}
-Domains=example.com example.dev 10.in-addr.arpa
-{% endif %}
+Domains={% for dom in  domains %}{% if ansible_distribution == 'CentOS' %}~{% endif %}{{dom}} {% endfor %}
+
 Cache=no-negative
 LLMNR=false

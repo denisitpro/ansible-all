@@ -6,8 +6,8 @@ nameserver 127.0.0.1
 nameserver 127.0.0.53
 {% endif %}
 {% else %}
-nameserver {{dns2}}
 nameserver {{dns1}}
+nameserver {{dns2}}
 {% endif %}
 
 search {{ searchdomain }}

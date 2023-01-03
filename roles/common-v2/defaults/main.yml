@@ -1,0 +1,11 @@
+---
+domains:
+  - 'example.com'
+  - '10.in-addr.arpa'
+
+dns1: 1.1.1.1
+dns2: 8.8.8.8
+searchdomain: example.com
+
+#second_interface_name_netplan: enp7s0
+second_interface_name_netplan: "{{ ansible_facts[second_interface_name].device }}"

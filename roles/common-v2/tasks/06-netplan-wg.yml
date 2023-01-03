@@ -1,0 +1,12 @@
+---
+- name: copy netplan config wg
+  template:
+    src: 65-netplan-wg.yaml.j2
+    dest: "/etc/netplan/60-{{company_name}}.yaml"
+    owner: root
+    group: root
+    force: yes
+    mode: 644
+
+- name: apply netplan config wg
+  command: "/usr/sbin/netplan --debug apply"

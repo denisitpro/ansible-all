@@ -12,4 +12,8 @@
   template:
       src:  systemd_resolved_resolv.conf.j2
       dest: "/usr/lib/systemd/resolved.conf.d/{{company_name}}.conf"
-  notify: restart systemd-resolved
+
+- name: restart systemd-resolved
+  ansible.builtin.systemd:
+    state: restarted
+    name: systemd-resolved

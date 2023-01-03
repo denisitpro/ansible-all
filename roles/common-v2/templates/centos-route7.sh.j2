@@ -1,7 +1,0 @@
-#!/bin/bash
-echo start $(date +"%Y%m%d-%H%M%S")
-/usr/bin/sleep 10
-
-{% if '192.168' in ansible_eth1.ipv4.address and dc_location == 'example_dc' and ansible_distribution_major_version == '7' %}
-/usr/sbin/ip ro add 1.2.0.0/16 via 192.168.0.1 proto static
-{% endif %}
