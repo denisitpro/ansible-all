@@ -11,8 +11,6 @@
       - "47-rsyslog"
       - "55-hosts"
       - "99-security"
-      - "101-reboot.yml"
-
 
 - import_tasks: roles/common-v2/tasks/101-reboot.yml
   tags: [ 'never', 'reboot' ]

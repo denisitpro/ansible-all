@@ -1,0 +1,10 @@
+upstream {{ item.name }} {
+{% if upstream_multi.type is defined %}
+{{upstream_multi.type}};
+{% endif %}
+{% for included in upstream_multi.upstream %}
+{% if item.name == included.name %}
+        server {{included.server}}:{{included.port}} weight={{included.weight|default("5") }} fail_timeout={{included.fail_timeout|default("5")}}s max_fails={{included.max_fails|default("0") }};
+{% endif %}
+{% endfor %}
+}

@@ -1,14 +1,12 @@
 ---
-nginx_tmp_wild: /tmp/nginx_wildcard
-nginx_tmp_personal: /tmp/nginx_personal
+# local path for temp store env
+cert_tmp: /tmp/cert_tmp
 
 cert_env: "{{stand_type}}"
 
+cert_group_name: cert_read_group
+cert_ssl_path: "/opt/ssl"
+
 # wild certs
-curl_get_wild_cert:  'curl -s  -H "X-Vault-Token: {{vault_access_token.stdout}}" -X GET {{vault_url}}/v1/{{cert_env}}/data/certificates/{{item.cert_type}}/{{item.domain}}/{{item.certname}} | jq ".data" |  jq ".data" | jq -r ".value"'
-curl_get_wild_key:  'curl -s  -H "X-Vault-Token: {{vault_access_token.stdout}}" -X GET {{vault_url}}/v1/{{cert_env}}/data/certificates/{{item.cert_type}}/{{item.domain}}/{{item.privkey}} | jq ".data" |  jq ".data" | jq -r ".value"'
-
-# personal certs
-curl_get_personal_cert:  'curl -s  -H "X-Vault-Token: {{vault_access_token.stdout}}" -X GET {{vault_url}}/v1/{{cert_env}}/data/certificates/{{item.cert_type}}/{{item.servername}}/{{item.certname}} | jq ".data" |  jq ".data" | jq -r ".value"'
-curl_get_personal_key:  'curl -s  -H "X-Vault-Token: {{vault_access_token.stdout}}" -X GET {{vault_url}}/v1/{{cert_env}}/data/certificates/{{item.cert_type}}/{{item.servername}}/{{item.privkey}} | jq ".data" |  jq ".data" | jq -r ".value"'
-
+curl_get_cert:  'curl -s  -H "X-Vault-Token: {{ vault_access_token.stdout }}" -X GET {{ vault_url }}/v1/{{ cert_env }}/data/certs/{{ item.name | default(nginx_default_domain) }}/{{ item.certname | default("fullchain.pem") }} | jq ".data" |  jq ".data" | jq -r ".value"'
+curl_get_key:  'curl -s  -H "X-Vault-Token: {{ vault_access_token.stdout }}" -X GET {{ vault_url }}/v1/{{ cert_env }}/data/certs/{{ item.name | default(nginx_default_domain) }}/{{ item.privkey | default("privkey.pem") }} | jq ".data" |  jq ".data" | jq -r ".value"'

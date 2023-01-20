@@ -3,8 +3,6 @@
   file:
      path: "{{item}}"
      state: directory
-     owner: nginx
-     group: nginx
      recurse: yes
   with_items:
     - "/etc/nginx/conf.d"

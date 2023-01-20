@@ -1,0 +1,63 @@
+##### ANSIBLE generated config
+## {{ ansible_managed }} ##
+##### Don't change it by hands
+##### Your changes will be lost
+
+server {
+        listen {{item.http_port}};
+        server_name {{item.servername}};
+
+server {
+        listen  {{item.https_ports}} ssl;
+        server_name {{item.servername}};
+
+# set url for lets encrypt
+        location /.well-known/ {
+        allow all;
+        alias   /var/lib/letsencrypt/;
+        default_type "text/plain";
+        try_files $uri =404;
+        }
+
+# log project use  include
+{% if nginx_logs_stdout is not defined %}
+        access_log  {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extend_json") }};
+        error_log   {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-error.log;
+{% endif %}
+{% if nginx_logs_stdout is defined %}
+        access_log  /dev/stdout  {{nginx_log_format |default ("extend_json")}};
+        error_log   /dev/stdout;
+{% endif %}
+
+## include ssl certificate
+{% if nginx.vhosts %}
+    ssl_certificate     {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% endif %}
+
+# Ansible include
+{% for included in  nginx.include %}
+    include  {{ included }};
+{% endfor %}
+### end ansible include
+
+{% if nginx.size_upload_files  is defined %}
+{% for included in  nginx.size_upload_files %}
+    client_max_body_size  {{ included.client_max_body_size }};
+{% endfor %}
+{% endif %}
+
+## Ansible generate section  location
+{% if nginx.generate  is defined %}
+{% for generate in  nginx.generate  %}
+     location {{generate.location}} {
+{% for option in  generate.options  %}
+        {{option}};
+{% endfor %}
+     }
+{% endfor %}
+{% endif %}
+### Ansible end generate section  location
+
+
+}

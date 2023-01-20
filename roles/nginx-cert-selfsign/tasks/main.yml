@@ -1,0 +1,4 @@
+---
+- import_tasks: 05-cert-generate.yml
+  tags:
+    - cert

@@ -12,7 +12,11 @@
     - requestid_dmz.conf
     - requestid_proxy.conf
     - ssl-user-auth.conf
+    - stapling_v1.conf
     - stapling_v2.conf
+    - ssl-exchange2019.conf
     - ssl-session-v1.conf
+    - tls1_2-tls1_3.conf
+    - ddos-guard-ip-list.conf
   tags:
     nginx_include

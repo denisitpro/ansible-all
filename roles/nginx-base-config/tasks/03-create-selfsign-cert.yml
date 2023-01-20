@@ -1,3 +1,11 @@
 ---
 - name: create self-sign cert
   command: openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -subj "/C=RU/ST=MOSCOW/L=MOSCOW/O=ELFIN/OU=IT/CN=debug.local" -keyout /etc/nginx/ssl/debug.local.key -out /etc/nginx/ssl/debug.local.crt
+
+- name: Change file permission
+  file:
+    path: "{{item}}"
+    mode: 0400
+  with_items:
+    - "/etc/nginx/ssl/debug.local.key"
+    - "/etc/nginx/ssl/debug.local.crt"

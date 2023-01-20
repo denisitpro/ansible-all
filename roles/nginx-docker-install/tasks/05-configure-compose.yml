@@ -1,0 +1,8 @@
+---
+- name: copy compose nginx
+  template:
+    src: docker-compose.nginx.yml.j2
+    dest: "{{docker_compose_path}}/nginx/docker-compose.yml"
+    owner: root
+    group: root
+    mode: 0644

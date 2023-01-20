@@ -15,6 +15,9 @@ events {
 }
 
 http {
+{% if map_hash_bucket_size is defined %}
+    map_hash_bucket_size {{map_hash_bucket_size}};
+{% endif %}
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
     #Number of requests a client can make over the keep-alive connection.
@@ -48,11 +51,23 @@ http {
     gzip  on;
 ####### end base section####
 
+##### old section
+##    types_hash_max_size 2048;
+##    gzip  on;
+##    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+##    proxy_cache_path /var/cache/nginx/cache levels=1:2 keys_zone=crawler:30m max_size=1G;
+##    proxy_temp_path /var/cache/nginx/proxy 1 2;
+##    proxy_cache_key $http_host$uri$is_args$args;
+##    proxy_ignore_headers Expires Cache-Control;
+##
+##    limit_conn_zone $server_name zone=perserver:10m;
+##    client_max_body_size 10m;
+### end old section
 
 	# start include section
 	include /etc/nginx/conf.d/*.conf;
 	include /etc/nginx/sites-enabled/*.conf;
 	include /etc/nginx/upstream.d/*.conf;
-
+# set real ip
+	include /etc/nginx/include/ddos-guard-ip-list.conf;
 }
-

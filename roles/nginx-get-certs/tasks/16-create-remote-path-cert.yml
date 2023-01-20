@@ -1,0 +1,14 @@
+---
+- name: print items
+  ansible.builtin.debug:
+    msg: "item - {{item.name}}"
+  with_items: "{{ certs.domains }}"
+
+- name: "Create path for wild certs"
+  file:
+     path: "{{ cert_ssl_path }}/{{ item.name | default(nginx_default_domain) }}"
+     state: directory
+     owner: root
+     group: "{{cert_group_name}}"
+     recurse: yes
+  with_items: "{{ certs.domains }}"

@@ -1,0 +1,40 @@
+---
+- name: check nginx - unit
+  shell: "/usr/sbin/nginx -t"
+  register: nginx_config_status
+  when: nginx_docker is not defined
+  tags:
+    - upstream
+
+- name: check nginx - docker
+  shell: "docker exec -t nginx nginx -t"
+  register: nginx_docker_config_status
+  when: nginx_docker is defined
+  tags:
+    - upstream
+
+- name: print state check - unit {{ nginx_config_status.rc }}
+  debug:
+    msg: "{{ nginx_config_status.rc }}"
+  when: nginx_docker is not defined
+  tags:
+    - upstream
+
+- name: print state check - docker  {{ nginx_docker_config_status.rc }}
+  debug:
+    msg: "{{ nginx_docker_config_status.rc }}"
+  when: nginx_docker is defined
+  tags:
+    - upstream
+
+- name: reload nginx - unit
+  systemd:
+    name: nginx
+    state: reloaded
+  when: nginx_docker is not defined
+  tags:
+    - upstream
+
+- name: reload nginx - docker
+  shell: "docker exec -t nginx nginx -s reload"
+  when: nginx_docker is defined

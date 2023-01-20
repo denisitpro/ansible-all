@@ -1,0 +1,8 @@
+---
+mgmt_jump: true
+#force_dns_ext: true
+
+iptables:
+  rules:
+#### system rules
+    - { name: "any-access", protocol: "tcp", port: "22"}

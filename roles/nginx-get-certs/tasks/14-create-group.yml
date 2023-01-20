@@ -1,0 +1,22 @@
+---
+- name: Create private group for cert-access
+  ansible.builtin.group:
+    name: "{{cert_group_name}}"
+    system: yes
+    state: present
+    gid: 5001
+
+
+- name: add user to group
+  ansible.builtin.user:
+    name: "{{ item.user }}"
+    groups: "{{ cert_group_name }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+  when: certs.access is defined
+  with_items:
+    - "{{ certs.access }}"
+  tags:
+    - cert-group

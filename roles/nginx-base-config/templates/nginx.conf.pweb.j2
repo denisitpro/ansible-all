@@ -1,0 +1,80 @@
+# worker_processes = CPU count http://nginx.org/ru/docs/ngx_core_module.html
+worker_processes  auto;
+
+#Number of file descriptors used for Nginx.
+worker_rlimit_nofile 65535;
+
+pid        /var/run/nginx.pid;
+
+events {
+              worker_connections  {{nginx_worker_connections}};
+              # epoll — эффективный метод, используемый в Linux 2.6+ http://nginx.org/ru/docs/events.html
+              use epoll;
+              # Рабочий процесс за один раз будет принимать сразу все новые соединения
+              multi_accept on;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    #Number of requests a client can make over the keep-alive connection.
+    keepalive_requests 1000;
+
+    #Allow the server to close the connection after a client stops responding.
+    reset_timedout_connection on;
+
+#    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+#                      '$status $body_bytes_sent "$http_referer" '
+#                      '"$http_user_agent" "$http_x_forwarded_for"';
+#    log_format advanced '$remote_addr - $remote_user [$time_local] - $server_name:$server_port to: $upstream_addr: '
+#                        '"$request" $status $body_bytes_sent '
+#                        '"$http_referer" "$http_user_agent" "$request_time" '
+#                        '"$upstream_response_time" "$http_x_forwarded_for"';
+
+        include /etc/nginx/include/{{nginx_requestid_source}};
+        include /etc/nginx/include/log_format.conf;
+
+        access_log  {{nginx_log_path}}/access.log  main;
+        error_log  {{nginx_log_path}}/error.log warn;
+
+	#### PCI-DSS Compliance # Don’t show the Nginx version number (in error pages / headers)
+        server_tokens off;
+
+############ base section #####
+    sendfile        on;
+    tcp_nopush     on;
+    tcp_nodelay on;
+    keepalive_timeout  100;
+####### end base section####
+
+# pweb section
+    client_body_timeout 30;
+    client_body_buffer_size 10K;
+    client_header_buffer_size 1k;
+    client_max_body_size 100m;
+    large_client_header_buffers 4 500k;
+    gzip  on;
+    gzip_min_length  1000;
+    gzip_disable "msie6";
+
+    # Rate limits
+#    limit_req_zone $binary_remote_addr zone=3r_sec:10m rate=3r/s;
+#    limit_req_zone $binary_remote_addr zone=5r_sec:10m rate=5r/s;
+#    limit_req_zone $binary_remote_addr zone=apiv2:10m rate=30r/s;
+#    limit_req_zone $binary_remote_addr zone=apiv1:10m rate=2r/s;
+
+    proxy_buffering on;
+    proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=one:10m max_size=1g;
+    proxy_cache_key "$scheme$request_method$host$request_uri";
+    proxy_ignore_headers "Cache-Control" "Expires";
+    proxy_temp_path /tmp/nginx;
+#### end pweb section
+
+	# start include section
+	include /etc/nginx/conf.d/*.conf;
+	include /etc/nginx/sites-enabled/*.conf;
+	include /etc/nginx/upstream.d/*.conf;
+	include /etc/nginx/include/ddos-guard-ip-list.conf;
+
+}
+

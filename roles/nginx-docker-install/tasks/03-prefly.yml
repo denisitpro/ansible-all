@@ -1,0 +1,17 @@
+---
+- name: Create a directoris for docker-compose nginx
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ docker_compose_path }}"
+    - "{{ docker_compose_path }}/nginx"
+
+- name: create path folder
+  file:
+     path: "{{item}}"
+     state: directory
+     recurse: yes
+  with_items:
+    - "{{nginx_data_path}}"
