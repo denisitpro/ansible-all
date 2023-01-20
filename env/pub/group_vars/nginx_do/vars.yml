@@ -4,13 +4,13 @@ nginx_log_format: extend_json
 
 upstream_multi:
   upstream:
-    - { name: "back1", server: 146.190.169.117, port: 443, fail_timeout: 0, conf: "nginx-multi-g2.conf.j2"}
+    - { name: "back1", server: 161.35.239.178, port: 443, fail_timeout: 0, conf: "nginx-multi-g2.conf.j2"}
   type: ip_hash
 
 
 nginx:
   vhosts:
-    - { servername: pluto.cloud, domain: "pluto.cloud",
+    - { servername: happy.pluto.cloud, domain: "pluto.cloud",
         config_file: "vhost-general.conf.j2", upstream_name: "back1"}
   include:
     - "/etc/nginx/include/tls1_2-tls1_3.conf"
