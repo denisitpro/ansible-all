@@ -18,7 +18,9 @@ nginx_docker_ulimits:
 
 fluent_async: "true"
 fluendt_buffer_limit: 200000
-cert_ssl_path: "/etc/nginx/ssl"
+
+nginx_ssl_path: /opt/ssl
+cert_ssl_path: "{{nginx_ssl_path}}"
 
 nginx_docker: true
 

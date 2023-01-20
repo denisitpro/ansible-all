@@ -1,0 +1,43 @@
+---
+#- debug:
+#    msg: " {{vault_url}}/v1/{{cert_env}}/data/certificates/{{item.cert_type}}/{{item.name}}/{{item.privkey}}"
+#  with_items: "{{ certs.domains }}"
+
+- name: "Copy  certs"
+  copy:
+    src: "{{ cert_tmp }}/{{ item.name }}-cert.pem"
+    dest: "{{ cert_ssl_path }}/{{ item.name }}/{{ item.certname | default('fullchain.pem') }}"
+    owner: root
+    group: "{{cert_group_name}}"
+    mode: 0440
+  with_items: "{{ certs.domains }}"
+
+- name: copy  privkey
+  copy:
+    src: "{{ cert_tmp }}/{{ item.name }}-priv.pem"
+    dest: "{{ cert_ssl_path }}/{{ item.name }}/{{ item.privkey | default('privkey.pem') }}"
+    owner: root
+    group: "{{cert_group_name}}"
+    mode: 0440
+  with_items: "{{ certs.domains }}"
+
+## clean section
+- name: sleep for 5 seconds and continue with play
+  wait_for:
+    timeout: 5
+  delegate_to: localhost
+  become: no
+
+- name: delete temp dir
+  file:
+    path: "{{item}}"
+    state: absent
+  delegate_to: localhost
+  become: no
+  with_items:
+    - "{{ cert_tmp }}"
+  ignore_errors: yes
+
+
+#- name: debug certs
+#  debug: msg="{{cert_out}}"

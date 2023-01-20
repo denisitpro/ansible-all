@@ -1,9 +1,36 @@
 ---
-- include: 00-create-path.yml
+- import_tasks: 14-create-group.yml
   tags:
-    - nginx-sites
     - cert
-- include: 01-vault-get-data.yml
+    - cert-group
+
+- import_tasks: 16-create-remote-path-cert.yml
   tags:
-    - nginx-sites
     - cert
+    - cert-update
+
+- import_tasks: 21-vault-get-data-cert.yml
+  delegate_to: localhost
+  become: false
+  tags:
+    - cert
+    - cert-update
+    - cert-get-data
+
+- import_tasks: 26-copy-data-cert.yml
+  tags:
+    - cert
+    - cert-update
+    - cert-get-data
+
+- import_tasks: 30-cert-size.yml
+  tags:
+    - cert
+    - cert-update
+
+- import_tasks: 35-notify-reload.yml
+  when: certs.notify is defined
+  tags:
+    - cert
+    - cert-update
+    - cert-notify

@@ -1,0 +1,14 @@
+---
+- name: Get infos on container
+  docker_container_info:
+    name: nginx
+  register: container_nginx_state
+
+- name: Does container exist?
+  debug:
+    msg: "The container {{ 'exists' if container_nginx_state.exists else 'does not exist' }}"
+
+- name: Print information about container
+  debug:
+    var: container_nginx_state.container.Name
+  when: container_nginx_state.exists

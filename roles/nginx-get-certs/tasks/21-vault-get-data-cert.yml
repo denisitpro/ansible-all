@@ -1,0 +1,34 @@
+---
+- name: create tmp folders
+  file:
+     path: "{{ item }}"
+     state: directory
+  with_items:
+    - "{{ cert_tmp }}"
+
+
+- name: curl get access token - {{ vault_url }} {{ cert_env }}
+  shell: 'curl -s --request POST --data ''{"password": "{{ vault_password }}"}'' {{ vault_url }}/v1/auth/ldap/login/{{ vault_login }} | jq ".auth" | jq -r ".client_token"'
+  args:
+    warn: false
+  register: vault_access_token
+
+#- name: debug token vars
+#  debug: msg="{{vault_access_token.stdout}}"
+
+####### section wild
+
+- name: curl get certs array
+  shell: "{{ curl_get_cert }} > {{ cert_tmp }}/{{ item.name  }}-cert.pem"
+  args:
+    warn: false
+  register: cert_out
+  with_items: "{{ certs.domains }}"
+
+- name: curl get privkey certs array
+  shell: "{{ curl_get_key }} > {{ cert_tmp }}/{{ item.name }}-priv.pem"
+  args:
+    warn: false
+  register: cert_out
+  with_items: "{{ certs.domains }}"
+

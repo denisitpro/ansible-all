@@ -1,0 +1,48 @@
+---
+- name: Get infos on container
+  docker_container_info:
+    name: nginx
+  register: container_nginx_state
+
+- name: Does container exist?
+  debug:
+    msg: "The container {{ 'exists' if container_nginx_state.exists else 'does not exist' }}"
+
+- name: Print information about container
+  debug:
+    var: container_nginx_state.container.Name
+  when: container_nginx_state.exists
+
+
+- name: reload nginx
+  shell: "docker exec -t nginx nginx -s reload"
+  when: item.name == 'nginx' and container_nginx_state.exists
+  with_items: "{{ certs.notify }}"
+
+
+### restart vault
+- name: Get infos on container vault
+  docker_container_info:
+    name: vault
+  register: container_vault_state
+
+- name: Does container exist?  vault
+  debug:
+    msg: "The container {{ 'exists' if container_vault_state.exists else 'does not exist' }}"
+
+- name: Print information about container  vault
+  debug:
+    var: container_vault_state.container.Name
+  when: container_vault_state.exists
+
+- name: copy cert vault vault
+  include_tasks: roles/2065-vault-docker/tasks/15-copy-ssl.yml
+  when: item.name == 'vault' and container_vault_state.exists
+  with_items: "{{ certs.notify }}"
+
+- name: restart vault
+  include_tasks: roles/2065-vault-docker/tasks/50-lauch.yml
+  when: item.name == 'vault' and container_vault_state.exists
+  with_items: "{{ certs.notify }}"
+
+### end restart vault

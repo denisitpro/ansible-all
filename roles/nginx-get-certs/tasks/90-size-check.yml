@@ -1,0 +1,18 @@
+---
+- name: Get stats of the FS object
+  ansible.builtin.stat:
+    path: "{{ cert_ssl_path }}/{{ item.name }}/{{ item.certname | default('fullchain.pem') }}"
+  register: sym
+
+- name: check path
+  ansible.builtin.debug:
+    msg: "{{ cert_ssl_path }}/{{ item.name }}/{{ item.certname | default('fullchain.pem') }}"
+
+- name: Print a debug message
+  ansible.builtin.debug:
+    msg: "certificate {{ cert_ssl_path }}/{{ item.name }}/{{ item.certname | default('fullchain.pem') }} size {{sym.stat.size}}"
+
+- name: Certificate is null
+  ansible.builtin.fail:
+    msg: certificate {{ cert_ssl_path }}/{{ item.name }}/{{ item.certname | default('fullchain.pem') }} NULL, certificate size {{sym.stat.size}}.
+  when: sym.stat.size == 5
