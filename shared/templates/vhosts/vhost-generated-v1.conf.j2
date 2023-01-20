@@ -1,18 +1,23 @@
 ##### ANSIBLE generated config
 ## {{ ansible_managed }} ##
-##### not change hands
-####  your changes will be lost
+##### Don't change it by hands
+##### Your changes will be lost
 
 server {
-        listen {{nginx_bind_addr}}:{{item.http_port | default ("80")}};
+        listen {{item.http_port}};
         server_name {{item.servername}};
-
-        return 301 https://$host$request_uri;
-}
 
 server {
-        listen  {{nginx_bind_addr}}:{{item.https_ports | default ("443")}} ssl;
+        listen  {{item.https_ports}} ssl;
         server_name {{item.servername}};
+
+# set url for lets encrypt
+        location /.well-known/ {
+        allow all;
+        alias   /var/lib/letsencrypt/;
+        default_type "text/plain";
+        try_files $uri =404;
+        }
 
 # log project use  include
 {% if nginx_logs_stdout is not defined %}
@@ -30,25 +35,29 @@ server {
     ssl_certificate_key {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% endif %}
 
-# Ansible management
+# Ansible include
 {% for included in  nginx.include %}
     include  {{ included }};
 {% endfor %}
-### end ansible management
-    root {{ racktables_path }};
-    index index.php;
+### end ansible include
 
-     location / {
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Server $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Host $http_host;
-   }
-     location ~ \.php {
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_pass 127.0.0.1:9000;
-	}
+{% if nginx.size_upload_files  is defined %}
+{% for included in  nginx.size_upload_files %}
+    client_max_body_size  {{ included.client_max_body_size }};
+{% endfor %}
+{% endif %}
+
+## Ansible generate section  location
+{% if nginx.generate  is defined %}
+{% for generate in  nginx.generate  %}
+     location {{generate.location}} {
+{% for option in  generate.options  %}
+        {{option}};
+{% endfor %}
+     }
+{% endfor %}
+{% endif %}
+### Ansible end generate section  location
+
+
 }
-
-### end generate config

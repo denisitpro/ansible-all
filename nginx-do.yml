@@ -1,0 +1,14 @@
+---
+- hosts: nginx_do
+  become: yes
+  roles:
+#    - common-internet-v3
+#    - docker-install
+#    - docker-configure-firewall-v2
+#    - docker-compose
+#    - nginx-base-config
+#    - nginx-docker-prefly
+#    - nginx-docker-install
+    - nginx-vhosts-configure
+#    - firewall-configure
+#    - ufw-general

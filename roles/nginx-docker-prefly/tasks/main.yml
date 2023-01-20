@@ -1,0 +1,4 @@
+---
+- import_tasks: 10-copy-files.yml
+  tags:
+    - nginx

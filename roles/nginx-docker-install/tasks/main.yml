@@ -1,0 +1,17 @@
+---
+- import_tasks: 03-prefly.yml
+  tags:
+    - nginx
+    - nginx-docker
+
+- import_tasks: 05-configure-compose.yml
+  tags:
+    - nginx
+    - nginx-docker
+    - nginx-compose
+
+- import_tasks: 10-launch.yml
+  tags:
+    - nginx
+    - nginx-docker
+    - nginx-compose

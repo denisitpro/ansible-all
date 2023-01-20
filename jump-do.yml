@@ -1,0 +1,7 @@
+---
+- hosts: jump_do
+  become: yes
+  roles:
+    - common-internet-v3
+    - firewall-configure
+    - ufw-general

@@ -5,3 +5,9 @@ master-03.example.com
 
 [k8s_worker]
 worker-01.example.com
+
+[jump_do]
+jump-01.example.com
+
+[nginx_do]
+nginx-01.example.com

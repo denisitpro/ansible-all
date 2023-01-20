@@ -1,0 +1,26 @@
+---
+nginx_log_format: extend_json
+#
+
+upstream_multi:
+  upstream:
+    - { name: "back1", server: 146.190.169.117, port: 443, fail_timeout: 0, conf: "nginx-multi-g2.conf.j2"}
+  type: ip_hash
+
+
+nginx:
+  vhosts:
+    - { servername: pluto.cloud, domain: "pluto.cloud",
+        config_file: "vhost-general.conf.j2", upstream_name: "back1"}
+  include:
+    - "/etc/nginx/include/tls1_2-tls1_3.conf"
+
+
+
+iptables:
+  rules:
+#### system rules
+    - { name: "any-access", protocol: "tcp", port: "22"}
+    - { name: "jump-01", protocol: "tcp", port: "22", source: "146.190.114.220"}
+    - { name: "nginx", protocol: "tcp", port: "80"}
+    - { name: "nginx", protocol: "tcp", port: "443"}

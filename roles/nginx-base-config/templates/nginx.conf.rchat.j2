@@ -1,14 +1,16 @@
+# worker_processes = CPU count http://nginx.org/ru/docs/ngx_core_module.html
 worker_processes  auto;
 
 #Number of file descriptors used for Nginx.
-worker_rlimit_nofile 100000;
+worker_rlimit_nofile 65535;
 
 pid        /var/run/nginx.pid;
 
 events {
-              worker_connections  4096;
+              worker_connections  {{nginx_worker_connections}};
+              # epoll — эффективный метод, используемый в Linux 2.6+ http://nginx.org/ru/docs/events.html
               use epoll;
-              # A worker process will accept all new connections at a time. http://nginx.org/ru/docs/ngx_core_module.html
+              # Рабочий процесс за один раз будет принимать сразу все новые соединения
               multi_accept on;
 }
 
@@ -32,29 +34,26 @@ http {
         include /etc/nginx/include/{{nginx_requestid_source}};
         include /etc/nginx/include/log_format.conf;
 
-        access_log  {{nginx_log_path}}/access.log  main;
-        error_log  {{nginx_log_path}}/error.log warn;
+#        access_log  {{nginx_log_path}}/access.log  main;
+#        error_log  {{nginx_log_path}}/error.log warn;
 
+	#### PCI-DSS Compliance # Don’t show the Nginx version number (in error pages / headers)
         server_tokens off;
 
 ############ base section #####
     sendfile        on;
     tcp_nopush     on;
+    tcp_nodelay on;
+    keepalive_timeout  30;
     gzip  on;
 ####### end base section####
 
-## nexus section https://help.sonatype.com/repomanager3/installation/run-behind-a-reverse-proxy#RunBehindaReverseProxy-nginx
-  proxy_send_timeout 120;
-  proxy_read_timeout 300;
-  proxy_buffering    off;
-  keepalive_timeout  5 5;
-  tcp_nodelay        on;
-### end graylog sectiop
 
-### start include section
+	# start include section
 	include /etc/nginx/conf.d/*.conf;
 	include /etc/nginx/sites-enabled/*.conf;
 	include /etc/nginx/upstream.d/*.conf;
-
+# set real ip
+	include /etc/nginx/include/ddos-guard-ip-list.conf;
 }
 

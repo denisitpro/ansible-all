@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+  nginx:
+    image: nginx:{{nginx_version_docker}}
+    container_name: nginx
+    network_mode: host
+    volumes:
+      - /etc/nginx/:/etc/nginx/
+      - {{cert_ssl_path}}:{{cert_ssl_path}}
+      - {{nginx_data_path}}/logs:/var/log/nginx/
+{% if nginx_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{vector_srv}}:{{vector_port}}
+        tag: nginx-docker
+        fluentd-async: "{{fluent_async}}"
+        fluentd-buffer-limit: "{{fluendt_buffer_limit}}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+{% if nginx_docker_sysctls is defined and nginx_docker_network_mode is defined and nginx_docker_network_mode != "host" %}
+    sysctls:
+{% if nginx_docker_sysctls.net_core_somaxconn is defined %}
+      net.core.somaxconn: {{ nginx_docker_sysctls.net_core_somaxconn }}
+{% endif %}
+{% endif %}
+{% if nginx_docker_ulimits is defined %}
+    ulimits:
+{% if nginx_docker_ulimits.nproc is defined %}
+      nproc: {{ nginx_docker_ulimits.nproc }}
+{% endif %}
+{% if nginx_docker_ulimits.nofile is defined %}
+      nofile:
+{% if nginx_docker_ulimits.nofile.soft is defined %}
+        soft: {{ nginx_docker_ulimits.nofile.soft }}
+{% endif %}
+{% if nginx_docker_ulimits.nofile.hard is defined %}
+        hard: {{ nginx_docker_ulimits.nofile.hard }}
+{% endif %}
+{% endif %}
+{% endif %}

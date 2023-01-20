@@ -1,53 +1,35 @@
-##### ANSIBLE generate config
+##### ANSIBLE generated config
+## {{ ansible_managed }} ##
 ##### not change hands
 ####  your changes will be lost
 
 server {
-        listen {{item.http_port}};
-        server_name {{item.servername}};
-
-# set url for lets encrypt
-        location /.well-known/ {
-        allow all;
-        alias   /var/lib/letsencrypt/;
-        default_type "text/plain";
-        try_files $uri =404;
-        }
+        listen {{ nginx_bind_addr }}:{{ item.http_port | default ("80")}};
+        server_name {{ item.servername }};
 
         return 301 https://$host$request_uri;
 }
 
 server {
-        listen  {{item.https_ports}} ssl;
-        server_name {{item.servername}};
-
-# set url for lets encrypt
-        location /.well-known/ {
-        allow all;
-        alias   /var/lib/letsencrypt/;
-        default_type "text/plain";
-        try_files $uri =404;
-        }
+        listen  {{ nginx_bind_addr }}:{{ item.https_ports | default ("443") }} ssl;
+        server_name {{ item.servername }};
 
 # log project use  include
-        access_log  {{nginx_log_path}}/{{item.servername.split(' ')[0]}}-access.log  {{nginx_log_format}};
-        error_log   {{nginx_log_path}}/{{item.servername.split(' ')[0]}}-error.log;
+{% if nginx_logs_stdout is not defined %}
+        access_log  {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extend_json") }};
+        error_log   {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-error.log;
+{% endif %}
+{% if nginx_logs_stdout is defined %}
+        access_log  /dev/stdout  {{nginx_log_format |default ("extend_json")}};
+        error_log   /dev/stdout;
+{% endif %}
+
 
 ## include ssl certificate
-### start ansible management SSL
 {% if nginx.vhosts %}
-{% if item.cert_type == "wild" %}
-#### wild
-    ssl_certificate  {{nginx_ssl_path}}/{{item.domain}}/{{item.certname}};
-    ssl_certificate_key {{nginx_ssl_path}}/{{item.domain}}/{{item.privkey}};
+    ssl_certificate     {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% endif %}
-{% if item.cert_type == "personal" %}
-#### personal
-    ssl_certificate  {{nginx_ssl_path}}/{{item.servername.split(' ')[0]}}/{{item.certname}};
-    ssl_certificate_key {{nginx_ssl_path}}/{{item.servername.split(' ')[0]}}/{{item.privkey}};
-{% endif %}
-{% endif %}
-### end ansible management SSL
 
 # Ansible management
 {% for included in  nginx.include %}
@@ -63,17 +45,79 @@ server {
 {% endif %}
 ### end ansible management
 
-
-     location / {
+### location /metrics is enabled on this host ###
+    location   ~   ^/metrics {
+{% if item.metrics_allow is defined %}
+{% for c in item.metrics_allow %}
+        allow   {{ c }};
+{% endfor %}
+{% else %}
+        allow   10.0.0.0/8;
+{% endif %}
+        deny    all;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Server $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header Host $http_host;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_pass {{item.upstream_protocol}}://{{item.upstream_name}};
-##        allow all;
+        rewrite /metrics(/.*)$ $1 break;
+        proxy_pass  {% if item.metrics_protocol is defined %}{{ item.metrics_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_metrics is defined %}{{ item.upstream_metrics }}{% else %}{{ item.upstream_name }}{% endif %};
    }
+
+### location /hc is enabled on this host ###
+    location    ~   ^/hc {
+{% if item.hc_allow is defined %}
+{% for c in item.hc_allow %}
+        allow   {{ c }};
+{% endfor %}
+{% else %}
+        allow   10.0.0.0/8;
+{% endif %}
+        deny    all;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass  {% if item.hc_protocol is defined %}{{ item.hc_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_hc is defined %}{{ item.upstream_hc }}{% else %}{{ item.upstream_name }}{% endif %};
+    }
+
+    location / {
+{% if item.client_max_body_size is defined %}
+        client_max_body_size  {{ item.client_max_body_size }};
+{% endif %}
+{% if item.noindex is defined %}
+        add_header  X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+{% endif %}
+{% if item.proxy_buffers_count is defined and item.proxy_buffers_size is defined %}
+        proxy_buffers   {{ item.proxy_buffers_count }}  {{ item.proxy_buffers_size }};
+{% endif %}
+{% if item.proxy_busy_buffers_size is defined %}
+        proxy_busy_buffers_size {{ item.proxy_busy_buffers_size }};
+{% endif %}
+{% if item.proxy_buffer_size is defined %}
+        proxy_buffer_size       {{ item.proxy_buffer_size }};
+{% endif %}
+{% if item.proxy_ssl_protocols is defined %}
+        proxy_ssl_protocols {{ item.proxy_ssl_protocols }};
+{% endif %}
+{% if item.proxy_ssl_ciphers is defined %}
+        proxy_ssl_ciphers       {{ item.proxy_ssl_ciphers }};
+{% endif %}
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout      {{ item.proxy_read_timeout | default('60s') }};
+        proxy_connect_timeout   {{ item.proxy_connect_timeout | default('60s') }};
+        proxy_send_timeout      {{ item.proxy_send_timeout | default('60s') }};
+        proxy_pass {{ item.upstream_protocol | default('https') }}://{{ item.upstream_name }};
+##        allow all;
+    }
 }
 
 ### end generate config

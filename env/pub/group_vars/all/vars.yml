@@ -8,3 +8,6 @@ company_name: companyname
 dns1: 1.1.1.1
 dns2: 8.8.8.8
 searchdomain: example.com
+
+
+global_bind_addr: "{{ansible_default_ipv4.address }}"

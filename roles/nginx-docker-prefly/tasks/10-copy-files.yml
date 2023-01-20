@@ -1,0 +1,9 @@
+---
+- name: copy files
+  ansible.builtin.copy:
+    src: "{{item}}"
+    dest: "/etc/nginx/{{item}}"
+    mode: 0644
+  with_items:
+    - "mime.types"
+    - "fastcgi_params"

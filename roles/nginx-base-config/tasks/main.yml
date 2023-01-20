@@ -1,9 +1,18 @@
 ---
-- include: 00-create-path.yml
-- include: 01-copy-shared-conf.yml
-- include: 03-create-selfsign-cert.yml
-- include: 04-nginx-conf.yml
-- include: 05-selinux-config.yml
-- include: 07-logrotate.yml
+- import_tasks: 00-create-path.yml
+  tags:
+    - nginx_base_conf
+
+- import_tasks: 01-copy-shared-conf.yml
+  tags:
+    - nginx_base_conf
+
+#- import_tasks: 03-create-selfsign-cert.yml
+
+- import_tasks: 04-nginx-conf.yml
+  tags:
+    - nginx_base_conf
+
+- import_tasks: 07-logrotate.yml
   tags:
     - logrotate

@@ -1,10 +1,10 @@
 ---
-- include: 00-copy-config.yml
+- import_tasks: 00-copy-config.yml
   tags:
     - nginx-sites
     - vhosts
-- include: 01-check-host-nginx.yml
-  when: nginx_docker is undefined
+
+- import_tasks: 02-check-host-nginx.yml
   tags:
     - nginx-sites
     - vhosts

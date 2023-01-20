@@ -1,4 +1,4 @@
-- name: copy base config
+- name: copy base config - gen2
   template:
     src: nginx.conf.gen2.j2
     dest: /etc/nginx/nginx.conf
@@ -7,9 +7,29 @@
     mode: 0644
   notify:
     - reload nginx
+  when: nginx.config is not defined
+  tags:
+    - nginx_config
+
+- name: copy {{nginx.config}}
+  template:
+    src: "{{nginx.config}}.j2"
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nginx
+  when: nginx.config is defined
+  tags:
+    - nginx_config
+    - nginx_conf
+
 
 - name: set default.conf
-  copy:
-    src: default.conf
+  template:
+    src: default.conf.j2
     dest: /etc/nginx/conf.d/default.conf
+  tags:
+    - default
 

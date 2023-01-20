@@ -4,3 +4,18 @@ nginx_logrotate_user: "nginx"
 nginx_logrotate_group: nginx
 nginx_logrotate_permission: "0644"
 
+nginx_worker_connections: "20000"
+
+nginx_bind_addr: "{{ global_bind_addr }}"
+
+nginx_confd_path: "/etc/nginx/conf.d"
+nginx_include_path: "/etc/nginx/include"
+nginx_upstreamd_path: "/etc/nginx/upstream.d"
+nginx_sites_enabled_path: "/etc/nginx/sites-enabled"
+nginx_self_signed_name: "debug.local"
+nginx_conf_base: "/etc/nginx"
+
+nginx_log_path: /var/log/nginx
+nginx_ssl_path: /opt/ssl
+nginx_requestid_source: requestid_proxy.conf
+

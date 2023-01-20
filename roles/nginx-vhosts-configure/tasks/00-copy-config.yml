@@ -1,22 +1,69 @@
 ---
-- name: copy upstreams config
+#- debug:
+#    msg: System {{item}}
+#  with_items: "{{ upstream_multi }}"
+#  when: upstream_multi is defined
+#  tags:
+#    - upstream
+
+- name: delete directory upstream.d
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "/etc/nginx/upstream.d/"
+  when: nginx_upstream_consul_template is not defined
+
+- name: delete directory sites-enabled
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "/etc/nginx/sites-enabled/"
+
+- name: create directory
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+  with_items:
+    - "/etc/nginx/upstream.d/"
+    - "/etc/nginx/sites-enabled/"
+
+- name: copy upstreams config - multi
   template:
     src: "shared/templates/upstreams/{{item.conf}}"
     dest: "/etc/nginx/upstream.d/{{ item.name }}.conf"
     owner: root
     group: root
     mode: 0644
-  with_items: "{{ nginx.upstreams }}"
+  with_items: "{{ upstream_multi.upstream }}"
+  when:
+    - nginx_upstream_consul_template is not defined
+    - upstream_multi is defined
+    - upstream_multi.upstream is defined
+    - upstream_multi.upstream | type_debug == "list"
+    - upstream_multi.upstream | length > 0
+  tags:
+    - upstream
 
 - name: copy vhosts
   template:
-    src: "shared/templates/vhosts/{{ item.config_file}}"
+    src: "shared/templates/vhosts/{{ item.config_file | default('vhost-general.conf.j2') }}"
     dest: "/etc/nginx/sites-enabled/{{ item.servername.split(' ')[0]}}.conf"
     owner: root
     group: root
     mode: 0644
   with_items: "{{ nginx.vhosts }}"
+  when:
+    - nginx.vhosts is defined
+    - nginx.vhosts | type_debug == "list"
+    - nginx.vhosts | length > 0
+  tags:
+    - generated
 
 
-
+- debug:
+    msg: System {{dc_location}}
+  tags:
+    - debug
 
