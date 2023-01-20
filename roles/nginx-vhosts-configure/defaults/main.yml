@@ -1,3 +1,6 @@
 ---
 nginx_log_format: extend_json
 nginx_bind_addr: "{{global_bind_addr}}"
+
+nginx_log_path: /var/log/nginx
+nginx_ssl_path: /opt/ssl

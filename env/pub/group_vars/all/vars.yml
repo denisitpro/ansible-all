@@ -11,3 +11,7 @@ searchdomain: example.com
 
 
 global_bind_addr: "{{ansible_default_ipv4.address }}"
+
+#nginx section
+#nginx_log_path: /var/log/nginx
+#nginx_ssl_path: /opt/ssl
