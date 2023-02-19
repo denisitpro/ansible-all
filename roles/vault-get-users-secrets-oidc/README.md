@@ -37,3 +37,10 @@ ln -s roles/vault-get-users-secrets-oidc/vars/vault.secret vault.secret
 
 For security purposes, .gitignore has an exclusion of *.secret files. That is, it will not get into the repository and will always be with you locally
 
+# Example array variable
+```commandline
+vault:
+  secret:
+    - {kv: "kvexample", path: "server/nginx",  key_name: "example_site_cert"}
+    - {kv: "kvexample", path: "server/nginx",  key_name: "example_site_key"}
+```
