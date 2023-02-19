@@ -3,3 +3,4 @@
 *.retry
 *.idea
 .DS_Store
+*.secret

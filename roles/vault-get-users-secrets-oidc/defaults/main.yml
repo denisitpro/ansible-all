@@ -1,0 +1,6 @@
+---
+vault_url: https://vault.teleport.example.com
+teleport_site: teleport.example.com
+teleport_cluster: example_cls
+
+vault_normalized_access_token: "{{vault_token}}"

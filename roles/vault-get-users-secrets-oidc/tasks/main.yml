@@ -1,0 +1,10 @@
+---
+- import_tasks: 10-prefly.yml
+  delegate_to: localhost
+  become: no
+  tags: [ 'always', 'vault' ]
+
+- import_tasks: 20-get-users-secrets.yml
+  delegate_to: localhost
+  become: no
+  tags: [ 'always', 'vault' ]
