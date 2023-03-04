@@ -1,0 +1,10 @@
+---
+- import_tasks: 00-required.yml
+  tags:
+   - backup
+  when: ansible_distribution == 'Ubuntu'
+
+- import_tasks: 01-copy-scipts.yml
+  tags:
+   - backup
+  when: ansible_distribution == 'Ubuntu'

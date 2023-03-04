@@ -1,0 +1,27 @@
+---
+- name: add task to cron master
+  cron:
+    name: "{{item.name}}"
+    minute: "{{item.minute}}"
+    hour: "{{item.hour}}"
+    job: "{{item.job}}"
+    weekday: "{{item.weekday}}"
+  when: ansible_fqdn in groups['cron_master'] and cron_cls.master is defined
+  with_items: "{{cron_cls.master | default([]) }}"
+  tags:
+    - cron
+    - reconfigure
+
+
+- name: add task to cron slave
+  cron:
+    name: "{{item.name}}"
+    minute: "{{item.minute}}"
+    hour: "{{item.hour}}"
+    job: "{{item.job}}"
+    weekday: "{{item.weekday}}"
+  when: ansible_fqdn in groups['cron_slave'] and cron_cls.slave is defined
+  with_items: "{{cron_cls.slave | default([]) }}"
+  tags:
+    - cron
+    - reconfigure

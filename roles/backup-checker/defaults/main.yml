@@ -1,0 +1,14 @@
+---
+backup_checker_script_path: /opt/backup_scripts/checker
+backup_checker_log_path: /var/log/backup_checker
+
+
+backup_checker:
+  dirs:
+    - '{{glacier_script_path}}'
+  hostname: "hostname"
+
+cron:
+  jobs:
+### backup_checker
+    - {name: backup_checker, minute: "00", hour: "10", job: "{{backup_checker_script_path}}/checker.py"}

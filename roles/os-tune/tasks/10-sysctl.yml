@@ -1,0 +1,18 @@
+---
+- name: copy for nginx sysctl tune file
+  copy:
+    src: 25-sysctl-nginx.conf
+    dest: "/etc/sysctl.d/25-sysctl-nginx.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: apply tune config - Ubuntu
+  shell: /sbin/sysctl -p /etc/sysctl.d/25-sysctl-nginx.conf
+  tags: [sysctl]
+  when: ansible_distribution == 'Ubuntu'
+
+- name: apply tune config - centos
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/25-sysctl-nginx.conf
+  tags: [sysctl]
+  when: ansible_distribution == 'CentOS'
