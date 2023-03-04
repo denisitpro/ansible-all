@@ -1,0 +1,8 @@
+---
+- import_tasks: 10-sysctl.yml
+  tags:
+    - sysctl
+    - tune
+- import_tasks: 20-security-limits.yml
+  tags:
+    - tune

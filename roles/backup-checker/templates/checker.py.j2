@@ -1,0 +1,123 @@
+#!/usr/bin/python3
+
+import os
+import logging
+import datetime
+import checker_class as ch
+import telegram_class as telegram
+import requests
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+
+
+def email(port, password , smtp_server, sender_email, receiver_email, subject, html):
+    # Create message container - the correct MIME type is multipart/alternative.
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    # Create the body of the message (a plain-text and an HTML version).
+    text = "empty"
+    html = html
+
+    # Record the MIME types of both parts - text/plain and text/html.
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+
+    # Attach parts into message container.
+    # According to RFC 2046, the last part of a multipart message, in this case
+    # the HTML message, is best and preferred.
+    msg.attach(part1)
+    msg.attach(part2)
+
+    with smtplib.SMTP(smtp_server, port) as server:
+        server.login("postmaster@example.com", password)
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+
+
+if __name__ == '__main__':
+
+    logs_dir = '{{backup_checker_log_path}}/'
+    # Set up logging
+    if not os.path.isdir(logs_dir):
+        os.makedirs(logs_dir)
+
+    logger = logging.getLogger("main")
+    logger.setLevel(logging.INFO)
+    # create the logging file handler
+    fh = logging.FileHandler("{}checker_{:04d}_{:02d}_{:02d}.log".format(logs_dir, datetime.datetime.now().year,
+                                                                         datetime.datetime.now().month,
+                                                                         datetime.datetime.now().day))
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    # add handler to logger object
+    logger.addHandler(fh)
+
+    logger.info("--- Script started ---")
+
+    dirs = (
+    {% for d in  backup_checker.dirs  %}
+         '{{d}}',
+    {% endfor %}
+    )
+
+
+    # PSQL connection
+    DB_name = '{{backup_checker.database.name}}'
+    DB_user = '{{backup_checker.database.user}}'
+    DB_pass = '{{vault_dict_users_secret[backup_checker.database.user]}}'
+    DB_host = '{{backup_checker.database.host}}.{{backup_checker.database.domain}}'
+
+    hostname='{{backup_checker.hostname}}'
+
+    days_diff_for_alarm = 2
+    min_count_archives_for_alarm = 5
+    min_db_size_for_alarm = 1500     # bytes
+
+    #telegram
+    Bot_API_Token = '{{vault_dict_users_secret["telegram_token"]}}'
+    groupID = '{{vault_dict_users_secret["telegram_groupID"]}}'
+
+    #email
+    port = 587  # For SSL
+    password = '{{vault_dict_users_secret["mailgun_token"]}}'
+    smtp_server = "smtp.eu.mailgun.org"
+    sender_email = "postmaster@example.com"  # Enter your address
+    receiver_email = "admin-mon@example.com"  # Enter receiver address
+
+
+    checker = ch.BackupChecker(
+        dirs=dirs,
+        db_host=DB_host,
+        db_name=DB_name,
+        db_user=DB_user,
+        db_pass=DB_pass,
+        hostname=hostname,
+        setpoint_days_diff=days_diff_for_alarm,
+        setpoint_count=min_count_archives_for_alarm,
+        setpoint_size=min_db_size_for_alarm,  # setpoint in byte
+        notify_only_alarms=True,
+        test_mode=False
+    )
+    checker.set_logger(logger)
+    checker.run()
+    try:
+        telega = telegram.TelegramAPI(Bot_API_Token)
+        message_notify = checker.analize_for_telegram()
+        result = telega.send_message(to=groupID, message=message_notify)
+        logger.info("Send to telegram ")
+    except Exception as e:
+        logger.error("Error send telegram. {0}".format(e))
+
+    try:
+        html = checker.analize_for_email()
+        now = datetime.date.today()
+        subject = "Backup report at host:{0}, on date: {1}".format(hostname, now)
+        email(port, password, smtp_server, sender_email, receiver_email, subject,  html)
+        logger.info("Send e-mail to {0}".format(receiver_email))
+        print("Send e-mail to {0}".format(receiver_email))
+    except Exception as e:
+        logger.error("Error send email. {0}".format(e))

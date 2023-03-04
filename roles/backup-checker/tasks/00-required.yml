@@ -1,0 +1,36 @@
+---
+- name: install python3-pip
+  apt:
+    name:
+      - python3-pip
+    state: latest
+    update_cache: yes
+
+
+- name: install the package, force upgrade
+  pip:
+    name: pip
+    executable: pip3
+    state: latest
+
+- name: install python packages Postgres
+  pip:
+    executable: pip3
+    name:
+      - psycopg2-binary
+      - requests
+
+- name: create scrip dir
+  file:
+    path: "{{ backup_checker_script_path }}"
+    state: directory
+    owner: root
+    group: root
+
+- name: create log dir
+  file:
+    path: "{{ backup_checker_log_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0777

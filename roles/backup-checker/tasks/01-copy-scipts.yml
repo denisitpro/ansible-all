@@ -1,0 +1,20 @@
+---
+- name: copy lib file
+  copy:
+    src: "{{item}}"
+    dest: "{{ backup_checker_script_path }}/{{item}}"
+    owner: root
+    group: root
+    mode: 644
+  with_items:
+    - "checker_class.py"
+    - "telegram_class.py"
+
+- name: copy checker.py
+  template:
+    src: "checker.py.j2"
+    dest: "{{ backup_checker_script_path }}/checker.py"
+    owner: root
+    group: root
+    mode: 0700
+
