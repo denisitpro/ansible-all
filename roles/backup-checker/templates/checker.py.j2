@@ -33,7 +33,7 @@ def email(port, password , smtp_server, sender_email, receiver_email, subject, h
     msg.attach(part2)
 
     with smtplib.SMTP(smtp_server, port) as server:
-        server.login("postmaster@mg.zubr.com", password)
+        server.login("postmaster@example.com", password)
         server.sendmail(sender_email, receiver_email, msg.as_string())
 
 
@@ -85,8 +85,8 @@ if __name__ == '__main__':
     port = 587  # For SSL
     password = '{{vault_dict_users_secret["mailgun_token"]}}'
     smtp_server = "smtp.eu.mailgun.org"
-    sender_email = "postmaster@mg.zubr.com"  # Enter your address
-    receiver_email = "admin-mon@zubr.io"  # Enter receiver address
+    sender_email = "postmaster@example.com"  # Enter your address
+    receiver_email = "admin-mon@example.com"  # Enter receiver address
 
 
     checker = ch.BackupChecker(
