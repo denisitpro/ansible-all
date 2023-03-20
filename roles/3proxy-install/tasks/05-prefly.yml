@@ -1,0 +1,31 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+- block: 
+  - name: "create directories for 3proxy"
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: directory
+      owner: "{{ item.owner | default('root') }}"
+      group: "{{ item.group | default('root') }}"
+      mode: "{{ item.mode | default('0755') }}"
+    with_items:
+      - { path: "{{ proxy_dir }}" }
+      - { path: "{{ proxy_conf_dir }}" }
+      - { path: "{{ compose_dir }}" }
+
+  - name: "List files in config dir"
+    ansible.builtin.find:
+      paths:  "{{ proxy_conf_dir }}"
+      file_type: file
+      excludes: "{{ proxy_used_files }}"
+    register: proxy_conf_garbage
+
+  - name: "Delete garbage"
+    ansible.builtin.file:
+      path: '{{ item.path }}'
+      state: absent
+    loop: '{{ proxy_conf_garbage.files }}'  
+
+  become: true

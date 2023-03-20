@@ -1,0 +1,10 @@
+---
+appname: domain_exporter
+app_path: /opt/docker
+
+domain_exporter_bind_addr: "{{global_bind_addr}}"
+domain_exporter_port: 9222
+domain_exporter_config_data_path: "/opt/domain_exporter"
+domain_exporter_version: v1.17.1
+domain_api_key: domain
+domain_docker_compose_path: "{{ docker_compose_path }}/domain_expire_exporter"

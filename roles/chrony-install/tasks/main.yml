@@ -1,0 +1,6 @@
+---
+- import_tasks: 01-chrony.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - ntpd
+    - chrony
