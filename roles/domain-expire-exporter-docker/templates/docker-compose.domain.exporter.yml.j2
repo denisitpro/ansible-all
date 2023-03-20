@@ -1,0 +1,22 @@
+version: "3.7"
+
+networks:
+  domain.exporter:
+    driver: bridge
+    name: domain.exporter
+    attachable: true
+
+services:
+  domain.exporter:
+    image: caarlos0/domain_exporter:{{domain_exporter_version}}
+    container_name: domain.exporter
+    networks:
+      - domain.exporter
+    ports:
+      - {{domain_exporter_bind_addr}}:{{domain_exporter_port}}:{{domain_exporter_port}}
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

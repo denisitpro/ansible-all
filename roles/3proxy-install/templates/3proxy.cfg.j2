@@ -1,0 +1,20 @@
+nserver 1.1.1.1
+nserver 8.8.8.8
+
+timeouts 1 5 30 60 180 1800 15 60
+
+log
+
+users $/etc/3proxy/users.cfg
+
+{% if proxies is defined %}
+{% for proxy in proxies %}
+
+auth strong
+{% if proxy.users is defined %}
+allow {{ proxy.users | join(',') }}
+{% endif %}
+{{ proxy.type }} -p{{ proxy.port }} {{ proxy.params | default('') }}
+flush
+{% endfor %}
+{% endif %}

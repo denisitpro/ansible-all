@@ -1,0 +1,5 @@
+{% if proxy_users is defined %}
+{% for user in proxy_users %}
+{{ user.name }}:CR:{{ user.pass | password_hash('md5') }}
+{% endfor %}
+{% endif %}

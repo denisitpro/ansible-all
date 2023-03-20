@@ -1,0 +1,16 @@
+version:    '3.7'
+
+# socks5 bind not working with ports, only network_mode: host
+services:
+    {{ app_name }}:
+        image:  {{ proxy_image }}:{{ proxy_version }}
+        restart:    unless-stopped
+        container_name: {{ app_name }}
+        network_mode:   host
+        volumes:
+            -   "{{ proxy_conf_dir }}:/etc/3proxy"
+        logging:
+            driver: json-file
+            options:
+                max-size:   '100m'
+                max-file:   '2'
