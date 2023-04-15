@@ -1,0 +1,27 @@
+---
+- import_tasks: 04-consul-delete.yml
+  tags: [ 'never', 'clean']
+
+- import_tasks: 05-path.yml
+  tags:
+    - consul
+
+- import_tasks: 10-configure.yml
+  tags:
+    - consul
+    - consul-config
+    - consul-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - consul
+    - consul-start
+    - consul-compose
+
+- import_tasks: 20-repair.yml
+  tags:
+    - never
+
+- import_tasks: 99-debug.yml
+  tags: [ 'never', 'debug' ]
+

@@ -1,0 +1,12 @@
+{% if consul_agent_disabled is not defined %}
+acl = {
+  enabled = true
+  default_policy = "deny"
+  enable_token_persistence = true
+{% if consul_token_provision is not defined %}
+  tokens {
+    agent  = "{{ vault_dict_users_secret.consul_agent_token }}"
+  }
+{% endif %}
+}
+{% endif %}
