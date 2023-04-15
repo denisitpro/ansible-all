@@ -1,0 +1,3 @@
+service "{{item.name}}" {
+  policy = "{{item.policy | default('write') }}"
+}

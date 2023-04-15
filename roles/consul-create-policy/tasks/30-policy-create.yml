@@ -1,0 +1,10 @@
+---
+- include_tasks: 80-loop-task.yml
+  when: "consul.policy  is defined"
+  with_items:
+    - "{{consul.policy}}"
+
+- include_tasks: 80-loop-task.yml
+  when: "consul.generate  is defined"
+  with_items:
+    - "{{consul.generate}}"

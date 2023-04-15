@@ -1,0 +1,10 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - consul-policy
+
+- import_tasks: 30-policy-create.yml
+  when: "inventory_hostname == groups[admin_jump_ansible_group][0]"
+  tags:
+    - never
+    - consul-policy

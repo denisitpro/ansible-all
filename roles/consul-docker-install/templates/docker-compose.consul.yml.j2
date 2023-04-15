@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+  consul:
+    image: {{consul_registry}}:{{consul_agent_image}}
+    container_name: consul
+    hostname: {{ansible_hostname}}.{{internal_domain}}
+{% if docker_daemon_json_userns_remap is defined and docker_daemon_json_userns_remap == "default" %}
+    userns_mode: host
+{% endif %}
+    network_mode: host
+    volumes:
+      - /etc/consul.d/:/consul/config
+      - {{consul_data_path}}/data:/consul/data
+    restart: always
+    command: ["agent", "-client", "{{consul_bind_addr}}","-bind", "{{consul_bind_addr}}"]
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

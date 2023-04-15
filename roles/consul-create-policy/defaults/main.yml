@@ -1,0 +1,9 @@
+---
+admin_jump_ansible_group: jumphosts
+consul_policy_path: /tmp/consul-policy
+
+
+consul_http_addr: http://127.0.0.1:8500
+
+# full path store token
+vault_token_store_path: kv/consul/autoreg
