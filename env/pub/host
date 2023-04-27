@@ -11,3 +11,6 @@ jump-01.example.com
 
 [nginx_do]
 nginx-01.example.com
+
+[minikube]
+mk.example.com
