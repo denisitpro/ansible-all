@@ -11,5 +11,5 @@
     - common-internet-v3
     - docker-install
     - docker-configure-firewall-v2
-    - firewall-configure
-    - ufw-general
+    - ufw-configure
+    - ufw-management

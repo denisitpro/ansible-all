@@ -1,5 +1,0 @@
----
-wan0_export: export WAN0={{ ansible_default_ipv4.interface }}
-
-wan0: "$WAN0"
-wan1: "$WAN1"

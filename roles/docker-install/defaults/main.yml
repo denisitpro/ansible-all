@@ -13,6 +13,6 @@ ch_infra_external_srv: "ch-version.example.com"
 ch_version_user: "version_user"
 ch_version_pass: "SetPrivatePass"
 
-use_dynamic_docker_version_checker: true
+use_dynamic_docker_version_checker: false
 
 exceptions: "ID"

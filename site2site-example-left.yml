@@ -15,5 +15,5 @@
     - vault-get-token
     - vault-get-users-secrets-v2
     - strongswan-install
-    - firewall-configure
-    - ufw-general
+    - ufw-configure
+    - ufw-management

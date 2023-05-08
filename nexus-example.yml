@@ -20,5 +20,5 @@
     - nginx-base-config
     - nginx-get-certs-v2
     - nginx-vhosts-configure
-    - firewall-configure
-    - ufw-general
+    - ufw-configure
+    - ufw-management

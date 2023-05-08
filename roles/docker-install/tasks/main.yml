@@ -12,8 +12,8 @@
   tags:
     - docker
 
-#- import_tasks: 05-version-checker.yml
-#  tags:
-#    - docker-version-checker
-#  when:
-#    - use_dynamic_docker_version_checker == true
+- import_tasks: 05-version-checker.yml
+  tags:
+    - docker-version-checker
+  when:
+    - use_dynamic_docker_version_checker == true
