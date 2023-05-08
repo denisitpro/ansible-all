@@ -11,5 +11,5 @@
     - nginx-cert-selfsign
     - nginx-docker-install
     - nginx-vhosts-configure
-    - firewall-configure
-    - ufw-general
+    - ufw-configure
+    - ufw-management

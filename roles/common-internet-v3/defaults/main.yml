@@ -1,0 +1,5 @@
+---
+# role default vars
+dns1: 1.1.1.1
+dns2: 8.8.8.8
+searchdomain: example.com

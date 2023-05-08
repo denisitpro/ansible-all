@@ -2,8 +2,7 @@
 - hosts: minikube
   become: yes
   roles:
-    - common-internet-v3
-    - docker-install
-    - docker-configure-firewall-v2
-    - firewall-configure
-    - ufw-general
+#    - common-internet-v3
+#    - docker-install
+    - ufw-configure
+    - ufw-management

@@ -10,5 +10,5 @@
     - docker-compose
     - docker-disable-firewall-v2
     - freeipa-server-install
-    - firewall-configure
-    - ufw-general
+    - ufw-configure
+    - ufw-management

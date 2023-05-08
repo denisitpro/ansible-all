@@ -20,5 +20,5 @@
     - nginx-get-certs-v2
     - nginx-vhosts-configure
     - cron-rules
-    - firewall-configure
-    - ufw-general
+    - ufw-configure
+    - ufw-management
