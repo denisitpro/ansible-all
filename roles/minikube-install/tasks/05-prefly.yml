@@ -1,0 +1,89 @@
+---
+- name: copy sysctl file
+  ansible.builtin.copy:
+    src: 060-minikube.conf
+    dest: "/etc/sysctl.d/060-minikube.conf"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - mk-sysctl
+
+- name: apply tune config - Ubuntu
+  shell: /sbin/sysctl -p /etc/sysctl.d/060-minikube.conf
+  tags:
+    - mk-sysctl
+
+- name: download crictl
+  get_url:
+    url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/crictl-{{ crictl_version }}-linux-amd64.tar.gz"
+    dest: "/tmp/crictl.tar.gz"
+
+- name: Extract and install crictl archive
+  unarchive:
+    src: "/tmp/crictl.tar.gz"
+    dest: "/usr/local/bin"
+    remote_src: true
+
+- name: Install CNI plugins
+  ansible.builtin.apt:
+    pkg:
+      - bridge-utils
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+  when: ansible_distribution == 'Ubuntu'
+
+
+- name: Download cri-dockerd binary
+  get_url:
+    url: "https://github.com/Mirantis/cri-dockerd/releases/download/v{{cri_dockerd_version}}/cri-dockerd-{{cri_dockerd_version}}.amd64.tgz"
+    dest: "/tmp/cri-dockerd-{{ cri_dockerd_version }}-linux-amd64.tar.tgz"
+
+- name: Extract cri-dockerd archive
+  unarchive:
+    src: "/tmp/cri-dockerd-{{ cri_dockerd_version }}-linux-amd64.tar.tgz"
+    dest: "/tmp"
+    remote_src: true
+
+- name: cri-dockerd install
+  ansible.builtin.copy:
+    src: "/tmp/cri-dockerd/cri-dockerd"
+    dest: "/usr/bin/cri-dockerd "
+    mode: '0755'
+    remote_src: true
+  tags:
+    - install
+
+- name: Download service cri-docker.service
+  get_url:
+    url: "https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.service"
+    dest: "/etc/systemd/system/cri-docker.service"
+
+- name: Download service cri-docker.socket
+  get_url:
+    url: "https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.socket"
+    dest: "/etc/systemd/system/cri-docker.socket"
+
+- name: reload daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: start service
+  ansible.builtin.systemd:
+    name: "{{item}}"
+    state: started
+    enabled: true
+  with_items:
+    - "cri-docker.service"
+    - "cri-docker.socket"
+
+- name: Add hostname to /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "127.0.0.1 {{ansible_hostname}}"
+    state: present
+  tags:
+    - mk-hostname

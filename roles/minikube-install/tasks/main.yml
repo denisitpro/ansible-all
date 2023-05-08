@@ -1,0 +1,9 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - prefly
+
+- import_tasks: 10-kubectl.yml
+  when: kubectl_install is defined
+
+- import_tasks: 15-minikube.yml

@@ -1,0 +1,23 @@
+---
+- name: Install Minikube with Docker driver support
+  ansible.builtin.apt:
+    pkg:
+      - conntrack
+      - socat
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Download and install Minikube
+  get_url:
+    url: "https://storage.googleapis.com/minikube/releases/{{minikube_version}}/minikube-linux-amd64"
+    dest: /usr/local/bin/minikube
+    mode: '755'
+
+#- name: Print ansible env
+#  ansible.builtin.debug:
+#    msg: Home {{ ansible_env.HOME }}  user {{ ansible_env.USER }}
+
+- name: Start Minikube with none driver
+  command: minikube start --driver=none
+  environment:
+      HOME: "{{ ansible_env.HOME }}"
+      USER: "{{ ansible_env.USER }}"

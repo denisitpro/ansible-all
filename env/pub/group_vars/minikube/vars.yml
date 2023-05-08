@@ -1,4 +1,6 @@
 ---
+kubectl_install: true
+
 iptables:
   rules:
 #### system rules
