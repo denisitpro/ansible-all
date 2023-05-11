@@ -16,8 +16,8 @@
 #  ansible.builtin.debug:
 #    msg: Home {{ ansible_env.HOME }}  user {{ ansible_env.USER }}
 
-- name: Start Minikube with none driver
-  command: minikube start --driver=none
+- name: Start Minikube with none driver and CNI = calico
+  command: minikube start --driver=none --network-plugin=cni --cni=calico
   environment:
       HOME: "{{ ansible_env.HOME }}"
       USER: "{{ ansible_env.USER }}"
