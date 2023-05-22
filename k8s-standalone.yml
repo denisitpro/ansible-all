@@ -1,5 +1,5 @@
 ---
-- hosts: k8s_master
+- hosts: k8s_standalone
   become: yes
 #  vars_prompt:
 #    - name: vault_login
@@ -8,8 +8,8 @@
 #    - name: vault_password
 #      prompt: "What is your LDAP password ?"
   roles:
-    - common-internet-v3
-    - docker-install
-    - docker-configure-firewall-v2
-    - ufw-configure
-    - ufw-management
+#    - common-internet-v3
+#    - docker-install
+    - k8s-kubeadm-install
+#    - ufw-configure
+#    - ufw-management

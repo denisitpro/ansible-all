@@ -1,2 +1,8 @@
 ---
-- import_tasks: 05-prefly.yml
+#- import_tasks: 05-prefly.yml
+#  when: ansible_distribution == 'Ubuntu'
+
+#- import_tasks: 10-kube-services.yml
+#  when: ansible_distribution == 'Ubuntu'
+
+- import_tasks: 15-configure.yml

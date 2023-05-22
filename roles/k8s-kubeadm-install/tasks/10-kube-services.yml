@@ -1,0 +1,26 @@
+---
+- name: update cache
+  apt:
+    upgrade: dist
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: install k8s components
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+
+# hold https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+- name: Hold kubeadm
+  ansible.builtin.dpkg_selections:
+    name: "{{item}}"
+    selection: hold
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl

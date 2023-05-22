@@ -1,0 +1,21 @@
+---
+- name: copy modules
+  copy:
+    src: modules-k8s.conf
+    dest: /etc/modules-load.d/k8s.conf
+
+- name: load mudles
+  community.general.modprobe:
+    name: "{{item}}"
+    state: present
+  with_items:
+    - overlay
+    - br_netfilter
+
+- name: copy sysctl
+  copy:
+    src: sysctl-k8s.conf
+    dest: /etc/sysctl.d/k8s.conf
+
+- name: apply k8s sysctl
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/k8s.conf
