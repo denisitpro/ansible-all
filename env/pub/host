@@ -12,5 +12,5 @@ jump-01.example.com
 [nginx_do]
 nginx-01.example.com
 
-[minikube]
+[k8s_standalone]
 mk.example.com
