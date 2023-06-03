@@ -1,9 +1,0 @@
----
-#  https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd-systemd
-- name: generate config for cri
-  shell: containerd config default > /etc/containerd/config.toml
-
-- name: Restart containerd
-  ansible.builtin.systemd:
-    name: containerd
-    state: restarted
