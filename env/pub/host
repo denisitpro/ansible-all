@@ -13,4 +13,4 @@ jump-01.example.com
 nginx-01.example.com
 
 [k8s_standalone]
-mk.example.com
+k8s.example.com

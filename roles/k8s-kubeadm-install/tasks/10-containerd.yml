@@ -1,0 +1,55 @@
+---
+- name: Сreate folder to extract
+  file:
+    path: /tmp/containerd
+    state: directory
+
+- name: download  containerd
+  get_url:
+    url: "https://github.com/containerd/containerd/releases/download/v{{containerd_version}}/containerd-{{containerd_version}}-linux-amd64.tar.gz"
+    dest: "/tmp/containerd/containerd-{{containerd_version}}-linux-amd64.tar.gz"
+
+- name: extract containerd
+  unarchive:
+    src: "/tmp/containerd/containerd-{{containerd_version}}-linux-amd64.tar.gz"
+    dest: /tmp/containerd
+    remote_src: yes
+
+- name: copy binary files containerd
+  ansible.builtin.copy:
+    remote_src: yes
+    src: "/tmp/containerd/bin/{{item}}"
+    dest: /usr/local/bin/
+    mode: 0755
+  with_items:
+    - "containerd"
+    - "containerd-shim"
+    - "containerd-shim-runc-v1"
+    - "containerd-shim-runc-v2"
+    - "containerd-stress"
+    - "ctr"
+
+- name: create user specific folder for unit
+  ansible.builtin.file:
+    path: /usr/local/lib/systemd/system/
+    state: directory
+    mode: '0755'
+  with_items:
+    - "/usr/local/lib/systemd/"
+    - "/usr/local/lib/systemd/system/"
+
+
+- name: download  containerd unit files
+  get_url:
+    url: "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service"
+    dest: "/usr/local/lib/systemd/system/containerd.service"
+
+- name:  force systemd to reread configs
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: install service containerd
+  systemd:
+    name: containerd
+    enabled: yes
+    state: started

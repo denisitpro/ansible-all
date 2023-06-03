@@ -4,7 +4,7 @@
     src: modules-k8s.conf
     dest: /etc/modules-load.d/k8s.conf
 
-- name: load mudles
+- name: load modules
   community.general.modprobe:
     name: "{{item}}"
     state: present
