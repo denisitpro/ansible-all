@@ -1,3 +1,5 @@
+# default generated and replace only systemd
+# https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd-systemd
 disabled_plugins = []
 imports = []
 oom_score = 0

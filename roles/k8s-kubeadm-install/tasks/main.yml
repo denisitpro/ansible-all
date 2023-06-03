@@ -1,10 +1,10 @@
 ---
-#- import_tasks: 05-prerequisites.yml
-#  when: ansible_distribution == 'Ubuntu'
+- import_tasks: 05-prerequisites.yml
+  when: ansible_distribution == 'Ubuntu'
 
-#- import_tasks: 10-containerd.yml
+- import_tasks: 10-containerd.yml
 
-#- import_tasks: 15-runc-cni.yml
+- import_tasks: 15-runc-cni.yml
 
 - import_tasks: 20-runtimes-configure.yml
 
@@ -14,5 +14,4 @@
 - import_tasks: 30-kube-services.yml
   when: ansible_distribution == 'Ubuntu'
 
-#- import_tasks: 15-configure.yml
-#- import_tasks: 20-cgroup.yml
+
