@@ -19,3 +19,25 @@
 
 - name: apply k8s sysctl
   shell: /usr/sbin/sysctl -p /etc/sysctl.d/k8s.conf
+
+- name: Disable system swap
+  shell: "swapoff -a"
+
+- name: Remove current swaps from fstab
+  lineinfile:
+    dest: /etc/fstab
+    regexp: '(?i)^([^#][\S]+\s+(none|swap)\s+swap.*)'
+    line: '# \1'
+    backrefs: yes
+    state: present
+
+- name: Set hosts file
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    mode: 0644
+  when: k8s_hostname_force is defined
+
+- name: Set hostname k8s - inventory hostname
+  ansible.builtin.shell: hostnamectl set-hostname "{{ inventory_hostname }}"
+  when: k8s_hostname_force is defined
