@@ -1,22 +1,25 @@
 ---
-#- import_tasks: 05-prerequisites.yml
-#  when: ansible_distribution == 'Ubuntu'
-#
-#- import_tasks: 10-containerd.yml
-#
-#- import_tasks: 15-runc-cni.yml
-#
-#- import_tasks: 20-runtimes-configure.yml
-#
-#- import_tasks: 25-prefly-k8s.yml
-#  when: ansible_distribution == 'Ubuntu'
-#
-#- import_tasks: 30-kube-services.yml
-#  when: ansible_distribution == 'Ubuntu'
+- import_tasks: 05-prerequisites.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- import_tasks: 10-containerd.yml
+
+- import_tasks: 15-runc-cni.yml
+
+- import_tasks: 20-runtimes-configure.yml
+
+- import_tasks: 25-prefly-k8s.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- import_tasks: 30-kube-services.yml
+  when: ansible_distribution == 'Ubuntu'
 
 - import_tasks: 35-k8s-init-cls.yml
+  tags:
+    - k8s-init
 
-#- import_tasks: 40-cni-install.yml
+- import_tasks: 40-cni-install.yml
+  tags: [cni]
 
 - import_tasks:  95-reset-k8s-cls.yml
   tags: ['never', 'reset-k8s-cls']

@@ -1,0 +1,25 @@
+---
+# install calico  50 nodes or less
+# https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises#install-calico-with-kubernetes-api-datastore-50-nodes-or-less
+- name: download calico file
+  get_url:
+    url: "https://raw.githubusercontent.com/projectcalico/calico/v{{calico_version}}/manifests/calico.yaml"
+    dest: "/tmp/calico.yaml"
+
+- name: Print cni_network
+  ansible.builtin.debug:
+    msg: CNI network {{ cni_network }}
+
+- name: "Check {{ cni_network }} daemonset is working"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} get ds --all-namespaces | grep {{ cni_network }}"
+#  delegate_to: "{{ groups['master'][0] }}" # todo remove or set master group use env
+  run_once: true
+  register: check_net
+  ignore_errors: true
+  changed_when: false
+
+- name: "Create {{ cni_network }} network daemonset"
+  when: check_net is failed
+  command: "kubectl apply --kubeconfig={{ kubeadmin_config }} -f /tmp/calico.yaml"
+#  delegate_to: "{{ groups['master'][0] }}" # todo remove or set master group use env
+  run_once: true
