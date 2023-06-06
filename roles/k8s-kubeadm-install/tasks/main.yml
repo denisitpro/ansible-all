@@ -15,5 +15,8 @@
 #  when: ansible_distribution == 'Ubuntu'
 
 - import_tasks: 35-k8s-init-cls.yml
+
+#- import_tasks: 40-cni-install.yml
+
 - import_tasks:  95-reset-k8s-cls.yml
   tags: ['never', 'reset-k8s-cls']
