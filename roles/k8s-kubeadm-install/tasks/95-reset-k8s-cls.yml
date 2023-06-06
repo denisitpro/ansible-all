@@ -1,0 +1,3 @@
+---
+- name: Reset Kubernetes component - dedical tasks
+  shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
