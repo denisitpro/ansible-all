@@ -5,3 +5,7 @@ cni_version: 1.3.0
 
 container_runtime: containerd
 kubeadmin_config: /etc/kubernetes/admin.conf
+
+
+calico_version: 3.26.0
+cni_network: calico
