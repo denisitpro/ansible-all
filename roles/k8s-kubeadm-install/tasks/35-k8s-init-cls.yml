@@ -1,0 +1,49 @@
+---
+- name: Check if kubeadm has already run
+  stat:
+    path: "/etc/kubernetes/pki/ca.key"
+  register: kubeadm_ca
+
+- name: Reset Kubernetes component
+  shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
+  register: reset_cluster
+  when: not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined
+
+# for future adaptation
+#- name: Init Kubernetes cluster
+#  when: reset_cluster is succeeded
+#  shell: |
+#    kubeadm init --service-cidr {{ service_cidr }} \
+#                 --kubernetes-version {{ kube_version }} \
+#                 --pod-network-cidr {{ pod_network_cidr }} \
+#                 --token {{ token }} \
+#                 --apiserver-advertise-address {{ master_ip }} \
+#                 --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock \
+#                 {{ kubeadm_opts }} \
+#                 {{ init_opts }}
+#  register: init_cluster
+#  # See: https://github.com/jetstack/cert-manager/issues/2640 with using kubeadm + calico + cert-manager
+#  environment:
+#    no_proxy: "$no_proxy,.svc,.svc.cluster.local"
+
+- name: Init Kubernetes cluster
+  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
+  shell: kubeadm init
+  register: init_cluster
+  environment:
+    no_proxy: "$no_proxy,.svc,.svc.cluster.local"
+
+- name: Create Kubernetes config directory
+  file:
+    path: ".kube/"
+    state: directory
+
+- name: Copy admin.conf to Home directory
+  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
+  copy:
+    src: "{{ kubeadmin_config }}"
+    dest: ".kube/config"
+    owner: "{{ ansible_user | default(ansible_user_id) }}"
+    group: "{{ ansible_user | default(ansible_user_id) }}"
+    mode: 0755
+    remote_src: true
