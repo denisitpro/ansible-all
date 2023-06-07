@@ -9,7 +9,7 @@
   register: reset_cluster
   when: not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined
 
-# for future adaptation
+#  todo for future adaptation
 #- name: Init Kubernetes cluster
 #  when: reset_cluster is succeeded
 #  shell: |
@@ -28,22 +28,7 @@
 
 - name: Init Kubernetes cluster
   when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-  shell: kubeadm init
+  shell: "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{k8s_cls_name}}{% endif %}"
   register: init_cluster
-  environment:
-    no_proxy: "$no_proxy,.svc,.svc.cluster.local"
-
-- name: Create Kubernetes config directory
-  file:
-    path: ".kube/"
-    state: directory
-
-- name: Copy admin.conf to Home directory
-  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-  copy:
-    src: "{{ kubeadmin_config }}"
-    dest: ".kube/config"
-    owner: "{{ ansible_user | default(ansible_user_id) }}"
-    group: "{{ ansible_user | default(ansible_user_id) }}"
-    mode: 0755
-    remote_src: true
+#  environment:
+#    no_proxy: "$no_proxy,.svc,.svc.cluster.local"

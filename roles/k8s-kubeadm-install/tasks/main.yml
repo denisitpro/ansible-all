@@ -18,8 +18,14 @@
   tags:
     - k8s-init
 
-- import_tasks: 40-cni-install.yml
+- import_tasks: 40-cni-calico.yml
+  when: cni_network = 'calico'
   tags: [cni]
 
+- import_tasks: 43-cni-calico.yml
+  when: cni_network = 'calico'
+  tags: [cni]
+
+
 - import_tasks:  95-reset-k8s-cls.yml
-  tags: ['never', 'reset-k8s-cls']
+  tags: ['never', 'k8s-reset']
