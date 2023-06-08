@@ -12,7 +12,7 @@ iptables:
     - { name: "any-access", protocol: "tcp", port: "22"}
 # firewall ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # Control plane
-#    - { name: "k8s-api-server", protocol: "tcp", port: "6443"}
+    - { name: "k8s-api-server", protocol: "tcp", port: "6443"}
 #    - { name: "etcd-server-client-api", protocol: "tcp", port: "2379:2380"}
 #    - { name: "kubelet-api", protocol: "tcp", port: "10250"}
 #    - { name: "kube-scheduler", protocol: "tcp", port: "10259"}

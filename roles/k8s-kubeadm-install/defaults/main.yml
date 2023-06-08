@@ -9,6 +9,5 @@ kubeadmin_config: /etc/kubernetes/admin.conf
 
 calico_version: 3.26.0
 
-# support networks
-# calico, cilium
+# support  CNI networks -  calico, cilium
 cni_network: cilium
