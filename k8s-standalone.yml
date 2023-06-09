@@ -1,14 +1,8 @@
 ---
 - hosts: k8s_standalone
   become: yes
-#  vars_prompt:
-#    - name: vault_login
-#      prompt: "What is your LDAP  login ?"
-#      private: no
-#    - name: vault_password
-#      prompt: "What is your LDAP password ?"
   roles:
 #    - common-internet-v3
     - k8s-kubeadm-install
-#    - ufw-configure
-#    - ufw-management
+    - ufw-configure
+    - ufw-management
