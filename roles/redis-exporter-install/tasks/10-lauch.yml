@@ -1,0 +1,15 @@
+---
+- name: Copy compose-file - redis
+  ansible.builtin.template:
+    src: "docker-compose.redis-exporter.yml.j2"
+    dest: "{{ redis_exporter_docker_compose_path }}/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure
+
+- name: Run restart compose
+  ansible.builtin.shell:
+    cmd: "docker-compose down; docker-compose up -d"
+  args:
+    chdir: "{{ redis_exporter_docker_compose_path }}"

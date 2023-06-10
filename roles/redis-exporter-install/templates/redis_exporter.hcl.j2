@@ -1,0 +1,16 @@
+service {
+  name = "redis-exporter"
+  tags = ["redis-exporter", "prometheus", "{{ stand_type }}"]
+  address = "{{ redis_exporter_bind_addr }}"
+  port = {{ redis_exporter_port }}
+{% if consul_agent_disabled is not defined %}
+  token = "{{ redis_exporter_consul_token }}"
+{% endif %}
+  check = {
+    id = "redis_exporter"
+    name = "redis_exporter healthcheck"
+    tcp = "{{ redis_exporter_bind_addr }}:{{ redis_exporter_port }}"
+    interval =  "30s"
+    timeout =  "2s"
+  }
+}

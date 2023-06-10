@@ -1,0 +1,10 @@
+---
+- name: Copy redis_exporter consul config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/consul.d/{{ item }}"
+    mode: 0644
+  loop:
+    # - "redis_exporter.hcl"
+    - "redis.hcl"
+  notify: restart-docker folder consul
