@@ -1,0 +1,32 @@
+---
+- name: download blackbox exporter binary to local folder
+  become: false
+  get_url:
+    url: "https://github.com/prometheus/blackbox_exporter/releases/download/v{{ blackbox_version }}/blackbox_exporter-{{ blackbox_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp/blackbox_exporter-{{ blackbox_version }}.linux-{{ go_arch }}.tar.gz"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+
+
+- name: unpack blackbox binaries
+  become: false
+  unarchive:
+    src: "/tmp/blackbox_exporter-{{ blackbox_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/blackbox_exporter-{{ blackbox_version }}.linux-{{ go_arch }}"
+    remote_src: yes
+
+- name: propagate blackbox and promtool binaries
+  copy:
+    src: "/tmp/blackbox_exporter-{{ blackbox_version }}.linux-{{ go_arch }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0755
+    owner: root
+    group: root
+    remote_src: true
+  with_items:
+    - blackbox_exporter
+  notify:
+    - restart blackbox_exporter

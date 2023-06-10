@@ -1,0 +1,25 @@
+---
+- name: 00
+  ansible.builtin.import_tasks: 00-create-path.yml
+  tags:
+    - redis
+
+- name: 03
+  ansible.builtin.import_tasks: 03-tune-sysctl.yml
+  tags:
+    - redis
+    - redis-tune
+
+- name: 05
+  ansible.builtin.import_tasks: 05-consul.yml
+  tags:
+    - consul-reg
+    - redis-exporter
+
+- name: 10
+  ansible.builtin.import_tasks: 10-lauch.yml
+  when: not_alone is not defined
+  tags:
+    - redis
+    - redis-exporter
+    - redis-compose

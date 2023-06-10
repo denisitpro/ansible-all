@@ -1,0 +1,11 @@
+---
+- name: copy compose-file - blackbox-exporter
+  template:
+    src: "docker-compose.blackbox.exporter.yml.j2"
+    dest: "{{ blackbox_docker_compose_path }}/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure
+  notify:
+    - "restart blackbox docker"

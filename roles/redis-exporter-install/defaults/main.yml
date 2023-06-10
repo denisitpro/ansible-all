@@ -1,0 +1,6 @@
+---
+redis_exporter_docker_compose_path: "{{ docker_compose_path }}/redis-exporter"
+redis_exporter_port: 9121
+redis_exporter_version: "v1.43.0"
+redis_exporter_bind_addr: "{{ global_bind_addr }}"
+redis_exporter_consul_token: "{{ vault_dict_users_secret.consul_redis_exporter }}"

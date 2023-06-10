@@ -1,0 +1,26 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: create folder blackbox-exporter
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ blackbox_exporter_config_data_path }}"
+    - "{{ blackbox_docker_compose_path }}"
+
+- name: copy block-exporter config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ blackbox_exporter_config_data_path }}/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "blackbox.yml"
+  tags:
+    - blackbox-config
+  notify:
+    - "restart blackbox docker"

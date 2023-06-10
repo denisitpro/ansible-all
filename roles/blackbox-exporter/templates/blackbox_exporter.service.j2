@@ -1,0 +1,27 @@
+[Unit]
+Description=Prometheus
+Documentation=https://github.com/prometheus/blackbox_exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User={{prom_user}}
+Group={{prom_user}}
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/blackbox_exporter \
+  --config.file=/etc/blackbox/blackbox.yml \
+{% if ansible_distribution == 'CentOS' %}
+  --web.listen-address={{  ansible_default_ipv4.address }}:9115 \
+{% endif %}
+{% if ansible_distribution == 'Ubuntu' %}
+  --web.listen-address={{ ansible_facts[second_interface_name].ipv4.address }}:9115 \
+{% endif %}
+
+SyslogIdentifier=prometheus
+
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target

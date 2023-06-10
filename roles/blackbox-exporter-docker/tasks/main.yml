@@ -1,0 +1,13 @@
+---
+- import_tasks: 00-create-path.yml
+  tags:
+    - blackbox-exporter
+
+- import_tasks: 01-copy-compose.yml
+  tags:
+    - blackbox-exporter
+
+- import_tasks: 10-lauch.yml
+  tags:
+   - blackbox-exporter
+   - blackbox-compose

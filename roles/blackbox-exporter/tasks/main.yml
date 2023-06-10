@@ -1,0 +1,14 @@
+---
+- import_tasks: 00-create-user.yml
+  tags:
+    - blackbox_exporter
+- import_tasks: 01-download.yml
+  tags:
+    - blackbox_exporter
+- import_tasks: 02-configure.yml
+  tags:
+   - blackbox_exporter
+- import_tasks: 03-consul-reg.yml
+  tags:
+    - consul_reg_blackbox
+    - blackbox_exporter

@@ -1,0 +1,14 @@
+---
+- name: Import docker dir
+  ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: Import /security
+  ansible.builtin.import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: Create docker-compose path
+  ansible.builtin.file:
+    path: "{{ redis_exporter_docker_compose_path }}"
+    mode: 0755
+    state: directory
+    owner: root
+    group: root

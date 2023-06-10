@@ -1,0 +1,34 @@
+version: "3.7"
+
+networks:
+  {{ stand_type }}:
+    driver: bridge
+    name: {{ stand_type }}
+    attachable: true
+
+services:
+  redis.exporter:
+    image: oliver006/redis_exporter:{{ redis_exporter_version }}
+    container_name: redis.exporter
+    networks:
+      - {{ stand_type }}
+    ports:
+      - {{ redis_exporter_bind_addr }}:{{ redis_exporter_port }}:{{ redis_exporter_port }} # redis exporter port
+    command: ["--redis.addr", "redis://redis:{{ redis_port | default('6379') }}"{% if vault_dict_users_secret.redis_pass is defined %}, "--redis.password", "{{ vault_dict_users_secret.redis_pass }}"{% endif %}]
+{% if redis_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{ vector_srv }}:{{ vector_port }}
+        tag: redis-exporter
+        fluentd-async: "{{ fluent_async }}"
+        fluentd-buffer-limit: "{{ fluendt_buffer_limit }}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}

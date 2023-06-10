@@ -1,0 +1,21 @@
+version: "3.7"
+
+networks:
+  blackboxexporter:
+    driver: bridge
+    name: blackboxexporter
+    attachable: true
+
+services:
+  blackboxexporter:
+    image: prom/blackbox-exporter:{{blackbox_exporter_version}}
+    container_name: blackboxexporter
+    networks:
+      - blackboxexporter
+    ports:
+      - {{blackbox_exporter_bind_addr}}:{{blackbox_exporter_port}}:{{blackbox_exporter_port}}
+    restart: always
+    volumes:
+      - {{blackbox_exporter_config_data_path}}/blackbox.yml:{{blackbox_exporter_config_data_path}}/blackbox.yml
+    command:
+      --config.file={{blackbox_exporter_config_data_path}}/blackbox.yml
