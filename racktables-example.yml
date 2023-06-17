@@ -13,7 +13,7 @@
     - zabbix-agent
     - node-exporter
     - vault-get-token
-    - vault-get-users-secrets-v2
+    - vault-get-users-secrets-direct
     - percona-install
     - racktables-install
     - nginx-install

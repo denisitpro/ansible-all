@@ -19,7 +19,7 @@
     - redis-install
     - postgres-install
     - vault-get-token
-    - vault-get-users-secrets-v2
+    - vault-get-users-secrets-direct
     - postgres-configure
     - postgres-db-management
     - postgres-backup

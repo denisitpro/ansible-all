@@ -13,7 +13,7 @@
     - vault-get-token
     - zabbix-agent
     - node-exporter
-    - vault-get-users-secrets-v2
+    - vault-get-users-secrets-direct
     - minio-install
     - nginx-install
     - nginx-base-config

@@ -1,0 +1,11 @@
+---
+- name: Include vars
+  ansible.builtin.include_vars:
+    file: vault.secret
+  register: env_file_result
+  tags:
+    - vault-debug
+
+#- debug: msg="vars {{vault_token}}"
+#  tags:
+#    - vault-debug
