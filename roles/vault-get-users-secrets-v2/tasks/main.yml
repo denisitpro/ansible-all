@@ -1,9 +1,0 @@
----
-- include: 00-get-users-secrets.yml
-  tags:
-   - reconfigure
-   - db_management
-   - users
-   - install
-   - env
-   - compose

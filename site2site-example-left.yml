@@ -13,7 +13,7 @@
     - zabbix-agent # optionality
     - node-exporter # optionality
     - vault-get-token
-    - vault-get-users-secrets-v2
+    - vault-get-users-secrets-direct
     - strongswan-install
     - ufw-configure
     - ufw-management
