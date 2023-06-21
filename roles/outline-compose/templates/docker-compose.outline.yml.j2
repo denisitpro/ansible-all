@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  outline:
+    image: {{ outline_docker_image_name }}:{{ outline_docker_image_version }}
+    network_mode: host
+    container_name: outline
+    volumes:
+      - {{ outline_docker_host_data_path }}/data:{{ outline_sb_state_dir }}
+    environment:
+      SB_STATE_DIR: "{{ outline_sb_state_dir }}"
+      SB_API_PORT: "{{ outline_sb_api_port }}"
+      SB_API_PREFIX: "{{ outline_sb_api_prefix }}"
+      SB_CERTIFICATE_FILE: "{{ outline_sb_certificate_file }}"
+      SB_PRIVATE_KEY_FILE: "{{ outline_sb_private_key_file }}"
+      SB_DEFAULT_SERVER_NAME: "{{ outline_sb_default_server_name | default('Outline server') }}"
+    restart: always
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{ vector_srv }}:{{ vector_port }}
+        tag: outline
+        fluentd-async: "{{ fluentd_async }}"
+        fluentd-buffer-limit: "{{ fluentd_buffer_limit }}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}

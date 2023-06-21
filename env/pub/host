@@ -14,3 +14,6 @@ nginx-01.example.com
 
 [k8s_standalone]
 k8s.example.com
+
+[outline_hetzner]
+outline.example.com

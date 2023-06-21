@@ -1,0 +1,16 @@
+---
+- name: Stop docker-compose
+  ansible.builtin.command:
+    cmd: "docker-compose down"
+  args:
+    chdir: "{{ outline_docker_compose_path }}"
+  register: __outline_docker_compose_down
+  changed_when: __outline_docker_compose_down.rc == 0
+
+- name: Delete directories data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ outline_docker_compose_path }}"
+    - "{{ outline_docker_host_data_path }}"

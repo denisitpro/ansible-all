@@ -1,0 +1,42 @@
+---
+- name: Import prepare
+  ansible.builtin.import_tasks:
+    file: 00-prepare.yml
+  tags:
+    - outline
+    - outline-prepare
+
+- name: Import cert
+  ansible.builtin.import_tasks:
+    file: 05-cert.yml
+  tags:
+    - outline
+    - outline-cert
+
+- name: Import config
+  ansible.builtin.import_tasks:
+    file: 10-config.yml
+  tags:
+    - outline
+    - outline-conf
+
+- name: Import compose
+  ansible.builtin.import_tasks:
+    file: 15-compose.yml
+  tags:
+    - outline
+    - outline-compose
+
+- name: Import get uri
+  ansible.builtin.import_tasks:
+    file: 20-get-uri.yml
+  tags:
+    - outline
+    - outline-get-uri
+
+- name: Import clear
+  ansible.builtin.import_tasks:
+    file: 99-clear.yml
+  tags:
+    - never
+    - outline-clear

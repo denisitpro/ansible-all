@@ -1,0 +1,18 @@
+---
+outline_docker_image_name: "quay.io/outline/shadowbox"
+outline_docker_image_version: "v1.7.2"
+
+outline_docker_compose_path: "/opt/docker/outline"
+
+outline_docker_host_data_path: "/opt/outline"
+outline_sb_state_dir: "/opt/persistent-data"
+
+outline_cert_filename: "cert.crt"
+outline_key_filename: "priv.key"
+
+outline_sb_api_port: "18654"
+outline_sb_keys_port: "18655"
+outline_sb_api_prefix: "outline-manager"
+outline_sb_certificate_file: "{{ outline_sb_state_dir }}/{{ outline_cert_filename }}"
+outline_sb_private_key_file: "{{ outline_sb_state_dir }}/{{ outline_key_filename }}"
+outline_hostname: "{{ ansible_facts['eth0'].ipv4.address }}"

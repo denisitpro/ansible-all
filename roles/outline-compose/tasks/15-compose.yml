@@ -1,0 +1,14 @@
+---
+- name: Copy docker-compose file
+  ansible.builtin.template:
+    src: "docker-compose.outline.yml.j2"
+    dest: "{{ outline_docker_compose_path }}/docker-compose.yml"
+    mode: '0600'
+    owner: root
+    group: root
+
+- name: Restart docker-compose
+  ansible.builtin.shell:
+    cmd: "docker-compose pull; docker-compose down --remove-orphan; docker-compose up -d"
+  args:
+    chdir: "{{ outline_docker_compose_path }}"

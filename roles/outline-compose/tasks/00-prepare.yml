@@ -1,0 +1,16 @@
+---
+- name: Import docker-compose dir
+  ansible.builtin.import_tasks:
+    file: shared/tasks/create-dir-docker-compose.yml
+
+- name: Create folder outline
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+  with_items:
+    - { path: "{{ outline_docker_host_data_path }}" }
+    - { path: "{{ outline_docker_host_data_path }}/data", mode: 2770 }
+    - { path: "{{ outline_docker_compose_path }}" }

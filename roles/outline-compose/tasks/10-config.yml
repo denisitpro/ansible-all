@@ -1,0 +1,8 @@
+---
+- name: Create config file
+  ansible.builtin.template:
+    src: "server_config.json.j2"
+    dest: "{{ outline_docker_host_data_path }}/data/shadowbox_server_config.json"
+    mode: '0660'
+    owner: root
+    group: root
