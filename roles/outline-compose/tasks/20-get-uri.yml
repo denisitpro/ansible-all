@@ -1,0 +1,11 @@
+---
+- name: Get cert info
+  community.crypto.x509_certificate_info:
+    path: "{{ outline_docker_host_data_path }}/data/{{ outline_cert_filename }}"
+  register: __outline_cert_info
+
+- name: Show management uri
+  ansible.builtin.debug:
+    msg: >-
+      For management outline use
+      {"apiUrl":"https://{{ outline_hostname }}:{{ outline_sb_api_port }}/{{ outline_sb_api_prefix }}","certSha256":"{{ __outline_cert_info.fingerprints.sha256 | regex_replace(':', '') | upper }}"}

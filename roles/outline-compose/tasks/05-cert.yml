@@ -1,0 +1,24 @@
+---
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "selfsigned-cert"
+  vars:
+    ssl_path: "{{ outline_docker_host_data_path }}/data"
+    # ssl_domain: "{{ outline_hostname }}"
+    ssl_domain: "selfsigned"
+    ssl_cert_path: "{{ outline_docker_host_data_path }}/data/{{ outline_cert_filename }}"
+    ssl_privkey_path: "{{ outline_docker_host_data_path }}/data/{{ outline_key_filename }}"
+    ssl_common_name: "{{ outline_hostname }}"
+
+
+# - name: Import ssl role
+#   ansible.builtin.import_role:
+#     name: "2445-copy-certs"
+#   vars:
+#     ssl_path: "{{ outline_docker_host_data_path }}/data"
+#     ssl_domain: "{{ outline_hostname }}"
+#     ssl_cert_path: "{{ outline_docker_host_data_path }}/data/{{ outline_cert_filename }}"
+#     ssl_privkey_path: "{{ outline_docker_host_data_path }}/data/{{ outline_key_filename }}"
+#     # ssl_user: "{{ krakend_docker_user_uid }}"
+#     # ssl_notify: "Reload krakend"
+#   # when: krakend_ssl
