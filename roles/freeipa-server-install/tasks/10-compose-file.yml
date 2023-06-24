@@ -1,11 +1,27 @@
 ---
-- name: copy freeipa compose
+- name: Copy freeipa compose
   ansible.builtin.template:
     src: docker-compose-ipa.yml.j2
-    dest: "{{docker_compose_path}}/docker-compose.yml"
-    mode: 0644
+    dest: "{{ freeipa_docker_compose_path }}/docker-compose.yml"
+    mode: '0640'
 
-- name: run docker-compose file
-  shell: "docker-compose down && docker-compose up -d"
+- name: Run docker-compose restart
+  ansible.builtin.shell:
+    cmd: "docker-compose down; docker-compose up -d"
   args:
-    chdir: "{{docker_compose_path}}"
+    chdir: "{{ freeipa_docker_compose_path }}"
+  register: __freeipa_docker_compose_up
+  changed_when: __freeipa_docker_compose_up.rc == 0
+  when:
+    - freeipa_manual_start is not defined
+
+- name: Run freeipa update image
+  ansible.builtin.shell:
+    cmd: "docker-compose pull && docker-compose up -d"
+  args:
+    chdir: "{{ freeipa_docker_compose_path }}"
+  register: __freeipa_docker_compose_up
+  changed_when: __freeipa_docker_compose_up.rc == 0
+  when:
+    - freeipa_manual_start is not defined
+    - freeipa_update is defined

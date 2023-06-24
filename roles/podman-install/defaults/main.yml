@@ -1,0 +1,27 @@
+---
+podman_version: 4.5.1
+
+# todo remove
+_apt_key:
+  - keyring: "/etc/apt/trusted.gpg.d/home_alvistack.gpg"
+    url: "http://downloadcontent.opensuse.org/repositories/home:/alvistack/xUbuntu_22.04/Release.key"
+    id: "789CFFDE0295B8A1F4E5690C4BECC97550D0B1FD"
+    state: "present"
+
+_apt_repository:
+  - filename: "home:alvistack"
+    repo: "deb http://downloadcontent.opensuse.org/repositories/home:/alvistack/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/ /"
+    state: "present"
+
+_apt:
+  - { state: "latest", name: "containernetworking-dnsname" }
+  - { state: "latest", name: "containernetworking-plugins" }
+  - { state: "latest", name: "containernetworking-podman-machine" }
+  - { state: "latest", name: "podman" }
+  - { state: "latest", name: "podman-aardvark-dns" }
+  - { state: "latest", name: "podman-docker" }
+  - { state: "latest", name: "podman-gvproxy" }
+  - { state: "latest", name: "podman-netavark" }
+  - { state: "latest", name: "python3-podman-compose" }
+  - { state: "latest", name: "slirp4netns" }
+  - { state: "latest", name: "uidmap" }

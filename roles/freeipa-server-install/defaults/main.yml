@@ -1,10 +1,52 @@
 ---
-ipa_bind_addr: "{{ ansible_facts[second_interface_name].ipv4.address }}"
-ipa_hostname: ipa-01.example.com
+freeipa_bind_addr: "{{ global_bind_addr }}"
+freeipa_hostname: "ipa-01.example.com"
 
 # UPPERCASE
-ipa_realm: EXAMPLE.COM
-ds_password: changeme
-admin_password: changeme
+freeipa_realm: "EXAMPLE.COM"
+freeipa_ds_password: "change_me"
+freeipa_admin_password: "change_me"
+#admin_password: "{{freeipa_admin_password}}"
 
-freeipa_image_version: centos-8-4.8.7
+# only for vault
+#freeipa_ds_password: "{{ vault_dict_users_secret.freeipa_ds_password }}"
+#freeipa_admin_password: "{{ vault_dict_users_secret.freeipa_admin_password }}"
+
+
+
+freeipa_image_name: "freeipa/freeipa-server"
+freeipa_image_version: "rocky-8-4.9.10"
+
+
+freeipa_docker_compose_path: "{{ docker_compose_path }}/freeipa"
+freeipa_data_path: "/opt/freeipa"
+freeipa_use_dns: false
+
+freeipa_bind_acl_name: "trusted_network"
+#freeipa_docker_restart: always
+
+freeipa_http_port: "80"
+freeipa_https_port: "443"
+freeipa_ldap_port: "389"
+freeipa_ldaps_port: "636"
+
+#ipa_kibana_access_group: "g_kibana_{{ stand_type | replace('-', '_') }}_access"
+#ipa_vault_access_group: "g_vault_kv_{{ stand_type | replace('-', '_') }}_rw"
+
+#ipa_grafana_web_admin_group: "g_grafana_{{ stand_type | replace('-', '_') }}_web_admin"
+#ipa_grafana_web_editor_group: "g_grafana_{{ stand_type | replace('-', '_') }}_web_editor"
+#ipa_grafana_web_view_group: "g_grafana_{{ stand_type | replace('-', '_') }}_web_view"
+
+#freeipa_cert: "{{ freeipa_data_path }}/var/lib/ipa/certs/httpd.crt"
+#freeipa_key: "{{ freeipa_data_path }}/var/lib/ipa/private/httpd.key"
+#freeipa_key_pass_file: "{{ freeipa_data_path }}/var/lib/ipa/passwds/{{ freeipa_hostname }}-443-RSA"
+
+
+freeipa_commands:
+  - "ipa-server-install"
+  - "--unattended"
+  - "--realm={{ internal_domain | upper }}"
+  - "--no-ntp"
+  - "--no_hbac_allow"
+  - "--no-ssh"
+  - "--no-sshd"

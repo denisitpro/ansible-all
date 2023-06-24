@@ -1,6 +1,0 @@
----
-- name: Install podman -  Ubuntu latest version
-  apt:
-    name:
-      - podman
-    update_cache: yes
