@@ -1,6 +1,3 @@
 ---
-- name: "Restart docker-compose 3proxy"
-  shell: "docker-compose down && docker-compose up -d"
-  args:
-    chdir: "{{ compose_dir }}"
-  become: true
+- import_tasks: shared/handlers/3proxy.yml
+

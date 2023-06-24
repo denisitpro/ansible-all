@@ -1,8 +1,6 @@
-nserver 1.1.1.1
-nserver 8.8.8.8
-
+nserver {{dns_server_for_proxy1 | default ('1.1.1.1') }}
+nserver {{dns_server_for_proxy2 | default ('8.8.8.8') }}
 timeouts 1 5 30 60 180 1800 15 60
-
 log
 
 users $/etc/3proxy/users.cfg

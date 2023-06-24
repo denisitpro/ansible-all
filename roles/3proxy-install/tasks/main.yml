@@ -4,17 +4,12 @@
     - 3proxy
     - compose
 
-- import_tasks: 10-users.yml
-  tags:
-    - 3proxy
-    - 3proxy-users
-
-- import_tasks: 15-config.yml
+- import_tasks: 10-configs.yml
   tags:
     - 3proxy
     - 3proxy-config
-  
+
 - import_tasks: 20-copy-compose.yml
   tags:
     - 3proxy
-    - compose
+    - 3proxy-compose

@@ -1,13 +1,11 @@
 ---
-- block:
-  - name: "Copy docker-compose 3proxy file"
-    ansible.builtin.template:
-      src: "docker-compose.3proxy.yml.j2"
-      dest: "{{ compose_dir }}/docker-compose.yml"
-      mode: 0644
-      owner: root
-      group: root
-    notify:
-      - "Restart docker-compose 3proxy"
-  
-  become: true
+- name: "Copy docker-compose 3proxy file"
+  ansible.builtin.template:
+    src: "docker-compose.3proxy.yml.j2"
+    dest: "{{ docker_compose_path | default('/opt/docker') }}/docker-compose.yml"
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+  - "restart docker-compose 3proxy"
+
