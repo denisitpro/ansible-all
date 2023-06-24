@@ -1,10 +1,12 @@
 ---
-app_name: "3proxy"
-compose_dir: "{{ docker_compose_path }}/{{ app_name }}"
-proxy_dir: "/opt/{{ app_name }}"
+proxy_dir: "/opt/3proxy"
 proxy_conf_dir: "{{ proxy_dir }}/conf"
 proxy_image: "3proxy/3proxy"
 proxy_version: '0.9.4'
+
+
+folder_apps:
+  - 3proxy
 
 proxy_used_files:
   - users.cfg

@@ -1,0 +1,12 @@
+---
+- name: "Create user list file"
+  ansible.builtin.template:
+    src: "{{item}}.j2"
+    dest: "{{ proxy_conf_dir }}/{{item}}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart docker-compose 3proxy
+  with_items:
+    - "3proxy.cfg"
+    - "users.cfg"
