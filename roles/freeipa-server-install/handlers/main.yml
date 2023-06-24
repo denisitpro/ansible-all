@@ -1,0 +1,4 @@
+---
+- name: Import handlers
+  ansible.builtin.import_tasks:
+    file: "shared/handlers/freeipa.yml"

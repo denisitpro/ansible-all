@@ -1,18 +1,27 @@
 ---
-- import_tasks: 05-prefly.yml
+#- import_tasks: 12-install-ubuntu.yml
+#  when: ansible_distribution == 'Ubuntu'
+#  tags:
+#    - podman
+#    - podman-install
+
+- import_tasks: 15-ubuntu22.yml
   when: ansible_distribution == 'Ubuntu'
   tags:
     - podman
-    - podman-prefly
 
-- import_tasks: 10-install.yml
+# todo need update api version
+#- import_tasks: 20-binary-latest.yml
+#  tags:
+#    - podman
+#    - podman-update
+
+
+- import_tasks: 30-postinstall.yml
   when: ansible_distribution == 'Ubuntu'
   tags:
     - podman
     - podman-install
 
-- import_tasks: 15-postinstall.yml
-  when: ansible_distribution == 'Ubuntu'
-  tags:
-    - podman
-    - podman-install
+- import_tasks: 99-debug.yml
+  tags: ['never', 'podman-debug']

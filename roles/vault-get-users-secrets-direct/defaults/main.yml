@@ -1,4 +1,4 @@
 ---
-vault_url_vpn: https://vault.example.com
+vault_url_direct: https://vault.example.com
 vault_normalized_access_token: "{{vault_token}}"
 

@@ -1,0 +1,19 @@
+---
+- name: download  podman
+  get_url:
+    url: "https://github.com/containers/podman/releases/download/v{{podman_version}}/podman-remote-static-linux_amd64.tar.gz"
+    dest: "/tmp"
+    mode: 0644
+
+- name: Extract podman
+  unarchive:
+    src: /tmp/podman-remote-static-linux_amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: copy binary files
+  ansible.builtin.copy:
+    remote_src: yes
+    src: "/tmp/bin/podman-remote-static-linux_amd64"
+    dest: /usr/local/bin/podman
+    mode: 0755

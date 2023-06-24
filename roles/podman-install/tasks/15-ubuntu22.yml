@@ -1,0 +1,5 @@
+- name: install podman
+  apt:
+    name:
+      - podman
+    state: latest

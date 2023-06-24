@@ -1,7 +1,40 @@
 ---
-- include: 05-create-path.yml
-  tags: [freeipa]
-- include: 10-compose-file.yml
+- name: Import create
+  ansible.builtin.import_tasks: 05-create-path.yml
   tags:
     - freeipa
-    - compose
+    - freeipa-dirs
+
+- import_tasks: 08-docker-engine.yaml
+  tags:
+    - freeipa
+    - freeipa-docker
+
+- name: Import compose
+  ansible.builtin.import_tasks: 10-compose-file.yml
+  tags:
+    - freeipa
+    - freeipa-compose
+
+
+- name: Import postinstall http
+  ansible.builtin.import_tasks: 90-postinstall-httpd.yml
+  tags:
+    - never
+    - freeipa-postinstall-httpd
+    - freeipa-postinstall
+
+- name: Import postinstall configs
+  ansible.builtin.import_tasks: 91-postinstall-configs.yml
+  tags:
+    - never
+    - freeipa-postinstall-configs
+    - freeipa-postinstall
+
+# need refactore
+#- name: Import postinstall configs ldap
+#  ansible.builtin.import_tasks: 92-postinstall-configs-ldap.yml
+#  tags:
+#    - never
+#    - freeipa-postinstall-configs-ldap
+#    - freeipa-postinstall

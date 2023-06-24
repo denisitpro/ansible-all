@@ -1,0 +1,20 @@
+---
+- name: Create groups ldap
+  community.general.ipa_group:
+    ipa_host: "{{ ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+    validate_certs: false
+    name: "{{ item.name }}"
+    state: "{{ item.present | default('present') }}"
+    nonposix: "{{ item.nonposix | default(omit) }}"
+    description: "{{ item.description | default(omit) }}"
+  loop:
+    - name: "{{ ipa_grafana_web_admin_group }}"
+      description: "Group for user for admin  access via grafana"
+    - name: "{{ ipa_grafana_web_editor_group }}"
+      description: "Group for user for editor  access via grafana"
+    - name: "{{ ipa_grafana_web_view_group }}"
+      description: "Group for user for view  access via grafana"
+  tags:
+    - freeipa-groups-ldap

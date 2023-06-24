@@ -1,0 +1,2 @@
+---
+- import_tasks: shared/handlers/podman.yml

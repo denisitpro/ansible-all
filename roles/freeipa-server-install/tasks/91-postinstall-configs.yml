@@ -1,0 +1,193 @@
+---
+- name: Set facts
+  ansible.builtin.set_fact:
+    ipa_host: "{{ freeipa_hostname }}"
+    ipa_user: "admin"
+    ipa_pass: "{{ freeipa_admin_password }}"
+  tags:
+    - freeipa-sudorules
+    - freeipa-default-config
+    - freeipa-groups
+    - freeipa-pwpolicy
+    - freeipa-dns-settings
+    - freeipa-hbac
+
+- name: Ensure the default login shell is bash
+  community.general.ipa_config:
+    ipa_host: "{{ ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+    validate_certs: false
+    ipadefaultloginshell: /bin/bash
+  tags:
+    - freeipa-default-config
+
+- name: Create groups
+  community.general.ipa_group:
+    ipa_host: "{{ ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+    validate_certs: false
+    name: "{{ item.name }}"
+    state: "{{ item.present | default('present') }}"
+    nonposix: "{{ item.nonposix | default(omit) }}"
+    description: "{{ item.description | default(omit) }}"
+  loop:
+    # - name: "pso_admins"
+    #   description: "Group for FreeIPA admins"
+    #   present: absent
+    - name: "pso_service_acc"
+      description: "Group for FreeIPA service accounts"
+      nonposix: true
+    - name: "g_global_admins"
+      description: "Group for admins user for access via ssh"
+#    - name: "{{ ipa_kibana_access_group }}"
+#      description: "Group for user for access via kibana"
+#    - name: "{{ ipa_vault_access_group }}"
+#      description: "Group for user for access via vault"
+  tags:
+    - freeipa-groups
+
+- name: Create password policy
+  community.general.ipa_pwpolicy:
+    ipa_host: "{{ ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+    validate_certs: false
+    group: "{{ item.group }}"
+    state: "{{ item.present | default('present') }}"
+    maxpwdlife: "{{ item.maxpwdlife | default(omit) }}"
+    minpwdlife: "{{ item.minpwdlife | default(omit) }}"
+    historylength: "{{ item.historylength | default(omit) }}"
+    minclasses: "{{ item.minclasses | default(omit) }}"
+    priority: "{{ item.priority | default(omit) }}"
+    maxfailcount: "{{ item.maxfailcount | default(omit) }}"
+    failinterval: "{{ item.failinterval | default(omit) }}"
+    lockouttime: "{{ item.lockouttime | default(omit) }}"
+    minlength: "{{ item.minlength | default(omit) }}"
+  loop:
+    - group: "admins"
+      maxpwdlife: '90'
+      minpwdlife: '0'
+      historylength: '3'
+      minclasses: '3'
+      priority: '10'
+      maxfailcount: '10'
+      failinterval: '180'
+      lockouttime: '180'
+      minlength: '21'
+    # - group: "pso_admins"
+    #   maxpwdlife: '90'
+    #   minpwdlife: '0'
+    #   historylength: '3'
+    #   minclasses: '3'
+    #   priority: '10'
+    #   maxfailcount: '10'
+    #   failinterval: '180'
+    #   lockouttime: '180'
+    #   minlength: '21'
+    #   state: absent
+    - group: "pso_service_acc"
+      maxpwdlife: '0'
+      minpwdlife: '0'
+      historylength: '0'
+      minclasses: '2'
+      priority: '15'
+      maxfailcount: '0'
+      failinterval: '0'
+      lockouttime: '0'
+      minlength: '15'
+    - group: "global_policy"
+      maxpwdlife: '90'
+      minpwdlife: '1'
+      historylength: '0'
+      minclasses: '0'
+      minlength: '8'
+      maxfailcount: '6'
+      failinterval: '60'
+      lockouttime: '600'
+  tags:
+    - freeipa-pwpolicy
+
+- name: Set allowptrsync for dns domain
+  community.general.ipa_dnszone:
+    ipa_host: "{{ ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+    validate_certs: false
+    zone_name: "{{ freeipa_domain }}"
+    allowsyncptr: true
+    dynamicupdate: true
+  when: freeipa_use_dns and freeipa_domain is defined
+  ignore_errors: true
+  tags:
+    - freeipa-dns-settings
+
+- name: Create hbac rules
+  community.general.ipa_hbacrule:
+    ipa_host: "{{ ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+    validate_certs: false
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    host: "{{ item.host | default(omit) }}"
+    hostcategory: "{{ item.hostcategory | default(omit) }}"
+    hostgroup: "{{ item.hostgroup | default(omit) }}"
+    service: "{{ item.service | default(omit) }}"
+    servicecategory: "{{ item.servicecategory | default('all') }}"
+    servicegroup: "{{ item.servicegroup | default(omit) }}"
+    sourcehost: "{{ item.sourcehost | default(omit) }}"
+    sourcehostcategory: "{{ item.sourcehostcategory | default(omit) }}"
+    sourcehostgroup: "{{ item.sourcehostgroup | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    user: "{{ item.user | default(omit) }}"
+    usercategory: "{{ item.usercategory | default(omit) }}"
+    usergroup: "{{ item.usergroup | default(omit) }}"
+  loop:
+    - name: "hbac_global_admins"
+      description: "Allow ssh access for users in g_global_admins"
+      usergroup:
+        - "g_global_admins"
+      hostcategory: "all"
+#      service: "all"
+#      servicegroup:
+#        - "all"
+  ignore_errors: true
+  tags:
+    - freeipa-hbac
+
+- name: Create sudo rules
+  community.general.ipa_sudorule:
+    ipa_host: "{{ ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+    validate_certs: false
+    name: "{{ item.name }}"
+    cmd: "{{ item.cmd | default(omit) }}"
+    cmdcategory: "{{ item.cmdcategory | default(omit) }}"
+    cmdgroup: "{{ item.cmdgroup | default(omit) }}"
+    description: "{{ item.description | default(omit) }}"
+    host: "{{ item.host | default(omit) }}"
+    hostcategory: "{{ item.hostcategory | default(omit) }}"
+    hostgroup: "{{ item.hostgroup | default(omit) }}"
+    runasextusers: "{{ item.runasextusers | default(omit) }}"
+    runasgroupcategory: "{{ item.runasgroupcategory | default(omit) }}"
+    runasusercategory: "{{ item.runasusercategory | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    sudoopt: "{{ item.sudoopt | default(omit) }}"
+    user: "{{ item.user | default(omit) }}"
+    usercategory: "{{ item.usercategory | default(omit) }}"
+    usergroup: "{{ item.usergroup | default(omit) }}"
+  loop:
+    - name: "sudo_global_admins"
+      description: "Allow sudo for users in g_global_admins group"
+      usergroup:
+        - "g_global_admins"
+      hostcategory: "all"
+      cmdcategory: "all"
+      runasusercategory: "all"
+      runasgroupcategory: "all"
+  ignore_errors: true
+  tags:
+    - freeipa-sudorules

@@ -1,0 +1,11 @@
+---
+- name: Disable rewrite in httpd
+  ansible.builtin.replace:
+    path: "{{ freeipa_data_path }}/etc/httpd/conf.d/ipa-rewrite.conf"
+    regexp: "{{ item }}"
+    replace: '#\1'
+  loop:
+    - '^(RewriteRule\s+\^/ipa/\(\.\*\)\s+http://{{ freeipa_hostname | regex_escape() }}/ipa/\$1\s+\[L,R=301\])$'
+    - '^(RewriteRule\s+\^/ipa/\(\.\*\)\s+https://{{ freeipa_hostname | regex_escape() }}/ipa/\$1\s+\[L,R=301,NC\])$'
+    # - '^(RewriteRule\s+\^/\(\.\*\)\s+https://{{ freeipa_hostname | regex_escape() }}/\$1\s+\[L,R=301\])$'
+  notify: Restart freeipa httpd

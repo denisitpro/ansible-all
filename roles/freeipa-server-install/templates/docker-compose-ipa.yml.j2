@@ -1,42 +1,46 @@
-version: '3'
+version: '3.8'
 
 services:
   freeipa:
-    image: freeipa/freeipa-server:{{freeipa_image_version}}
-    hostname: {{ipa_hostname}}
+    image: {{ freeipa_image_name }}:{{ freeipa_image_version }}
+    container_name: freeipa
+    hostname: {{ freeipa_hostname }}
+{% if freeipa_docker_restart is defined %}
+    restart: {{ freeipa_docker_restart }}
+{% endif %}
     sysctls:
       net.ipv6.conf.all.disable_ipv6: 0
     ports:
-      - {{ipa_bind_addr}}:80:80
-      - {{ipa_bind_addr}}:443:443
-      - {{ipa_bind_addr}}:389:389
-      - {{ipa_bind_addr}}:636:636
-      - {{ipa_bind_addr}}:88:88
-      - {{ipa_bind_addr}}:464:464
-      - {{ipa_bind_addr}}:88:88/udp
-      - {{ipa_bind_addr}}:464:464/udp                              
-    volumes:
-      - ./ipadata:/data:Z
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command:
-      - ipa-server-install
-      - --unattended
-      - --realm={{ipa_realm}}
-      - --no-ntp
-      - --mkhomedir
-      - --no_hbac_allow
-      - --no-ssh 
-      - --no-sshd
-{% if freeipa_init is defined %}
-      - --ds-password={{ds_password}}
-      - --admin-password={{admin_password}}
+      - {{ freeipa_http_bind_addr | default(freeipa_bind_addr) }}:{{ freeipa_http_port }}:80/tcp
+      - {{ freeipa_https_bind_addr | default(freeipa_bind_addr) }}:{{ freeipa_https_port }}:443/tcp
+      - {{ freeipa_ldap_bind_addr | default(freeipa_bind_addr) }}:{{ freeipa_ldap_port }}:389/tcp
+      - {{ freeipa_ldaps_bind_addr | default(freeipa_bind_addr) }}:{{ freeipa_ldaps_port }}:636/tcp
+      - {{ freeipa_bind_addr }}:88:88/tcp
+      - {{ freeipa_bind_addr }}:88:88/udp
+      - {{ freeipa_bind_addr }}:464:464/tcp
+      - {{ freeipa_bind_addr }}:464:464/udp
+{% if freeipa_use_dns %}
+      - {{ freeipa_bind_addr }}:53:53/tcp
+      - {{ freeipa_bind_addr }}:53:53/udp
 {% endif %}
-#    environment:
-#    restart: always
-#    logging:
-#      driver: "none"
-    logging:
-      driver: json-file
-      options:
-        max-size: 100m
-        max-file: '2'
+    volumes:
+      - {{ freeipa_data_path }}:/data:Z
+{% if freeipa_custom_volumes is defined %}
+{% for volume in freeipa_custom_volumes %}
+      - {{ volume.host }}:{{ volume.docker | default(volume.host) }}{{ ':' + volume.opt if (volume.opt is defined) }}
+{% endfor %}
+{% endif %}
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    command: >
+{% if freeipa_commands is defined %}
+{% for command in freeipa_commands %}
+      {{ command }}
+{% endfor %}
+{% if freeipa_init is defined %}
+      --ds-password={{freeipa_ds_password}}
+      --admin-password={{freeipa_admin_password}}
+{% endif %}
+{% endif %}
