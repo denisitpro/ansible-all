@@ -1,2 +1,2 @@
 ---
-- include: shared/handlers/ipsec.yml
+- import_tasks: shared/handlers/ipsec.yml

@@ -1,10 +1,16 @@
-# Role install strongswan for site-ot-site ipsec tunnel
-Tested Ubuntu 20.04 - cloud provider hetzner
+# Example configuration
 
-## Configured need 2 or more server
-* Server one - left
-* Server two - righ
-* Route, NOT NAT package between networks. To support firewall rules based on source address
+generate preshared key `head -c 24 /dev/urandom | base64`
 
-## Docs
-Example https://sysadmins.co.za/setup-a-site-to-site-ipsec-vpn-with-strongswan-on-ubuntu/
+Store secret to vault, read secret preshared, role vault-get-users-secrets-teleport or set secret how variable preshared
+```yaml
+
+vault:
+  secret:
+    - {kv: "kv-example", path: "strongswan/s2s-example", key_name: "preshared"}
+
+strongswan:
+  peers:
+    - { name: "example-peer",  ip_src: 1.2.3.4, ip_dst: 5.6.7.8, left_subnet: "10.10.0.0/16", right_subnet: "10.50.0.0/16" }
+
+```

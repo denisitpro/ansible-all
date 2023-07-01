@@ -16,5 +16,14 @@
 - name: Install correct DNS plugin - Cloudflare
   command: "snap install certbot-dns-cloudflare"
 
+- name: sleep for 5 seconds and continue with play
+  wait_for:
+    timeout: 5
+  delegate_to: localhost
+  become: no
+
+- name: Install correct DNS plugin - route53
+  command: "snap install certbot-dns-route53"
+
 
 

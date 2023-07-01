@@ -1,0 +1,54 @@
+---
+- name: "Create folder ssl"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{ ssl_path }}"
+
+- name: Block with notify
+  when: ssl_notify is defined
+  notify:
+    - "{{ ssl_notify }}"
+  block:
+    - name: Copy ssl cert
+      ansible.builtin.copy:
+        src: "{{ cert_ssl_path }}/{{ ssl_domain }}/fullchain.pem"
+        dest: "{{ ssl_cert_path }}"
+        mode: 0644
+        owner: "{{ ssl_user | default('root') }}"
+        group: "{{ ssl_group | default('root') }}"
+        remote_src: true
+
+    - name: Copy ssl key
+      ansible.builtin.copy:
+        src: "{{ cert_ssl_path }}/{{ ssl_domain }}/privkey.pem"
+        dest: "{{ ssl_privkey_path }}"
+        mode: 0400
+        owner: "{{ ssl_user | default('root') }}"
+        group: "{{ ssl_group | default('root') }}"
+        remote_src: true
+
+- name: Block without notify
+  when: ssl_notify is not defined
+  block:
+    - name: Copy ssl cert
+      ansible.builtin.copy:
+        src: "{{ cert_ssl_path }}/{{ ssl_domain }}/fullchain.pem"
+        dest: "{{ ssl_cert_path }}"
+        mode: 0644
+        owner: "{{ ssl_user | default('root') }}"
+        group: "{{ ssl_group | default('root') }}"
+        remote_src: true
+
+    - name: Copy ssl key
+      ansible.builtin.copy:
+        src: "{{ cert_ssl_path }}/{{ ssl_domain }}/privkey.pem"
+        dest: "{{ ssl_privkey_path }}"
+        mode: 0400
+        owner: "{{ ssl_user | default('root') }}"
+        group: "{{ ssl_group | default('root') }}"
+        remote_src: true
