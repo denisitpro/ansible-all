@@ -1,0 +1,5 @@
+---
+- name: Import copy ssl
+  ansible.builtin.import_tasks: 05-copy-ssl.yml
+  tags:
+    - cert

@@ -1,0 +1,10 @@
+---
+- name: "Create folder ssl"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{ ssl_path }}"

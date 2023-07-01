@@ -8,10 +8,12 @@
   when: ansible_distribution == 'Ubuntu'
   tags:
     - certbot
+    - certbot-snap
     - install
 
-- import_tasks: 02-cloudflare.yml
+- import_tasks: 02-dns-module.yml
   when: ansible_distribution == 'Ubuntu'
   tags:
     - certbot
+    - certbot-config
     - config
