@@ -1,0 +1,13 @@
+---
+- import_tasks: 05-install.yml
+  when: "ansible_distribution == 'Ubuntu'"
+  tags:
+    - ipa-client
+
+- import_tasks: 10-join.yml
+  tags:
+    - ipa-client
+    - ipa-join
+
+- import_tasks: 90-uninstall.yml
+  tags: ['never', 'ipa-uninstall', 'ipa-clean']

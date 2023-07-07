@@ -1,0 +1,28 @@
+---
+- name: Check if already joined to FreeIPA
+  stat:
+    path: /etc/sssd/sssd.conf
+  register: ipa_status
+
+- name: status exist /etc/sssd/sssd.conf
+  debug: msg="file status {{ ipa_status }}"
+
+#- name: debug password
+#  debug: msg="login  {{ freeipa_join_user }} , password - {{freeipa_join_password}}"
+#  tags: ipa-debug
+
+- name: Join ipa client to domain
+  ansible.builtin.shell:
+    cmd: |
+      ipa-client-install \
+      {% if ipa_force_join is defined %}
+      --force-join \
+      {% endif %}
+      --mkhomedir \
+      --no-dns-sshfp \
+      --no-sshd \
+      --no-ntp \
+      --principal={{freeipa_join_user}} \
+      --password={{freeipa_join_password}} \
+      --unattended
+  when: not ipa_status.stat.exists

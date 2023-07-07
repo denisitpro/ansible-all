@@ -1,0 +1,3 @@
+---
+freeipa_join_user: admin
+freeipa_join_password: "set_me"

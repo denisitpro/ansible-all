@@ -49,3 +49,19 @@ After the first launch and initialization, remove the `freeipa_admin_password` a
 
 ```
 
+# ipa server discovery
+For correct work need dns records, examples
+```commandline
+
+; ipa settings
+; IPA server addition urls - master
+_ldap._tcp              IN      SRV     0       100     389     ipa-01.example.com.
+_kerberos._udp          IN      SRV     0       100     88      ipa-01.example.com.
+_kerberos._tcp          IN      SRV     0       100     88      ipa-01.example.com.
+_kerberos-master._udp   IN      SRV     0       100     88      ipa-01.example.com.
+_kerberos-master._tcp   IN      SRV     0       100     88      ipa-01.example.com.
+_kpasswd._udp           IN      SRV     0       100     464     ipa-01.example.com.
+_kpasswd._tcp           IN      SRV     0       100     464     ipa-01.example.com.
+_ntp._udp               IN      SRV     0       100     123     ntp.ubuntu.com.
+_kerberos               IN      TXT                             "EXAMPLE.COM"
+```
