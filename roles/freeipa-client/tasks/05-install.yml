@@ -1,0 +1,13 @@
+---
+- name: install ipa client - ubuntu
+  apt:
+    name: freeipa-client
+    state: latest
+    update_cache: yes
+
+- name: remove ec2-instance-connect - ubuntu
+  apt:
+    name: ec2-instance-connect
+    state: absent
+    update_cache: yes
+  when: "dc_code == 'euc1'"

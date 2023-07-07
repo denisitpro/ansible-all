@@ -1,0 +1,6 @@
+---
+- name: remove ipa register
+  ansible.builtin.command: >
+    /usr/sbin/ipa-client-install
+    --uninstall
+    -U
