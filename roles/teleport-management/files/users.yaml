@@ -5,7 +5,7 @@ metadata:
 spec:
   roles: ['local-access-50']
   traits:
-    logins: ['alarkin', 'root']
+    logins: ['ubuntu', 'root']
 ---
 kind: user
 version: v2
@@ -14,4 +14,4 @@ metadata:
 spec:
   roles: ['local-access-50']
   traits:
-    logins: ['agoncharevich', 'root']
+    logins: ['ubuntu', 'root']
