@@ -1,0 +1,20 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - teleport
+
+- import_tasks: 08-cert.yml
+  when: teleport_selfsign_enabled is defined
+  tags:
+    - teleport
+    - teleport-ssl
+
+- import_tasks: 10-configure.yml
+  tags:
+    - teleport
+    - teleport-config
+
+- import_tasks: 15-launch.yml
+  tags:
+    - teleport
+    - teleport-config

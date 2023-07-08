@@ -1,0 +1,24 @@
+---
+- name: enable write resolv.conf
+  shell: /usr/bin/chattr -f -i /etc/resolv.conf
+  ignore_errors: yes
+
+- name: Remove file /etc/resolv.conf
+  file:
+    path: /etc/resolv.conf
+    state: absent
+
+- name: copy resolv conf
+  template:
+      src: etc_resolv.conf.j2
+      dest: /etc/resolv.conf
+
+- name: disable write resolv.conf
+  shell: /usr/bin/chattr -f  +i /etc/resolv.conf
+
+- name: disable systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: stopped
+    enabled: no
+  when: force_dns_ext is defined

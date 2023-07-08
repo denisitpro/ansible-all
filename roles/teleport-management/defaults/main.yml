@@ -1,0 +1,5 @@
+---
+github_client_id: set_me
+github_client_secret_id: set_me
+teleport_server: teleport.example.com
+teleport_github_org: example-org1

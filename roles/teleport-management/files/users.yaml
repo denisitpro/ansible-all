@@ -1,0 +1,17 @@
+kind: user
+version: v2
+metadata:
+  name: user1
+spec:
+  roles: ['local-access-50']
+  traits:
+    logins: ['alarkin', 'root']
+---
+kind: user
+version: v2
+metadata:
+  name: user2
+spec:
+  roles: ['local-access-50']
+  traits:
+    logins: ['agoncharevich', 'root']

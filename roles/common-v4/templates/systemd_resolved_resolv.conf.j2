@@ -1,0 +1,6 @@
+[Resolve]
+DNS={{dns1}} {{dns2}}
+Domains={% for dom in  domains %}{% if ansible_distribution == 'CentOS' %}~{% endif %}{{dom}} {% endfor %}
+
+Cache=no-negative
+LLMNR=false

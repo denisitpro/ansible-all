@@ -1,0 +1,53 @@
+## {{ ansible_managed }} ##
+version: v3
+teleport:
+  nodename: {{teleport_node_name}}
+  data_dir: /var/lib/teleport
+  join_params:
+    token_name: "{{ vault_dict_users_secret.teleport_join_token | default('need_join_token') }}"
+    method: token
+  proxy_server: {{teleport_proxy_host}}
+  log:
+    output: stderr
+    severity: INFO
+    format:
+      output: text
+#  ca_pin: {{teleport_ca_pin | default('set_me')}}
+  diag_addr: ""
+auth_service:
+  enabled: "no"
+ssh_service:
+  enabled: "yes"
+  labels:
+    dc: {{dc_code| default('not_set')}}
+    cluster: {{teleport_cluster_name | default('cls1')}}
+    company: {{company_code| default('not_set')}}
+    ssh_acl_level: {{teleport_ssh_acl_level | default('none')}}
+#    teleport.internal/resource-id: "resource-id" # todo debug
+  commands:
+  - name: hostname
+    command: [hostname]
+    period: 1m0s
+proxy_service:
+  enabled: "no"
+  https_keypairs: []
+  https_keypairs_reload_interval: 0s
+  acme: {}
+{% if teleport is defined %}
+app_service:
+    enabled: yes
+    debug_app: false
+{% for app in teleport.app %}
+    apps:
+    - name: "{{app.name}}"
+      uri: "{{app.uri}}"
+      public_addr: "{{app.public_addr}}"
+      insecure_skip_verify: {{app.insecure_skip_verify |default('false')}}
+      labels:
+        dc: "{{app.dc_code | default (dc_code) }}"
+        cluster: "{{teleport_cluster_name | default('cls1')}}"
+        company: "{{app.company_code| default(company_code)}}"
+        env: "{{app.stand_type | default (stand_type)}}"
+        app_acl_level: {{app.app_acl_level | default('none')}}
+{% endfor %}
+{% endif %}

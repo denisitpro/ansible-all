@@ -1,0 +1,25 @@
+- name: install base software - ubuntu
+  apt:
+    name:
+      - nano
+      - net-tools
+      - lsof
+      - wget
+      - telnet
+      - netcat
+      - mlocate
+      - git
+      - vim
+      - htop
+      - iotop
+      - tcpdump
+      - lvm2
+      - dnsutils
+      - unzip
+      - nfs-common
+      - jq
+      - cracklib-runtime
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_distribution == 'Ubuntu'

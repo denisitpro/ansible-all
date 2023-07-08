@@ -1,0 +1,10 @@
+---
+- name: disable rpcbind - pormaper
+  systemd:
+    name: "{{item}}"
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  with_items:
+    - rpcbind
+    - rpcbind.socket

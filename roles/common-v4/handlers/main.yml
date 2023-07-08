@@ -1,0 +1,5 @@
+---
+- import_tasks: shared/handlers/systemd-resolved.yml
+- import_tasks: shared/handlers/rsyslog.yml
+- import_tasks: shared/handlers/sshd.yml
+- import_tasks: shared/handlers/systemd-timesyncd.yml
