@@ -1,0 +1,25 @@
+---
+domains:
+  - 'example.com'
+
+# todo remove
+#second_interface_name_netplan: enp7s0
+
+aws_fqdn_domain: example.com
+
+company_name: companyname
+dns1: 1.1.1.1
+dns2: 8.8.8.8
+dc_code: dc_example
+searchdomain: example.com
+
+default_timezone: UTC
+
+ntp_servers:
+  - ntp.hetzner.com
+  - time.google.com
+
+# list of fallback NTP-servers
+ntp_fallback_servers:
+  - de.pool.ntp.org
+  - ntp.ubuntu.com

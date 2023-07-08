@@ -1,0 +1,18 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - teleport
+    - teleport-debug
+
+- import_tasks: 10-install.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - teleport
+    - teleport-update
+    - teleport-install
+
+- import_tasks: 15-config.yml
+  tags:
+    - teleport
+    - teleport-update
+    - teleport-config

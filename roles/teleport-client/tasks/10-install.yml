@@ -1,0 +1,17 @@
+---
+- name: Teleport add gpg key
+  ansible.builtin.apt_key:
+    url: https://apt.releases.teleport.dev/gpg
+    keyring: /etc/apt/trusted.gpg.d/teleport.gpg
+
+- name: Teleport add repo
+  ansible.builtin.apt_repository:
+    repo: deb https://apt.releases.teleport.dev/ubuntu {{ansible_distribution_release}} {{teleport_version}}
+    state: present
+
+
+- name: Teleport install
+  ansible.builtin.apt:
+    name: teleport
+    state: present
+    update_cache: true

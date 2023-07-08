@@ -1,0 +1,13 @@
+---
+- name: copy file log-format.conf
+  copy:
+    src: log-format.conf
+    dest: /etc/rsyslog.d/30-log-format.conf
+    force: True
+
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
+

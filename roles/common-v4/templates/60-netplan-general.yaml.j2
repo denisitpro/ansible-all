@@ -1,0 +1,26 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{second_interface_name}}:
+      dhcp4: yes
+{% if '10.125' in ansible_facts[second_interface_name].ipv4.address%}
+      routes:
+       - to: 10.100.0.0/16
+         via: 10.1.0.1
+
+{% endif %}
+
+# todo for site2site tunnel
+{% if '10.10000' in ansible_facts[second_interface_name].ipv4.address%}
+### Start stands section
+{% if strongswan_server is not defined%}
+      routes:
+       - to: 10.120.0.0/16
+         via: 10.190.0.1
+       - to: 10.125.0.0/16
+         via: 10.190.0.1
+       - to: 10.155.0.0/16
+         via: 10.190.0.1
+{% endif %}
+{% endif %}

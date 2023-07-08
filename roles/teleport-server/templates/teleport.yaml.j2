@@ -1,0 +1,46 @@
+version: v3
+teleport:
+  nodename: {{teleport_node_name}}
+  data_dir: /var/lib/teleport
+  log:
+    output: stderr
+    severity: INFO
+    format:
+      output: json
+  ca_pin: ""
+  diag_addr: ""
+auth_service:
+{% if teleport_github_sso is  defined %}
+  authentication:
+    type: github
+{% endif %}
+  enabled: "yes"
+  listen_addr: 0.0.0.0:3025
+  cluster_name: {{teleport_cluster_name}}
+  proxy_listener_mode: multiplex
+ssh_service:
+  enabled: "no"
+#  commands:
+#  - name: hostname
+#    command: [hostname]
+#    period: 1m0s
+proxy_service:
+  enabled: "yes"
+  web_listen_addr: 0.0.0.0:443
+  public_addr: {{teleport_public_addr}}
+{% if teleport_acme_enabled is not defined %}
+{% if teleport_selfsign_enabled is not defined %}
+  https_keypairs:
+  - key_file: /var/lib/teleport/privkey.pem
+    cert_file: /var/lib/teleport/fullchain.pem
+  https_keypairs_reload_interval: 1h
+{% endif %}
+  acme: {}
+{% endif %}
+{% if teleport_acme_enabled is defined %}
+  https_keypairs: []
+  https_keypairs_reload_interval: 1h
+  acme:
+    enabled: "yes"
+    email: {{teleprot_acme_email}}
+{% endif %}

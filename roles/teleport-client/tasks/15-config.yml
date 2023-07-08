@@ -1,0 +1,20 @@
+---
+- name: teleport config
+  ansible.builtin.template:
+    src: teleport-v2.yaml.j2
+    dest: /etc/teleport.yaml
+    owner: root
+    group: root
+    mode: 0644
+#  notify: restart-unit teleport
+  notify: reload-unit teleport
+  tags:
+    - teleport-config
+
+- name: force enable teleport
+  ansible.builtin.systemd:
+    name: teleport
+    state: started
+    enabled: true
+  tags:
+    - teleport-unit

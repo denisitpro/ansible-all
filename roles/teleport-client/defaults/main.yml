@@ -1,0 +1,7 @@
+---
+teleport_version: stable/v13
+teleport_proxy_host: teleport.example.com:443
+teleport_node_name: "{{inventory_hostname_short}}"
+
+teleport_ssh_acl_level: 900
+teleport_app_acl_level: 900

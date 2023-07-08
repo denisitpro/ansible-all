@@ -1,0 +1,82 @@
+---
+# todo remove - legacy
+#- name: remove /etc/localtime
+#  file:
+#    path: /etc/localtime
+#    state: absent
+#
+#- name: create symlink
+#  file:
+#    src: /usr/share/zoneinfo/UTC
+#    dest: /etc/localtime
+#    owner: root
+#    group: root
+#    state: link
+#  notify: restart systemd-timesyncd
+#
+- name: copy adjtime
+  copy:
+    src: adjtime
+    dest: /etc/adjtime
+    force: True
+  notify: restart systemd-timesyncd
+
+- name: Set timezone
+  notify:
+    - restart systemd-timesyncd
+  community.general.timezone:
+    name: "{{ default_timezone }}"
+
+- name: Remove chrony and ntpd
+  register: remove_ntp_daemons
+  ansible.builtin.apt:
+    name:
+      - chrony
+      - ntp
+      - ntpdate
+    state: absent
+    autoremove: true
+    purge: true
+
+- name: install systemd-timesyncd
+  apt:
+    name:
+      - systemd-timesyncd
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Configure timesyncd
+  notify:
+    - restart systemd-timesyncd
+  ansible.builtin.template:
+    dest: /etc/systemd/timesyncd.conf
+    src: "timesyncd.conf.j2"
+    mode: 0644
+
+- name: copy adjtime
+  copy:
+    src: adjtime
+    dest: /etc/adjtime
+    force: True
+  notify: restart systemd-timesyncd
+
+
+- name: Disable other ntp daemons
+  when: remove_ntp_daemons.changed
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  ignore_errors: true
+  loop:
+    - chrony.service
+    - ntp.service
+
+#- name: Start systemd-timesyncd
+#  ansible.builtin.systemd:
+#    name: systemd-timesyncd
+#    enabled: true
+#    state: started
+#    masked: false

@@ -1,0 +1,13 @@
+---
+- name: Update all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+  when: ansible_distribution == 'Ubuntu'
+
+#- name: update-dist all packages to the latest version - Ubuntu
+#  apt:
+#    upgrade: dist
+#    update_cache: yes
+#    cache_valid_time: 3600
+#  when: ansible_distribution == 'Ubuntu'

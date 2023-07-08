@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  teleport:
+    image: {{teleport_registry}}:{{teleport_version}}
+    container_name: teleport
+    hostname: teleport-{{stand_type}}
+    network_mode: host
+    volumes:
+      - {{teleport_data_path}}/data:/var/lib/teleport
+      - {{teleport_data_path}}/conf/teleport.yaml:/etc/teleport/teleport.yaml
+{% if teleport_backup is defined %}
+      - {{teleport_data_path}}/backup:/opt/teleport/backups
+{% endif %}
+{% if teleport_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

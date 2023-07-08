@@ -1,0 +1,12 @@
+---
+- import_tasks: 05-create.yml
+  delegate_to: localhost
+  run_once: true
+  become: no
+  tags: ['teleport-create' ]
+
+- import_tasks: 10-reset.yaml
+  delegate_to: localhost
+  run_once: true
+  become: no
+  tags: [ 'never', 'reset-password' ]

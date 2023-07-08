@@ -1,0 +1,7 @@
+---
+- name: reset teleport password
+  ansible.builtin.shell: "tctl users reset {{reset_user}}"
+  register: reset_pwd
+
+
+- debug: msg="Link{{reset_pwd.stdout}}"
