@@ -1,5 +1,4 @@
 ---
-
 - name: Assert consul servers
   ansible.builtin.assert:
     that:

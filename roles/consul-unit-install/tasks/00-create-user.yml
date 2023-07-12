@@ -1,0 +1,17 @@
+---
+- name: Create private group
+  group:
+    name: "{{consul_run_user}}"
+    system: yes
+    state: present
+  when: consul_run_user != "root"
+
+- name: Create  user
+  user:
+    name: "{{consul_run_user}}"
+    group: "{{ consul_run_user }}"
+    shell: "/bin/nologin"
+    system: yes
+    comment: "{{consul_run_user}} non-privileged user"
+    state: present
+  when: consul_run_user != "root"

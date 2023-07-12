@@ -2,7 +2,7 @@
 - name: Create ACL policy
   run_once: true
   ansible.builtin.shell:
-    cmd: "consul acl policy create -name {{item.name}} -rules @{{consul_policy_path}}/{{item.name}}.hcl -token={{ vault_dict_users_secret.consul_bootstrap_token }}"
+    cmd: "consul acl policy create -name {{item.name}} -rules @{{consul_policy_path}}/{{item.name}}.hcl -token={{ vault_dict_users_secret.consul_bootstrap_token }} -http-addr={{consul_http_addr}}"
   register: consul_acl_policy_create
   changed_when: consul_acl_policy_create.rc == 0
   failed_when: consul_acl_policy_create.rc != 0 and 'already exists' not in consul_acl_policy_create.stderr
@@ -41,7 +41,9 @@
 
 - name: create token to vault
   delegate_to: localhost
+  run_once: true
   become: no
+  connection: local
   ansible.builtin.shell:
     cmd:  "vault kv put {{vault_token_store_path}}/consul_{{item.name | replace('-','_') | lower}}_token/ value='{{ (consul_create_token.stdout | from_json).SecretID }}'"
   when: consul_acl_policy_create.stderr == ''

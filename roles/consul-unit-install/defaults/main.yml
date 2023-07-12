@@ -1,0 +1,32 @@
+appname: consul
+consul_run_user: consul
+consul_binary_name: consul
+consul_always_update_binary: true
+
+binary_dir: /usr/local/bin
+consul_version: 1.15.4
+consul_download_url: https://releases.hashicorp.com/consul/{{consul_version}}/consul_{{consul_version}}_linux_amd64.zip
+consul_download_dir: /tmp
+
+consul_data_path: /opt/consul
+consul_config_dir: /etc/consul.d
+consul_tmpl_dir: "{{consul_data_path}}/tmpl"
+
+consul_cls_pub_name: "consul.example.com"
+consul_cls_group: consul_cls_group
+consul_cls_master: "{{consul_cls_servers}}"
+
+consul_config_file: consul.hcl
+consul_bootstrap_expect: 3
+consul_ui: "false"
+consul_retry_join: consul.example.com
+consul_dc_name: debug
+consul_mode: agent
+
+consul_bind_addr: "{{global_bind_addr}}"
+
+zabbix:
+  apply_tag:
+    - linux
+
+consul_encrypt_key: "{{ vault_dict_users_secret.consul_encrypt_key | default('set_me') }}"

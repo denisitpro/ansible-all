@@ -1,0 +1,23 @@
+---
+- name: clean consul config dir - {{consul_config_dir}}
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "{{consul_config_dir}}"
+  tags:
+    - consul-dir
+
+
+- name: create path
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: "{{consul_run_user}}"
+    group: "{{consul_run_user}}"
+  with_items:
+    - "{{ consul_data_path }}"
+    - "{{consul_config_dir}}"
+    - "{{consul_tmpl_dir}}"
+  tags:
+    - consul-dir

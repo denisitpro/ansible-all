@@ -1,6 +1,6 @@
 ---
 - import_tasks: 04-consul-delete.yml
-  tags: [ 'never', 'clean']
+  tags: [ 'never', 'consul-clean']
 
 - import_tasks: 05-path.yml
   tags:
