@@ -5,7 +5,7 @@ acl = {
   enable_token_persistence = true
 {% if consul_token_provision is not defined %}
   tokens {
-    agent  = "{{ vault_dict_users_secret.consul_agent_token | default('set_me')}}"
+    agent  = "{{ vault_dict_users_secret.consul_agent_token | default('set_me') }}"
   }
 {% endif %}
 }

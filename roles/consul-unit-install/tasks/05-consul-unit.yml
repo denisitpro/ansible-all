@@ -1,0 +1,15 @@
+---
+- name: copy systemd unit file
+  template:
+    src:  consul.service.j2
+    dest: /etc/systemd/system/consul.service
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart consul
+
+- name: ensure consul service is enabled
+  systemd:
+    daemon_reload: true
+    name: consul
+    enabled: true

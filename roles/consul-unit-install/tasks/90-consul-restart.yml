@@ -1,0 +1,28 @@
+---
+- name: consul-restart
+  ansible.builtin.systemd:
+    state: restarted
+    name: consul
+  tags:
+    - consul-restart
+
+- name: consul-stop
+  ansible.builtin.systemd:
+    state: stopped
+    name: consul
+  tags:
+    - consul-stop
+
+- name: consul-start
+  ansible.builtin.systemd:
+    state: started
+    name: consul
+  tags:
+    - consul-start
+
+- name: consul remove data dir
+  ansible.builtin.file:
+    path: "{{consul_data_path}}"
+    state: absent
+  tags:
+    - consul-remove
