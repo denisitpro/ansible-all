@@ -1,0 +1,49 @@
+---
+- name: Zabbix add gpg key
+  ansible.builtin.apt_key:
+    url: https://repo.zabbix.com/zabbix-official-repo.key
+    keyring: /etc/apt/trusted.gpg.d/zabbix-official-repo.gpg
+
+- name: Prepare delete old zabbix repo files
+  ansible.builtin.find:
+    paths: "/etc/apt/sources.list.d"
+    patterns: "^repo_zabbix_com_zabbix_[0-9]+_[0-9]+_ubuntu.list"
+    use_regex: true
+  register: wildcards_zabbix_repo_files_delete
+
+- name: Delete old zabbix repo files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ wildcards_zabbix_repo_files_delete.files }}"
+
+- name: Get zabbix repo - ubuntu {{ ansible_distribution_release }}
+  ansible.builtin.apt_repository:
+    repo: "deb https://repo.zabbix.com/zabbix/{{ zbx_agent_version }}/ubuntu/ {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: true
+    filename: zabbix-agent2
+
+- name: Get zabbix agent2 plugins repo
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: true
+    filename: "zabbix-agent2-plugins"
+  loop:
+    - "deb [arch=amd64] https://repo.zabbix.com/zabbix-agent2-plugins/1/ubuntu {{ ansible_distribution_release }} main"
+    - "deb-src [arch=amd64] https://repo.zabbix.com/zabbix-agent2-plugins/1/ubuntu {{ ansible_distribution_release }} main"
+
+- name: Install zabbix-agent2 - ubutnu
+  ansible.builtin.apt:
+    name:
+      - zabbix-agent2
+    state: latest
+    update_cache: true
+    cache_valid_time: 3600
+  notify: restart zabbix-agent2
+
+- name: Enable autostart zabbix-agent2
+  ansible.builtin.systemd:
+    name: zabbix-agent2
+    enabled: true

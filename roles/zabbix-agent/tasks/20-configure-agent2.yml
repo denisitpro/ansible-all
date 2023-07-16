@@ -1,28 +1,24 @@
 ---
-- name: copy zabbix_agent2.conf
+- name: copy zabbix_agent2.conf - base
   template:
       src: zabbix_agent2.conf.j2
       dest: /etc/zabbix/zabbix_agent2.conf
   notify: restart zabbix-agent2
+  when: zabbix.owner is not defined
   tags:
     - zabbix-conf
-    - zabbix_conf
-    - conf-update
     - zabbix
 
-#- name: copy *_userparams.conf.j2 - template
-#  template:
-#      src: "{{item}}.j2"
-#      dest: "/etc/zabbix/zabbix_agent2.d/{{item}}"
-##      dest: "{{zbx_agent_path}}/{{item}}"
-#      mode: 0640
-#      owner: zabbix
-#      group: zabbix
-#  when: zabbix.templates is defined
-#  with_items: "{{ zabbix.templates }}"
-#  notify: restart zabbix-agent2
-#  tags:
-#    - zabbix-conf
+- name: copy zabbix_agent2.conf - owner defined
+  template:
+      src: zabbix_agent2_htz.conf.j2
+      dest: /etc/zabbix/zabbix_agent2.conf
+  notify: restart zabbix-agent2
+  when: zabbix.owner is  defined
+  tags:
+    - zabbix-conf
+    - zabbix
+
 
 - name: copy ansible autogenerate userparams.conf
   template:
@@ -69,3 +65,11 @@
   notify: restart zabbix-agent2
   tags:
     - zabbix-conf
+
+- name: "restart zabbix-agent2"
+  ansible.builtin.systemd:
+    name: "zabbix-agent2"
+    state: restarted
+  tags:
+    - never
+    - zabbix-agent-restart

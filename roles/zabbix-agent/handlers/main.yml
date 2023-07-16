@@ -1,2 +1,2 @@
 ---
-- include: shared/handlers/zabbix.yml
+- import_tasks: shared/handlers/zabbix.yml

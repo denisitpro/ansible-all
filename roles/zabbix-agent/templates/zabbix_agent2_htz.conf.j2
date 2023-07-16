@@ -20,7 +20,7 @@ Hostname={{hostname_item}}
 HostnameItem=system.hostname
 {% endif %}
 
-HostMetadata={% for zbx in  zabbix.apply_tag %}{{zbx}} {% endfor %}{% if zabbix.aws is defined %}owner-{{ aws_server_owner.stdout }}{% endif %}
+HostMetadata={% for zbx in  zabbix.apply_tag %}{{zbx}}{% endfor %}{% if zabbix.owner is defined %}{% for owner in  zabbix.owner %}owner-{{owner}} {% endfor %} {% endif %}
 
 Timeout=30
 Include=/etc/zabbix/zabbix_agent2.d/*.conf

@@ -1,0 +1,31 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: create folder zbx
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    owner: 1997
+    group: 1997
+    mode: '0755'
+  with_items:
+    - "{{zbx_data_path}}"
+    - "{{zbx_data_path}}/data"
+    - "{{zbx_data_path}}/data/export"
+    - "{{zbx_data_path}}/conf"
+    - "{{zbx_data_path}}/logs"
+    - "{{zbx_data_path}}/zabbix_agentd.d"
+#    - "{{zbx_data_path}}/backup"
+
+#- import_tasks: shared/tasks/create-backup-directory.yml
+#- name: copy scripts for encrypt backup
+#  template:
+#    src: encrypt-backup.sh.j2
+#    dest: "{{scripts_path}}/encrypt-backup.sh"
+#    owner: root
+#    group: root
+#    mode: 0644
+#  tags:
+#    - backup-script
+#  when: backup_encrypted is defined
