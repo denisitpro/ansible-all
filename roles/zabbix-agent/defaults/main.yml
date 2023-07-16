@@ -1,9 +1,17 @@
 ---
 zbx_agent_path: "/etc/zabbix/zabbix_agentd.d"
-zbx_ch_user: "zbx_{{server_name_short}}"
-ch_host_type: "master"
 zbx_log_size: 30
+zbx_agent_version: 6.4
 
-websocat_package_url: https://github.com/vi/websocat/releases/download/v1.6.0/websocat_1.6.0_ssl1.1_amd64.deb
+zabbix_scripts_path: "/opt/zabbix"
 
-zabbix_agent_version: 5.4
+zbx_agent_bind_addr: "{{ ansible_default_ipv4.address }}"
+
+# Zabbix
+zserver: zabbix.example.com
+zserveractive: zabbix.example.com
+
+# todo for future
+#zbx_ch_user: "zbx_{{server_name_short}}"
+#ch_host_type: "master"
+#websocat_package_url: https://github.com/vi/websocat/releases/download/v1.6.0/websocat_1.6.0_ssl1.1_amd64.deb

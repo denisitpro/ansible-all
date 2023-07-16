@@ -1,17 +1,27 @@
 ---
-- include: 06-install-agent2-ubuntu.yml
-  when: "ansible_distribution == 'Ubuntu'"
+- import_tasks: 05-install-agent2-ubuntu.yml
   tags:
+    - zabbix
     - zabbix-agent2
 
+# todo for future
+#- import_tasks: 08-install-requirements-ubuntu.yml
+#  when: "extended_mon is defined"
+#  tags:
+#    - zabbix
+#    - zabbix-agent2
 
-- include: 08-install-requirements-ubuntu.yml
-  when: "ansible_distribution == 'Ubuntu' and extended_mon is defined"
+- import_tasks: 15-metadata-aws.yml
+  when: zabbix.aws is defined
   tags:
+    - zabbix
     - zabbix-agent2
+    - zabbix-aws
+    - zabbix-config
 
-- include: 21-configure-agent2.yml
-  when: " ansible_distribution == 'Ubuntu'"
+- import_tasks: 20-configure-agent2.yml
   tags:
+    - zabbix
     - zabbix-agent2
-    - zabbix-configure
+    - zabbix-conf
+    - zabbix-config

@@ -1,0 +1,160 @@
+version: '3.7'
+
+networks:
+  zbx:
+    driver: bridge
+    name: zbx
+    attachable: true
+
+services:
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:{{zbx_srv_version}}
+    container_name: zabbix-server
+    hostname: zabbix-server-{{stand_type |default('stand_not_set') }}
+{% if zbx_restart is defined %}
+    restart: always
+{% endif %}
+    ports:
+     - "{{zbx_srv_bind_addr}}:10051:10051"
+    volumes:
+     - {{zbx_data_path}}/conf/zabbix_server.conf:/etc/zabbix/zabbix_server.conf  # set config
+     - /etc/localtime:/etc/localtime:ro # set time
+     - {{zbx_data_path}}/data/alertscripts:/usr/lib/zabbix/alertscripts:ro
+     - {{zbx_data_path}}/data/externalscripts:/usr/lib/zabbix/externalscripts:ro
+     - {{zbx_data_path}}/data/dbscripts:/var/lib/zabbix/dbscripts:ro
+     - {{zbx_data_path}}/data/modules:/var/lib/zabbix/modules:ro
+     - {{zbx_data_path}}/data/enc:/var/lib/zabbix/enc:ro
+     - {{zbx_data_path}}/data/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+     - {{zbx_data_path}}/data/mibs:/var/lib/zabbix/mibs:ro
+### rw records
+     - {{zbx_data_path}}/data/export:/var/lib/zabbix/export:rw
+     - {{zbx_data_path}}/logs:/var/log/zabbix:rw
+#   - snmptraps:/var/lib/zabbix/snmptraps:rw
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    environment:
+      - POSTGRES_USER={{zbx_psql_user}}
+      - POSTGRES_PASSWORD={{zbx_psql_pass}}
+      - POSTGRES_DB={{zbx_psql_db}}
+      - DB_SERVER_HOST={{zbx_db_host}}
+    depends_on:
+      - postgres-server
+    networks:
+      - zbx
+    stop_grace_period: 30s
+    sysctls:
+     - net.ipv4.ip_local_port_range=1024 65000
+     - net.ipv4.conf.all.accept_redirects=0
+     - net.ipv4.conf.all.secure_redirects=0
+     - net.ipv4.conf.all.send_redirects=0
+    labels:
+     com.zabbix.description: "Zabbix server with PostgreSQL database support"
+     com.zabbix.company: "Zabbix LLC"
+     com.zabbix.component: "zabbix-server"
+     com.zabbix.dbtype: "pgsql"
+     com.zabbix.os: "ubuntu"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  zabbix-web-nginx-pgsql:
+    image: zabbix/zabbix-web-nginx-pgsql:{{zbx_nginx_web_version}}
+    container_name: zabbix-web-nginx-pgsql
+    hostname: zabbix-web-nginx-pgsql-{{stand_type |default('stand_not_set')}}
+{% if zbx_restart is defined %}
+    restart: always
+{% endif %}
+    ports:
+     - "{{zbx_web_bind_addr}}:80:8080"
+  #   - "{zbx_web_bind_addr}}:443:8443"
+    volumes:
+     - /etc/localtime:/etc/localtime:ro
+  #   - /opt/ssl:/etc/ssl/nginx:ro
+     - {{zbx_data_path}}/data/modules/:/usr/share/zabbix/modules/:ro
+    environment:
+      - POSTGRES_USER={{zbx_psql_user}}
+      - POSTGRES_PASSWORD={{zbx_psql_pass}}
+      - POSTGRES_DB={{zbx_psql_db}}
+      - DB_SERVER_HOST={{zbx_db_host}}
+      - ZBX_SERVER_HOST={{zbx_srv_host}}
+    depends_on:
+      - postgres-server
+      - zabbix-server
+    healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+     interval: 120s
+     timeout: 5s
+     retries: 3
+     start_period: 30s
+    networks:
+      - zbx
+    stop_grace_period: 10s
+    sysctls:
+     - net.core.somaxconn=65535
+    labels:
+     com.zabbix.description: "Zabbix frontend on Nginx web-server with PostgreSQL database support"
+     com.zabbix.company: "Zabbix LLC"
+     com.zabbix.component: "zabbix-frontend"
+     com.zabbix.webserver: "nginx"
+     com.zabbix.dbtype: "pgsql"
+     com.zabbix.os: "ubuntu"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  postgres-server:
+    image: postgres:{{zbx_psql_version}}
+    container_name: postgres-server
+    hostname: server-{{stand_type |default('stand_not_set')}}
+{% if zbx_restart is defined %}
+    restart: always
+{% endif %}
+    volumes:
+     - /etc/localtime:/etc/localtime:ro
+     - {{zbx_data_path}}/data/postgresql/data:/var/lib/postgresql/data:rw
+    environment:
+      - POSTGRES_USER={{zbx_psql_user}}
+      - POSTGRES_PASSWORD={{zbx_psql_pass}}
+      - POSTGRES_DB={{zbx_psql_db}}
+    networks:
+      - zbx
+    stop_grace_period: 1m
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent:{{zbx_agent_version}}
+    container_name: zabbix-agent
+    hostname: zabbix-agent-{{stand_type |default('stand_not_set')}}
+    ports:
+      - "{{zbx_agent_bind_addr}}:10050:10050"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - {{zbx_data_path}}/zabbix_agentd.d/zabbix_agent2.conf:/etc/zabbix/zabbix_agentd.conf:ro
+      - {{zbx_data_path}}/data/modules:/var/lib/zabbix/modules:ro
+      - {{zbx_data_path}}/data/enc:/var/lib/zabbix/enc:ro
+      - {{zbx_data_path}}/data/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+    privileged: true
+    pid: "host"
+    networks:
+      - zbx
+    stop_grace_period: 5s
+{% if zbx_restart is defined %}
+    restart: always
+{% endif %}
+    labels:
+      com.zabbix.description: "Zabbix agent"
+      com.zabbix.company: "Zabbix LLC"
+      com.zabbix.component: "zabbix-agentd"
+      com.zabbix.os: "ubuntu"
+

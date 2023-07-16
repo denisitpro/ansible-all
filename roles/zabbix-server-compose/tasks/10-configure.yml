@@ -1,0 +1,26 @@
+---
+- name: copy zbx config
+  template:
+    src: "zabbix_server.conf.j2"
+    dest: "{{zbx_data_path}}/conf/zabbix_server.conf"
+    owner: 1997
+    group: 1997
+    mode: 0600
+  notify: restart docker-compose zabbix
+
+- name: copy zbx agent
+  template:
+    src: "zabbix_agent2.conf.j2"
+    dest: "{{zbx_data_path}}/zabbix_agentd.d/zabbix_agent2.conf"
+    mode: 0644
+  notify: restart docker-compose zabbix-agent
+  tags:
+    - zabbix-agent2
+
+
+- name: copy compose-file - zbx
+  template:
+    src: "docker-compose.zbx_v6.4.yml.j2"
+    dest: "{{docker_compose_path}}/zbx/docker-compose.yml"
+    mode: 0600
+  notify: restart docker-compose zabbix
