@@ -1,0 +1,27 @@
+version: "3.7"
+
+networks:
+  certbot:
+    driver: bridge
+    name: certbot
+    attachable: true
+
+services:
+  certbot:
+    image: {{certbot_image}}:{{certbot_version}}
+    container_name: certbot
+    networks:
+       - certbot
+    volumes:
+      - {{certbot_path}}/data:/etc/letsencrypt
+      - {{certbot_path}}/conf:/var/lib/letsencrypt
+    command: >
+      certonly
+      --agree-tos
+      --email {{certbot_email}}
+      --no-eff-email
+      --dns-cloudflare
+      --dns-cloudflare-credentials /var/lib/letsencrypt/cloudflare.ini
+      --dns-cloudflare-propagation-seconds 20
+      --server https://acme-v02.api.letsencrypt.org/directory -d {{certbot_domain}}
+
