@@ -1,0 +1,19 @@
+---
+- name: remove users
+  ansible.builtin.user:
+    name: "{{item.name}}"
+    state: absent
+    remove: yes
+  loop: "{{local_users}}"
+
+- name: Remove sudoers file
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/{{item.name}}"
+    state: absent
+  loop: "{{local_users}}"
+
+
+- name: Validate sudoers file
+  ansible.builtin.command: visudo -cf /etc/sudoers
+  ignore_errors: true
+  changed_when: false
