@@ -1,0 +1,6 @@
+---
+- import_tasks: 05-create-users.yml
+  tags: ['create-users']
+
+- import_tasks: 20-delete-users.yml
+  tags: ['never', 'delete-users']
