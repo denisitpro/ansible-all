@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  alertmanager:
+    image: prom/alertmanager:{{alertmanager_image}}
+    container_name: alertmanager
+    hostname: {{ansible_hostname}}.{{internal_domain}}
+    network_mode: host
+    volumes:
+      - {{ alertmanager_config_path }}:/etc/alertmanager
+      - {{ alertmanager_db_dir }}:{{ alertmanager_db_dir }}
+    restart: always
+    command: >
+{% for a in alertmanager_command_run %}
+       --{{ a }}
+{% endfor %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

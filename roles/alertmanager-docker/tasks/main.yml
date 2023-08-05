@@ -1,0 +1,19 @@
+---
+- import_tasks: 00-prefly.yml
+  tags:
+    - alertmanager
+
+- import_tasks: 02-configure.yml
+  tags:
+    - alertmanager
+    - reconfigure
+    - alertmanager-config
+
+- import_tasks: 10-compose.yml
+  tags:
+    - alertmanager
+    - alertmanager-compose
+
+
+- import_tasks: 10-compose.yml
+  tags: ['never', 'alertmanager-reload']

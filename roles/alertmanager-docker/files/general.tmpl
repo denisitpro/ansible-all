@@ -1,0 +1,60 @@
+{{ define "slack.general.text" }}
+{{ if or (and (eq (len .Alerts.Firing) 1) (eq (len .Alerts.Resolved) 0)) (and (eq (len .Alerts.Firing) 0) (eq (len .Alerts.Resolved) 1)) }}
+{{ range .Alerts.Firing }}{{ .Annotations.identifier }} {{ .Annotations.description }}{{ end }}{{ range .Alerts.Resolved }}{{ .Annotations.identifier }} {{ .Annotations.description }} {{ end }}
+{{ else }}
+{{ if gt (len .Alerts.Firing) 0 }}
+*Alerts Firing:*
+{{ range .Alerts.Firing }}- {{ .Annotations.identifier }} {{ .Annotations.description }}
+{{ end }}{{ end }}
+{{ if gt (len .Alerts.Resolved) 0 }}
+*Alerts Resolved:*
+{{ range .Alerts.Resolved }} - {{ .Annotations.identifier }} {{ .Annotations.description }}
+{{ end }}{{ end }}
+{{ end }}
+{{ end }}
+
+{{ define "__alert_severity_prefix_title" -}}
+    {{ if ne .Status "firing" -}}
+    :heavy_check_mark:
+    {{- else if eq .CommonLabels.severity "critical" -}}
+    :fire:
+    {{- else if eq .CommonLabels.severity "warning" -}}
+    :warning:
+    {{- else if eq .CommonLabels.severity "info" -}}
+    :information_source:
+    {{- else -}}
+    :question:
+    {{- end }}
+{{- end }}
+
+{{ define "slack.general.title" -}}
+    [{{ .CommonLabels.alertname -}}
+     {{ if eq .Status "firing" }} #{{ .Alerts.Firing | len }}{{- end -}}
+    ] [{{ .Status | toUpper -}}] {{ template "__alert_severity_prefix_title" . }}
+{{- end }}
+
+{{ define "slack.general.color" -}}
+    {{ if eq .Status "firing" -}}
+        {{ if eq .CommonLabels.severity "warning" -}}
+            warning
+        {{- else if eq .CommonLabels.severity "critical" -}}
+            danger
+        {{- else -}}
+            #439FE0
+        {{- end -}}
+    {{ else -}}
+    good
+    {{- end }}
+{{- end }}
+
+{{ define "slack.general.icon_emoji" }}:prometheus:{{ end }}
+
+{{ define "__alert_silence_link" -}}
+    {{ .ExternalURL }}/#/silences/new?filter=%7B
+    {{- range .CommonLabels.SortedPairs -}}
+        {{- if ne .Name "alertname" -}}
+            {{- .Name }}%3D"{{- .Value -}}"%2C%20
+        {{- end -}}
+    {{- end -}}
+    alertname%3D"{{ .CommonLabels.alertname }}"%7D
+{{- end }}
