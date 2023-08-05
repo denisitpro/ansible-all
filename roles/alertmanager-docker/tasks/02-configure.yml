@@ -1,0 +1,44 @@
+---
+- name: Set prometheus external metrics path
+  ansible.builtin.set_fact:
+    prometheus_metrics_path: "/{{ (prometheus_web_external_url + '/metrics') | regex_replace('^(.*://)?(.*?)/') }}"
+  tags:
+    - reconfigure
+    - prom-reconfigure
+    - update-prom-config
+
+
+- name: Copy alertmanager config
+  ansible.builtin.template:
+    force: true
+    src: "{{ alertmanager_config_file }}"
+    dest: "{{ alertmanager_config_path }}/alertmanager.yml"
+    owner: "{{ alertmanager_user_uid }}"
+    group: "{{ alertmanager_user_gid }}"
+    mode: '0644'
+  notify: reload docker alertmanager
+  tags:
+    - update-alertmanager-config
+
+- name: Copy alertmanager template files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ alertmanager_config_path }}/templates/"
+    force: true
+    owner: "{{ alertmanager_user_uid }}"
+    group: "{{ alertmanager_user_gid }}"
+    mode: '0644'
+  with_items:
+    - "{{ alertmanager_template_files }}"
+  notify: reload docker alertmanager
+  tags:
+    - update-alertmanager-template
+
+- name: Validate Alertmanager config
+  ansible.builtin.command:
+    cmd: "docker run --rm --entrypoint sh --name alertmanager.check -v {{ alertmanager_config_path }}:{{ alertmanager_config_dir }} prom/alertmanager:{{ alertmanager_image }} -c '/bin/amtool --alertmanager.url= check-config {{ alertmanager_config_dir }}/alertmanager.yml'"
+  register: amtool_alertmanager_output
+  changed_when: false
+  failed_when: amtool_alertmanager_output.rc != 0
+  tags:
+    - update-alertmanager-config
