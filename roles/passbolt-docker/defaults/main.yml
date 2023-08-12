@@ -1,0 +1,16 @@
+---
+appname: passbolt
+app_path: /opt/passbolt
+passbolt_user: passbolt
+passbolt_bind_addr: "{{global_bind_addr}}"
+passbolt_http_port: 80
+passbolt_https_port: 443
+passbolt_data_path: "/opt/passbolt"
+passbolt_version: 3.2.1-2-ce
+passbolt_image: passbolt/passbolt
+mariadb_node_data_path: "/opt/mariadb"
+mariadb_version: 10.3
+mariadb_backup_dir: /mnt/backup
+mariadb_port: 3306
+mariadb_image: mariadb
+mariadb_bind_addr: 127.0.0.1

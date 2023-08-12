@@ -1,0 +1,10 @@
+---
+- name: Log into DockerHub
+  community.docker.docker_login:
+    username: "{{c2_registry_pull}}"
+    password: "{{ vault_dict_users_secret.c2_nodes_pull_token }}"
+
+- name: run restart compose
+  shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{docker_compose_path}}"

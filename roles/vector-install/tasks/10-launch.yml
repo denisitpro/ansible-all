@@ -1,0 +1,6 @@
+---
+- name: run restart compose
+  shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ docker_compose_path }}"
+  become: true

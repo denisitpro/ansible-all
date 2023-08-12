@@ -1,0 +1,10 @@
+---
+appname: "vector"
+
+vector_image: "timberio/vector"
+vector_version: "0.23.3-alpine"
+vector_data_path: "/opt/vector"
+vector_bind_addr: "127.0.0.1"
+vector_port: "{{ fluentd_port }}"
+vector_default_index_name: "vector"
+vector_metrics_port: '9598'

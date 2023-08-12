@@ -1,0 +1,31 @@
+version: "3.7"
+
+networks:
+  vector:
+    driver: bridge
+    name: vector
+    attachable: true
+
+services:
+  vector:
+    image: {{ vector_image }}:{{ vector_version }}
+    container_name: vector
+    hostname: {{ appname }}-{{ stand_type }}
+    networks:
+      - vector
+    ports:
+      - {{ vector_bind_addr }}:{{ vector_port }}:{{ vector_port }} # vector port
+{% if vector_metrics is defined %}
+      - {{ vector_bind_addr }}:{{ vector_metrics_port }}:{{ vector_metrics_port }}
+{% endif %}
+    volumes:
+      - {{ vector_data_path }}:{{ vector_data_path }}
+    command: --config /opt/vector/vector.toml
+{% if vector_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: '100m'
+        max-file: '2'

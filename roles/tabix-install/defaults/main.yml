@@ -1,0 +1,3 @@
+---
+tabix_bind_addr: "{{global_bind_addr}}"
+tabix_image: tabix_20211126

@@ -1,0 +1,9 @@
+---
+- name: copy compose passbolt
+  template:
+    src: "docker-compose.{{passbolt_user}}.yml.j2"
+    dest: "{{docker_compose_path}}/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

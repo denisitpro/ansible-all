@@ -1,0 +1,14 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - tabix
+
+- import_tasks: 10-configure.yml
+  tags:
+    - tabix
+    - tabix-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - tabix
+    - tabix-compose
