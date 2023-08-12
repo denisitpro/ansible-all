@@ -1,0 +1,22 @@
+---
+- import_tasks: 01-create-path.yml
+  tags:
+    - vector
+
+- import_tasks: 02-copy-compose.yml
+  tags:
+    - vector
+    - vector-compose
+
+- import_tasks: 03-configure.yml
+  tags:
+    - vector
+    - vector-configure
+
+- import_tasks: 10-launch.yml
+  tags:
+    - vector
+    - vector-compose
+
+- import_tasks: 80-update-config.yml
+  tags: [ 'never', 'update-config' ]

@@ -1,0 +1,15 @@
+---
+- name: "copy config files"
+  ansible.builtin.template:
+    src:  "{{ item }}.j2"
+    dest: "{{ vector_data_path }}/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+        - "vector.toml"
+  tags:
+    - vector-config
+  notify:
+    - "restart-docker vector"
+  become: true

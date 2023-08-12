@@ -1,0 +1,20 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: create folder passbolt
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0777'
+  with_items:
+    - "{{mariadb_node_data_path}}"
+
+- name: create folder passbolt-data
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{passbolt_data_path}}"
+

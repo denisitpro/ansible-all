@@ -1,0 +1,7 @@
+---
+- name: "copy compose-file - vector"
+  ansible.builtin.template:
+    src: "docker-compose.vector.yml.j2"
+    dest: "{{ docker_compose_path }}/docker-compose.yml"
+    mode: 0600
+  become: true

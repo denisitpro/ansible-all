@@ -1,0 +1,15 @@
+service {
+  name = "vector-exporter",
+  port = {{ vector_metrics_port }},
+  tags = ["vector-exporter", "prometheus", "{{ stand_type }}"],
+{% if consul_agent_disabled is not defined %}
+  token = "{{ vault_dict_users_secret.consul_vector_exporter_token }}",
+{% endif %}
+  check = {
+    id = "vector-exporter"
+    name = "vector-exporter healthcheck"
+    tcp = "{{ global_bind_addr }}:{{ vector_metrics_port }}"
+    interval =  "30s"
+    timeout =  "2s"
+  }
+}

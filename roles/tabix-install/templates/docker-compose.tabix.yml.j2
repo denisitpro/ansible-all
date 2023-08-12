@@ -1,0 +1,26 @@
+version: '3.7'
+
+networks:
+  tabix:
+    driver: bridge
+    name: tabix
+    attachable: true
+
+services:
+  tabix:
+    image: example-registry/forks:{{tabix_image}}
+    container_name: tabix
+    hostname: tabix-{{stand_type}}
+    networks:
+      - tabix
+    ports:
+      - {{tabix_bind_addr}}:8090:80
+{% if tabix_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+

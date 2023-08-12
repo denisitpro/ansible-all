@@ -1,0 +1,10 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: create path
+  file:
+    path: "{{item}}"
+    state: directory
+  with_items:
+    - "{{docker_compose_path}}"

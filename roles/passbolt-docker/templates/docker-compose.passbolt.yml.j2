@@ -1,0 +1,45 @@
+version: "3.7"
+
+networks:
+  passbolt:
+    driver: bridge
+    name: passbolt
+    attachable: true
+
+services:
+  mariadb:
+    image: {{mariadb_image}}:{{mariadb_version}}
+    container_name: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=test
+      - MYSQL_DATABASE=passbolt
+      - MYSQL_USER=passbolt
+      - MYSQL_PASSWORD=P4ssb0lt
+    volumes:
+      - {{mariadb_node_data_path}}:/bitnami/mariadb
+    ports:
+      - {{mariadb_bind_addr}}:{{mariadb_port}}:{{mariadb_port}}
+
+  passbolt:
+    image: {{passbolt_image}}:{{passbolt_version}}
+    container_name: passbolt
+    tty: true
+    depends_on:
+      - mariadb
+    environment:
+      - DATASOURCES_DEFAULT_HOST=mariadb
+      - DATASOURCES_DEFAULT_USERNAME=passbolt
+      - DATASOURCES_DEFAULT_PASSWORD=P4ssb0lt
+      - DATASOURCES_DEFAULT_DATABASE=passbolt
+      - DATASOURCES_DEFAULT_PORT=3306
+      - DATASOURCES_QUOTE_IDENTIFIER=true
+      - PASSBOLT_REGISTRATION_PUBLIC=false
+    command: ["/usr/bin/wait-for.sh", "-t", "0", "mariadb:3306", "--", "/docker-entrypoint.sh"]
+    ports:
+      - {{passbolt_bind_addr}}:{{passbolt_http_port}}:{{passbolt_http_port}}
+      - {{passbolt_bind_addr}}:{{passbolt_https_port}}:{{passbolt_https_port}}
+    volumes:
+      - {{passbolt_data_path}}/:/opt/passbolt/
+
+
+

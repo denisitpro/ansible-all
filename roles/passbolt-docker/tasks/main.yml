@@ -1,0 +1,12 @@
+---
+- import_tasks: 00-create-path.yml
+  tags:
+    - passbolt
+- import_tasks: 01-copy-compose.yml
+  tags:
+    - passbolt
+    - passbolt-compose
+- import_tasks: 02-lauch.yml
+  tags:
+    - passbolt
+    - passbolt-compose
