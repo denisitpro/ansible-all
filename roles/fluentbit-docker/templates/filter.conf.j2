@@ -1,0 +1,16 @@
+{% if fluentbit.filter is defined %}
+{% for filter in fluentbit.filter %}
+[FILTER]
+    Name         {{filter.name | default ("parser") }}
+{% if filter.parser is defined %}
+    Parser       {{filter.parse | default ("docker") }}
+{% endif %}
+    Match        {{filter.match | default ("*") }}
+    Key_Name     {{filter.key_name | default ("log") }}
+    Preserve_Key {{filter.preserve_key | default ('False') }}
+    Reserve_Data {{filter.reserve_data | default ('False') }}
+{% if filter.parser is not defined %}
+    Record hostname ${HOSTNAME}
+{% endif %}
+{% endfor %}
+{% endif %}

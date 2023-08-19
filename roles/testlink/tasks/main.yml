@@ -1,0 +1,14 @@
+---
+- import_tasks: 00-create-path.yml
+  tags:
+    - testlink
+
+- import_tasks: 01-copy-compose.yml
+  tags:
+    - testlink
+    - testlink-reconfigure
+
+- import_tasks: 10-lauch.yml
+  tags:
+    - testlink
+    - testlink-reconfigure

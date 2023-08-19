@@ -1,0 +1,11 @@
+---
+- name: create path
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: "root"
+    group: "root"
+    recurse: yes
+  with_items:
+    - "{{ fluentbit_data_path }}"
+    - "{{ fluentbit_conf_path }}/conf.d"

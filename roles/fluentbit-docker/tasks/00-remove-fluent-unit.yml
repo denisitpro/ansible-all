@@ -1,0 +1,15 @@
+---
+- name: stop td-agent-bit
+  systemd:
+    name: td-agent-bit
+    enabled: false
+    state: stopped
+    daemon_reload: yes
+  failed_when: false
+  changed_when: true
+
+- name: remove td-agent-bit ubuntu
+  apt:
+    name: td-agent-bit
+    state: absent
+    purge: yes

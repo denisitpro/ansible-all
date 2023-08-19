@@ -1,0 +1,15 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+
+- name: create path
+  file:
+    path: "{{item}}"
+    state: directory
+    owner: "root"
+    group: "root"
+    recurse: yes
+  with_items:
+    - "{{ fluentbit_data_path }}"
+    - "{{ flientbit_docker_compose_path }}"

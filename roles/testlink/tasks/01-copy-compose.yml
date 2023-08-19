@@ -1,0 +1,9 @@
+---
+- name: Copy compose-file - testlink
+  ansible.builtin.template:
+    src: "docker-compose.testlink.yml.j2"
+    dest: "{{ testlink_docker_compose_path }}/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

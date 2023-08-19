@@ -1,0 +1,8 @@
+---
+- name: copy compose-file - fluentbit
+  template:
+    src: "docker-compose.fluentbit.yml.j2"
+    dest: "{{ flientbit_docker_compose_path }}/docker-compose.yml"
+    mode: 0600
+  notify:
+    - "restart fluentbit docker"
