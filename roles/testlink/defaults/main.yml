@@ -1,0 +1,25 @@
+---
+appname: testlink
+app_path: /opt/docker
+
+# testlink_bind_addr: "{{ global_bind_addr }}"
+testlink_db_port: 3306
+testlink_node_data_path: "/opt/testlink"
+mariadb_node_data_path: "/opt/mariadb"
+mariadb_version: "10.9.4"
+testlink_version: "1.9.20"
+testlink_http_port: 8080
+# testlink_https_port: 8443
+
+testlink_mariadb_user_uid: 1001
+
+testlink_mariadb_user_name: "{{ vault_dict_users_secret.testlink_db_user }}"
+testlink_mariadb_user_pass: "{{ vault_dict_users_secret.testlink_db_password }}"
+testlink_mariadb_root_pass: "{{ vault_dict_users_secret.mariadb_root_password }}"
+testlink_mariadb_db_name: "testlink"
+testlink_web_user_name: "{{ vault_dict_users_secret.testlink_web_user }}"
+testlink_web_user_pass: "{{ vault_dict_users_secret.testlink_web_password }}"
+
+mariadb_backup_dir: /mnt/backup
+
+testlink_docker_compose_path: "{{ docker_compose_path }}/testlink"

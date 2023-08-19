@@ -1,0 +1,66 @@
+---
+- name: copy config files
+  template:
+    src:  "{{item}}.j2"
+    dest: "{{fluentbit_conf_path}}/conf.d/{{item}}"
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart td-agent-bit
+  with_items:
+    - "service.conf"
+    - "input.conf"
+    - "filter.conf"
+    - "output.conf"
+  tags:
+    - conf_d
+
+- name: copy general config file
+  template:
+    src:  "general.conf.j2"
+    dest: "{{fluentbit_conf_path}}/td-agent-bit.conf"
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart td-agent-bit
+  tags:
+    - env
+
+#- name: copy parser config file
+#  template:
+#    src:  "parser.conf.j2"
+#    dest: "{{fluentbit_conf_path}}/parser.conf"
+#    mode: 0644
+#    owner: root
+#    group: root
+#  notify: restart td-agent-bit
+
+
+- name: copy unit service file
+  template:
+    src:  "td-agent-bit.service.j2"
+    dest: "{{fluentbit_unit_path}}/td-agent-bit.service"
+    mode: 0644
+    owner: root
+    group: root
+    force: no
+  notify: restart td-agent-bit
+  tags:
+    - unit
+
+- name: enable fluentbit
+  systemd:
+    name: td-agent-bit
+    enabled: true
+    daemon_reload: yes
+  notify: "restart td-agent-bit"
+  tags:
+    - unit
+
+- name: restart td-agent-bit
+  systemd:
+    name: td-agent-bit
+    state: restarted
+  tags:
+    - never
+    - restart-fluentbit

@@ -1,0 +1,75 @@
+version: "3.7"
+
+networks:
+  testlink:
+    driver: bridge
+    name: testlink
+    attachable: true
+
+services:
+  mariadb:
+    image: docker.io/bitnami/mariadb:{{ mariadb_version }}
+    container_name: mariadb
+    networks:
+      - testlink
+    environment:
+      - ALLOW_EMPTY_PASSWORD=no
+      - MARIADB_USER={{ testlink_mariadb_user_name }}
+      - MARIADB_PASSWORD={{testlink_mariadb_user_pass }}
+      - MARIADB_ROOT_PASSWORD={{ testlink_mariadb_root_pass }}
+      - MARIADB_DATABASE={{ testlink_mariadb_db_name }}
+    volumes:
+      - {{ mariadb_node_data_path }}:/bitnami/mariadb
+
+  testlink:
+    image: docker.io/bitnami/testlink:{{ testlink_version }}
+    container_name: testlink
+    networks:
+      - testlink
+    ports:
+      - {{ testlink_bind_addr | default('127.0.0.1') }}:{{ testlink_http_port }}:8080
+    environment:
+      - TESTLINK_DATABASE_HOST=mariadb
+      - TESTLINK_DATABASE_PORT_NUMBER={{ testlink_db_port }}
+      - TESTLINK_DATABASE_USER={{ testlink_mariadb_user_name }}
+      - TESTLINK_DATABASE_PASSWORD={{ testlink_mariadb_user_pass }}
+      - TESTLINK_DATABASE_NAME={{ testlink_mariadb_db_name }}
+      - ALLOW_EMPTY_PASSWORD=no
+      - TESTLINK_USERNAME={{ testlink_web_user_name }}
+      - TESTLINK_PASSWORD={{ testlink_web_user_pass }}
+{% if testlink_smtp_host is defined %}
+      - TESTLINK_SMTP_HOST={{ testlink_smtp_host }}
+{% endif %}
+{% if testlink_smtp_port is defined %}
+      - TESTLINK_SMTP_PORT={{ testlink_smtp_port }}
+{% endif %}
+{% if testlink_smtp_user is defined %}
+      - TESTLINK_SMTP_USER={{ testlink_smtp_user }}
+{% endif %}
+{% if testlink_smtp_password is defined %}
+      - TESTLINK_SMTP_PASSWORD={{ testlink_smtp_password }}
+{% endif %}
+{% if testlink_smtp_protocol is defined %}
+      - TESTLINK_SMTP_PROTOCOL={{ testlink_smtp_protocol }}
+{% endif %}
+    volumes:
+      - {{ testlink_node_data_path }}:/bitnami
+    depends_on:
+      - mariadb
+{% if testlink_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{ vector_srv }}:{{ vector_port }}
+        tag: testlink
+        fluentd-async: "{{ fluent_async }}"
+        fluentd-buffer-limit: "{{ fluendt_buffer_limit }}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}

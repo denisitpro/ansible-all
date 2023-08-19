@@ -1,0 +1,26 @@
+---
+- name: copy config files
+  template:
+    src:  "{{item}}.j2"
+    dest: "{{fluentbit_data_path}}/{{item}}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - "service.conf"
+    - "input.conf"
+    - "filter.conf"
+    - "output.conf"
+    - "parsers.conf"
+  notify:
+    - "restart fluentbit docker"
+
+- name: copy general config file
+  template:
+    src:  "general.conf.j2"
+    dest: "{{fluentbit_data_path}}/td-agent-bit.conf"
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - "restart fluentbit docker"

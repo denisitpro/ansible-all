@@ -1,0 +1,24 @@
+version: "3.7"
+
+networks:
+  fluentbit:
+    driver: bridge
+    name: fluentbit
+    attachable: true
+
+services:
+  fluentbit:
+    image: {{fluentbit_image}}:{{fluentbit_version}}
+    container_name: fluentbit
+    hostname: {{ansible_hostname}}
+    networks:
+      - fluentbit
+    ports:
+      - {{fluentbit_bind_addr}}:{{fluentbit_port}}:{{fluentbit_port}} # fluentbit port
+    volumes:
+      - {{fluentbit_data_path}}:{{fluentbit_data_path}}
+{% if fluentd_nginx is defined %}
+      - {{nginx_log_path}}:{{nginx_log_path}}
+{% endif %}
+    restart: always
+    command: /fluent-bit/bin/fluent-bit -c "{{fluentbit_data_path}}/td-agent-bit.conf"

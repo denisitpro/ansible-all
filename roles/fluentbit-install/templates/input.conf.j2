@@ -1,0 +1,70 @@
+{% if fluentbit.input is not defined %}
+[INPUT]
+    Name        tail
+    Tag         logfile
+    Path        /var/log/*.log
+    Path_Key    path
+    Refresh_Interval    5
+    DB          {{fluentbit_data_path}}/logfile.db
+    DB.Sync     Normal
+{% endif %}
+
+{% if fluentbit.input is defined %}
+{% for input in fluentbit.input %}
+
+{% if 'nginx' in input.name %}
+[INPUT]
+    Name        tail
+    Tag         {{input.tag | default("nginx") }}
+    Path        /var/log/nginx/*-access.log
+    Path_Key    path
+    Parser      docker
+    Refresh_Interval    5
+    DB          {{fluentbit_data_path}}/logfile.db
+    DB.Sync     Normal
+{% endif %}
+
+{% if 'forward' in input.name %}
+[INPUT]
+    Name   forward
+    Listen 127.0.0.1
+    Port   24224
+{% endif %}
+
+{% if 'docker' in input.name %}
+[INPUT]
+    Name        tail
+    Tag         {{input.tag | default("docker") }}
+    Path        /var/lib/docker/containers/*/*.log
+    Path_Key    path
+    Parser      docker
+    Docker_Mode On
+    Refresh_Interval    5
+    DB          {{fluentbit_data_path}}/docker.db
+    DB.Sync     Normal
+{% endif %}
+{% if 'journald' in input.name %}
+[INPUT]
+    Name        systemd
+    Tag         journal
+    DB          {{fluentbit_data_path}}/journal.db
+    # Debug only.
+    Read_From_Tail  On
+{% endif %}
+{% if 'custom_files_log' in input.name %}
+[INPUT]
+    Name        tail
+    Tag         logfile
+    Path        {{custom_files_log_path}}/*.log
+    Path_Key    path
+    Refresh_Interval    5
+    Skip_Long_Lines    On
+{% if fluentbit_not_sync_db is not defined %}
+    DB          {{fluentbit_data_path}}/custom_file_log.db
+    DB.Sync     Normal
+{% endif %}
+{% endif %}
+# end section for
+{% endfor %}
+### end section is defined
+{% endif %}

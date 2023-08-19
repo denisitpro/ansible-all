@@ -1,0 +1,33 @@
+---
+# defaults file for ansible-role-fluentbit
+
+fluentbit_service_flush_seconds: 5
+fluentbit_service_daemon: false
+fluentbit_service_custom_parsers_file: []
+fluentbit_service_log_level: info
+fluentbit_service_enable_metrics: false
+fluentbit_service_metrics_listen_ip: "{{global_bind_addr}}"
+fluentbit_service_metrics_listen_port: 2020
+
+
+fluentbit_image: fluent/fluent-bit
+fluentbit_version: 1.8.9
+fluentbit_bind_addr: 127.0.0.1
+fluentbit_port: 24224
+nginx_log_path: /var/log/nginx
+
+fluentbit:
+  input:
+    - {name: "nginx"}
+  filter:
+    - {name: parser, parser: docker, match: "*", key_name: "log"}
+  output:
+    - {name: es, match: "{{appname}}", host: "{{es_srv}}", port: "{{es_port}}", index: "{{appname}}-%Y-%m-%d"}
+
+
+fluentbit_additional_conf_files: []
+
+fluentbit_flush_interval: 5
+fluentbit_data_path: /opt/fluentbit
+
+flientbit_docker_compose_path: "{{ docker_compose_path }}/fluentbit" 

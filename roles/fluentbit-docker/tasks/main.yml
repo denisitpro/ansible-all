@@ -1,0 +1,21 @@
+---
+# tasks file for ansible-role-fluentbit
+- import_tasks: 00-remove-fluent-unit.yml
+  tags:
+    - fluentbit-unit-remove
+    - fluentbit
+- import_tasks: 01-create-path.yml
+  tags:
+    - fluentbit
+- import_tasks: 02-copy-compose.yml
+  tags:
+    - fluentbit
+    - fluentbit-compose
+- import_tasks: 05-configure.yml
+  tags:
+    - fluentbit
+    - fluentbit-config
+- import_tasks: 10-launch.yml
+  tags:
+    - fluentbit
+    - fluentbit-compose

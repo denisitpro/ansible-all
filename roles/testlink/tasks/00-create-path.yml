@@ -1,0 +1,43 @@
+---
+- name: Import create docker-compose path
+  ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: Import security limits
+  ansible.builtin.import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: Create directories testlink
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+  loop:
+    - { path: "{{ mariadb_node_data_path }}", owner: "{{ testlink_mariadb_user_uid }}", group: "{{ testlink_mariadb_user_uid }}" }
+    - { path: "{{ testlink_node_data_path }}", owner: "{{ testlink_mariadb_user_uid }}", group: "{{ testlink_mariadb_user_uid }}" }
+
+# - name: create folder testlink
+#   ansible.builtin.file:
+#     path: "{{ item }}"
+#     state: directory
+#     mode: '0755'
+#   with_items:
+#     - "{{ testlink_node_data_path }}"
+
+# - name: create backup_dir
+#   ansible.builtin.file:
+#     path: "{{ mariadb_backup_dir }}"
+#     owner: "{{ bkp_user }}"
+#     group: "{{ bkp_user }}"
+#     mode: '0755'
+#     state: directory
+#   tags:
+#     - backup-path
+
+- name: Create testlink docker-compose path
+  ansible.builtin.file:
+    path: "{{ testlink_docker_compose_path }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root

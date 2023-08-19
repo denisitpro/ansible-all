@@ -1,0 +1,23 @@
+---
+- import_tasks: "install-Debian.yml"
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - fluentbit
+
+- name: Install fluentbit package
+  package:
+    name: td-agent-bit
+    state: present
+    update_cache: true
+  notify: restart td-agent-bit
+  tags:
+    - fluentbit
+
+- import_tasks: 02-create-path.yml
+  tags:
+    - fluentbit
+
+- import_tasks: 03-configure.yml
+  tags:
+    - fluentbit
+    - fluentbit-config

@@ -1,0 +1,12 @@
+{% if fluentbit.output is defined %}
+{% for out in fluentbit.output %}
+[OUTPUT]
+    Name  {{out.name| default('es') }}
+    Match {{out.match| default('nginx') }}
+    Host  {{out.host| default(es_srv) }}
+    Port  {{out.port| default(es_port) }}
+    Index {{out.index| default('nginx-%Y-%m-%d') }}
+    Type  {{out.type| default("logs") }}
+    suppress_type_name  true
+{% endfor %}
+{% endif %}
