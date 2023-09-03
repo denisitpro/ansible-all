@@ -1,0 +1,15 @@
+---
+- name: Copy public GPG key file to remote servers
+  copy:
+    src: shared/files/gpg/c1-infra-backup-key.pub
+    dest: /tmp/gpg_key_file.pub
+    mode: 0644
+
+- name: Import public GPG key on remote servers
+  shell: gpg --import /tmp/gpg_key_file.pub
+
+
+- name: Remove temporary GPG key file
+  file:
+    path: /tmp/gpg_key_file.pub
+    state: absent

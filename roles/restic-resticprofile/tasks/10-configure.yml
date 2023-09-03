@@ -1,0 +1,8 @@
+---
+- name: copy resticprofile files
+  ansible.builtin.template:
+    src: "{{item}}.j2"
+    dest: "/opt/resticprofile/{{item}}"
+  with_items:
+    - "password.txt"
+    - "profiles.toml"

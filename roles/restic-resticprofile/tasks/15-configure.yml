@@ -1,0 +1,5 @@
+---
+- name: resticprofile schedule
+  shell: "resticprofile schedule"
+  args:
+    chdir: "{{ resticprofile_dir }}"

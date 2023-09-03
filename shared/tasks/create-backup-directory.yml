@@ -1,7 +1,7 @@
 ---
 - name: create directory for backup files
   file:
-    path: "{{ backup_path }}"
+    path: "{{ backup_path | default('/mnt/backup') }}"
     owner: "{{ bkp_user | default ('root') }}"
     group: "{{ bkp_user | default ('root') }}"
     mode: '0755'

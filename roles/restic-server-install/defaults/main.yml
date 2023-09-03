@@ -1,0 +1,14 @@
+---
+restic_server_registry: restic/rest-server
+restic_server_version: 0.12.1
+restic_server_data_path: /opt/restic-server
+
+restic_server_bind_addr: "{{global_bind_addr}}"
+restic_server_bind_port: 8000
+
+
+
+folder_apps:
+  - restic-server
+
+

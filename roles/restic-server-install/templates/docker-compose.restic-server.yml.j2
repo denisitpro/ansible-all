@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  restic-server:
+    image: {{restic_server_registry}}:{{restic_server_version}}
+    container_name: restic-server
+    hostname: restic-server-{{stand_type}}
+#    network_mode: host
+    volumes:
+      - {{restic_server_data_path}}:/data
+    ports:
+       - {{restic_server_bind_addr}}:{{restic_server_bind_port}}:8000
+{% if restic_server_restart is defined %}
+    restart: always
+{% endif %}
+    environment:
+      DISABLE_AUTHENTICATION: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

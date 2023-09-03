@@ -1,0 +1,27 @@
+---
+- name: create folder for ssl keys
+  ansible.builtin.file:
+    path: "{{ssl_key_app_path | default('/opt/ssl')}}"
+    state: directory
+    mode: '0755'
+
+- name: Check for existing binary
+  stat:
+    path: "{{ssl_key_app_path| default('/opt/ssl')}}/cert.pem"
+  register: ssl_cert_result
+
+- debug:
+    msg: ssl_cert_result -  {{ ssl_cert_result }}
+
+- name: create self-sign cert
+  command: openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -subj "/C=DE/ST=DE/L=DE/O=DE/OU=DE/CN=selfsigned" -keyout {{ssl_key_app_path| default('/opt/ssl')}}/key.pem -out {{ssl_key_app_path| default('/opt/ssl')}}/cert.pem
+  when: not ssl_cert_result.stat.exists
+
+- name: Change file permission
+  file:
+    path: "{{item}}"
+    mode: 0400
+  with_items:
+    - "{{ssl_key_app_path| default('/opt/ssl')}}/cert.pem"
+    - "{{ssl_key_app_path| default('/opt/ssl')}}/key.pem"
+  when: not ssl_cert_result.stat.exists
