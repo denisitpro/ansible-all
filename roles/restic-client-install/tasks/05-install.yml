@@ -1,0 +1,25 @@
+---
+- name: download  restic
+  get_url:
+    url: "https://github.com/restic/restic/releases/download/v{{restic_version}}/restic_{{restic_version}}_linux_amd64.bz2"
+    dest: "/tmp"
+    mode: 0644
+
+- name: Extract restic restic_{{restic_version}}_linux_amd64.bz2
+  command: "bzip2 -d /tmp/restic_{{restic_version}}_linux_amd64.bz2"
+  ignore_errors: yes
+
+- name: copy binary files
+  ansible.builtin.copy:
+    remote_src: yes
+    src: "/tmp/restic_{{restic_version}}_linux_amd64"
+    dest: /usr/local/bin/restic
+    mode: 0755
+
+- name: Remove unused file
+  file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "/tmp/restic_{{restic_version}}_linux_amd64"
+    - "/tmp/restic_{{restic_version}}_linux_amd64.bz2"

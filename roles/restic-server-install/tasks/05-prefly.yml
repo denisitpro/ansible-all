@@ -1,0 +1,11 @@
+---
+- import_tasks: shared/tasks/copy-security-limits.yml
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: create folder restic-server
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{restic_server_data_path}}"

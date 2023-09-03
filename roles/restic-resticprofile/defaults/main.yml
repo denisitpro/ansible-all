@@ -1,0 +1,7 @@
+---
+resticprofile_version: 0.21.1
+
+restic_repository: "rest:http://example.com:8000"
+restic_schedule: "01:00"
+
+resticprofile_dir: /opt/resticprofile

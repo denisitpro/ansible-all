@@ -1,0 +1,16 @@
+---
+- import_tasks: 05-install.yml
+  tags:
+    - resticprofile
+    - restic
+
+- import_tasks: 10-configure.yml
+  tags:
+    - resticprofile
+    - restic
+
+- import_tasks: 15-configure.yml
+  tags:
+    - resticprofile
+    - restic
+    - restic-schedule

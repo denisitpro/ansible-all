@@ -1,7 +1,7 @@
 ---
 - name: create script directory
   file:
-    path: "{{ scripts_path }}"
+    path: "{{ scripts_path | default('/opt/scripts') }}"
     state: directory
   tags:
     - start

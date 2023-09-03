@@ -1,0 +1,25 @@
+---
+- name: download resticprofile
+  get_url:
+    url: "https://github.com/creativeprojects/resticprofile/releases/download/v{{resticprofile_version}}/resticprofile_{{resticprofile_version}}_linux_amd64.tar.gz"
+    dest: "/tmp"
+    mode: 0644
+
+- name: Extract resticprofile
+  unarchive:
+    src: "/tmp/resticprofile_{{resticprofile_version}}_linux_amd64.tar.gz"
+    dest: /tmp
+    remote_src: yes
+
+- name: copy binary files
+  ansible.builtin.copy:
+    remote_src: yes
+    src: "/tmp/resticprofile"
+    dest: /usr/local/bin/resticprofile
+    mode: 0755
+
+- name: create folder resticprofile
+  ansible.builtin.file:
+    path: "{{resticprofile_dir}}"
+    state: directory
+    mode: '0755'

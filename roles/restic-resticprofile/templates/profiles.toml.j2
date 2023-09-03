@@ -1,0 +1,16 @@
+# docs https://creativeprojects.github.io/resticprofile/configuration/examples/index.html
+#:schema https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+#
+# indentation is not needed but it makes it easier to read ;)
+#
+version = "1"
+
+[default]
+  repository = "{{restic_repository}}"
+  password-file = "password.txt"
+
+  [default.backup]
+    verbose = true
+    source = [ "{{restic_backup_path | default('/mnt/backup')}}" ]
+    schedule = "{{restic_schedule}}"
+    tag = [ "{{restic_tag | default('tag_not_set')}}" ]

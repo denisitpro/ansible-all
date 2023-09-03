@@ -1,0 +1,6 @@
+---
+- name: install bzip2
+  apt:
+    name:
+      - bzip2
+  when: ansible_distribution == 'Ubuntu'
