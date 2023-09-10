@@ -1,0 +1,6 @@
+---
+- name: Import consul handlers
+  ansible.builtin.import_tasks: shared/handlers/consul.yml
+
+- name: Import rabbitmq handlers
+  ansible.builtin.import_tasks: shared/handlers/rabbitmq.yml

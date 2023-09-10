@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  nats.server:
+    image: nats:{{nats_server_image}}
+    container_name: nats.server
+    hostname: nats-{{stand_type}}
+    volumes:
+      - {{nats_data_path}}/conf/nats-server.conf:/etc/nats/nats-server.conf
+    network_mode: host
+{% if nats_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{vector_srv}}:{{vector_port}}
+        tag: nats
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+
+  nats.exporter:
+    image: natsio/prometheus-nats-exporter:{{nats_exporter_image}}
+    container_name: nats.exporter
+    hostname: nats.exporter
+    network_mode: host
+    depends_on:
+      - nats.server
+{% if nats_restart is defined %}
+    restart: always
+{% endif %}
+    command: -a {{ nats_bind_addr }} {% if nats_exporter_conf is defined %}{{ nats_exporter_conf | join(' ') }}{% else %}-varz{% endif %} http://{{ nats_bind_addr }}:{{nats_http_mgmt_port}}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+

@@ -1,0 +1,20 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - nats
+
+- import_tasks: 10-configure.yml
+  tags:
+    - nats
+    - nats-config
+    - nats-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - nats
+    - nats-compose
+
+- import_tasks: 20-nats-explorer.yml
+  tags:
+    - nats
+    - nats-explorer

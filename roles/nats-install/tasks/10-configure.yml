@@ -1,0 +1,14 @@
+---
+- name: copy nats-server.conf
+  template:
+    src: "nats-server.conf.j2"
+    dest: "{{nats_data_path}}/conf/nats-server.conf"
+    mode: 0600
+
+
+- name: copy compose-file - nats
+  template:
+    src: "docker-compose.nats.yml.j2"
+    dest: "{{docker_compose_path}}/docker-compose.yml"
+    mode: 0600
+

@@ -1,0 +1,49 @@
+# Client port of 4222 on all interfaces
+host: {{nats_bind_addr}}
+port: 4222
+
+{% if nats_log_debug is defined %}
+debug:   true
+{% endif %}
+
+# HTTP monitoring port
+monitor_port: 8222
+
+{% if nats.users is defined %}
+authorization: {
+    users: [
+{% for user in  nats.users %}
+        {user: {{user.name}}, password: {{ vault_dict_users_secret[user.name] }}},
+{% endfor %}
+    ]
+}
+{% endif %}
+
+{% if nats_standalone_node is not defined %}
+# This is for clustering multiple servers together.
+cluster {
+  # It is recommended to set a cluster name
+  name: "{{nats_cluster_name}}"
+
+  host: {{nats_bind_addr}}
+  # Route connections to be received on any interface on port 6222
+  port: {{nats_cluster_port}}
+
+  # Routes are protected, so need to use them with --routes flag
+  # e.g. --routes=nats-route://route_user:pwd@otherdockerhost:6222
+  authorization {
+    user: {{ vault_dict_users_secret.nats_user }}
+    password: {{ vault_dict_users_secret.nats_pass }}
+    timeout: {{nats_cluster_timeout}}
+  }
+
+  # Routes are actively solicited and connected to from this server.
+  # This Docker image has none by default, but you can pass a
+  # flag to the nats-server docker image to create one to an existing server.
+  routes = [
+    nats-route://{{ vault_dict_users_secret.nats_user }}:{{ vault_dict_users_secret.nats_pass }}@{{nats_host_01| default('host01.example.com') }}:6222
+    nats-route://{{ vault_dict_users_secret.nats_user }}:{{ vault_dict_users_secret.nats_pass }}@{{nats_host_02| default('host02.example.com') }}:6222
+    nats-route://{{ vault_dict_users_secret.nats_user }}:{{ vault_dict_users_secret.nats_pass }}@{{nats_host_03| default('host03.example.com') }}:6222
+  ]
+}
+{% endif %}

@@ -1,0 +1,30 @@
+---
+- name: Copy enabled_plugins
+  ansible.builtin.template:
+    src: "enabled_plugins.j2"
+    dest: "{{ rabbitmq_dir }}/conf/enabled_plugins"
+    mode: 0644
+    owner: "{{ rabbitmq_docker_user_uid }}"
+    group: "{{ rabbitmq_docker_user_gid }}"
+  notify:
+    - Restart rabbitmq
+
+- name: Copy rabbitmq.conf
+  ansible.builtin.template:
+    src: "rabbitmq.conf.j2"
+    dest: "{{ rabbitmq_dir }}/conf/rabbitmq.conf"
+    mode: 0644
+    owner: "{{ rabbitmq_docker_user_uid }}"
+    group: "{{ rabbitmq_docker_user_gid }}"
+  notify:
+    - Restart rabbitmq
+
+- name: Copy erlang.cookie
+  ansible.builtin.template:
+    src: ".erlang.cookie.j2"
+    dest: "{{ rabbitmq_dir }}/.erlang.cookie"
+    owner: "{{ rabbitmq_docker_user_uid }}"
+    group: "{{ rabbitmq_docker_user_gid }}"
+    mode: 0400
+  notify:
+    - Restart rabbitmq

@@ -1,0 +1,17 @@
+---
+- name: Rabbitmq user
+  community.rabbitmq.rabbitmq_user:
+    user: "{{ item.name }}"
+    password: "{{ item.pass }}"
+    vhost: "{{ item.vhost | default('/') }}"
+    configure_priv: "{{ item.configure_priv | default('.*') }}"
+    read_priv: "{{ item.read_priv | default('.*') }}"
+    write_priv: "{{ item.write_priv | default('.*') }}"
+    update_password: always
+    tags: "{{ item.tags | default('') }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ rabbitmq_users }}"
+  when:
+    - rabbitmq_users is defined
+  no_log: true
+  run_once: true

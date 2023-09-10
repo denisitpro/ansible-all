@@ -1,0 +1,43 @@
+---
+- name: Import prefly
+  ansible.builtin.import_tasks: 05-preflay.yml
+  tags:
+    - rabbitmq
+
+- name: Import rabbimqctl
+  ansible.builtin.import_tasks: 06-rabbitmqctl.yml
+  tags:
+    - rabbitmq
+    - rabbitmqctl
+
+- name: Import consul reg
+  ansible.builtin.import_tasks: 08-consul-reg.yml
+  when: consul_agent_disabled is not defined
+  tags:
+    - rabbitmq
+    - consul-reg
+
+- name: Import configure
+  ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - rabbitmq
+    - rabbitmq-config
+
+- name: Import configure
+  ansible.builtin.import_tasks: 11-compose.yml
+  tags:
+    - rabbitmq
+    - rabbitmq-compose
+
+- name: Import launch
+  ansible.builtin.import_tasks: 12-copy-ssl.yml
+  tags:
+    - rabbitmq
+    - rabbitmq-ssl
+    - cert
+
+- name: Import users
+  ansible.builtin.import_tasks: 20-users.yml
+  tags:
+    - rabbitmq
+    - rabbitmq-users

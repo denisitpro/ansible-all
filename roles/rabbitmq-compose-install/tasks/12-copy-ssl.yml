@@ -1,0 +1,28 @@
+---
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "2445-copy-certs"
+  vars:
+    ssl_path: "{{ rabbitmq_dir }}/ssl"
+    ssl_domain: "{{ rabbitmq_domain }}"
+    ssl_cert_path: "{{ rabbitmq_cert_path }}"
+    ssl_privkey_path: "{{ rabbitmq_privkey_path }}"
+    ssl_user: "{{ rabbitmq_docker_user_uid }}"
+    ssl_notify: "Reload rabbitmq-ssl"
+  when:
+    - rabbitmq_tls
+    - rabbitmq_domain != "selfsigned"
+
+- name: Import selsigned role
+  ansible.builtin.import_role:
+    name: "2450-selfsigned-cert"
+  vars:
+    ssl_path: "{{ rabbitmq_dir }}/ssl"
+    ssl_domain: "{{ rabbitmq_domain }}"
+    ssl_cert_path: "{{ rabbitmq_cert_path }}"
+    ssl_privkey_path: "{{ rabbitmq_privkey_path }}"
+    ssl_user: "{{ rabbitmq_docker_user_uid }}"
+    ssl_notify: "Reload rabbitmq-ssl"
+  when:
+    - rabbitmq_tls
+    - rabbitmq_domain == "selfsigned"

@@ -1,0 +1,22 @@
+enable_local_script_checks = true
+service {
+  name = "{{nats_service_name}}"
+  tags = ["nats","{{stand_type}}"]
+  address = "{{nats_bind_addr}}"
+  port = {{nats_client_port}}
+{% if consul_agent_disabled is not defined %}
+  token = "{{ vault_dict_users_secret.consul_nats_explorer }}"
+{% endif %}
+  check = {
+    id = "healthcheck"
+    name = "nats healt check"
+    http = "http://{{nats_bind_addr}}:8222/healthz"
+    method = "GET"
+    header = {
+       Content-Type =  ["application/json"]
+    }
+    body = "{\"status\":\"ok\"}"
+    interval =  "30s"
+    timeout =  "2s"
+    }
+}

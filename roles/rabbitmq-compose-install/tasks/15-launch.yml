@@ -1,0 +1,8 @@
+---
+- name: Run restart compose
+  ansible.builtin.shell:
+    cmd: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ rabbitmq_docker_compose_path }}"
+  register: rabbitmq_docker_compose
+  changed_when: rabbitmq_docker_compose.rc == 0
