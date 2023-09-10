@@ -1,0 +1,2 @@
+#!/bin/sh
+exec docker exec -t {{ rabbitmq_container_name }} rabbitmqctl "$@"

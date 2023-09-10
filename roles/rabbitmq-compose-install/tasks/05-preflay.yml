@@ -1,0 +1,24 @@
+---
+- name: Import docker-compose dir
+  ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: Create docker-compose dir for rabbitmq
+  ansible.builtin.file:
+    path: "{{ rabbitmq_docker_compose_path }}"
+    mode: 0755
+    owner: root
+    group: root
+    state: directory
+
+- name: Create folder for rabbimq
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+  with_items:
+    - { path: "{{ rabbitmq_dir }}/" }
+    - { path: "{{ rabbitmq_dir }}/conf" }
+    - { path: "{{ rabbitmq_dir }}/data", owner: "{{ rabbitmq_docker_user_uid }}", group: "{{ rabbitmq_docker_user_gid }}" }
+    - { path: "{{ rabbitmq_dir }}/logs", owner: "{{ rabbitmq_docker_user_uid }}", group: "{{ rabbitmq_docker_user_gid }}" }

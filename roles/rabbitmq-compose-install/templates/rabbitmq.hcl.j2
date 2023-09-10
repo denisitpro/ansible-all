@@ -1,0 +1,34 @@
+services {
+  name = "{{ rabbitmq_consul_service_name | default('rabbitmq') }}",
+  port = {{ rabbitmq_bind_port | default('5672') }},
+  tags = ["rabbitmq", "{{ stand_type }}"],
+  address = "{{ rabbitmq_bind_addr }}",
+{% if consul_agent_disabled is not defined %}
+  token = "{{ consul_rabbitmq_token }}",
+{% endif %}
+  check = {
+    id = "rabbitmq"
+    name = "rabbitmq healthcheck"
+    tcp = "{{ rabbitmq_bind_addr }}:{{ rabbitmq_bind_port | default('5672') }}"
+    interval =  "30s"
+    timeout =  "2s"
+  }
+}
+{% if rabbitmq_tls %}
+services {
+  name = "{{ rabbitmqtls_consul_service_name | default('rabbitmqtls') }}",
+  port = {{ rabbitmq_tls_port }},
+  tags = ["rabbitmq", "{{ stand_type }}"],
+  address = "{{ rabbitmq_bind_addr }}",
+{% if consul_agent_disabled is not defined %}
+  token = "{{ consul_rabbitmq_token }}",
+{% endif %}
+  check = {
+    id = "rabbitmqtls"
+    name = "rabbitmqtls healthcheck"
+    tcp = "{{ rabbitmq_bind_addr }}:{{ rabbitmq_tls_port }}"
+    interval =  "30s"
+    timeout =  "2s"
+  }
+}
+{% endif %}

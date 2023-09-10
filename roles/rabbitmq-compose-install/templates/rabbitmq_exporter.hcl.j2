@@ -1,0 +1,15 @@
+service {
+  name = "rabbitmq-explorer",
+  port = 15692,
+  tags = ["rabbitmq-explorer", "prometheus", "{{ stand_type }}"],
+{% if consul_agent_disabled is not defined %}
+  token = "{{ consul_rabbitmq_exporter_token }}",
+{% endif %}
+  check = {
+    id = "rabbitmq-explorer"
+    name = "rabbitmq-explorer healthcheck"
+    tcp = "{{ rabbitmq_bind_addr }}:15692"
+    interval =  "30s"
+    timeout =  "2s"
+  }
+}

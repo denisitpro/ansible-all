@@ -1,0 +1,167 @@
+## ## {{ ansible_managed }} ##
+## Default User / VHost
+## ====================
+##
+
+## On first start RabbitMQ will create a vhost and a user. These
+## config items control what gets created.
+## Relevant doc guide: https://rabbitmq.com/access-control.html
+##
+# default_vhost = /
+default_user = {{ rabbitmq_admin_user }}
+default_pass = {{ rabbitmq_admin_pass }}
+
+{% if rabbitmq_default_permissions_configure is defined %}
+default_permissions.configure = {{ rabbitmq_default_permissions_configure }}
+{% endif %}
+{% if rabbitmq_default_permissions_read is defined %}
+default_permissions.read = {{ rabbitmq_default_permissions_read }}
+{% endif %}
+{% if rabbitmq_default_permissions_write is defined %}
+default_permissions.write = {{ rabbitmq_default_permissions_write }}
+{% endif %}
+
+
+## HTTP listener and embedded Web server settings.
+# ## See https://rabbitmq.com/management.html for details.
+#
+management.tcp.port = 15672
+management.tcp.ip   = 0.0.0.0
+
+## Logging settings.
+##
+## See https://rabbitmq.com/logging.html and https://github.com/erlang-lager/lager for details.
+##
+
+## Log directory, taken from the RABBITMQ_LOG_BASE env variable by default.
+##
+# log.dir = /var/log/rabbitmq
+
+## Logging to file. Can be false or a filename.
+## Default:
+# log.file = rabbit.log
+
+## To disable logging to a file
+# log.file = false
+
+## Log level for file logging
+##
+# log.file.level = info
+
+## File rotation config. No rotation by default.
+## DO NOT SET rotation date to ''. Leave the value unset if "" is the desired value
+# log.file.rotation.date = $D0
+# log.file.rotation.size = 0
+
+## Logging to console (can be true or false)
+##
+log.console = true
+
+## Log level for console logging
+##
+log.console.level = info
+
+## Logging to the amq.rabbitmq.log exchange (can be true or false)
+##
+# log.exchange = false
+
+## Log level to use when logging to the amq.rabbitmq.log exchange
+##
+# log.exchange.level = info
+
+## TLS configuration.
+##
+## Related doc guide: https://rabbitmq.com/ssl.html.
+##
+{% if rabbitmq_tls %}
+listeners.ssl.1                  = {{ rabbitmq_tls_port }}
+#
+ssl_options.verify               = {{ rabbitmq_ssl_options_verify }}
+ssl_options.fail_if_no_peer_cert = {{ rabbitmq_ssl_options_fail_if_no_peer_cert }}
+# ssl_options.cacertfile           = /path/to/cacert.pem
+ssl_options.certfile             = {{ rabbitmq_ssl_options_certfile }}
+ssl_options.keyfile              = {{ rabbitmq_ssl_options_keyfile }}
+#
+# ssl_options.honor_cipher_order   = true
+# ssl_options.honor_ecc_order      = true
+#
+## These are highly recommended for TLSv1.2 but cannot be used
+## with TLSv1.3. If TLSv1.3 is enabled, these lines MUST be removed.
+# ssl_options.client_renegotiation = false
+# ssl_options.secure_renegotiate   = true
+#
+## Limits what TLS versions the server enables for client TLS
+## connections. See https://www.rabbitmq.com/ssl.html#tls-versions for details.
+##
+## Cutting edge TLS version which requires recent client runtime
+## versions and has no cipher suite in common with earlier TLS versions.
+# ssl_options.versions.1 = tlsv1.3
+## Enables TLSv1.2 for best compatibility
+# ssl_options.versions.2 = tlsv1.2
+## Older TLS versions have known vulnerabilities and are being phased out
+## from wide use.
+{% endif %}
+
+##
+## Clustering
+## =====================
+##
+# cluster_partition_handling = ignore
+
+## Pauses all nodes on the minority side of a partition. The cluster
+## MUST have an odd number of nodes (3, 5, etc)
+# cluster_partition_handling = pause_minority
+
+## pause_if_all_down strategy require additional configuration
+# cluster_partition_handling = pause_if_all_down
+
+## Recover strategy. Can be either 'autoheal' or 'ignore'
+# cluster_partition_handling.pause_if_all_down.recover = ignore
+
+## Node names to check
+# cluster_partition_handling.pause_if_all_down.nodes.1 = rabbit@localhost
+# cluster_partition_handling.pause_if_all_down.nodes.2 = hare@localhost
+
+## Mirror sync batch size, in messages. Increasing this will speed
+## up syncing but total batch size in bytes must not exceed 2 GiB.
+## Available in RabbitMQ 3.6.0 or later.
+##
+# mirroring_sync_batch_size = 4096
+
+## Make clustering happen *automatically* at startup. Only applied
+## to nodes that have just been reset or started for the first time.
+##
+## Relevant doc guide: https://rabbitmq.com//cluster-formation.html
+##
+
+{% if rabbitmq_cluster and rabbitmq_cluster_formation_peer_discovery_backend=="dns" %}
+cluster_formation.peer_discovery_backend={{ rabbitmq_cluster_formation_peer_discovery_backend }}
+cluster_formation.dns.hostname={{ rabbitmq_cluster_formation_dns_hostname }}
+{% endif %}
+#cluster_formation.peer_discovery_backend     = rabbit_peer_discovery_classic_config
+#
+#cluster_formation.classic_config.nodes.1 = rabbit1@hostname
+#cluster_formation.classic_config.nodes.2 = rabbit2@hostname
+#cluster_formation.classic_config.nodes.3 = rabbit3@hostname
+#cluster_formation.classic_config.nodes.4 = rabbit4@hostname
+
+## DNS-based peer discovery. This backend will list A records
+## of the configured hostname and perform reverse lookups for
+## the addresses returned.
+
+# cluster_formation.peer_discovery_backend = rabbit_peer_discovery_dns
+# cluster_formation.dns.hostname = discovery.eng.example.local
+
+## This node's type can be configured. If you are not sure
+## what node type to use, always use 'disc'.
+# cluster_formation.node_type = disc
+
+## Interval (in milliseconds) at which we send keepalive messages
+## to other cluster members. Note that this is not the same thing
+## as net_ticktime; missed keepalive messages will not cause nodes
+## to be considered down.
+##
+# cluster_keepalive_interval = 10000
+{% if rabbitmq_prometheus_per_object is defined %}
+prometheus.return_per_object_metrics = true
+{% endif %}

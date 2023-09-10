@@ -1,0 +1,35 @@
+---
+nats_bind_addr: "{{global_bind_addr}}"
+
+nats_data_path: /opt/nats
+nats_server_image: 2.7.4-alpine3.15
+
+nats_client_port: 4222
+nats_http_mgmt_port: 8222
+nats_cluster_port: 6222
+nats_metrics_port: 7777
+
+nats_cluster_name: "nats-{{stand_type}}"
+nats_cluster_timeout: 2
+
+nats_service_name: "nats-general"
+
+nats_exporter_image: "0.9.3"
+
+nats_exporter_service_name: "nats-exporter"
+nats_exporter_bind_port: '7777'
+
+nats_exporter_conf:
+  - "-varz" 
+  - "-connz"
+  - "-routez"
+  - "-subz"
+  - "-serverz"
+  - "-leafz"
+  - "-gatewayz"
+  - "-channelz"
+
+nats_exporter_consul_tags:
+  - "{{ nats_exporter_service_name }}"
+  - "{{ stand_type }}"
+  - "prometheus"

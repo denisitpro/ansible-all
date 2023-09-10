@@ -1,0 +1,45 @@
+---
+rabbitmq_bind_addr: "{{ global_bind_addr }}"
+
+rabbitmq_image_version: "3.9.20-management"
+
+rabbitmq_dir: "/opt/rabbitmq"
+
+rabbitmq_docker_user_uid: 999
+rabbitmq_docker_user_gid: 999
+
+docker_compose_path: /opt/docker
+rabbitmq_docker_compose_path: "{{ docker_compose_path }}/rabbitmq"
+
+rabbitmq_container_name: "rabbitmq"
+rabbitmq_conf_path: "/etc/rabbitmq"
+
+rabbitmq_tls: false
+rabbitmq_tls_port: 5671
+rabbitmq_cert_path: "{{ rabbitmq_dir }}/ssl/fullchain.pem"
+rabbitmq_privkey_path: "{{ rabbitmq_dir }}/ssl/privkey.pem"
+rabbitmq_ssl_options_verify: "verify_none"
+rabbitmq_ssl_options_fail_if_no_peer_cert: "false"
+rabbitmq_ssl_options_cacertfile: ""
+rabbitmq_ssl_options_certfile: "{{ rabbitmq_conf_path }}/ssl/fullchain.pem"
+rabbitmq_ssl_options_keyfile: "{{ rabbitmq_conf_path }}/ssl/privkey.pem"
+
+rabbitmq_enabled_plugins:
+  - rabbitmq_management
+  - rabbitmq_prometheus
+
+rabbitmq_erlang_cookie: "{{ vault_dict_users_secret.rabbitmq_erlang_cookie }}"
+
+rabbitmq_admin_user: "admin"
+rabbitmq_admin_pass: "{{ vault_dict_users_secret.rabbitmq_admin_pass }}"
+
+# rabbitmq_default_permissions_configure: ".*"
+# rabbitmq_default_permissions_read: ".*"
+# rabbitmq_default_permissions_write: ".*"
+
+consul_rabbitmq_exporter_token: "{{ vault_dict_users_secret.consul_rabbitmq_exporter_token }}"
+consul_rabbitmq_token: "{{ vault_dict_users_secret[\"consul_\" + rabbitmq_consul_service_name | default('rabbitmq') + \"_token\"] }}"
+
+rabbitmq_cluster: false
+rabbitmq_cluster_formation_peer_discovery_backend: "dns"
+rabbitmq_cluster_formation_dns_hostname: "cluster-01"

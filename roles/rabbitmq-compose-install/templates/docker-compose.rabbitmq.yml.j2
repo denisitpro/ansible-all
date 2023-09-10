@@ -1,0 +1,49 @@
+version: "3.7"
+
+networks:
+  {{ stand_type }}:
+    driver: bridge
+    name: {{ stand_type}}
+    attachable: true
+
+services:
+  rabbitmq:
+    image: rabbitmq:{{ rabbitmq_image_version }}
+    container_name: {{ rabbitmq_container_name }}
+    hostname: {{ ansible_hostname }}
+    networks:
+      - {{ stand_type }}
+    ports:
+      - {{ rabbitmq_bind_addr }}:5672:5672
+      - 127.0.0.1:15672:15672 # admin management port
+      - {{ rabbitmq_bind_addr }}:4369:4369 # epmd peer discovery
+      - {{ rabbitmq_bind_addr }}:25672:25672 # port clustering
+      - {{ rabbitmq_bind_addr }}:15692:15692 # port prom metrics
+{% if rabbitmq_tls %}
+      - {{ rabbitmq_bind_addr }}:{{ rabbitmq_tls_port }}:{{ rabbitmq_tls_port }}
+{% endif %}
+    volumes:
+      - {{ rabbitmq_dir }}/conf:{{ rabbitmq_conf_path }}
+      - {{ rabbitmq_dir }}/data:/var/lib/rabbitmq/mnesia
+      - {{ rabbitmq_dir }}/logs/:/var/log/rabbitmq/
+      - {{ rabbitmq_dir }}/.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie
+{% if rabbitmq_tls %}
+      - {{ rabbitmq_dir }}/ssl:{{ rabbitmq_conf_path }}/ssl
+{% endif %}
+{% if rabbitmq_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{ vector_srv }}:{{ vector_port }}
+        tag: {{ rabbitmq_container_name }}
+        fluentd-async: "{{ fluent_async }}"
+        fluentd-buffer-limit: "{{ fluendt_buffer_limit }}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}

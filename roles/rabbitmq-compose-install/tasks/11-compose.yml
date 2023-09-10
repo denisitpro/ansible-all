@@ -1,0 +1,8 @@
+---
+- name: Copy compose-file - rabbitmq
+  ansible.builtin.template:
+    src: "docker-compose.rabbitmq.yml.j2"
+    dest: "{{ rabbitmq_docker_compose_path }}/docker-compose.yml"
+    mode: 0600
+  notify:
+    - Restart rabbitmq-compose
