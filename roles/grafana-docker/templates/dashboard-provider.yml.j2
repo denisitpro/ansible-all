@@ -1,0 +1,23 @@
+apiVersion: 1
+
+providers:
+- name: 'provision'
+  orgId: 1
+  folder: 'provision'
+  type: file
+  disableDeletion: true
+  editable: false
+  options:
+    path: /etc/grafana/provisioning/dashboards/provision
+{% if grafana_dashboards_provision is defined %}
+{% for folder in grafana_dashboards_provision.folders %}
+- name: {{folder}}
+  orgId: {{grafana_org_id | default('1')}}
+  folder: {{folder}}
+  type: file
+  disableDeletion: true
+  editable: false
+  options:
+    path: /etc/grafana/provisioning/dashboards/{{folder}}
+{% endfor %}
+{% endif %}

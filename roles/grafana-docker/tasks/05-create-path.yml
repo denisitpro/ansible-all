@@ -1,6 +1,6 @@
 ---
 - import_tasks: shared/tasks/create-dir-docker-compose.yml
-- import_tasks: shared/tasks/copy-security-linits.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
 - import_tasks: shared/tasks/create-backup-directory.yml
 
 - name: "create directories for grafana"
@@ -20,3 +20,4 @@
     - { path: "{{ grafana_data_path }}/etc/provisioning/plugins" }
     - { path: "{{ grafana_data_path }}/data", owner: "{{ grafana_user_uid }}" }
     - { path: "{{ docker_compose_path }}/grafana" }
+    - { path: "{{ grafana_ssl_path }}", owner: "{{ grafana_user_uid }}" }
