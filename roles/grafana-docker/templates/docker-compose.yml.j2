@@ -1,40 +1,33 @@
 version:    '3.7'
 
-networks:
-    grafana:
-        name: grafana
-        driver: bridge
-        attachable: true
-
 services:
     grafana:
         image:  {{ grafana_image }}:{{ grafana_version }}
-        restart:    unless-stopped
         container_name: grafana
-        networks:
-            -   grafana
-        ports:
-            -   "{{ grafana_bind_addr }}:{{ grafana_bind_port }}:{{ grafana_bind_port }}"
+        network_mode: host
         volumes:
-            -   "{{ grafana_data_path }}/etc:/etc/grafana"
-            -   "{{ grafana_data_path }}/etc/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
-            -   "{{ grafana_data_path }}/etc/provisioning/datasources:/etc/grafana/provisioning/datasources"
-            -   "{{ grafana_data_path }}/etc/provisioning/plugins:/etc/grafana/provisioning/plugins"
-            -   "{{ grafana_data_path }}/etc/provisioning/notifiers:/etc/grafana/provisioning/notifiers"
-            -   "{{ grafana_data_path }}/data:/var/lib/grafana"
+            - "{{ grafana_data_path }}/etc:/etc/grafana"
+            - "{{ grafana_data_path }}/etc/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
+            - "{{ grafana_data_path }}/etc/provisioning/datasources:/etc/grafana/provisioning/datasources"
+            - "{{ grafana_data_path }}/etc/provisioning/plugins:/etc/grafana/provisioning/plugins"
+            - "{{ grafana_data_path }}/etc/provisioning/notifiers:/etc/grafana/provisioning/notifiers"
+            - "{{ grafana_data_path }}/data:/var/lib/grafana"
+{% if grafana_ssl_enabled is defined %}
+            - "{{ grafana_ssl_path }}:{{ grafana_ssl_path }}"
+{% endif %}
 {% if gf_ldap_toml_servers_root_ca_cert is defined %}
-            -   "{{ grafana_ipa_ca }}:{{ gf_ldap_toml_servers_root_ca_cert }}"
+            - "{{ grafana_ipa_ca }}:{{ gf_ldap_toml_servers_root_ca_cert }}"
+{% endif %}
+{% if grafana_restart is defined %}
+        restart: always
 {% endif %}
         logging:
             driver: json-file
             options:
                 max-size:   '100m'
                 max-file:   '2'
-        environment:
-            GF_APP_MODE:    '{{ gf_app_mode }}'
-            GF_INSTANCE_NAME:   '{{ gf_instance_name }}'
-            GF_SERVER_ROOT_URL: '{{ gf_server_root_url }}'
 {% if gf_auth_google_enabled is defined %}
+        environment:
             GF_AUTH_GOOGLE_ENABLED: '{{ gf_auth_google_enabled }}'
             GF_AUTH_GOOGLE_CLIENT_ID:   '{{ gf_auth_google_client_id }}'
             GF_AUTH_GOOGLE_CLIENT_SECRET:   '{{ gf_auth_google_client_secret }}'
@@ -48,4 +41,8 @@ services:
             GF_AUTH_LDAP_ENABLED:   '{{ gf_auth_ldap_enabled }}'
             GF_AUTH_LDAP_CONFIG_FILE:   '{{ gf_auth_ldap_config_file }}'
             GF_AUTH_LDAP_ALLOW_SIGN_UP: '{{ gf_auth_ldap_allow_sign_up }}'
+{% endif %}
+{% if grafana_plugins  is defined  %}
+        environment:
+            GF_INSTALL_PLUGINS: '{{ grafana_plugins }}'
 {% endif %}

@@ -2,19 +2,36 @@
 - import_tasks: 05-create-path.yml
   tags:
     - grafana
-    - grafana-compose
 
-- import_tasks: 10-copy-compose.yml
+
+- import_tasks: shared/tasks/generate-ssl-selfsign.yml
+  when: grafana_ssl_enabled is defined and grafana_self_sign_used is defined
   tags:
     - grafana
-    - grafana-compose
+    - grafana-ssl
 
 - import_tasks: 15-configure.yml
   tags:
     - grafana
-    - grafana-compose
+    - grafana-config
 
-- import_tasks: 20-lauch.yml
+- import_tasks: 20-provision.yml
+  when: grafana_use_provisioning is defined
+  tags:
+    - grafana
+    - grafana-config
+    - grafana-provision
+
+- import_tasks: 30-copy-compose.yml
   tags:
     - grafana
     - grafana-compose
+
+- import_tasks: 40-lauch.yml
+  tags:
+    - grafana
+    - grafana-compose
+
+- import_tasks: 90-admin-pass.yml
+  tags: ['never', 'grafana-reset-pass']
+

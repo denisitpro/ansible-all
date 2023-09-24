@@ -1,0 +1,10 @@
+---
+- name: Pause 10 seconds - wait launch start grafana
+  ansible.builtin.pause:
+    seconds: 10
+
+
+- name: Set admin password
+  ansible.builtin.shell:
+    cmd: "docker exec -t grafana grafana cli admin reset-admin-password {{grafana_admin_pass}}"
+  ignore_errors: "{{ ansible_check_mode }}"

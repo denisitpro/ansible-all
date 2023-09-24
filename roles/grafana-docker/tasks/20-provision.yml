@@ -1,0 +1,69 @@
+---
+- name: Create/Update datasources file (provisioning)
+  become: true
+  copy:
+    dest: "/opt/grafana/etc/provisioning/datasources/ansible-generate.yml"
+    content: |
+      apiVersion: 1
+      deleteDatasources: []
+      datasources:
+      {{ grafana_datasources | to_nice_yaml }}
+    backup: false
+    owner: "{{grafana_user_uid | default('472')}}"
+    group: root
+    mode: 0640
+  notify: restart-docker grafana
+  tags:
+    - grafana-datasource
+
+- name: remove dashboards folder
+  ansible.builtin.file:
+    path: /opt/grafana/etc/provisioning/dashboards
+    state: absent
+  when: grafana_dashboards_provision is defined
+
+- name: create dashboard folder for grafana - base
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0755') }}"
+  with_items:
+    - { path: "{{ grafana_data_path }}/etc/provisioning/dashboards" }
+    - { path: "{{ grafana_data_path }}/etc/provisioning/dashboards/general" }
+    - { path: "{{ grafana_data_path }}/etc/provisioning/dashboards/provision" }
+
+- name: create dashboard folder for grafana - folders
+  ansible.builtin.file:
+    path: "{{ grafana_data_path }}/etc/provisioning/dashboards/{{ item }}"
+    state: directory
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop: "{{ grafana_dashboards_provision.folders }}"
+  tags:
+    - grafana-path
+
+
+- name: copy dashobard provider
+  template:
+    src: dashboard-provider.yml.j2
+    dest: /opt/grafana/etc/provisioning/dashboards/ansible-generate.yml
+    owner: "{{grafana_user_uid | default('472')}}"
+    group: root
+    mode: 0640
+  notify: restart-docker grafana
+  tags:
+    - grafana-dashboards
+
+- name: copy dashboards
+  ansible.builtin.copy:
+    src: "{{item.folder | default('general')}}/{{item.file}}"
+    dest: "/opt/grafana/etc/provisioning/dashboards/{{item.folder | default('general')}}/{{item.file}}"
+    owner: "{{grafana_user_uid | default('472')}}"
+    group: root
+    mode: 0640
+  notify: restart-docker grafana
+  when: grafana_dashboards_provision is defined
+  loop: "{{ grafana_dashboards_provision.dashboards }}"

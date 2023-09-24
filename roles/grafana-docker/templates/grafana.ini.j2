@@ -1,1 +1,46 @@
 # Empty file, grafana not starting if grafana.ini not exists in /etc/grafana directory
+
+instance_name = {{ gf_instance_name }}
+app_mode = {{gf_app_mode}}
+
+[server]
+root_url = {{gf_server_root_url}}
+domain = {{ gf_server_domain }}
+http_addr = {{grafana_bind_addr | default('127.0.0.1')}}
+http_port = {{grafana_srv_port | default('3000') }}
+enforce_domain = False
+cert_key = {{grafana_ssl_path}}/{{gen_key_name |default('self-signed-key.pem')}}
+cert_file = {{grafana_ssl_path}}/{{gen_cert_name | default('self-signed-cert.pem') }}
+protocol = {{grafana_protocol| default('http')}}
+#socket =
+#enable_gzip = False
+
+[live]
+allowed_origins = "{{grafana_allowed_origins}}"
+
+{% if grafana_oidc_github is defined %}
+[auth.github]
+enabled = true
+client_id = "{{ vault_dict_users_secret.client_id  | default('set_me') }}"
+client_secret = "{{ vault_dict_users_secret.client_secret  | default('set_me') }}"
+scopes = user:email,read:org
+auth_url = https://github.com/login/oauth/authorize
+token_url = https://github.com/login/oauth/access_token
+api_url = https://api.github.com/user
+allow_sign_up = true
+auto_login = {{grafana_auto_login}}
+allowed_organizations = ["{{grafana_allowed_organizations}}"]
+#oauth_skip_org_role_update_sync = true
+allowed_domains = {{grafana_allowed_domains}}
+role_attribute_path = contains(groups[*], '@{{grafana_role_attribute_path}}') && 'Editor' || 'Viewer'
+{% endif %}
+
+
+{% if grafana_smtp is defined %}
+[smtp]
+enabled = true
+host = {{ grafana_smtp_host | default('smtp.eu.mailgun.org:587')}}
+user = {{ vault_dict_users_secret.grafana_smtp_user }}
+password ={{ vault_dict_users_secret.grafana_smtp_password }}
+from_address = {{ grafana_from_address | default('grafana@example.com') }}
+{% endif %}
