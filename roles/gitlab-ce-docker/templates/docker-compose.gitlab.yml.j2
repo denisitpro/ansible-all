@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+  gitlab:
+    image: {{gitlab_registry}}:{{gitlab_image}}
+    container_name: gitlab
+    hostname: gitlab-{{stand_type}}
+    network_mode: host
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+{% for e in gitlab_settings %}
+        {{ e }}
+{% endfor %}
+    volumes:
+      - {{gitlab_data_path}}/conf:/etc/gitlab
+      - {{gitlab_data_path}}/logs:/var/log/gitlab
+      - {{gitlab_data_path}}/data:/var/opt/gitlab
+{% if gitlab_support_ssl is defined %}
+      - {{gitlab_ssl_path}}:/opt/ssl
+{% endif %}
+    shm_size: '256m'
+{% if gitlab_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

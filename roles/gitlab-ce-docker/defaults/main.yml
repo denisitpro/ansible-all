@@ -1,0 +1,23 @@
+---
+gitlab_bind_addr: "{{global_bind_addr}}"
+gitlab_registry: gitlab/gitlab-ce
+gitlab_image: 16.3.5-ce.0
+gitlab_data_path: /opt/gitlab
+gitlab_conf_path: "{{gitlab_data_path}}/conf"
+gitlab_ssh_port: 2224
+gitlab_prom_port: 9090
+gitlab_ssl_path: /opt/ssl
+gitlab_ssl_cert_name: self-signed-cert.pem
+gitlab_ssl_key_name: self-signed-key.pem
+
+gitlab_external_url: "https://gitlab.example.com"
+gitlab_docker_compose_path: "{{ docker_compose_path | default('/opt/docker') }}/gitlab"
+
+
+
+folder_apps:
+  - gitlab
+
+gitlab_settings:
+   - external_url '{{gitlab_external_url}}'
+   - prometheus_monitoring['enable'] = false

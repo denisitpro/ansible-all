@@ -1,0 +1,20 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - gitlab
+
+- import_tasks: 10-configure.yml
+  tags:
+    - gitlab
+    - gitlab-compose
+
+- import_tasks: 15-copy-ssl.yml
+  when: gitlab_support_ssl is defined
+  tags:
+    - gitlab
+    - gitlab-ssl
+
+- import_tasks: 20-launch.yml
+  tags:
+    - gitlab
+    - gitlab-compose

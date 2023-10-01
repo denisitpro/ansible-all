@@ -1,0 +1,6 @@
+---
+- name: copy compose-file - gitlab
+  template:
+    src: "docker-compose.gitlab.yml.j2"
+    dest: "{{ gitlab_docker_compose_path }}/docker-compose.yml"
+    mode: 0600
