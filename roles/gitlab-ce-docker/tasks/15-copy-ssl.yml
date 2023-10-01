@@ -1,0 +1,15 @@
+---
+- name: create folder gitlab
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{gitlab_conf_path}}/ssl"
+
+- import_tasks: shared/tasks/generate-ssl-selfsign.yml
+
+#- name: reload nginx in gitlab container
+#  shell: "docker exec -t gitlab gitlab-ctl restart nginx"
