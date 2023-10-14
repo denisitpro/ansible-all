@@ -1,0 +1,10 @@
+---
+- name: Check postgres init phase
+  ansible.builtin.stat:
+    path: "{{ postgres_init_path }}"
+  register: postgres_init_result
+
+
+- name: Print postgres init status
+  ansible.builtin.debug:
+    msg: postgres {{ postgres_init_result.stat.exists }}

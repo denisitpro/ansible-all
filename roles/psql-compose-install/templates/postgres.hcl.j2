@@ -1,0 +1,35 @@
+services {
+  name = "{{ postgres_consul_service_name | default('postgres') }}",
+  port = {{ psql_port | default('5432') }},
+  tags = ["postgres", "{{ stand_type }}"],
+  address = "{{ psql_bind_addr }}"
+{% if consul_agent_disabled is not defined %}
+  token = "{{ consul_postgres_token }}",
+{% endif %}
+  check = {
+    id = "postgres"
+    name = "postgres healthcheck"
+    tcp = "{{ psql_bind_addr }}:{{ psql_port | default('5432') }}"
+    interval =  "30s"
+    timeout =  "2s"
+  }
+}
+
+{% if postgres_tls %}
+services {
+  name = "{{ postgrestls_consul_service_name | default('postgrestls') }}",
+  port = {{ psql_tls_port | default('5432') }},
+  tags = ["postgres", "{{ stand_type }}"],
+  address = "{{ psql_bind_addr }}"
+{% if consul_agent_disabled is not defined %}
+  token = "{{ consul_postgres_token }}",
+{% endif %}
+  check = {
+    id = "postgrestls"
+    name = "postgrestls healthcheck"
+    tcp = "{{ psql_bind_addr }}:{{ psql_tls_port | default('5432') }}"
+    interval =  "30s"
+    timeout =  "2s"
+  }
+}
+{% endif %}

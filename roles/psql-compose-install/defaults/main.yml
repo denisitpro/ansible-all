@@ -1,0 +1,49 @@
+---
+psql_docker_compose_path: "{{ docker_compose_path | default ('/opt/docker') }}/psql"
+
+appname: "psql"
+app_path: "/opt/docker"
+
+psql_bind_addr: "{{ global_bind_addr | default('127.0.0.1') }}"
+psql_port: 5432
+psql_node_data_path: "/opt/psql/db"
+psql_node_data_conf: "/opt/psql/conf"
+psql_node_data_ssl: "/opt/psql/ssl"
+psql_docker_data_path: "/var/lib/postgresql/data"
+psql_docker_conf_dir: "/etc/postgresql"
+
+postgres_tls: false
+psql_docker_ssl_dir: "{{ psql_docker_conf_dir }}/ssl"
+
+postgres_cert: "{{ psql_docker_conf_dir }}/ssl/fullchain.pem"
+postgres_privkey: "{{ psql_docker_conf_dir }}/ssl/privkey.pem"
+
+postgres_node_cert: "{{ psql_node_data_ssl }}/fullchain.pem"
+postgres_node_privkey: "{{ psql_node_data_ssl }}/privkey.pem"
+psql_backup_dir: "/mnt/pgbackup"
+psql_version: 16.0-alpine3.18
+psql_image: "postgres"
+bkp_user: "root"
+
+psql_docker_user_uid: 999
+psql_docker_user_gid: 999
+
+psql_db_user: "postgres"
+psql_postgres_password: "postgres"
+psql_db_name: "db1"
+psql_pgpassword: "replication"
+
+psql_docker_container_name: "psql"
+
+### replication section
+# psql_replication: true # use host env only deploy cluster
+wal_level: "replica"
+max_wal_senders: 5
+max_replication_slots: 10
+hot_standby: "on"
+hot_standby_feedback: "on"
+replication_net: "10.120.5.0/16"
+postgres_init_path: "{{ psql_node_data_path }}/PG_VERSION"
+pg_replica_slot_name: "pgreplica_2"
+
+consul_postgres_token: "{{ vault_dict_users_secret[\"consul_\" + postgres_consul_service_name | default('postgres') + \"_token\"] }}"

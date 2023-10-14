@@ -1,0 +1,36 @@
+version: "3.7"
+
+{% if confluence_all_one is not defined %}
+networks:
+  confluence:
+    driver: bridge
+    name: confluence
+    attachable: true
+{% endif %}
+
+services:
+  confluence:
+    image: {{confluence_image}}:{{confluence_version}}
+    container_name: confluence
+{% if confluence_all_one is not defined %}
+    networks:
+       - confluence
+    ports:
+       - {{confluence_bind_addr}}:{{confluence_web_port}}:{{confluence_web_port}}
+       - {{confluence_bind_addr}}:{{confluence_synchrony_port}}:{{confluence_synchrony_port}}
+{% endif %}
+{% if confluence_all_one is  defined %}
+    network_mode: host
+{% endif %}
+    volumes:
+      - {{confluence_path}}/data:/var/atlassian/application-data/confluence
+      - {{confluence_path}}/server.xml:/opt/atlassian/confluence/conf/server.xml:ro
+{% if confluence_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'      
+

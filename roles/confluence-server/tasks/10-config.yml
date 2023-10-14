@@ -1,0 +1,10 @@
+---
+- name: copy config
+  template:
+    src: "{{item}}.j2"
+    dest: "{{confluence_path}}/{{item}}"
+    mode: 0644
+    owner: root
+    group: 2002
+  with_items:
+    - server.xml

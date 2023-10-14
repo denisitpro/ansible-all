@@ -1,0 +1,16 @@
+---
+- name: Import docker-compose dir
+  ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: Import docker-compose path
+  ansible.builtin.import_tasks: shared/tasks/create-backup-directory.yml
+
+- name: Create folder psql-conf
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ psql_node_data_path }}"
+    - "{{ psql_node_data_conf }}"
+    - "{{ psql_docker_compose_path }}"
