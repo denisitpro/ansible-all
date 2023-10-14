@@ -1,0 +1,13 @@
+---
+docker_compose_path: /opt/docker
+confluence_image: atlassian/confluence
+confluence_version: 8.6.0-ubuntu-jdk17
+confluence_bind_addr: "{{global_bind_addr | default('127.0.0.1')}}"
+confluence_web_port: 8090
+confluence_synchrony_port: 8091
+
+
+confluence_path: /opt/confluence
+
+folder_apps:
+  - confluence

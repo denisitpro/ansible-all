@@ -1,0 +1,15 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - confluence
+    - confluence-prefly
+
+- import_tasks: 10-config.yml
+  tags:
+    - confluence
+    - confluence-config
+
+- import_tasks: 15-compose.yml
+  tags:
+    - confluence
+    - confluence-compose

@@ -1,0 +1,28 @@
+---
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "2445-copy-certs"
+  vars:
+    ssl_path: "{{ psql_node_data_ssl }}"
+    ssl_domain: "{{ psql_domain }}"
+    ssl_cert_path: "{{ postgres_node_cert }}"
+    ssl_privkey_path: "{{ postgres_node_privkey }}"
+    ssl_user: "{{ psql_docker_user_uid }}"
+    ssl_notify: "Reload postgres-ssl"
+  when:
+    - postgres_tls
+    - psql_domain != "selfsigned"
+
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "2450-selfsigned-cert"
+  vars:
+    ssl_path: "{{ psql_node_data_ssl }}"
+    ssl_domain: "{{ psql_domain }}"
+    ssl_cert_path: "{{ postgres_node_cert }}"
+    ssl_privkey_path: "{{ postgres_node_privkey }}"
+    ssl_user: "{{ psql_docker_user_uid }}"
+    ssl_notify: "Reload postgres-ssl"
+  when:
+    - postgres_tls
+    - psql_domain == "selfsigned"

@@ -1,0 +1,49 @@
+---
+- name: Import docker-compose path
+  ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: Import security
+  ansible.builtin.import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: Import prefly
+  ansible.builtin.import_tasks: 00-prefly.yml
+  tags:
+    - psql
+    - psql-docker
+
+- name: Import config
+  ansible.builtin.import_tasks: 05-config.yml
+  tags:
+    - psql
+    - psql-docker
+    - psql-config
+
+- name: Import ini-check
+  ansible.builtin.import_tasks: 10-init-check.yml
+  tags:
+    - psql
+    - psql-docker
+    - psql-init-check
+
+# todo refactore
+#- name: Import ssl
+#  ansible.builtin.import_tasks: 12-copy-ssl.yml
+#  tags:
+#    - psql
+#    - psql-docker
+#    - psql-ssl
+
+- name: Import consul
+  ansible.builtin.import_tasks: 15-consul.yml
+  when: consul_service_reg is defined
+  tags:
+    - psql
+    - psql-docker
+    - psql-consul
+
+- name: Import compose
+  ansible.builtin.import_tasks: 20-compose.yml
+  tags:
+    - psql
+    - psql-docker
+    - psql-compose

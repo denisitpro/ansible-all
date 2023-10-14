@@ -1,0 +1,39 @@
+version: "3.7"
+
+services:
+  psql:
+    image: {{ psql_image }}:{{ psql_version }}
+    container_name: {{ psql_docker_container_name }}
+    network_mode: host
+    volumes:
+      - {{ psql_node_data_path }}:{{ psql_docker_data_path }}
+      - {{ psql_node_data_conf }}/postgresql.conf:{{ psql_docker_conf_dir }}/postgresql.conf
+      - {{ psql_node_data_conf }}/pg_hba.conf:{{ psql_docker_conf_dir }}/pg_hba.conf
+{% if postgres_tls %}
+      - {{ psql_node_data_ssl }}:{{ psql_docker_ssl_dir }}
+{% endif %}
+    environment:
+      - POSTGRES_USER={{ psql_db_user }}
+      - POSTGRES_PASSWORD={{ psql_postgres_password }}
+      - POSTGRES_DB={{ psql_db_name }}
+{% if postgres_init_result.stat.exists == False and replica is defined %}
+      - PGPASSWORD={{ psql_pgpassword }}
+    command: pg_basebackup -h {{ pg_master_host }} -D {{ psql_docker_data_path }} -U replication -w -P -v  -R -X stream -C -S {{ pg_replica_slot_name }}
+{% else %}
+    restart: always
+    command: -c config_file={{ psql_docker_conf_dir }}/postgresql.conf -c hba_file={{ psql_docker_conf_dir }}/pg_hba.conf
+{% endif %}
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{ vector_srv }}:{{ vector_port }}
+        tag: {{ psql_docker_container_name }}
+        fluentd-async: "{{ fluent_async }}"
+        fluentd-buffer-limit: "{{ fluendt_buffer_limit }}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
