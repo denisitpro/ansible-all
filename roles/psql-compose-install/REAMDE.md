@@ -51,3 +51,5 @@ psql "user=postgres host=bind_ip sslmode=disable" -c 'SELECT datname,usename, ss
 ----------+----------+-----+-------------
  postgres | postgres | f   | 127.0.0.1
 ```
+
+#
