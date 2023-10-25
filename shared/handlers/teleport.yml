@@ -1,0 +1,10 @@
+---
+- name: restart teleport
+  systemd:
+    name: teleport
+    state: restarted
+
+- name: reload-unit teleport
+  systemd:
+    name: teleport
+    state: reloaded
