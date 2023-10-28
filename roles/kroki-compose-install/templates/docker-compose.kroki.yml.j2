@@ -1,0 +1,54 @@
+version: '3.7'
+
+services:
+  kroki.core:
+    image:  {{ kroki_image_name }}:{{ kroki_image_version }}
+    container_name: kroki
+    ports:
+      - {{ global_bind_addr }}:{{ kroki_publish_port }}:8000
+    environment:
+      - KROKI_BLOCKDIAG_HOST=kroki.blockdiag
+      - KROKI_MERMAID_HOST=kroki.mermaid
+      - KROKI_BPMN_HOST=kroki.bpmn
+      - KROKI_EXCALIDRAW_HOST=kroki.excalidraw
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+    
+  kroki.blockdiag:
+    image: {{ kroki_blockdiag_image_name }}:{{ kroki_image_version }}
+    container_name: kroki.blockdiag
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  kroki.mermaid:
+    image: {{ kroki_mermaid_image_name }}:{{ kroki_image_version }}
+    container_name: kroki.mermaid
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  kroki.bpmn:
+    image: {{ kroki_bpmn_image_name }}:{{ kroki_image_version }}
+    container_name: kroki.bpmn
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  kroki.excalidraw:
+    image: {{ kroki_excalidraw_image_name }}:{{ kroki_image_version }}
+    container_name: kroki.excalidraw
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

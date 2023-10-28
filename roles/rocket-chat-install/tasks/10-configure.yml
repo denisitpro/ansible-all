@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - rocket chat
+  template:
+    src: "docker-compose.rchat.yml.j2"
+    dest: "{{docker_compose_path}}/rchat/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

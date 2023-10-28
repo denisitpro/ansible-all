@@ -1,0 +1,30 @@
+---
+- import_tasks: shared/tasks/create-script-path.yml
+- import_tasks: shared/tasks/create-backup-directory.yml
+
+- name: create folder youtrack
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    owner: 13001
+    group: 13001
+    mode: '0755'
+  with_items:
+    - "{{youtrack_data_path}}/backup"
+
+
+- name: copy scripts for encrypt backup
+  template:
+    src: encrypt-backup.sh.j2
+    dest: "{{scripts_path}}/encrypt-backup.sh"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - backup-script
+  when: backup_encrypted is defined
+
+- import_tasks: shared/tasks/gpg-key-distribute.yml
+  when: backup_encrypted is defined
+  tags:
+    - gpg-key

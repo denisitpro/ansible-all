@@ -1,0 +1,13 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: create folder kroki
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  with_items:
+    - "{{ kroki_docker_compose_path }}"

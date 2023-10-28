@@ -1,0 +1,6 @@
+---
+- name: copy compose-file - youtrack
+  template:
+    src: "docker-compose.youtrack.yml.j2"
+    dest: "{{docker_compose_path}}/youtrack/docker-compose.yml"
+    mode: 0600

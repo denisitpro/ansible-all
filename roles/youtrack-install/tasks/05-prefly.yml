@@ -1,0 +1,16 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: create folder youtrack
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    owner: 13001
+    group: 13001
+    mode: '0755'
+  with_items:
+    - "{{youtrack_data_path}}"
+    - "{{youtrack_data_path}}/data"
+    - "{{youtrack_data_path}}/conf"
+    - "{{youtrack_data_path}}/logs"

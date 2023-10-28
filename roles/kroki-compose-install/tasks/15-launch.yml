@@ -1,0 +1,10 @@
+---
+- name: "Update docker images"
+  shell: "docker-compose pull"
+  args:
+    chdir: "{{ kroki_docker_compose_path }}"
+
+- name: run restart compose
+  shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ kroki_docker_compose_path }}"

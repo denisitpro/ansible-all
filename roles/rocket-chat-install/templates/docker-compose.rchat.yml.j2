@@ -1,0 +1,88 @@
+version: "3.7"
+
+networks:
+  rchat:
+    driver: bridge
+    name: rchat
+    attachable: true
+
+services:
+  rchat.node:
+    image: rocket.chat:{{rchat_image_version}}
+    container_name: rchat.node
+    depends_on:
+      - mongo
+    networks:
+      - rchat
+    ports:
+      - 127.0.0.1:3000:3000
+    volumes:
+      - {{rchat_node_data_path}}:{{rchat_node_data_path}}
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    environment:
+      - PORT=3000
+      - ROOT_URL=https://{{rchat_root_url}}
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://mongo:27017/local
+{% if rchat_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: none
+#    logging:
+#      driver: json-file
+#      options:
+#        max-size: 100m
+#        max-file: '2'
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.0
+    networks:
+      - rchat
+    volumes:
+     - {{rchat_node_data_path}}/mongo:/data/db
+    command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
+{% if rchat_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: none
+#    logging:
+#      driver: json-file
+#      options:
+#        max-size: 100m
+#        max-file: '2'
+
+  mongo-init-replica:
+    container_name: mongo-init-replica
+    image: mongo:4.0
+    networks:
+      - rchat
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          mongo mongo/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0',
+              members: [ { _id: 0, host: 'mongo:27017' } ]})\" &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    depends_on:
+      - mongo
+    logging:
+      driver: none
+#    logging:
+#      driver: json-file
+#      options:
+#        max-size: 100m
+#        max-file: '2'

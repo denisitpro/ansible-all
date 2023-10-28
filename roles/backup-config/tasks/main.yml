@@ -1,0 +1,14 @@
+---
+- import_tasks: 00-create-path.yml
+  tags:
+    - backup-conf
+    - backup
+#- import_tasks: 01-backup-psql.yml
+#  tags: [backup_conf]
+#- import_tasks: 02-backup-mysql.yml
+#  tags: [backup_conf]
+
+- import_tasks: 05-rclone-install.yml
+  tags:
+    - rclone
+    - backup

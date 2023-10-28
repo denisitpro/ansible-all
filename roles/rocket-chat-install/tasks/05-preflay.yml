@@ -1,0 +1,14 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: create folder for node
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: zabbix
+  with_items:
+    - "{{docker_compose_path}}/"
+    - "{{docker_compose_path}}/rchat"
+    - "{{rchat_node_data_path}}/mongo"

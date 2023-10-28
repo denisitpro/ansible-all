@@ -1,0 +1,14 @@
+---
+- import_tasks: 05-preflay.yml
+  tags:
+    - rchat
+
+- import_tasks: 10-configure.yml
+  tags:
+    - rchat
+    - rchat-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - rchat
+    - rchat-compose

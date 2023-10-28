@@ -1,0 +1,49 @@
+{% if rclone_global is defined %}
+[backup-{{ rclone_global.name }}]
+{% if rclone_global.type is defined %}
+type = {{ rclone_global.type }}
+{% endif %}
+{% if rclone_global.env_auth is defined %}
+env_auth = {{ rclone_global.env_auth }}
+{% endif %}
+{% if rclone_global.provider is defined %}
+provider = {{ rclone_global.provider }}
+{% endif %}
+{% if rclone_global.access_key_id is defined %}
+access_key_id = {{ rclone_global.access_key_id }}
+{% endif %}
+{% if rclone_global.secret_access_key is defined %}
+secret_access_key = {{ rclone_global.secret_access_key }}
+{% endif %}
+{% if rclone_global.endpoint is defined %}
+endpoint = {{ rclone_global.endpoint }}
+{% endif %}
+acl = {{ rclone_global.acl | default('private') }}
+{% endif %}
+
+
+{% for stand in backup_stands %}
+{% if backup_stands[stand].rclone is defined %}
+[backup-{{ stand }}]
+{% if backup_stands[stand].rclone.type is defined %}
+type = {{ backup_stands[stand].rclone.type }}
+{% endif %}
+{% if backup_stands[stand].rclone.env_auth is defined %}
+env_auth = {{ backup_stands[stand].rclone.env_auth }}
+{% endif %}
+{% if backup_stands[stand].rclone.provider is defined %}
+provider = {{ backup_stands[stand].rclone.provider }}
+{% endif %}
+{% if backup_stands[stand].rclone.access_key_id is defined %}
+access_key_id = {{ backup_stands[stand].rclone.access_key_id }}
+{% endif %}
+{% if backup_stands[stand].rclone.secret_access_key is defined %}
+secret_access_key = {{ backup_stands[stand].rclone.secret_access_key }}
+{% endif %}
+{% if backup_stands[stand].rclone.endpoint is defined %}
+endpoint = {{ backup_stands[stand].rclone.endpoint }}
+{% endif %}
+acl = {{ backup_stands[stand].rclone.acl | default('private') }}
+{% endif %}
+
+{% endfor %}

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#copy file to server
+scp -i /home/{{vault_dict_users_secret.backup_user}}/.ssh/id_ed25519 {{vault_dict_users_secret.backup_user}}@{{mysql_server_to_backup}}:{{path_to_mysql_server_backup}}/ {{link_bachup_path_to_mysql}}/
+
+#remove file to server
+ssh -i /home/{{vault_dict_users_secret.backup_user}}/.ssh/id_ed25519 {{vault_dict_users_secret.backup_user}}@{{mysql_server_to_backup}} rm -f {{path_to_mysql_server_backup}}/*.dump.gz
+
+#clear file old {{LIMITDAYS}} day
+find {{link_bachup_path_to_mysql}} -atime +{{LIMITDAYS}} | xargs rm -f

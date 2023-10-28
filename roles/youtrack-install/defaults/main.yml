@@ -1,0 +1,16 @@
+---
+youtrack_bind_addr: "{{global_bind_addr}}"
+youtrack_image: 2023.2.19243
+youtrack_data_path: /opt/youtrack
+yt_backup_dir: /mnt/backup
+docker_compose_path: /opt/docker
+
+stand_type: c0-example
+
+global_bind_addr: "{{ ansible_default_ipv4.address }}"
+
+scripts_path: /opt/scripts
+
+
+folder_apps:
+  - youtrack
