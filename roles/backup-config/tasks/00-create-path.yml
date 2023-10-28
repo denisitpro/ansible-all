@@ -1,0 +1,80 @@
+---
+- name: create paths for backup files
+  ansible.builtin.file:
+    path: "{{ fact_backup_path_bkp }}"
+    owner: "{{ bkp_user }}"
+    group: "{{ bkp_group }}"
+    mode: '0755'
+    state: directory
+
+- name: create symlink
+  ansible.builtin.file:
+    src: "{{ fact_backup_path_bkp }}"
+    dest: "{{ link_backup_path_bkp }}"
+    state: link
+
+- name: create paths for scripts backup
+  ansible.builtin.file:
+    path: "{{ scripts_path }}"
+    owner: "{{ bkp_user }}"
+    group: "{{ bkp_group }}"
+    mode: '0755'
+    state: directory
+
+- name: "Create home directory for backup user {{ bkp_user }}"
+  ansible.builtin.file:
+    path: "/home/{{ bkp_user }}"
+    state: directory
+    owner: "{{ bkp_user }}"
+    group: "{{ bkp_group }}"
+    mode: 0755
+
+- name: "Create ssh directory for backup user {{ bkp_user }}"
+  ansible.builtin.file:
+    path: "/home/{{ bkp_user }}/.ssh"
+    state: directory
+    owner: "{{ bkp_user }}"
+    group: "{{ bkp_group }}"
+    mode: 0700
+
+
+- name: "Create base directory for stand"
+  ansible.builtin.file:
+    path: "{{ backup_stands[item.key]['path'] | default(link_backup_path_bkp + '/' + item.key) }}"
+    state: directory
+    owner: "{{ bkp_user }}"
+    group: "{{ bkp_group }}"
+    mode: 0755
+  loop: "{{ backup_stands | dict2items }}"
+  loop_control:
+    label: "{{ backup_stands[item.key]['path'] | default(link_backup_path_bkp + '/' + item.key) }}"
+  tags:
+    - directory-all
+
+- name: "Create private keys for stands"
+  ansible.builtin.copy:
+    dest: "/home/{{ bkp_user }}/.ssh/id_{{ item.key }}.privkey"
+    content: |
+      {{ backup_stands[item.key]['bkp_ssh_private_key'] }}
+    owner: "{{ bkp_user }}"
+    group: "{{ bkp_group }}"
+    mode: 0600
+  loop: "{{ backup_stands | dict2items }}"
+  loop_control:
+    label: "ssh key for {{ item.key }}"
+  tags:
+    - ssh-keys  
+
+- name: "Create directories for servers backup"
+  ansible.builtin.file:
+    state: directory
+    owner: "{{ bkp_user }}"
+    group: "{{ bkp_group }}"
+    mode: 0755
+    path: "{{ backup_stands[item.stand]['path'] | default(link_backup_path_bkp + '/' + item.stand) }}/{{ item.dest | default(item.server) }}"
+  loop: "{{ backup_crons }}"
+  loop_control:
+    label: "{{ backup_stands[item.stand]['path'] | default(link_backup_path_bkp + '/' + item.stand) }}/{{ item.dest | default(item.server) }}"
+  tags:
+    - create-server-directories
+    - always

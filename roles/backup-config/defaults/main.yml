@@ -1,0 +1,27 @@
+---
+default_backup_path: "/mnt/backup"
+backup_scripts_path: "/opt/scripts"
+limit_days: 14
+fact_backup_path_bkp: "/home/backup"
+link_backup_path_bkp: "/opt/backup"
+# c1_devel_backup_path: "{{ link_backup_path_bkp }}/c1-devel"
+c1_devel_path_bkp: "/opt/backup"
+
+
+backup_get_cron_file: "backup_get_cron"
+backup_rotation_cron_file: "backup_rotation_cron"
+backup_copy_cron_file: "backup_copy_cron"
+backup_ext_cron_file: "backup_ext_cron"
+
+
+bkp_user: "backup-01"
+bkp_group: "backup-01"
+
+# gpg_key_c1_deve: "1BDC6E302E3829C6081623123"
+
+
+#### rclone
+rclone_version: '1.64.0'
+mandb_path: "/usr/local/share/man/man1"
+acl: "private"
+rclone_config_path: "/root/.config/rclone/"

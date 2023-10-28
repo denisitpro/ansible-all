@@ -1,0 +1,8 @@
+---
+appname: rchat
+
+rchat_node_data_path: /opt/rchat
+
+rchat_image_version: 3.18.0
+
+rchat_root_url: chat.example.com

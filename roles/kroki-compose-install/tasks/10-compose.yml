@@ -1,0 +1,6 @@
+---
+- name: copy compose-file - kroki
+  template:
+    src: "docker-compose.kroki.yml.j2"
+    dest: "{{ kroki_docker_compose_path }}/docker-compose.yml"
+    mode: 0600

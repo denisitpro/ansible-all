@@ -1,0 +1,32 @@
+version: '3.7'
+
+networks:
+  youtrack:
+    driver: bridge
+    name: youtrack
+    attachable: true
+
+services:
+  youtrack:
+    image: jetbrains/youtrack:{{youtrack_image}}
+    container_name: youtrack
+    hostname: youtrack-{{stand_type}}
+    networks:
+      - youtrack
+    ports:
+      - {{youtrack_bind_addr}}:28080:8080
+    volumes:
+      - {{youtrack_data_path}}/data:/opt/youtrack/data
+      - {{youtrack_data_path}}/conf:/opt/youtrack/conf
+      - {{youtrack_data_path}}/logs:/opt/youtrack/logs
+{% if youtrack_backup is defined %}
+      - {{youtrack_data_path}}/backup:/opt/youtrack/backups
+{% endif %}
+{% if youtrack_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

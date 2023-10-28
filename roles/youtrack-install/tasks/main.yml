@@ -1,0 +1,22 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - youtrack
+
+
+- import_tasks: 08-backup.yml
+  when: youtrack_backup is defined
+  tags:
+    - youtrack
+    - youtrack-backup
+
+- import_tasks: 10-configure.yml
+  tags:
+    - youtrack
+    - youtrack-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - youtrack
+    - youtrack-compose
+

@@ -1,0 +1,73 @@
+---
+- name: download rclone exporter binary to local folder
+  become: false
+  get_url:
+    url: "https://downloads.rclone.org/v{{ rclone_version }}/rclone-v{{ rclone_version }}-linux-{{ go_arch }}.zip"
+    dest: "/tmp/rclone-v{{ rclone_version }}.linux-{{ go_arch }}.zip"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+
+
+- name: unpack rclone binaries
+  become: false
+  unarchive:
+    src: "/tmp/rclone-v{{ rclone_version }}.linux-{{ go_arch }}.zip"
+    dest: "/tmp"
+    creates: "/tmp/rclone-v{{ rclone_version }}-linux-{{ go_arch }}"
+    remote_src: yes
+
+- name: propagate rclone binaries
+  ansible.builtin.copy:
+    src: "/tmp/rclone-v{{ rclone_version }}-linux-{{ go_arch }}/rclone"
+    dest: "/usr/bin/rclone"
+    mode: 0755
+    owner: root
+    group: root
+    remote_src: true
+
+- name: create folder for mandb
+  ansible.builtin.file:
+    path: "{{mandb_path}}"
+    state: directory
+    mode: '0755'
+    recurse: yes
+
+- name: propagate rclone and promtool binaries
+  ansible.builtin.copy:
+    src: "/tmp/rclone-v{{ rclone_version }}-linux-{{ go_arch }}/rclone.1"
+    dest: "{{mandb_path}}/rclone.1"
+    mode: 0755
+    owner: root
+    group: root
+    remote_src: true
+
+- name: "Create rclone config directory"
+  ansible.builtin.file:
+    path: "{{ rclone_config_path }}"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  tags:
+    - rclone-config
+
+- name: copy config
+  ansible.builtin.template:
+    src: "rclone.conf.j2"
+    dest: "{{rclone_config_path}}/rclone.conf"
+    owner: "root"
+    group: "root"
+    mode: 0600
+  tags:
+    - rclone-config
+
+- name: remove download files
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "/tmp/rclone-v{{ rclone_version }}.linux-{{ go_arch }}.zip"
+    - "/tmp/rclone-v{{ rclone_version }}-linux-{{ go_arch }}"
+  tags: [clean]

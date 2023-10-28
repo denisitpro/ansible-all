@@ -1,0 +1,23 @@
+---
+- name: create paths for backup files
+  file:
+    path: "{{link_backup_path_bkp}}/mysql"
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- name: copy scripts for backup
+  template:
+    src: mysql_script.sh.j2
+    dest: "{{scripts_path}}/mysql_scripts.sh"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: add task to cront
+  cron:
+    name: "backup db mysql server"
+    minute: "{{backup_cron.minutes| default('15')}}"
+    hour: "{{backup_cron.hour| default('2') }}"
+    job: "/bin/bash {{scripts_path}}/mysql_script.sh"

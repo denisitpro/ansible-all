@@ -1,0 +1,11 @@
+---
+kroki_image_name: "yuzutech/kroki"
+kroki_publish_port: "8000"
+kroki_blockdiag_image_name: "yuzutech/kroki-blockdiag"
+kroki_mermaid_image_name: "yuzutech/kroki-mermaid"
+kroki_bpmn_image_name: "yuzutech/kroki-bpmn"
+kroki_excalidraw_image_name: "yuzutech/kroki-excalidraw"
+
+kroki_image_version: "0.17.2"
+
+kroki_docker_compose_path: "{{ docker_compose_path }}/kroki"
