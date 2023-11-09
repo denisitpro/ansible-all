@@ -1,8 +1,3 @@
 ---
-- name: get aws server metadata owner
-  ansible.builtin.shell: "curl -s http://169.254.169.254/latest/meta-data/tags/instance/Owner"
-  register: aws_server_owner
-
-- name: print  owner
-  ansible.builtin.debug:
-    msg: aws tag name - {{ aws_server_owner.stdout }}
+- import_tasks: shared/tasks/metadata-aws.yml
+  when: server_owner.aws is defined

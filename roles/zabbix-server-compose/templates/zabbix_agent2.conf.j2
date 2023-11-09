@@ -10,9 +10,9 @@ Hostname={{zbx_agent_hostname}}
 HostnameItem=system.hostname
 {% endif %}
 
-Server=zabbix-server{% if zbx_kostili is defined %},{{zbx_kostili}} {% endif %}
+Server=127.0.0.1{% if zbx_kostili is defined %},{{zbx_kostili}} {% endif %}
 
-ServerActive=zabbix-server:10051{% if zbx_kostili is defined %},{{zbx_kostili}} {% endif %}
+ServerActive=127.0.0.1:10051{% if zbx_kostili is defined %},{{zbx_kostili}} {% endif %}
 
 Timeout=30
 Include=/etc/zabbix/zabbix_agentd.d/*.conf

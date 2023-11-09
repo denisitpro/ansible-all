@@ -12,12 +12,12 @@
 #    - zabbix-agent2
 
 - import_tasks: 15-metadata-aws.yml
-  when: zabbix.aws is defined
   tags:
     - zabbix
     - zabbix-agent2
     - zabbix-aws
     - zabbix-config
+    - zabbix-owner
 
 - import_tasks: 20-configure-agent2.yml
   tags:

@@ -5,22 +5,27 @@ LogFile=/var/log/zabbix/zabbix_agent2.log
 PluginSocket=/run/zabbix/agent.plugin.sock
 ControlSocket=/run/zabbix/agent.sock
 
-{% if hostname_item is defined %}
-ListenIP=127.0.0.1
-{% else %}
-ListenIP={{zbx_agent_bind_addr }}
-{% endif %}
+ListenIP={{zbx_agent_bind_addr}}
 
 LogFileSize={{zbx_log_size}}
 Server={{ '127.0.0.1' if ( hostname_item is defined ) else zserver }}
+{% if zbx_agent_passive is not defined %}
 ServerActive={{ '127.0.0.1' if ( hostname_item is defined ) else zserveractive }}
+{% endif %}
 {% if hostname_item is defined %}
 Hostname={{hostname_item}}
 {% else %}
 HostnameItem=system.hostname
 {% endif %}
+{% if zbx_agent_key is  defined %}
+TLSConnect=psk
+TLSAccept=psk
+TLSPSKFile=/etc/zabbix/zabbix_agent2.psk
+TLSPSKIdentity={{zbx_agent_identity | default('psk_identyty_set_me') }}
+{% endif %}
 
-HostMetadata={% for zbx in  zabbix.apply_tag %}{{zbx}} {% endfor %}{% if zabbix.aws is defined %}owner-{{ aws_server_owner.stdout }}{% endif %}
+
+HostMetadata={% for zbx in  zabbix.apply_tag %}{{zbx}} {% endfor %}{% if server_owner is defined %}{% if server_owner.aws is defined %}owner-{{ aws_server_owner.stdout |default('not-set')}}{% else %}owner-{{ server_owner.manual |default('not-set')}}{% endif %}{% endif %}
 
 Timeout=30
 Include=/etc/zabbix/zabbix_agent2.d/*.conf

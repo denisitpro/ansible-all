@@ -5,7 +5,10 @@ zbx_agent_version: 6.4
 
 zabbix_scripts_path: "/opt/zabbix"
 
-zbx_agent_bind_addr: "{{ ansible_default_ipv4.address }}"
+zbx_agent_bind_addr_ipv4: "{{ ansible_default_ipv4.address }}"
+zbx_agent_bind_addr_ipv6: "{{ansible_default_ipv6.address}}"
+zbx_agent_bind_addr: "{{zbx_agent_bind_addr_ipv6}},{{zbx_agent_bind_addr_ipv4}}"
+
 
 # Zabbix
 zserver: zabbix.example.com

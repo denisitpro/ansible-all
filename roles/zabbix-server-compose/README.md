@@ -1,2 +1,2 @@
 # Description
-Role install zabbix server - https://github.com/zabbix/zabbix-docker
+Role install zabbix server https://github.com/zabbix/zabbix-docker
