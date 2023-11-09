@@ -4,20 +4,18 @@
       src: zabbix_agent2.conf.j2
       dest: /etc/zabbix/zabbix_agent2.conf
   notify: restart zabbix-agent2
-  when: zabbix.owner is not defined
-  tags:
-    - zabbix-conf
-    - zabbix
 
-- name: copy zabbix_agent2.conf - owner defined
+- name: copy zabbix psk
   template:
-      src: zabbix_agent2_htz.conf.j2
-      dest: /etc/zabbix/zabbix_agent2.conf
+      src: "zabbix_agentd.psk.j2"
+      dest: "/etc/zabbix/zabbix_agent2.psk"
+      mode: 0400
+      owner: zabbix
+      group: zabbix
   notify: restart zabbix-agent2
-  when: zabbix.owner is  defined
+  when: zbx_agent_key is defined
   tags:
-    - zabbix-conf
-    - zabbix
+    - zbx-debug
 
 
 - name: copy ansible autogenerate userparams.conf
@@ -29,8 +27,7 @@
       group: zabbix
   when: zabbix.params is defined
   notify: restart zabbix-agent2
-  tags:
-    - zabbix-conf
+
 
 #- name: copy clickhouse_userparams.conf
 #  template:
@@ -41,8 +38,7 @@
 #      group: zabbix
 #  when: ch_host_type == "clickhouse_slave"
 #  notify: restart zabbix-agent2
-#  tags:
-#    - zabbix-conf
+
 
 - name: create scripts dir
   file:
@@ -50,8 +46,7 @@
     state: directory
     recurse: yes
   when: zabbix.scripts is defined
-  tags:
-    - zabbix-conf
+
 
 - name: copy user scripts
   copy:
@@ -63,8 +58,7 @@
     - "{{ zabbix.scripts }}"
   when: zabbix.scripts is defined
   notify: restart zabbix-agent2
-  tags:
-    - zabbix-conf
+
 
 - name: "restart zabbix-agent2"
   ansible.builtin.systemd:
