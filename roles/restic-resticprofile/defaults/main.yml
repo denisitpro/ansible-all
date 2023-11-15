@@ -1,7 +1,9 @@
 ---
-resticprofile_version: 0.21.1
+resticprofile_version: 0.24.0
 
 restic_repository: "rest:http://example.com:8000"
+restic_aws_repository: s3:https://s3.amazonaws.com/s3-example
+
 restic_schedule: "01:00"
 
 resticprofile_dir: /opt/resticprofile

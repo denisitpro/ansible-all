@@ -8,9 +8,11 @@
   tags:
     - resticprofile
     - restic
+    - restic-config
 
 - import_tasks: 15-configure.yml
   tags:
     - resticprofile
     - restic
+    - restic-init
     - restic-schedule

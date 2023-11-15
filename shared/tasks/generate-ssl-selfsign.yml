@@ -13,15 +13,32 @@
 - debug:
     msg: ssl_cert_result -  {{ ssl_cert_result }}
 
-- name: create self-sign cert
-  command: openssl req -x509 -nodes -days 3650 -newkey rsa:4096 -subj "/C=DE/ST=DE/L=DE/O=DE/OU=DE/CN=selfsigned" -keyout {{ssl_key_app_path| default('/opt/ssl')}}/key.pem -out {{ssl_key_app_path| default('/opt/ssl')}}/cert.pem
+- name: create self-signed private key
+  community.crypto.openssl_privatekey:
+    owner: "{{ssl_key_owner |default('root')}}"
+    group: "{{ssl_key_group |default('root')}}"
+    path: "{{ssl_key_app_path| default('/opt/ssl')}}/{{gen_key_name |default('self-signed-key.pem')}}"
+    size: "{{privkey_size |default('4096')}}"
+    mode: "0400"
+
+- name: create self-signed cert
+  openssl_certificate:
+    path: "{{ ssl_key_app_path | default('/opt/ssl') }}/{{ gen_cert_name | default('self-signed-cert.pem') }}"
+    privatekey_path: "{{ssl_key_app_path| default('/opt/ssl')}}/{{gen_key_name |default('self-signed-key.pem')}}"
+    state: present
+    provider: selfsigned
+    mode: "0644"
+    owner: "{{ssl_key_owner |default('root')}}"
+    group: "{{ssl_key_group |default('root')}}"
   when: not ssl_cert_result.stat.exists
 
-- name: Change file permission
-  file:
-    path: "{{item}}"
-    mode: 0400
-  with_items:
-    - "{{ssl_key_app_path| default('/opt/ssl')}}/cert.pem"
-    - "{{ssl_key_app_path| default('/opt/ssl')}}/key.pem"
-  when: not ssl_cert_result.stat.exists
+
+# very very long
+#- name: Generate DH Parameters
+#  community.crypto.openssl_dhparam:
+#    path: "{{ ssl_key_app_path | default('/opt/ssl') }}/{{ dhparam_name | default('dhparam.pem') }}"
+#    size: 4096
+#    owner: "{{ssl_key_owner |default('root')}}"
+#    group: "{{ssl_key_group |default('root')}}"
+#  when: ssl_dhparam is defined
+

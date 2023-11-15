@@ -1,4 +1,10 @@
 ---
+- name: resticprofile init
+  shell: "resticprofile init"
+  args:
+    chdir: "{{ resticprofile_dir }}"
+  ignore_errors: yes
+
 - name: resticprofile schedule
   shell: "resticprofile schedule"
   args:

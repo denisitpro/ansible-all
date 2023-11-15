@@ -1,0 +1,58 @@
+# docs https://creativeprojects.github.io/resticprofile/configuration/examples/index.html
+#:schema https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+#
+# indentation is not needed but it makes it easier to read ;)
+#
+# docs https://creativeprojects.github.io/resticprofile/configuration/examples/index.html
+
+version = "1"
+
+
+{% if restic_backup_do is defined %}
+[default]
+  repository = "{{restic_s3_repository}}"
+  password-file = "password.txt"
+
+  [default.env]
+    AWS_DEFAULT_REGION="{{restic_s3_region | default('ams3')}}"
+    AWS_ACCESS_KEY_ID="{{restic_s3_access_id | default('need_set_access_key')}}"
+    AWS_SECRET_ACCESS_KEY="{{restic_s3_secret_key | default('need_set_secret_key')}}"
+
+  [default.backup]
+    verbose = true
+    source = [ "{{restic_backup_path | default('/mnt/backup')}}" ]
+    schedule = "{{restic_schedule_backup |default('1:30') }}"
+    tag = [ "{{restic_tag | default('tag_not_set')}}" ]
+{% if restic_retation_launch is defined %}
+  [default.retention]
+    after-backup = true
+    keep-within = "{{restic_retation_keep_within | default('7d')}}"
+    prune = true # may bo not use
+
+  [default.prune]
+    schedule = "{{restic_schedule_prune | default('3:05')  }}"
+
+{% endif %}
+{% endif %}
+
+#todo remove and refactore
+{% if restic_backup_aws is defined %}
+[default]
+  repository = "{{restic_aws_repository}}"
+  password-file = "password.txt"
+
+  [default.env]
+    AWS_DEFAULT_REGION="{{restic_aws_region | default('eu-central-1')}}"
+    AWS_ACCESS_KEY_ID="{{restic_aws_access_id | default('need_set_access_key')}}"
+    AWS_SECRET_ACCESS_KEY="{{restic_aws_secret_key | default('need_set_secret_key')}}"
+
+  [default.backup]
+    verbose = true
+    source = [ "{{restic_backup_path | default('/mnt/backup')}}" ]
+    schedule = "{{restic_schedule_backup}}"
+    tag = [ "{{restic_tag | default('tag_not_set')}}" ]
+
+  [default.retention]
+    after-backup = true
+    keep-within = "1d"
+{% endif %}
