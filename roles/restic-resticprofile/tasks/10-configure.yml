@@ -3,6 +3,21 @@
   ansible.builtin.template:
     src: "{{item}}.j2"
     dest: "/opt/resticprofile/{{item}}"
+    mode: 0600
   with_items:
     - "password.txt"
-    - "profiles.toml"
+
+#
+#- name: copy resticprofile files - internal server
+#  ansible.builtin.template:
+#    src: "profiles.toml.internal.j2"
+#    dest: "/opt/resticprofile/profiles.toml"
+#    mode: 0600
+#  when: restic_backup_internal is defined
+
+- name: copy resticprofile files - s3
+  ansible.builtin.template:
+    src: "profiles.toml.s3.j2"
+    dest: "/opt/resticprofile/profiles.toml"
+    mode: 0600
+  when: restic_backup_s3 is defined
