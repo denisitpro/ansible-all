@@ -1,0 +1,9 @@
+- import_tasks: shared/tasks/generate-ssl-selfsign.yml
+
+- name: Copy dhparam
+  ansible.builtin.copy:
+    src: dhparam.pem
+    dest: "{{ ssl_key_app_path | default('/opt/ssl') }}/{{ dhparam_name | default('dhparam.pem') }}"
+    owner: "{{ssl_key_owner |default('root')}}"
+    group: "{{ssl_key_group |default('root')}}"
+    mode: '0644'

@@ -1,6 +1,6 @@
 ---
 - import_tasks: 03-consul-reg.yml
-  when: clickhouse_external is not defined
+  when: clickhouse_internal_metrics is defined
   tags:
     - consul-reg
     - clickhouse
@@ -13,12 +13,21 @@
 - import_tasks: 10-configure.yml
   tags:
     - clickhouse
+    - clickhouse-config
     - clickhouse-compose
 
-- import_tasks: 15-launch.yml
+- import_tasks: 20-clickhouse-ssl.yml
+  tags:
+    - clickhouse
+    - clickhouse-ssl
+
+
+- import_tasks: 40-create-users.yml
+  tags:
+    - clickhouse
+    - clickhouse-users
+
+- import_tasks: 90-launch.yml
   tags:
     - clickhouse
     - clickhouse-compose
-
-- import_tasks: 80-create-users.yml
-  tags: [ 'never', 'create-users' ]
