@@ -1,0 +1,16 @@
+service {
+  name = "clickhouse-metrics"
+  tags = ["clickhouse-metrics", "prometheus", "{{stand_type}}"]
+  address = "{{clickhouse_metrics_addr |default (ansible_fqdn) }}"
+  port = 9363
+{% if consul_agent_disabled is not defined %}
+  token = "{{ vault_dict_users_secret.consul_clickhouse_metrics_token | default('set_token') }}"
+{% endif %}
+  check = {
+    id = "clickhouse_metrics"
+    name = "clickhouse_metrics healthcheck"
+    tcp = "{{clickhouse_bind_addr |default('127.0.0.1') }}:9363"
+    interval =  "30s"
+    timeout =  "2s"
+    }
+}

@@ -5,7 +5,9 @@ LogFile=/var/log/zabbix/zabbix_agent2.log
 PluginSocket=/run/zabbix/agent.plugin.sock
 ControlSocket=/run/zabbix/agent.sock
 
+{% if zbx_agent_bind_addr is  defined %}
 ListenIP={{zbx_agent_bind_addr}}
+{% endif %}
 
 LogFileSize={{zbx_log_size}}
 Server={{ '127.0.0.1' if ( hostname_item is defined ) else zserver }}

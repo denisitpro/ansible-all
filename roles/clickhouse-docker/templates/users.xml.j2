@@ -30,11 +30,6 @@
             {% endif %}
         </default>
         <readonly>
-{% if  ch_query_mem_limit is defined %}
-            <max_memory_usage_for_all_queries>{{ ch_query_mem_limit }}</max_memory_usage_for_all_queries>
-{% else %}
-            <max_memory_usage_for_all_queries>{{ ansible_memtotal_mb * 1024 * 1024 - 2000000000 }}</max_memory_usage_for_all_queries>
-{% endif %}
             <use_uncompressed_cache>0</use_uncompressed_cache>
             <load_balancing>random</load_balancing>
             <log_queries>1</log_queries>
@@ -42,16 +37,11 @@
             <readonly>1</readonly>
         </readonly>
         <grafana>
-{% if  ch_query_mem_limit is defined %}
-            <max_memory_usage_for_all_queries>{{ ch_query_mem_limit}}</max_memory_usage_for_all_queries>
-{% else %}
-            <max_memory_usage_for_all_queries>{{ ansible_memtotal_mb * 1024 * 1024 - 2000000000 }}</max_memory_usage_for_all_queries>
-{% endif %}
             <use_uncompressed_cache>0</use_uncompressed_cache>
             <load_balancing>random</load_balancing>
             <log_queries>1</log_queries>
 
-            <readonly>1</readonly>
+            <readonly>2</readonly>
             <max_execution_time>10</max_execution_time>
         </grafana>
     </profiles>
@@ -76,7 +66,7 @@
 
             <quota>{{user.quota|default('default')}}</quota>
 {% if 'default' == user.name %}
-            <access_management>1</access_management>
+            <access_management>{{clickhouse_access_management}}</access_management>
 {% endif %}
 
 {% if user.allow_databases is defined%}

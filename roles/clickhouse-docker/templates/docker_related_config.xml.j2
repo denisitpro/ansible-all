@@ -1,8 +1,17 @@
 <yandex>
      <!-- Listen wildcard address to allow accepting connections from other containers and host network. -->
-    <listen_host>{{clickhouse_bind_addr}}</listen_host>
-    <listen_try>1</listen_try>
 
+{% if clickhouse_bind_all_iface is defined %}
+    <listen_host>::</listen_host>
+{% else %}
+    <listen_host>::1</listen_host>
+    <listen_host>127.0.0.1</listen_host>
+{% if clickhouse_bind_addr is defined %}
+    <listen_host>{{clickhouse_bind_addr}}</listen_host>
+{% endif %}
+{% endif %}
+    <listen_try>1</listen_try>
+    <https_port>8443</https_port>
     <!--
     <logger>
         <console>1</console>

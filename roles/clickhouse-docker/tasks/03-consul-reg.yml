@@ -1,8 +1,8 @@
 ---
 - name: copy clickhouse_exporter consul config
   template:
-    src: ch_exporter.hcl.j2
-    dest: /etc/consul.d/clickhouse_exporter.hcl
+    src: clickhouse_metrics_internal.hcl.j2
+    dest: /etc/consul.d/clickhouse_metrics_internal.hcl
     owner: consul
     group: consul
     mode: 0644

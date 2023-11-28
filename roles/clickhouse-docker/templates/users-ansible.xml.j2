@@ -1,0 +1,35 @@
+<yandex>
+    <users>
+{% for user in  clickhouse.users  %}
+{% if not ( ( user.access | default("all") ) == "slave" and ( ch_master_host | default(ansible_hostname) ) == ansible_hostname ) %}
+        <{{user.name}}>
+            <password_sha256_hex>{{vault_dict_users_secret[user.name]|hash('sha256')}}</password_sha256_hex>
+            <networks incl="{{user.networks_incl|default('networks')}}" replace="{{user.networks_replace|default('replace')}}">
+{% if user.ip is defined %}
+{% for ip in  user.ip  %}
+                <ip>{{ip|default('::/0')}}</ip>
+{% endfor %}
+{% else %}
+                <ip>{{user.ip|default('::/0')}}</ip>
+{% endif %}
+            </networks>
+
+            <profile>{{user.profile|default('default')}}</profile>
+
+            <quota>{{user.quota|default('default')}}</quota>
+{% if 'default' == user.name %}
+            <access_management>1</access_management>
+{% endif %}
+
+{% if user.allow_databases is defined%}
+            <allow_databases>
+{% for database in user.allow_databases%}
+                <database>{{ database }}</database>
+{% endfor %}
+            </allow_databases>
+{% endif %}
+        </{{user.name}}>
+{% endif %}
+{% endfor %}
+    </users>
+</yandex>

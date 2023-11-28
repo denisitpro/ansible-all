@@ -7,7 +7,11 @@ zabbix_scripts_path: "/opt/zabbix"
 
 zbx_agent_bind_addr_ipv4: "{{ ansible_default_ipv4.address }}"
 zbx_agent_bind_addr_ipv6: "{{ansible_default_ipv6.address}}"
-zbx_agent_bind_addr: "{{zbx_agent_bind_addr_ipv6}},{{zbx_agent_bind_addr_ipv4}}"
+#zbx_agent_bind_addr: "{{zbx_agent_bind_addr_ipv6}},{{zbx_agent_bind_addr_ipv4}}"
+
+# enable PSK force
+zbx_agent_identity:  "{{ vault_dict_users_secret.zbx_agent_psk_identity }}"
+zbx_agent_key:  "{{ vault_dict_users_secret.zbx_agent_psk_key }}"
 
 
 # Zabbix

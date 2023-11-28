@@ -1,21 +1,28 @@
 ---
 - import_tasks: shared/tasks/create-dir-docker-compose.yml
 
+# todo merge base and data path
 - name: create path - base
   ansible.builtin.file:
     path: "{{item}}"
     state: directory
+    owner: "{{clickhouse_permission_owner |default('101')}}"
+    group: "{{clickhouse_permission_owner |default('101')}}"
   with_items:
     - "{{ clickhouse_path }}"
     - "{{clickhouse_path}}/logs"
     - "{{clickhouse_path}}/conf"
-    - "{{clickhouse_path}}/config.d"
+    - "{{clickhouse_path}}/users.d"
+#    - "{{clickhouse_path}}/config.d" # not used
 
 - name: create path data
   ansible.builtin.file:
     path: "{{item}}"
     state: directory
-    mode: "0777"
+#    mode: "0775"
+    mode: "0775"
+    owner: "{{clickhouse_permission_owner |default('101')}}"
+    group: "{{clickhouse_permission_owner |default('101')}}"
   with_items:
     - "{{clickhouse_path}}/data"
 
@@ -25,7 +32,7 @@
     dest: "{{clickhouse_path}}/conf/{{item}}"
   with_items:
     - "config.xml"
-    - "users.xml"
+#    - "users.xml"
     - "docker_related_config.xml"
   notify: restart-docker clickhouse
   tags:

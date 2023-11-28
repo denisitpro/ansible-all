@@ -2,7 +2,7 @@
 - name: copy compose-file - clickhouse
   template:
     src: "docker-compose.clickhouse.yml.j2"
-    dest: "{{docker_compose_path}}/docker-compose.yml"
+    dest: "{{docker_compose_path | default('/opt/docker')}}/clickhouse/docker-compose.yml"
     mode: 0600
   tags:
     - config

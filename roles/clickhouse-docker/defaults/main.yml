@@ -1,18 +1,20 @@
 ---
-clickhouse_version: 22.3.11.12
-clickhouse_bind_addr: "{{global_bind_addr}}"
+clickhouse_version: 23.7.2.25
 clickhouse_port: 8123
 
 clickhouse_path: /opt/clickhouse
-clickhouse_exporter_version: latest
-clickhouse_exporter_port: 9116
 
-exporter_user: user_ch_exporter
 max_concurrent_queries: 100
 max_parts_in_total: 100000
 parts_to_throw_insert: 300
 
+clickhouse_srv_name: "click-{{inventory_hostname_short}}"
+docker_compose_app_path: "{{docker_compose_path | default('/opt/docker')}}"
 
-clickhouse_listen_host: "{{global_bind_addr}}"
+# https://clickhouse.com/docs/en/operations/access-rights
+clickhouse_access_management: 0 # 1 allow create user use SQL query
 
-docker_compose_app_path: "{{docker_compose_path}}"
+
+
+folder_apps:
+  - clickhouse
