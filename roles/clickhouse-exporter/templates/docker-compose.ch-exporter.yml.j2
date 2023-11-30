@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  clickhouse.exporter:
+    image: flant/clickhouse-exporter:{{clickhouse_exporter_version}}
+    container_name: clickhouse.exporter
+    hostname: ch-exporter-{{stand_type}}
+    network_mode: host
+    restart: always
+    environment:
+      - CLICKHOUSE_USER={{clickhouse_exporter_user | default('set_me')}}
+      - CLICKHOUSE_PASSWORD={{ vault_dict_users_secret.user_ch_exporter | default('set_me') }}
+    command:
+      - -scrape_uri
+      - http://localhost:8123
+      - -telemetry.address
+      - {{clickhouse_exporter_bind_addr | default('') }}:{{clickhouse_exporter_port | default('9116')}}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
