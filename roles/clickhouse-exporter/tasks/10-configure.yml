@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - clickhouse
+  template:
+    src: "docker-compose.ch-exporter.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker')}}/ch-exporter/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

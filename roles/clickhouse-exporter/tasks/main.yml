@@ -1,0 +1,22 @@
+---
+- import_tasks: 03-consul-reg.yml
+  tags:
+    - consul-reg
+    - ch-exporter
+
+- import_tasks: 05-prefly.yml
+  tags:
+    - ch-exporter
+    - ch-exporter-config
+
+- import_tasks: 10-configure.yml
+  tags:
+    - ch-exporter
+    - ch-exporter-config
+    - ch-exporter-compose
+
+
+- import_tasks: 90-launch.yml
+  tags:
+    - ch-exporter
+    - ch-exporter-compose

@@ -1,0 +1,6 @@
+---
+clickhouse_exporter_version: latest
+clickhouse_exporter_user: user_ch_exporter
+
+folder_apps:
+  - ch-exporter
