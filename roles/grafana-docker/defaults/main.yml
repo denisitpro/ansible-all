@@ -5,7 +5,7 @@ gf_server_root_url: https://grafana.example.com
 gf_server_domain: example.com
 grafana_data_path: /opt/grafana
 grafana_ssl_path: "{{grafana_data_path}}/ssl"
-grafana_version: "10.0.5"
+grafana_version: "10.2.0"
 grafana_image: 'grafana/grafana'
 
 grafana_bind_port: '3000'

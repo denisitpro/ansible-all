@@ -5,6 +5,7 @@ services:
         image:  {{ grafana_image }}:{{ grafana_version }}
         container_name: grafana
         network_mode: host
+        mem_limit: {{grafana_mem_limit | default('512m')}}
         volumes:
             - "{{ grafana_data_path }}/etc:/etc/grafana"
             - "{{ grafana_data_path }}/etc/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
