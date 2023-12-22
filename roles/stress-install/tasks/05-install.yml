@@ -1,0 +1,7 @@
+---
+- name: install stress
+  apt:
+    name:
+      - stress
+    state: latest
+    update_cache: yes

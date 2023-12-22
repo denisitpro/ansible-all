@@ -1,0 +1,17 @@
+[Unit]
+Description="stress - tool to impose load on and stress test systems"
+Documentation="https://linux.die.net/man/1/stress"
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/bin/stress -c {{stress_thread_count | default('4') }} --timeout {{stress_timeout |default('120') }}
+KillMode=process
+CPUAffinity={{ cpu_affinity_core | default(ansible_processor_vcpus-1) }}
+
+
+[Install]
+WantedBy=multi-user.target

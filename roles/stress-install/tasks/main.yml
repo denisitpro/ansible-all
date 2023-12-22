@@ -1,0 +1,11 @@
+---
+- import_tasks: 05-install.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - stress
+
+- import_tasks: 10-systemd.yml
+  tags:
+    - stress
+    - stress-unit
+

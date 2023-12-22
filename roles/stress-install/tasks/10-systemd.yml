@@ -1,0 +1,19 @@
+---
+- name: check CPU cores
+  debug: msg="CPU cores {{ansible_processor_cores}}, processor_count  - {{ansible_processor_count}}, thread per core - {{ansible_processor_threads_per_core}}, vpcu - {{ansible_processor_vcpus}} "
+  tags: ['stress-debug']
+
+
+- name: copy systemd unit file
+  template:
+    src:  stress.service.j2
+    dest: /etc/systemd/system/stress.service
+    mode: 0644
+    owner: root
+    group: root
+
+- name: ensure stress service is enabled
+  systemd:
+    daemon_reload: true
+    name: stress
+    enabled: false
