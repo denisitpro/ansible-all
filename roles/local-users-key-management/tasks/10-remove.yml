@@ -1,0 +1,7 @@
+---
+- name: remove public key
+  ansible.posix.authorized_key:
+    user: "{{user_for_add_key | default('ubuntu')}}"
+    state: absent
+    key: "{{ lookup('file', item) }}"
+  loop: "{{ ssh_key_remove }}"
