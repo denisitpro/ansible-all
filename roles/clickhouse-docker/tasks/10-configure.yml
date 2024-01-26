@@ -1,9 +1,29 @@
 ---
+- name: copy  config.xml
+  template:
+    src:  "{{item}}.j2"
+    dest: "{{clickhouse_path}}/conf/{{item}}"
+  with_items:
+    - "config.xml"
+  notify: restart-docker clickhouse
+  tags:
+    - clickhouse-config
+
+- name: copy  config.xml
+  template:
+    src:  "{{item}}.j2"
+    dest: "{{clickhouse_path}}/conf/config.d/{{item}}"
+  with_items:
+    - "docker_related_config.xml"
+    - "query_log.xml"
+  notify: restart-docker clickhouse
+  tags:
+    - clickhouse-config
+
+
 - name: copy compose-file - clickhouse
   template:
     src: "docker-compose.clickhouse.yml.j2"
     dest: "{{docker_compose_path | default('/opt/docker')}}/clickhouse/docker-compose.yml"
     mode: 0600
-  tags:
-    - config
-    - reconfigure
+

@@ -1,9 +1,9 @@
 ---
 - import_tasks: 03-consul-reg.yml
-  when: clickhouse_internal_metrics is defined
   tags:
     - consul-reg
     - clickhouse
+    - clickhouse-metrics
 
 - import_tasks: 05-prefly.yml
   tags:
@@ -21,7 +21,6 @@
     - clickhouse
     - clickhouse-ssl
 
-
 - import_tasks: 40-create-users.yml
   tags:
     - clickhouse
@@ -31,3 +30,4 @@
   tags:
     - clickhouse
     - clickhouse-compose
+    - clickhouse-launch

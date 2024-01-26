@@ -3,11 +3,9 @@
   template:
     src:  "{{item}}.j2"
     dest: "{{clickhouse_path}}/users.d/{{item}}"
-#    dest: "{{clickhouse_path}}/conf/{{item}}"
     owner: "{{clickhouse_permission_owner |default('101')}}"
     group: "{{clickhouse_permission_owner |default('101')}}"
   with_items:
     - "users.xml"
-#    - "users-ansible.xml"
   tags:
     - create-users

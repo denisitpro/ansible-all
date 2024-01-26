@@ -1,9 +1,9 @@
 ---
-- name: copy clickhouse_exporter consul config
+- name: copy clickhouse metrics  consul config
   template:
     src: clickhouse_metrics_internal.hcl.j2
     dest: /etc/consul.d/clickhouse_metrics_internal.hcl
     owner: consul
     group: consul
     mode: 0644
-  notify: reload consul
+  notify: restart consul
