@@ -11,8 +11,7 @@ services:
        - {{clickhouse_path}}/data:/var/lib/clickhouse
        - {{clickhouse_path}}/logs:/var/log/clickhouse-server
        - {{clickhouse_path}}/conf/config.xml:/etc/clickhouse-server/config.xml
-       - {{clickhouse_path}}/conf/docker_related_config.xml:/etc/clickhouse-server/config.d/docker_related_config.xml
-#       - {{clickhouse_path}}/conf/users.xml:/etc/clickhouse-server/users.xml
+       - {{clickhouse_path}}/conf/config.d:/etc/clickhouse-server/config.d/
        - {{clickhouse_path}}/users.d:/etc/clickhouse-server/users.d/
 {% if clickhouse_ssl is defined %}
        - {{ssl_key_app_path| default('/opt/ssl')}}/self-signed-cert.pem:/etc/clickhouse-server/server.crt
@@ -28,10 +27,11 @@ services:
     restart: always
 {% endif %}
     logging:
-{% if fluentd is defined %}
+{% if vector_server_fluent_address is defined %}
       driver: fluentd
       options:
-        tag: clickhouse
+        tag: clickhouse-docker
+        fluentd-address: {{vector_server_fluent_address | default('127.0.0.1:24224')}}
 {% else %}
       driver: json-file
       options:
