@@ -2,21 +2,31 @@
 - import_tasks: 05-install.yml
   tags:
     - node-exporter
+    - node-exporter-update
+    - consul
 
-- import_tasks: 10-configure.yml
+
+- import_tasks: 10-owner.yml
+  when: server_owner is defined
   tags:
     - node-exporter
     - node-exporter-conf
+    - consul
+    - consul-owner
+
+- import_tasks: 15-configure.yml
+  tags:
+    - node-exporter
+    - node-exporter-conf
+    - consul
 
 
 - import_tasks: 25-consul-service.yml
   tags:
     - node-exporter
+    - consul
     - consul-reg
+    - consul-owner
 
-- import_tasks: 30-consul-http-reg.yml
-  when:
-    - consul_http_reg is defined
-  tags:
-    - node-exporter
-    - consul-reg
+- import_tasks: 90-restart.yml
+  tags: ['never', 'node-exporter-restart']

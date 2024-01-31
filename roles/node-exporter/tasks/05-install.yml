@@ -8,42 +8,43 @@
     - create
 
 - name: Create the node_exporter user
-  user:
+  ansible.builtin.user:
     name: "{{ node_exporter_system_user }}"
     groups: "{{ node_exporter_system_group }}"
     append: true
-    shell: /usr/sbin/nologin
+    shell: "/usr/sbin/nologin"
     system: true
     create_home: false
-    home: /
+    home: "/nonexistent"
 
-- name: Download node_exporter binary
+- name: Download node_exporter binary - {{node_exporter_download_url}}
   become: false
-  get_url:
-    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
-    dest: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
-  register: _download_binary
-  until: _download_binary is succeeded
+  ansible.builtin.get_url:
+    url: "{{ node_exporter_download_url }}"
+    dest: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
+    mode: 0644
+  register: node_exporter_download_binary
+  until: node_exporter_download_binary is succeeded
   retries: 5
   delay: 2
   check_mode: false
 
 - name: Unpack node_exporter binary
   become: false
-  unarchive:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+  ansible.builtin.unarchive:
+    src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
     dest: "/tmp"
-    creates: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
-    remote_src: yes
+    creates: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}/node_exporter"
+    remote_src: true
   check_mode: false
 
 - name: Propagate node_exporter binaries
-  copy:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ go_arch }}/node_exporter"
-    dest: "/usr/local/bin/node_exporter"
+  ansible.builtin.copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}/node_exporter"
+    dest: "{{ node_epxorter_binary_path }}"
     mode: 0755
     owner: root
     group: root
-    remote_src: yes
-  notify: restart node_exporter
+    remote_src: true
+  notify: restart node-exporter
   when: not ansible_check_mode
