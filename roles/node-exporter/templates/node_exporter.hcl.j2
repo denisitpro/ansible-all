@@ -1,15 +1,19 @@
 service {
-  name = "node-exporter",
-  port = 9100,
-  tags = ["node_exporter", "prometheus", "{{stand_type}}"],
-{% if consul_agent_disabled is not defined %}
-  token = "{{ vault_dict_users_secret.consul_node_exporter_token }}",
-{% endif %}
+  name  = "{{ node_exporter_name | default('node-exporter') }}"
+  port  = {{ node_exporter_bind_port }}
+  tags  = [
+    "{{ node_exporter_name | default('node-exporter') }}","prometheus","{{ stand_type }}"
+  ]
+
+  {% if consul_agent_disabled is not defined %}
+    token = "{{ consul_node_exporter_token }}"
+  {% endif %}
+
   check = {
-    id = "node_exporter"
-    name = "node_exporter healthcheck"
-    tcp = "{{node_exporter_bind_addr}}:9100"
-    interval =  "30s"
-    timeout =  "2s"
-    }
+    id       = "node-exporter"
+    name     = "node-exporter healthcheck"
+    tcp      = "{{ node_exporter_bind_addr | default('') }}:{{ node_exporter_bind_port | default('9100') }}"
+    interval = "30s"
+    timeout  = "2s"
+  }
 }

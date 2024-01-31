@@ -1,0 +1,3 @@
+---
+- import_tasks: shared/tasks/metadata-aws.yml
+  when: server_owner.aws is defined

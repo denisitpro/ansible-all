@@ -1,12 +1,25 @@
 ---
-node_exporter_version: 1.3.1
-node_exporter_web_listen_address: "{{global_bind_addr}}:9100"
-node_exporter_bind_addr: "{{global_bind_addr}}"
+go_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
 
-node_exporter_system_group: "node-exp"
+go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+docker_compose_app_path: "/opt/docker"
+
+node_exporter_version_binary: "1.7.0"
+node_exporter_bind_port: '9100'
+#node_exporter_web_listen_address: "{{ node_exporter_bind_addr | default(ansible_default_ipv4.address) }}:{{ node_exporter_bind_port }}"
+#node_exporter_bind_addr: "{{ global_bind_addr | default(ansible_default_ipv4.address) }}"
+
+node_exporter_system_group: "node-exporter"
 node_exporter_system_user: "{{ node_exporter_system_group }}"
 
-node_exporter_textfile_dir: "/var/lib/node_exporter"
+node_epxorter_binary_path: "/usr/local/bin/node_exporter"
+node_exporter_textfile_dir: "/var/lib/node-exporter"
 
 node_exporter_enabled_collectors:
   - systemd
@@ -17,3 +30,7 @@ node_exporter_enabled_collectors:
 #      ignored-fs-types: "^(sys|proc|auto)fs$"
 
 node_exporter_disabled_collectors: []
+
+node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version_binary }}/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
+
+consul_node_exporter_token: "{{ vault_dict_users_secret.consul_node_exporter_token | default('0000000000000000000000000000000') }}"
