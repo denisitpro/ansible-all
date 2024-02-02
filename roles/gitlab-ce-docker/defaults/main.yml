@@ -1,7 +1,7 @@
 ---
 gitlab_bind_addr: "{{global_bind_addr}}"
 gitlab_registry: gitlab/gitlab-ce
-gitlab_image: 16.3.5-ce.0
+gitlab_image: 16.8.1-ce.0
 gitlab_data_path: /opt/gitlab
 gitlab_conf_path: "{{gitlab_data_path}}/conf"
 gitlab_ssh_port: 2224

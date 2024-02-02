@@ -5,7 +5,7 @@ gf_server_root_url: https://grafana.example.com
 gf_server_domain: example.com
 grafana_data_path: /opt/grafana
 grafana_ssl_path: "{{grafana_data_path}}/ssl"
-grafana_version: "10.2.0"
+grafana_version: "10.2.3"
 grafana_image: 'grafana/grafana'
 
 grafana_bind_port: '3000'
@@ -23,12 +23,15 @@ grafana_auto_login: 'false'
 
 gf_app_mode: 'production'
 gf_instance_name: 'grafana'
-gf_auth_google_client_id: '{{ vault_dict_users_secret.client_id }}'
-gf_auth_google_client_secret: '{{ vault_dict_users_secret.client_secret }}'
-gf_auth_google_scopes: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
-gf_auth_google_auth_url:  'https://accounts.google.com/o/oauth2/auth'
-gf_auth_google_token_url: 'https://accounts.google.com/o/oauth2/token'
-gf_auth_google_allow_sign_up: true
+
+
+gf_auth_google_client_id: '{{ vault_dict_users_secret.google_client_id }}'
+gf_auth_google_client_secret: '{{ vault_dict_users_secret.google_client_secret }}'
+gf_auth_google_allowed_domains: "example.com"
+gf_auth_google_hosted_domain: "example.com"
+
+
+
 gf_auth_ldap_allow_sign_up: true
 gf_auth_ldap_config_file: '/etc/grafana/ldap.toml'
 gf_ldap_toml_servers_bind_password: '{{ vault_dict_users_secret.s_grafana_01 }}'

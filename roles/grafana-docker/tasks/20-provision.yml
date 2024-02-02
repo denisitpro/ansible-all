@@ -15,7 +15,7 @@
     owner: "{{grafana_user_uid | default('472')}}"
     group: root
     mode: 0640
-#  notify: restart-docker grafana
+  notify: restart-docker grafana
   tags:
     - grafana-datasource
 

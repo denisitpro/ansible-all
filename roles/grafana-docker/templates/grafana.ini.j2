@@ -35,6 +35,22 @@ allowed_domains = {{grafana_allowed_domains}}
 role_attribute_path = contains(groups[*], '@{{grafana_role_attribute_path}}') && 'Editor' || 'Viewer'
 {% endif %}
 
+{% if grafana_oidc_google is defined %}
+[auth.google]
+enabled = true
+allow_sign_up = {{gf_auth_google_allow_sign_up | default('true')}}
+auto_login = false
+client_id = {{gf_auth_google_client_id }}
+client_secret = {{gf_auth_google_client_secret}}
+scopes = {{gf_auth_google_scopes | default('openid email profile')}}
+auth_url = https://accounts.google.com/o/oauth2/v2/auth
+token_url = https://oauth2.googleapis.com/token
+api_url = https://openidconnect.googleapis.com/v1/userinfo
+allowed_domains = {{gf_auth_google_allowed_domains }}
+hosted_domain = {{gf_auth_google_hosted_domain }}
+use_pkce = true
+{% endif %}
+
 
 {% if grafana_smtp is defined %}
 [smtp]
