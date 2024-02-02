@@ -7,6 +7,8 @@ example config for deploy gitlab to internal networks
 * Role support self signed certificate, vars disable nginx status, prometheus monitoring, alert manager and bind all service to specific address
 * Vars disabled lets encrypt - usage internal networks
 * example configure backup to AWS S3
+* add example google SSO - docs https://docs.gitlab.com/ee/integration/google.html
+* add example github SSO - docs https://docs.gitlab.com/ee/integration/github.html
 
 example vars
 ```commandline
@@ -38,4 +40,7 @@ gitlab_settings:
    - gitlab_rails['backup_upload_connection'] = {'provider' => 'AWS','region' => 'eu-central-1','aws_access_key_id' => 'exmple_access_key','aws_secret_access_key' => 'example_secret_key }}'}
    - gitlab_rails['backup_upload_remote_directory'] = 'giatlab-backup-example'
    - gitlab_rails['backup_encryption'] = 'AES256'
-```
+   - 'gitlab_rails[''omniauth_providers''] = [{name: "google_oauth2", app_id: "app_id", app_secret: "secret", args: { access_type: "offline", approval_prompt: "" }}]'
+#   - 'gitlab_rails[''omniauth_providers''] = [{ name: "github", app_id: "app_id",app_secret: "secret",args: { scope: "user:email"} }]'
+
+   ```

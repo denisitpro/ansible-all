@@ -5,6 +5,6 @@
 #    chdir: "{{ gitlab_docker_compose_path }}"
 
 - name: run restart compose
-  shell: "docker-compose down && docker-compose up -d"
+  shell: "docker compose down && docker compose up -d"
   args:
     chdir: "{{ gitlab_docker_compose_path }}"
