@@ -19,6 +19,7 @@
   with_items:
     - agent.hcl
     - consul.hcl
+  notify: restart-docker consul
   tags:
     - consul-hcl
 
@@ -48,7 +49,7 @@
     - "telemetry.hcl"
   when: consul_telemetry is not defined
 
-- name: Create a directoris for docker-compose consul
+- name: Create a directoris for docker compose consul
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory

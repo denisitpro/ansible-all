@@ -1,9 +1,10 @@
 datacenter = "{{consul_dc_name}}"
 data_dir = "{{consul_data_path}}"
 encrypt = "{{ vault_dict_users_secret.consul_encrypt_key }}"
-retry_join = [{{consul_cls_master | map('to_json') | join(', ')  }}, "{{consul_cls_pub_name}}"]
+retry_join = ["{{consul_cls_pub_name}}"]
 bind_addr = "{{consul_bind_addr}}"
 disable_update_check =  true
+log_level = "{{consul_log_level | default('info') }}"
 performance {
   raft_multiplier = 1
 }
