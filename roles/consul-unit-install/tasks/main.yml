@@ -1,26 +1,29 @@
 ---
-- import_tasks: 00-create-user.yml
+- import_tasks: 05-clean.yml
+  tags: [ 'never', 'consul-clean']
+
+- import_tasks: 10-create-user.yml
   tags:
     - consul
 
-- import_tasks: 01-pre-required.yml
+- import_tasks: 15-pre-required.yml
   tags:
     - consul
     - consul-update
 
-- import_tasks: 02-path.yml
+- import_tasks: 20-path.yml
   tags:
     - consul
     - consul-config
 
-- import_tasks: 03-configure.yml
+- import_tasks: 40-configure.yml
   tags:
     - consul-reconfigure
     - consul-config
     - consul-acl
     - consul
 
-- import_tasks: 05-consul-unit.yml
+- import_tasks: 50-consul-unit.yml
   tags:
     - consul-reconfigure
     - consul-acl

@@ -9,7 +9,7 @@
 
 - name: Consul stop
   ansible.builtin.command:
-    cmd: "docker-compose stop consul"
+    cmd: "docker compose stop consul"
   args:
     chdir: "{{ docker_compose_path }}/consul"
   tags:
@@ -18,7 +18,7 @@
 
 - name: Consul restart
   ansible.builtin.command:
-    cmd: "docker-compose stop consul && docker-compose start consul"
+    cmd: "docker compose stop consul && docker compose start consul"
   args:
     chdir: "{{ docker_compose_path }}/consul"
   tags:

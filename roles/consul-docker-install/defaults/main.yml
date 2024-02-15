@@ -8,13 +8,14 @@ consul_data_path: /opt/consul
 consul_config_dir: /etc/consul.d
 consul_tmpl_dir: "{{consul_data_path}}/tmpl"
 consul_dc_name: "dc1"
-consul_bind_addr: "{{global_bind_addr}}"
+#consul_bind_addr: "{{global_bind_addr}}"
+#consul_bind_addr: "{{ansible_default_ipv6.address}}"
+consul_bind_addr: "[::]"
+
 
 docker_compose_path: /opt/docker
 
-
-consul_registry: consul
-consul_agent_image: 1.15.4
+consul_agent_image: 1.17.2
 
 consul_cls_pub_name: "consul.example.com"
 consul_cls_group: consul_cls_group

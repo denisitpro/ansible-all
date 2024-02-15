@@ -1,0 +1,5 @@
+---
+- name: Remove files consul
+  ansible.builtin.file:
+    path: "{{consul_data_path}}"
+    state: absent
