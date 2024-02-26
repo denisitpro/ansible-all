@@ -34,3 +34,7 @@ node_exporter_disabled_collectors: []
 node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version_binary }}/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
 
 consul_node_exporter_token: "{{ vault_dict_users_secret.consul_node_exporter_token | default('0000000000000000000000000000000') }}"
+
+# not set sh file. its add to task
+#node_exporter_textfile_scripts:
+#  - ping-ipv4.sh

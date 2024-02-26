@@ -20,6 +20,14 @@
     - node-exporter-conf
     - consul
 
+- import_tasks: 20-scripts.yml
+  when: node_exporter_textfile_scripts is defined
+  tags:
+    - node-exporter
+    - node-exporter-conf
+    - node-exporter-script
+    - consul
+
 
 - import_tasks: 25-consul-service.yml
   tags:
