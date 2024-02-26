@@ -1,0 +1,11 @@
+---
+- import_tasks: shared/tasks/create-script-path.yml
+
+- name: copy scripts
+  ansible.builtin.template:
+    src: "{{item}}.j2"
+    dest: "{{scripts_path | default('/opt/scripts')}}/{{item}}"
+    mode: 0740
+    owner: "{{node_exporter_system_group}}"
+    group: "{{node_exporter_system_group}}"
+  with_items: "{{node_exporter_textfile_scripts}}"

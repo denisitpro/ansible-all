@@ -1,0 +1,15 @@
+#!/bin/bash
+# version 1.1
+
+
+ping_host6="{{ping_host6 | default('dns.google')}}"
+
+ping_results=$(ping -6 $ping_host6 -c 1 -W 2 | awk -F= '{print $4}' | tr -d ' ms' | sed '/^$/d' 2>&1)
+
+if [ -z $ping_results ]; then
+    ping_results="99999"
+fi
+
+ping_host6_metric=$(echo $ping_host6 | tr '-' '_' | tr '.' '_')  #normalization for metric format support
+
+echo "c1_$(hostname | awk -F. '{print $1}' | tr '-' '_')_ping_ms_${ping_host6_metric} $ping_results" > /var/lib/node-exporter/ping6_$ping_host6_metric.prom
