@@ -1,0 +1,26 @@
+---
+- name: Import docker dir
+  ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: Import /security
+  ansible.builtin.import_tasks: shared/tasks/copy-security-limits.yml
+
+- name: Create folder for redis compose
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{ redis_docker_compose_path }}"
+
+- name: Create folder redis-data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ redis_user_uid }}"
+    group: "{{ redis_user_gid }}"
+  with_items:
+    - "{{ redis_node_data_path }}"

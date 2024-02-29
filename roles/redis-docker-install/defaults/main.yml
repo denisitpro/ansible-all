@@ -1,0 +1,24 @@
+---
+redis_version: "7.2.4-alpine3.19"
+
+
+redis_user: "redis"
+redis_docker_compose_path: "{{ docker_compose_path |default('/opt/docker') }}/redis"
+redis_user_uid: '999'
+redis_user_gid: '999'
+redis_bind_addr: "{{ global_bind_addr }}"
+redis_port: 6379
+redis_conf_tmpl: "redis-master.conf.j2"
+redis_node_data_path: "/opt/redis"
+redis_image: "redis"
+redis_exporter_port: 9121
+redis_exporter_version: "v1.43.0"
+redis_exporter_bind_addr: "{{ global_bind_addr }}"
+redis_service_bind_addr: "{{ redis_bind_addr }}"
+
+redis_consul_token: "{{ vault_dict_users_secret[\"consul_\" + redis_consul_service_name | default('redis') + \"_token\"] }}"
+docker_compose_app_path: "{{ docker_compose_path }}"
+
+
+folder_apps:
+  - vector
