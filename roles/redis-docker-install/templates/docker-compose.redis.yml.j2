@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  redis:
+    image: {{ redis_image }}:{{ redis_version }}
+    container_name: redis
+    hostname: redis-{{ stand_type }}
+# work only bridge
+#    sysctls:
+#      net.core.somaxconn : 65535
+    network_mode: host
+    volumes:
+      - {{ redis_node_data_path }}:{{ redis_node_data_path }}
+    command: redis-server /opt/redis/redis.conf
+{% if redis_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{ vector_srv }}:{{ vector_port }}
+        tag: redis
+        fluentd-async: "{{ fluent_async }}"
+        fluentd-buffer-limit: "{{ fluendt_buffer_limit }}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
