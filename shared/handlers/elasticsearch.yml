@@ -2,3 +2,13 @@
   systemd:
     name: elasticsearch
     state: restarted
+
+- name: restart-docker kibana
+  shell: "docker compose restart kibana"
+  args:
+    chdir: "{{docker_compose_app_path}}"
+
+- name: restart-docker elasticsearch
+  shell: "docker compose restart elasticsearch"
+  args:
+    chdir: "{{docker_compose_app_path}}"

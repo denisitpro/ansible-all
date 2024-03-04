@@ -2,3 +2,13 @@
   systemd:
     name: minio
     state: restarted
+
+- name: "restart minio"
+  shell: "docker compose restart minio"
+  args:
+    chdir: "{{ minio_docker_compose_path }}"
+
+- name: "restart-docker minio"
+  shell: "docker-compose pull && docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ minio_docker_compose_path }}"

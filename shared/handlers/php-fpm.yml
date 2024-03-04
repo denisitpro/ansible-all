@@ -2,3 +2,8 @@
   systemd:
     name: php7.4-fpm
     state: restarted
+
+- name: restart php8.1-fpm
+  systemd:
+    name: php8.1-fpm
+    state: restarted

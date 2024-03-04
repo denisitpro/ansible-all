@@ -1,0 +1,9 @@
+---
+- name: restart node-exporter
+  systemd:
+    daemon_reload: true
+    name: node-exporter
+    state: restarted
+#  when: consul_docker is not defined
+  tags:
+    - node-exporter-restart

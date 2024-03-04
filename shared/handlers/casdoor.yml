@@ -1,0 +1,5 @@
+---
+- name: restart-docker casdoor
+  shell: "docker compose restart casdoor"
+  args:
+    chdir: "{{docker_compose_app_path}}/casdoor"

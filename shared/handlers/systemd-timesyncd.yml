@@ -1,0 +1,5 @@
+---
+- name: restart systemd-timesyncd
+  systemd:
+    name: systemd-timesyncd
+    state: restarted

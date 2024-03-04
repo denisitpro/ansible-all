@@ -1,0 +1,14 @@
+- name: restart shadowsocks
+  systemd:
+    name: shadowsocks
+    state: restarted
+
+- name: "restart shadowsocks"
+  shell: "docker compose restart shadowsocks"
+  args:
+    chdir: "{{ shadowsocks_docker_compose_path }}"
+
+- name: "restart-docker shadowsocks"
+  shell: "docker-compose pull; docker-compose down; docker-compose up -d"
+  args:
+    chdir: "{{ shadowsocks_docker_compose_path }}"

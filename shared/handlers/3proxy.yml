@@ -1,0 +1,5 @@
+---
+- name: "restart docker-compose 3proxy"
+  shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{  docker_compose_path | default('/opt/docker') }}/3proxy"

@@ -1,0 +1,25 @@
+---
+- name: Restart freeipa
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: docker
+    state: restarted
+    enabled: true
+
+- name: Restart freeipa bind
+  ansible.builtin.command:
+    cmd: "docker exec -t freeipa systemctl restart named"
+  args:
+    chdir: "{{ freeipa_docker_compose_path }}"
+  register: __freeipa_bind_restart
+  changed_when: __freeipa_bind_restart.rc == 0
+  become: true
+
+- name: Restart freeipa httpd
+  ansible.builtin.command:
+    cmd: "docker exec -t freeipa systemctl restart httpd"
+  args:
+    chdir: "{{ freeipa_docker_compose_path }}"
+  register: __freeipa_httpd_restart
+  changed_when: __freeipa_httpd_restart.rc == 0
+  become: true

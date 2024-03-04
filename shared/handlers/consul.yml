@@ -7,3 +7,9 @@
   systemd:
     name: consul
     state: reloaded
+
+
+- name: restart-docker consul
+  shell: "docker compose restart consul"
+  args:
+    chdir: "{{docker_compose_path}}/consul"

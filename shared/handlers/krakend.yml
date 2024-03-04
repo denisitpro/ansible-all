@@ -1,0 +1,21 @@
+---
+- name: "Check krakend config"
+  ansible.builtin.command:
+    cmd: "docker exec -t krakend krakend check -c /etc/krakend/krakend.json"
+  register: krakend_docker_config_status
+  listen:
+    - "Restart krakend"
+    - "Reload krakend"
+
+- name: "reload krakend"
+  ansible.builtin.shell: "docker compose restart krakend"
+  args:
+    chdir: "{{ krakend_docker_compose_path }}"
+  listen: "Reload krakend"
+
+- name: "restart-docker krakend"
+  ansible.builtin.shell: "docker-compose pull && docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ krakend_docker_compose_path }}"
+  when: krakend_docker_config_status.rc == 0
+  listen: "Restart krakend"
