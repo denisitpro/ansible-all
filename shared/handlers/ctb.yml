@@ -1,0 +1,9 @@
+- name: restart ctb
+  systemd:
+    name: ctb
+    state: restarted
+
+- name: reload ctb
+  systemd:
+    name: ctb
+    state: reloaded

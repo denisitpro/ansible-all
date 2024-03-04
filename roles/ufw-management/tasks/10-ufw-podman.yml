@@ -1,0 +1,24 @@
+---
+- name: Allow ufw forward rules podman
+  community.general.ufw:
+    interface_out: "{{podman_iface}}"
+    route: yes
+    rule: "{{ item.rule| default('allow') }}"
+    proto: "{{item.protocol}}"
+    src: "{{ item.source | default('0.0.0.0/0') }}"
+    port: "{{item.port}}"
+    comment: "{{item.name}}"
+    insert_relative_to: first-ipv4
+  with_items:
+    - "{{ iptables.podman }}"
+#
+#- name: "Allow ufw forward rules podman"
+#  community.general.ufw:
+##    interface_in: "{{ufw_in_iface}}"
+#    interface_out: "{{podman_iface}}"
+#    src: "{{ item.source | default('0.0.0.0/0') }}"
+#    route: yes
+#    rule: "{{ item.rule| default('allow') }}"
+#    comment: "Allow forward for podman "
+#  with_items:
+#    - "{{ iptables.rules }}"

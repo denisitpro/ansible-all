@@ -1,3 +1,4 @@
+---
 - name: restart nomad
   systemd:
     name: nomad

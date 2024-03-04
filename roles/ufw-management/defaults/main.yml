@@ -1,0 +1,4 @@
+---
+ufw_in_iface: "{{ second_interface_name }}"
+podman_iface: "cni-podman1"
+docker_iface: "docker0"

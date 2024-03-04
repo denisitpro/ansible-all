@@ -1,13 +1,26 @@
 ---
 - name: restart prometheus
-  become: true
   systemd:
     daemon_reload: true
     name: prometheus
     state: restarted
 
 - name: reload prometheus
-  become: true
   systemd:
     name: prometheus
     state: reloaded
+
+- name: restart-docker prometheus
+  shell: "docker compose restart prometheus"
+  args:
+    chdir: "{{docker_compose_app_path}}"
+
+- name: Reload-docker prometheus
+  ansible.builtin.shell:
+    cmd: "docker kill --signal=HUP prometheus"
+
+- name: reload docker prometheus
+  uri:
+    url: "http://{{prometheus_reload_address}}:9090/-/reload"
+    method: "POST"
+    status_code: "200"

@@ -39,3 +39,27 @@
   systemd:
     name: postgresql
     state: reloaded
+
+- name: Recreate-docker postgres
+  ansible.builtin.shell:
+    cmd: "docker-compose pull; docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ psql_docker_compose_path }}"
+
+- name: Restart-docker postgres
+  ansible.builtin.command:
+    cmd: "docker compose restart"
+  args:
+    chdir: "{{ psql_docker_compose_path }}"
+
+- name: Reload postgres-ssl
+  ansible.builtin.command:
+    cmd: "docker-compose exec -t {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -c 'select pg_reload_conf();'"
+  args:
+    chdir: "{{ psql_docker_compose_path }}"
+
+- name: Restart postgres-exporter
+  ansible.builtin.shell:
+    cmd: "docker-compose pull; docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ postgres_exporter_docker_compose_path }}"

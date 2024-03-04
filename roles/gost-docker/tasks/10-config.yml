@@ -1,0 +1,8 @@
+---
+- name: copy gost config
+  template:
+    src: "gost.yml.j2"
+    dest: "{{gost_conf_path}}/gost.yml"
+    owner: root
+    group: root
+    mode: 0644

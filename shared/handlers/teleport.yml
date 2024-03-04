@@ -1,5 +1,5 @@
 ---
-- name: restart teleport
+- name: restart-unit teleport
   systemd:
     name: teleport
     state: restarted
@@ -8,3 +8,8 @@
   systemd:
     name: teleport
     state: reloaded
+
+- name: restart-docker teleport
+  shell: "docker compose restart teleport"
+  args:
+    chdir: "{{docker_compose_app_path}}/teleport"

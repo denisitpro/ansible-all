@@ -8,6 +8,8 @@
       insertbefore: "don't delete the 'COMMIT'"
   with_items:
     - "{{ iptables.custom_rules }}"
+  when:
+    - iptables.custom_rules is defined
   notify:
     - reload ufw
 
@@ -20,5 +22,7 @@
       insertafter: "End required lines"
   with_items:
     - "{{ iptables.before_rules }}"
+  when:
+    - iptables.before_rules is defined
   notify:
     - reload ufw

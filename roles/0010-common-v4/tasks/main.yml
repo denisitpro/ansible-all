@@ -1,0 +1,77 @@
+---
+- import_tasks: 105-netplan-general.yml
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - dc_code == "fsn1"
+    - wg_type is not defined
+    - netplan_route_all is not defined
+    - strongswan_server is not defined
+  tags:
+    - route
+    - netplan
+
+- import_tasks: 107-netplan-wg.yml
+  when: wg_type is defined and wg_type == 'server' and dc_code == 'fsn1'
+  tags:
+    - route
+    - netplan
+    - wg-netplan
+
+- import_tasks: 07-netplan-gw.yml
+  when: strongswan_server_route_enabled is defined and  strongswan_server is defined
+  tags:
+    - route
+    - netplan
+
+
+- import_tasks: 110-config-systemd-resolved.yml
+  when:
+    - force_dns_ext is  not defined
+  tags: [dns]
+
+- import_tasks: 125-dns-resolvconf.yml
+  when:
+    - force_dns_ext is defined
+  tags: [dns]
+
+
+- import_tasks: 130-update-installed-packages.yml
+  tags:
+    - os-update
+    - update-os
+
+- import_tasks: 140-install-base-packages.yml
+  tags: [base]
+
+- import_tasks: 150-time.yml
+  tags:
+    - ntp
+    - time
+
+- import_tasks: 160-rsyslog.yml
+  tags: [rsyslog]
+
+- import_tasks: 170-hosts-and-hostname-notag.yml
+  when: cloud_provider is defined and  cloud_provider != "aws"
+  tags:
+    - hostname
+    - hosts
+
+- import_tasks: 172-hosts-and-hostname-aws.yml
+  when: cloud_provider is defined and cloud_provider == "aws"
+  tags:
+    - hostname
+    - hosts
+
+- import_tasks: 180-portmapper.yml
+  tags:
+    - portmapper
+    - rpcbind
+  when: dc_code == "fsn1" or dc_code == "nbg1"
+
+- import_tasks: 301-security.yml
+  tags:
+    - sshd
+
+- import_tasks: 900-reboot.yml
+  tags: [ 'never', 'reboot' ]

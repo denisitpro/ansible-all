@@ -2,3 +2,27 @@
   systemd:
     name: named
     state: restarted
+
+
+- name: restart-docker named
+  shell: "docker compose restart named"
+  args:
+    chdir: "{{docker_compose_app_path}}"
+
+- name: Restart-docker named
+  ansible.builtin.shell:
+    cmd: "docker compose restart named"
+  args:
+    chdir: "{{ named_docker_compose_path }}"
+
+- name: Restart docker-compose named
+  ansible.builtin.shell:
+    cmd: "docker compose restart"
+  args:
+    chdir: "{{ named_docker_compose_path }}"
+
+- name: Recreate-docker named
+  ansible.builtin.shell:
+    cmd: "docker-compose pull; docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ named_docker_compose_path }}"

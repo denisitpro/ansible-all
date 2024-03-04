@@ -1,0 +1,5 @@
+---
+gost_conf_path: /opt/gost
+
+folder_apps:
+  - gost

@@ -8,3 +8,9 @@
   systemd:
     name: alertmanager
     state: reloaded
+
+- name: reload docker alertmanager
+  ansible.builtin.uri:
+    url: "http://{{ alertmanager_web_listen_address }}{{ alertmanager_http_location }}-/reload"
+    method: "POST"
+    status_code: "200"

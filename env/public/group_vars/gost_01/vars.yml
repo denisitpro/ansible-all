@@ -1,0 +1,25 @@
+---
+outline_hostname: gost-01.beta-82.win
+outline_sb_default_server_name: outline-beta
+
+#todo add support vault
+socks5_user_pass: set_me
+http3_user_pass: set_me
+
+iptables:
+  ipv4:
+#### system rules
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "gost_socks5", protocol: "tcp", port: "18092" }
+    - { name: "gost_http3", protocol: "udp", port: "18093" }
+    - { name: "outline client port", protocol: "tcp", port: "18655"}
+    - { name: "outline api port", protocol: "tcp", port: "18654"}
+#    - { name: "wg client port", protocol: "udp", port: "52843"}
+## mon access
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "gost_socks5", protocol: "tcp", port: "18092" }
+    - { name: "gost_http3", protocol: "udp", port: "18093" }
+    - { name: "outline client port", protocol: "tcp", port: "18655"}
+    - { name: "outline api port", protocol: "tcp", port: "18654"}
+#    - { name: "wg client port", protocol: "udp", port: "52843"}

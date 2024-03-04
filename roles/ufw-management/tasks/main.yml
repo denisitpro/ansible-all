@@ -1,11 +1,20 @@
 ---
 - import_tasks: 05-ufw.yml
   tags:
-    - iptables
     - ufw
     
 - import_tasks: 06-ufw-custom.yml
-  when: iptables.custom_rules is defined
   tags:
-    - iptables
     - ufw
+
+- import_tasks: 10-ufw-podman.yml
+  when: iptables.podman is defined
+  tags:
+    - ufw
+    - ufw-podman
+
+#- import_tasks: 15-ufw-docker.yml
+#  when: iptables.docker is defined
+#  tags:
+#    - ufw
+#    - ufw-docker

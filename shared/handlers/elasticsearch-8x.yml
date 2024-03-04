@@ -1,0 +1,24 @@
+- name: restart-docker kibana
+  shell: "docker compose restart kibana"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"
+
+- name: restart-docker elasticsearch
+  shell: "docker compose restart elasticsearch"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"
+
+- name: restart-docker vector
+  shell: "docker compose restart vector"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"
+
+- name: "restart-docker consul"
+  shell: "docker compose restart consul"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"
+
+- name: "restart-docker elasticsearch.exporter"
+  shell: "docker compose restart elasticsearch.exporter"
+  args:
+    chdir: "{{ elasticsearch_docker_compose_path }}"

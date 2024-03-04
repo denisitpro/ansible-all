@@ -3,3 +3,9 @@
   systemd:
     name: td-agent-bit
     state: restarted
+
+- name: "restart fluentbit docker"
+  shell: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ flientbit_docker_compose_path }}"
+ 

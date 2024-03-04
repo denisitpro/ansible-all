@@ -1,0 +1,5 @@
+---
+- name: restart ipsec_exporter
+  systemd:
+    name: ipsec_exporter
+    state: restarted

@@ -1,0 +1,25 @@
+---
+- name: "restart docker-compose zabbix"
+  shell: "docker compose restart zabbix-server"
+  args:
+    chdir: "{{  docker_compose_path | default('/opt/docker') }}/zbx"
+
+- name: "restart docker-compose zabbix-agent"
+  shell: "docker compose restart zabbix-agent"
+  args:
+    chdir: "{{  docker_compose_path | default('/opt/docker') }}/zbx"
+
+#- name: restart zabbix-server
+#  ansible.builtin.systemd:
+#    name: zabbix-server
+#    state: restarted
+
+- name: restart zabbix-agent2
+  ansible.builtin.systemd:
+    name: zabbix-agent2
+    state: restarted
+
+#- name: restart zabbix-agent
+#  ansible.builtin.systemd:
+#    name: zabbix-agent
+#    state: restarted

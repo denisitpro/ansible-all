@@ -1,0 +1,10 @@
+- name: restart clickhouse
+  systemd:
+    name: clickhouse
+    state: restarted
+
+
+- name: restart-docker clickhouse
+  shell: "docker compose restart clickhouse"
+  args:
+    chdir: "{{docker_compose_path | default('/opt/docker')}}/clickhouse"

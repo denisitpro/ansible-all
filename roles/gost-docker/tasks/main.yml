@@ -1,0 +1,21 @@
+---
+- import_tasks: 05-create-folder.yml
+  tags:
+    - gost
+    - gost-path
+
+- import_tasks: 10-config.yml
+  tags:
+    - gost
+    - gost-config
+
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - gost
+    - gost-compose
+
+- import_tasks: 50-lauch.yml
+  tags:
+    - gost
+    - gost-compose

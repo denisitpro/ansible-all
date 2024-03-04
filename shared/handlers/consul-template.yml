@@ -2,3 +2,8 @@
   systemd:
     name: consul-template
     state: restarted
+
+- name: reload consul-template
+  systemd:
+    name: consul-template
+    state: reloaded

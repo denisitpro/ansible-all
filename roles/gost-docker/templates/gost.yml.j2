@@ -1,0 +1,23 @@
+services:
+- name: socks5
+  addr: ":18092"
+  handler:
+    type: socks5
+    auth:
+      username: user
+      password: {{socks5_user_pass | default('set_me')}}
+  listener:
+    type: tcp
+- name: http3
+  addr: ":18093"
+  handler:
+    type: auto
+  listener:
+    type: h3
+    auth:
+      username: user
+      password: {{http3_user_pass | default('set_me')}}
+    metadata:
+      authorizePath: /authorize
+      pullPath: /pull
+      pushPath: /push

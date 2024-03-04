@@ -1,0 +1,10 @@
+---
+- name: restart openvpn
+  systemd:
+    name: openvpn
+    state: restarted
+
+- name: reload openvpn
+  systemd:
+    name: openvpn
+    state: reloaded

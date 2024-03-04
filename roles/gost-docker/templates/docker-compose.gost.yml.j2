@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  gost:
+    image: gogost/gost:latest #todo set specific version
+    container_name: gost
+    hostname: gost-{{ stand_type | default('none') }}
+    network_mode: host
+{% if gost_restart is defined %}
+    restart: always
+{% endif %}
+    volumes:
+      - {{gost_conf_path}}:{{gost_conf_path}}
+    command: "-C  {{gost_conf_path}}/gost.yml"
+
+
+
+
+

@@ -1,0 +1,42 @@
+---
+- name: install ufw hetz hw
+  apt:
+    name:
+      - ufw
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - hetz_hw is defined
+    
+- name: allow temporary ssh access
+  ufw:
+    rule: "allow"
+    proto: tcp
+    src: "0.0.0.0/0"
+    port: "22"
+    comment: "temporary ssh access"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+
+- name: enable UFW for systemd - need for centos
+  systemd:
+    name: ufw
+    enabled: yes
+
+- name: Pause 5 seconds for ufw running
+  pause:
+    seconds: 5
+
+- name: allow ssh access default
+  ufw:
+    rule: "allow"
+    proto: tcp
+    src: "0.0.0.0/0"
+    port: "22"
+    comment: "open default ssh access"
+  when: iptables.ipv4 is not defined

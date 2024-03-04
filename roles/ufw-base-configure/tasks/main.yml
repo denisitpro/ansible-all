@@ -1,0 +1,8 @@
+---
+- import_tasks: 15-ufw.yml
+  tags:
+    - enable-ufw
+
+- import_tasks: 20-ufw-log.yml
+  tags:
+    -  enable-ufw

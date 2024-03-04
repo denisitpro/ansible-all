@@ -1,0 +1,10 @@
+- name: restart vector
+  systemd:
+    name: vector
+    state: restarted
+
+
+- name: "restart-docker vector"
+  shell: "docker compose down; docker compose up -d"
+  args:
+    chdir: "{{ docker_compose_path |default ('/opt/docker/vector') }}"
