@@ -4,20 +4,8 @@ network:
   ethernets:
     {{second_interface_name}}:
       dhcp4: yes
-{% if stand_type == 'c1-infra' %}
+{% if stand_type == 'c9-example' %}
       routes:
-       - to: 10.15.0.0/16
-         via: 10.125.0.1
-       - to: 10.19.0.0/16
-         via: 10.125.0.1
-       - to: 10.25.0.0/16
-         via: 10.125.0.1
-       - to: 10.30.0.0/16
-         via: 10.125.0.1
-       - to: 10.31.0.0/16
-         via: 10.125.0.1
-       - to: 10.32.0.0/16
-         via: 10.125.0.1
-       - to: 172.31.0.0/16
+       - to: 10.115.0.0/16
          via: 10.125.0.1
 {% endif %}

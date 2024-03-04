@@ -4,7 +4,7 @@ network:
   ethernets:
     {{second_interface_name}}:
       dhcp4: yes
-{% if stand_type == 'c1-infra' %}
+{% if stand_type == 'c9-example' %}
       routes:
        - to: 10.129.0.0/16
          via: 10.125.0.1
