@@ -1,0 +1,4 @@
+---
+- name: Install AWS CloudWatch Agent Debian package
+  ansible.builtin.apt:
+    deb: /tmp/amazon-cloudwatch-agent.deb

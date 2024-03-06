@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  vector:
+    image: {{ vector_image }}:{{ vector_version }}
+    container_name: vector
+    hostname: vector-{{ stand_type }}
+    network_mode: host
+    volumes:
+      - {{ vector_data_path }}:{{ vector_data_path }}
+    command: --config /opt/vector/vector.toml
+{% if vector_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: '100m'
+        max-file: '2'

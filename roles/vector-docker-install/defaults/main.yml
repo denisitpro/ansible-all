@@ -1,0 +1,18 @@
+---
+vector_image: "timberio/vector"
+vector_version: 0.34.2-alpine
+
+vector_data_path: "/opt/vector"
+#vector_default_index_name: "vector"
+
+vector_port: 24224
+es_srv: elasticsearch.example.com
+es_port: 9200
+
+folder_apps:
+  - vector
+
+#fluent_srv_address: 127.0.0.1
+#elasticsearch: example.com
+#protocol_elastic: http
+#vector_server_address: 0.0.0.0:6000

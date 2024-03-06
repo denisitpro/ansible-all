@@ -1,0 +1,13 @@
+---
+- name: download cloud watch agent
+  become: false
+  ansible.builtin.get_url:
+    url: "https://amazoncloudwatch-agent.s3.amazonaws.com/debian/amd64/latest/amazon-cloudwatch-agent.deb"
+    dest: "/tmp/amazon-cloudwatch-agent.deb"
+    mode: 0440
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+
+

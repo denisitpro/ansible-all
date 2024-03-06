@@ -1,0 +1,6 @@
+---
+- name: copy conf file
+  template:
+    src: "local-config.yaml.j2"
+    dest: "{{loki_data_path}}/config/local-config.yaml"
+  notify: restart-docker loki

@@ -1,0 +1,6 @@
+---
+- name: restart docker loki
+  ansible.builtin.shell:
+    cmd: "docker compose down; docker compose up -d"
+  args:
+    chdir:  "{{ docker_compose_path |default('/opt/docker') }}/loki"

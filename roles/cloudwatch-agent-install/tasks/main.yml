@@ -1,0 +1,13 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - cloudwatch
+
+- import_tasks: 10-install.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - cloudwatch
+
+- import_tasks: 15-configure.yml
+  tags:
+    - cloudwatch

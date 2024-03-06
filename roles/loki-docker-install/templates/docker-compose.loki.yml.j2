@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  loki:
+    image: grafana/loki:{{loki_version}}
+    container_name: loki
+    hostname: loki-{{ stand_type }}
+    network_mode: host
+    volumes:
+      - {{ loki_data_path }}/data:/tmp/loki
+      - {{loki_data_path}}/config:/etc/loki/
+    command: -config.file=/etc/loki/local-config.yaml
+{% if loki_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: '100m'
+        max-file: '2'
