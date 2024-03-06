@@ -1,0 +1,19 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - loki
+
+- import_tasks: 10-configure.yml
+  tags:
+    - loki
+    - loki-config
+    - loki-configure
+
+- import_tasks: 20-compose.yml
+  tags:
+    - loki
+    - loki-compose
+
+- import_tasks: 90-launch.yml
+  tags:
+    - loki

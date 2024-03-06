@@ -1,0 +1,10 @@
+---
+- name: Copy docker-compose file
+  ansible.builtin.template:
+    src: "docker-compose.loki.yml.j2"
+    dest: "{{ docker_compose_path |default('/opt/docker') }}/loki/docker-compose.yml"
+    mode: "0600"
+    owner: root
+    group: root
+  notify: restart-docker loki
+

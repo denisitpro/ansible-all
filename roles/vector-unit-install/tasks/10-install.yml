@@ -1,0 +1,5 @@
+---
+- name: install vector - unit
+  apt:
+    deb: "{{vector_repo_source}}v{{vector_version}}/vector_{{vector_version}}-1_amd64.deb"
+    install_recommends: yes

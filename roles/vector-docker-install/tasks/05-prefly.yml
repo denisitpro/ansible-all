@@ -1,0 +1,9 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: "create path"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ vector_data_path }}"

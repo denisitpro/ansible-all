@@ -1,0 +1,14 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+- name: create path
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    owner: 10001
+    group: 10001
+  with_items:
+    - "{{loki_data_path}}"
+    - "{{loki_data_path}}/config"
+    - "{{loki_data_path}}/data"
+

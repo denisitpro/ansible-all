@@ -1,0 +1,22 @@
+- name: copy conf file
+  template:
+    src: "{{item}}.j2"
+    dest: "/etc/vector/{{item}}"
+    mode: 0644
+  with_items:
+    - "{{vector_config_file | default('vector.toml')}}"
+  notify: restart vector
+
+- name: copy unit file
+  ansible.builtin.template:
+    src: "vector.service.j2"
+    dest: "/lib/systemd/system/vector.service"
+    mode: 0644
+  notify: restart vector
+
+- name: Enable Vector service
+  systemd:
+    daemon_reload: true
+    name: vector
+    enabled: yes
+    state: started

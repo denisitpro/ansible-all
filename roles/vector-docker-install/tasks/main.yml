@@ -1,0 +1,20 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - vector
+
+- import_tasks: 10-copy-compose.yml
+  tags:
+    - vector
+    - vector-compose
+
+- import_tasks: 15-configure.yml
+  tags:
+    - vector
+    - vector-config
+    - vector-configure
+
+- import_tasks: 20-launch.yml
+  tags:
+    - vector
+    - vector-compose

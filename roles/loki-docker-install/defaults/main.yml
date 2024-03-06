@@ -1,0 +1,7 @@
+---
+loki_version: 2.9.4
+loki_data_path: /opt/loki
+
+
+folder_apps:
+  - loki

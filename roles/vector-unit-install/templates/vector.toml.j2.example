@@ -1,0 +1,39 @@
+# {{ ansible_managed }}
+{% for v in  vector %}
+[sources.{{v.name}}]
+type = "file"
+include = [ "{{v.log_path}}" ]
+{% endfor %}
+
+[transforms.remap_es_index]
+type="remap"
+inputs=[{% for v in  vector %}"{{v.name}}"{% endfor %}]
+source='''
+.index = string(.tag)  ?? "vector"
+'''
+
+[transforms.json_parser_general]
+type = "remap"
+inputs = ["remap_es_index"]
+drop_on_abort = true
+drop_on_error = true
+reroute_dropped = true
+source='''
+del(.target)
+.target = parse_json!(.log)
+'''
+
+[sinks.es_cluster]
+inputs = ["json_parser_general"]
+type   = "elasticsearch"
+endpoints = ["{{ es_proto | default('http') }}://{{ es_srv }}:{{ es_port }}"]
+bulk.index = "{{ '{{' }} index {{ '}}' }}-%Y-%m-%d"
+healthcheck = true
+
+[sinks.es_cluster_vector]
+inputs = ["json_parser_general.dropped"]
+type   = "elasticsearch"
+endpoints = ["{{ es_proto | default('http') }}://{{ es_srv }}:{{ es_port }}"]
+bulk.index = "{{ '{{' }} index {{ '}}' }}-%Y-%m-%d"
+healthcheck = true
+

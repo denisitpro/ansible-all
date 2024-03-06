@@ -1,8 +1,0 @@
----
-- name: clean files
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_items  :
-    - "{{ download_dir }}/loki-linux-amd64"
-    - "{{ download_dir }}/loki-linux-amd64.zip"

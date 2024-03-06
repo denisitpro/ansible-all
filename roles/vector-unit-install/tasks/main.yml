@@ -1,0 +1,21 @@
+---
+
+
+- import_tasks: 10-install.yml
+  when:
+    - ansible_distribution == 'Ubuntu'
+  tags:
+    - vector
+
+# todo reorder - path need create after install application - need create user and group
+- import_tasks: 05-prefly.yml
+  tags:
+    - vector
+    - vector-prefly
+
+- import_tasks: 15-configure.yml
+  tags:
+    - vector
+    - vector-config
+    - vector-configure
+
