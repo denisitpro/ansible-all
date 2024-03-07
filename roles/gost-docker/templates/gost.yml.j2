@@ -12,12 +12,30 @@ services:
   addr: ":18093"
   handler:
     type: auto
-  listener:
-    type: h3
     auth:
       username: user
       password: {{http3_user_pass | default('set_me')}}
+  listener:
+    type: h3
     metadata:
       authorizePath: /authorize
       pullPath: /pull
       pushPath: /push
+- name: relay-dtls
+  addr: ":18094"
+  handler:
+    type: relay
+    auth:
+      username: user
+      password: {{dtls_user_pass | default('set_me')}}
+  listener:
+    type: dtls
+- name: relay-wss
+  addr: ":18095"
+  handler:
+    type: relay
+    auth:
+      username: user
+      password: {{wss_user_pass | default('set_me')}}
+  listener:
+    type: wss
