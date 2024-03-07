@@ -1,5 +1,6 @@
 ---
 gost_conf_path: /opt/gost
+gost_image_version: 3.0.0-nightly.20240201
 
 folder_apps:
   - gost
