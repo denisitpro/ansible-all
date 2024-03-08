@@ -4,31 +4,70 @@
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
 
+
+#- name: debug order
+#  ansible.builtin.debug:
+#    msg: hello
+#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+
 - name: init k8s cluster or reset if k8s_rest_cls_force defined
-  shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
+  ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
   when: not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined
 
-#  todo for future adaptation
-#- name: Init Kubernetes cluster
-#  when: reset_cluster is succeeded
-#  shell: |
-#    kubeadm init --service-cidr {{ service_cidr }} \
-#                 --kubernetes-version {{ kube_version }} \
-#                 --pod-network-cidr {{ pod_network_cidr }} \
-#                 --token {{ token }} \
-#                 --apiserver-advertise-address {{ master_ip }} \
-#                 --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock \
-#                 {{ kubeadm_opts }} \
-#                 {{ init_opts }}
-#  register: init_cluster
-#  # See: https://github.com/jetstack/cert-manager/issues/2640 with using kubeadm + calico + cert-manager
-#  environment:
-#    no_proxy: "$no_proxy,.svc,.svc.cluster.local"
 
 - name: Init Kubernetes cluster
   when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-  shell: "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{k8s_cls_name}}{% endif %}"
+  ansible.builtin.shell: "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{k8s_cls_name}} --upload-certs{% endif %}"
   register: init_cluster
-#  environment:
-#    no_proxy: "$no_proxy,.svc,.svc.cluster.local"
+  ignore_errors: yes
+  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+  tags:
+    - k8s-debug
+
+
+#- name: Store init output - need only for debug
+#  action: copy content="{{ init_cluster.stdout }}" dest="/etc/kubernetes/kubeadm-init.stdout"
+#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+#  ignore_errors: yes
+#  when: init_cluster.skipped == 'True'
+#  tags:
+#    - k8s-debug
+
+
+- name: fetch the join command
+  ansible.builtin.shell: kubeadm token create --print-join-command
+  register: k8s_join_token
+  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+
+#- name: debug join info
+#  ansible.builtin.debug:
+#    msg: token info for debug -  {{ k8s_join_token.stdout }}
+#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+
+# https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/
+# very high kostili and velosiped
+- name: fetch certificate
+  ansible.builtin.shell: kubeadm init phase upload-certs --upload-certs  | sed '3!D'
+  register: k8s_cert
+  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+  run_once: true
+  tags:
+    - k8s-debug
+
+#- name: debug cert info
+#  ansible.builtin.debug:
+#    msg: cert -  {{ k8s_cert.stdout }}
+#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+#  run_once: true
+#  tags:
+#    - k8s-debug
+
+- name: Check if kubeadm has already run - repeat, need for skip join master
+  stat:
+    path: "/etc/kubernetes/pki/ca.key"
+  register: kubeadm_ca
+
+- name: join replica master to cluster
+  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
+  ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"

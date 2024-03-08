@@ -13,3 +13,6 @@ cilium_cli_version: 0.16.0
 
 # support  CNI networks -  calico, cilium
 cni_network: calico
+
+
+k8s_master_group_name: k8s_master

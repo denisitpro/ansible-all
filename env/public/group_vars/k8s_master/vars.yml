@@ -5,10 +5,19 @@
 k8s_cls_name: k8s.beta-82.win
 
 
+# k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
     - { name: "k8s-api-server", protocol: "tcp", port: "6443" }
+    - { name: "k8s-etcd", protocol: "tcp", port: "2379:2380" }
+    - { name: "k8s-self-control-panel", protocol: "tcp", port: "10250" }
+    - { name: "k8s-controller-manager", protocol: "tcp", port: "10257" }
+    - { name: "k8s-kube-scheduler", protocol: "tcp", port: "10259" }
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "k8s-api-server", protocol: "tcp", port: "6443" }
+    - { name: "k8s-etcd", protocol: "tcp", port: "2379:2380" }
+    - { name: "k8s-self-control-panel", protocol: "tcp", port: "10250" }
+    - { name: "k8s-controller-manager", protocol: "tcp", port: "10257" }
+    - { name: "k8s-kube-scheduler", protocol: "tcp", port: "10259" }
