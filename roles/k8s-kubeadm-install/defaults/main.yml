@@ -1,14 +1,15 @@
 ---
-containerd_version: 1.7.1
-runc_version: 1.1.7
-cni_version: 1.3.0
+kubeadmin_version: v1.29
+containerd_version: 1.7.12
+runc_version: 1.1.12
+cni_version: 1.4.0
 
 container_runtime: containerd
 kubeadmin_config: /etc/kubernetes/admin.conf
 
 
-calico_version: 3.26.0
-cilium__cli_version: 0.14.6
+calico_version: 3.27.2
+cilium_cli_version: 0.16.0
 
 # support  CNI networks -  calico, cilium
-cni_network: cilium
+cni_network: calico

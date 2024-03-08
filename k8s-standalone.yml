@@ -1,8 +1,0 @@
----
-- hosts: k8s_standalone
-  become: yes
-  roles:
-#    - common-internet-v3
-    - k8s-kubeadm-install
-    - ufw-configure
-    - ufw-management

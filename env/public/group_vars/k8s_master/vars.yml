@@ -1,0 +1,14 @@
+---
+# only for debug
+#k8s_rest_cls_force: true
+
+k8s_cls_name: k8s.beta-82.win
+
+
+iptables:
+  ipv4:
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "k8s-api-server", protocol: "tcp", port: "6443" }
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "k8s-api-server", protocol: "tcp", port: "6443" }

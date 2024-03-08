@@ -1,31 +1,47 @@
 ---
-- import_tasks: 05-prerequisites.yml
+- ansible.builtin.import_tasks: 05-prerequisites.yml
   when: ansible_distribution == 'Ubuntu'
-
-- import_tasks: 10-containerd.yml
-
-- import_tasks: 15-runc-cni.yml
-
-- import_tasks: 20-runtimes-configure.yml
-
-- import_tasks: 25-prefly-k8s.yml
-  when: ansible_distribution == 'Ubuntu'
-
-- import_tasks: 30-kube-services.yml
-  when: ansible_distribution == 'Ubuntu'
-
-- import_tasks: 35-k8s-init-cls.yml
   tags:
+    - k8s
+
+- ansible.builtin.import_tasks: 10-containerd.yml
+  tags:
+    - k8s
+
+- ansible.builtin.import_tasks: 15-runc-cni.yml
+  tags:
+    - k8s
+
+- ansible.builtin.import_tasks: 20-runtimes-configure.yml
+  tags:
+    - k8s
+
+- ansible.builtin.import_tasks: 25-prefly-k8s.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - k8s
+    - k8s-repo
+
+- ansible.builtin.import_tasks: 30-kube-services.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - k8s
+
+- ansible.builtin.import_tasks: 35-k8s-init-cls.yml
+  tags:
+    - k8s
     - k8s-init
 
-- import_tasks: 40-cni-calico.yml
+- ansible.builtin.import_tasks: 40-cni-calico.yml
   when: cni_network == 'calico'
-  tags: [cni]
+  tags:
+    - k8s
+    - k8s-calico
 
-#- import_tasks: 43-cni-cilium.yml
+#- ansible.builtin.import_tasks: 43-cni-cilium.yml
 #  when: cni_network == 'cilium'
 #  tags: [cni]
 
 
-- import_tasks:  95-reset-k8s-cls.yml
+- ansible.builtin.import_tasks:  95-reset-k8s-cls.yml
   tags: ['never', 'k8s-reset']
