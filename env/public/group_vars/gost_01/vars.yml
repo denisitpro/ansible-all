@@ -10,14 +10,12 @@ wss_user_pass: "{{socks5_user_pass}}"
 
 iptables:
   ipv4:
-#### system rules
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
     - { name: "gost_ports", protocol: "tcp", port: "18092:18099" }
     - { name: "gost_ports", protocol: "udp", port: "18092:18099" }
     - { name: "outline client port", protocol: "tcp", port: "18655"}
     - { name: "outline api port", protocol: "tcp", port: "18654"}
 #    - { name: "wg client port", protocol: "udp", port: "52843"}
-## mon access
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "gost_ports", protocol: "tcp", port: "18092:18099" }

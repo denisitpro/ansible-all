@@ -4,7 +4,7 @@
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
 
-- name: Reset Kubernetes component
+- name: init k8s cluster or reset if k8s_rest_cls_force defined
   shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
   when: not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined
