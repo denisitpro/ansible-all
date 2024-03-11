@@ -3,6 +3,7 @@
 #k8s_rest_cls_force: true
 
 k8s_cls_name: k8s.beta-82.win
+k8s_master: true
 
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/

@@ -1,5 +1,5 @@
 ---
-- hosts: k8s_master
+- hosts: k8s_worker
   become: yes
   roles:
 # todo need debug calico netowk if enable UFW and base role apply
