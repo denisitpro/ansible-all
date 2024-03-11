@@ -1,0 +1,17 @@
+---
+# only for debug
+#k8s_rest_cls_force: true
+#k8s_cls_name: k8s.beta-82.win
+
+kubeadmin_config: /etc/kubernetes/kubelet.conf
+
+# k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
+iptables:
+  ipv4:
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "self-control-panel", protocol: "tcp", port: "10250"}
+    - { name: "worked-node", protocol: "tcp", port: "30000:32767"}
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "self-control-panel", protocol: "tcp", port: "10250"}
+    - { name: "worked-node", protocol: "tcp", port: "30000:32767"}
