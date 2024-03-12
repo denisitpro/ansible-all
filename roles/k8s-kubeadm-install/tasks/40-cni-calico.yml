@@ -12,7 +12,6 @@
 
 - name: "Check {{ cni_network }} daemonset is working"
   shell: "kubectl --kubeconfig={{ kubeadmin_config }} get ds --all-namespaces | grep {{ cni_network }}"
-#  delegate_to: "{{ groups['master'][0] }}" # todo remove or set master group use env
   run_once: true
   register: check_net
   ignore_errors: true
@@ -21,5 +20,4 @@
 - name: "Create {{ cni_network }} network daemonset"
   when: check_net is failed
   command: "kubectl apply --kubeconfig={{ kubeadmin_config }} -f /tmp/calico.yaml"
-#  delegate_to: "{{ groups['master'][0] }}" # todo remove or set master group use env
   run_once: true
