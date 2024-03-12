@@ -35,6 +35,7 @@
 
 
 - ansible.builtin.import_tasks: 40-cni-calico.yml
+  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
   when: cni_network == 'calico' and k8s_master is defined
   tags:
     - k8s
