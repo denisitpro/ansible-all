@@ -9,14 +9,14 @@
 
 #  https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd-systemd
 # generate
-#- name: generate config for cri
-#  shell: containerd config default > /etc/containerd/config.toml
+- name: generate config for cri
+  shell: containerd config default > /etc/containerd/config.toml
 
 
-- name: copy contained config.toml
-  copy:
-    src: containerd-config.toml.v3
-    dest: /etc/containerd/config.toml
+#- name: copy contained config.toml
+#  copy:
+#    src: containerd-config.toml.v3
+#    dest: /etc/containerd/config.toml
 
 - name: restarted  containerd
   systemd:

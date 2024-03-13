@@ -11,7 +11,7 @@
 - name: copy {{company_name}}.conf
   template:
       src:  systemd_resolved_resolv.conf.j2
-      dest: "/usr/lib/systemd/resolved.conf.d/{{company_name}}.conf"
+      dest: "/usr/lib/systemd/resolved.conf.d/ansible-managed.conf"
 
 - name: restart systemd-resolved
   ansible.builtin.systemd:
