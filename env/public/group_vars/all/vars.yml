@@ -10,6 +10,10 @@ dns2: 8.8.8.8
 searchdomain: beta-82.win
 
 
+dns_resolved_domains:
+  - 'beta-82.win'
+
+
 #global_bind_addr: "{{ansible_default_ipv4.address }}"
 
 #nginx section

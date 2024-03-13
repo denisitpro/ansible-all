@@ -3,7 +3,7 @@
   become: yes
   roles:
 # todo need debug calico netowk if enable UFW and base role apply
-#    - 0010-common-v4
+    - 0010-common-v4
 #    - ufw-base-configure
 #    - ufw-management
-    - k8s-kubeadm-install
+#    - k8s-kubeadm-install

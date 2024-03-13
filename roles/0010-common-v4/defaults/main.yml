@@ -1,5 +1,5 @@
 ---
-domains:
+dns_resolved_domains:
   - 'example.com'
 
 # todo remove
