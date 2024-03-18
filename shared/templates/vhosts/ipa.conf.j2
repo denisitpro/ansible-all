@@ -19,8 +19,9 @@ server {
 }
 
 server {
-        listen  {{nginx_bind_addr}}:{{item.https_ports | default ("443")}} ssl;
-        server_name {{item.servername}};
+        listen  {{ nginx_bind_addr }}:{{ item.https_ports | default ("443") }} ssl;
+        http2  on;
+        server_name {{ item.servername }};
 
 # set url for lets encrypt
         location /.well-known/ {
@@ -32,8 +33,8 @@ server {
 
 # log project use  include
 {% if nginx_logs_stdout is not defined %}
-        access_log  {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extend_json") }};
-        error_log   {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-error.log;
+        access_log  {{ nginx_log_path | default('/var/log/nginx') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extend_json") }};
+        error_log   {{ nginx_log_path |default('/var/log/nginx')}}/{{ item.servername.split(' ')[0] }}-error.log;
 {% endif %}
 {% if nginx_logs_stdout is defined %}
         access_log  /dev/stdout  {{nginx_log_format |default ("extend_json")}};
@@ -42,8 +43,8 @@ server {
 
 ## include ssl certificate
 {% if nginx.vhosts %}
-    ssl_certificate     {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
-    ssl_certificate_key {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+    ssl_certificate     {{ nginx_ssl_path | default ("/etc/nginx/ssl")  }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ nginx_ssl_path | default ("/etc/nginx/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% endif %}
 
 # Ansible management
@@ -55,7 +56,7 @@ server {
    location / {
     proxy_pass              {{item.upstream_protocol}}://{{item.upstream_name}}.{{item.domain}}/;
     proxy_set_header        Host $host;
-    proxy_set_header        Referer {{item.upstream_protocol}}://{{item.upstream_name}}.{{item.domain}}/ipa/ui;
+    proxy_set_header        Referer {{item.upstream_protocol}}://{{ item.ipa_host_header}}/ipa/ui;
     proxy_set_header        X-Real-IP $remote_addr;
     proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header        X-Forwarded-Proto https;

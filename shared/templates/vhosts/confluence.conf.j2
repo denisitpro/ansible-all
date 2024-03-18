@@ -108,7 +108,9 @@ server {
         proxy_ssl_ciphers       {{ item.proxy_ssl_ciphers }};
 {% endif %}
         proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-For $remote_addr;
+#        proxy_set_header X-Forwarded-For $remote_addr;
+# https://confluence.atlassian.com/doc/running-confluence-behind-nginx-with-ssl-858772080.html
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Server $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header Host $http_host;
@@ -117,9 +119,20 @@ server {
         proxy_connect_timeout   {{ item.proxy_connect_timeout | default('60s') }};
         proxy_send_timeout      {{ item.proxy_send_timeout | default('60s') }};
         proxy_pass {{ item.upstream_protocol | default('https') }}://{{ item.upstream_name }};
-##        allow all;
     }
-}
 
+    location /synchrony {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#        proxy_pass http://localhost:8091/synchrony;
+        proxy_pass {{ item.upstream_protocol | default('https') }}://{{ item.upstream_name }}/synchrony;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+
+
+}
 
 ### end generate config
