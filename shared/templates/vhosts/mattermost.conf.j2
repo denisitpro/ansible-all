@@ -1,0 +1,68 @@
+##### ANSIBLE generated config
+## {{ ansible_managed }} ##
+##### not change hands
+####  your changes will be lost
+
+server {
+        listen {{nginx_bind_addr}}:{{item.http_port | default ("80")}};
+        server_name {{item.servername}};
+
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen  {{nginx_bind_addr}}:{{item.https_ports | default ("443")}} ssl;
+        server_name {{item.servername}};
+
+# log project use  include
+{% if nginx_logs_stdout is not defined %}
+        access_log  {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extend_json") }};
+        error_log   {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-error.log;
+{% endif %}
+{% if nginx_logs_stdout is defined %}
+        access_log  /dev/stdout  {{nginx_log_format |default ("extend_json")}};
+        error_log   /dev/stdout;
+{% endif %}
+
+## include ssl certificate
+{% if nginx.vhosts %}
+    ssl_certificate     {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% endif %}
+
+# Ansible management
+{% for included in  nginx.include %}
+    include  {{ included }};
+{% endfor %}
+### end ansible management
+
+{% if nginx.size_upload_files  is defined %}
+{% for included in  nginx.size_upload_files %}
+# Ansible management max upload size
+    client_max_body_size  {{ included.client_max_body_size }};
+{% endfor %}
+{% endif %}
+### end ansible management
+
+location ~ /api/v[0-9]+/(users/)?websocket$ {
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection "upgrade";
+           proxy_set_header Host $http_host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $remote_addr;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           proxy_pass {{item.upstream_protocol}}://{{item.upstream_name}};
+   }
+     location / {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass {{item.upstream_protocol}}://{{item.upstream_name}};
+##        allow all;
+   }
+}
+
+### end generate config

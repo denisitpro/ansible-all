@@ -1,0 +1,102 @@
+##### ANSIBLE generate config
+## {{ ansible_managed }} ##
+##### not change hands
+####  your changes will be lost
+proxy_cache_path cache/ keys_zone=kibana_auth_cache:10m;
+
+
+server {
+        listen {{nginx_bind_addr}}:{{item.http_port | default ("80")}};
+        server_name {{item.servername}};
+
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen  {{nginx_bind_addr}}:{{item.https_ports | default ("443")}} ssl;
+        server_name {{item.servername}};
+
+###### enable autorization
+    auth_basic "Restricted Access. Use LDAP";
+
+# log project use  include
+{% if nginx_logs_stdout is not defined %}
+        access_log  {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extend_json") }};
+        error_log   {{ nginx_log_path }}/{{ item.servername.split(' ')[0] }}-error.log;
+{% endif %}
+{% if nginx_logs_stdout is defined %}
+        access_log  /dev/stdout  {{nginx_log_format |default ("extend_json")}};
+        error_log   /dev/stdout;
+{% endif %}
+
+## include ssl certificate
+{% if nginx.vhosts %}
+    ssl_certificate     {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ nginx_ssl_path }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% endif %}
+
+# Ansible management
+{% for included in  nginx.include %}
+    include  {{ included }};
+{% endfor %}
+### end ansible management
+
+{% if nginx.size_upload_files  is defined %}
+{% for included in  nginx.size_upload_files %}
+# Ansible management max upload size
+    client_max_body_size  {{ included.client_max_body_size }};
+{% endfor %}
+{% endif %}
+### end ansible management
+
+
+     location / {
+{% if kibana_ldap_auth_enable  is defined %}
+		auth_request    /auth-ldap;
+{% endif %}
+        proxy_pass_header Server;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_pass {{item.upstream_protocol}}://{{item.upstream_name}};
+##        allow all;
+   }
+{% if kibana_ldap_auth_enable  is defined %}
+# enable autorization LDAP
+        location        =       /auth-ldap      {
+        internal;
+        proxy_pass      http://127.0.0.1:8888;
+        proxy_pass_request_body off;
+        proxy_set_header        Content-Length  "";
+        proxy_cache     kibana_auth_cache;
+        proxy_cache_valid       200     1m;
+        proxy_cache_key "$http_authorization$cookie_nginxauth";
+        proxy_set_header        X-Ldap-URL      "ldaps://{{ipa_server}}:{{ipa_port}}";
+        proxy_set_header        X-Ldap-Starttls "false";
+        proxy_set_header        X-Ldap-BaseDN   "cn=users,cn=accounts,dc={{ldap_domain}},dc={{ldap_suffix}}";
+        proxy_set_header        X-Ldap-BindDN   "uid={{ipa_user_bind}},cn=sysaccounts,cn=etc,dc={{ldap_domain}},dc={{ldap_suffix}}";
+        proxy_set_header        X-Ldap-BindPass "{{ vault_dict_users_secret[ipa_user_bind] }}";
+        proxy_set_header        X-CookieName    "nginxauth";
+        proxy_set_header        Cookie  nginxauth=$cookie_nginxauth;
+        proxy_set_header        X-Ldap-Template "(&(objectclass=person)(uid=%(username)s)(memberOf=cn={{ipa_access_group}},cn=groups,cn=accounts,dc={{ldap_domain}},dc={{ldap_suffix}}))";
+        }
+{% endif %}
+
+     location /logout {
+      return 401;
+    }
+
+    error_page 401 /errors/401.html;
+
+    location /errors {
+      auth_basic off;
+      ssi        on;
+{% if kibana_ldap_auth_enable  is defined %}
+      alias {{errors_path}};
+{% endif %}
+
+    }
+}
+
+### end generate config
