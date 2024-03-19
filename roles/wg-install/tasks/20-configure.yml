@@ -3,12 +3,11 @@
   ansible.builtin.copy:
     src: default_ufw
     dest: /etc/default/ufw
-#  when: wg_ext is  defined
   when: wg_type == "server"
   tags:
     - wg-default
 
-- name: copy wg.conf - server {{interface_device}}
+- name: copy wg.conf - server
   template:
     src: wg-srv.conf.j2
     dest: "/etc/wireguard/wg0.conf"
@@ -48,7 +47,7 @@
   when: wg_type == "server"
   tags: [sysctl]
 
-- name: enable wireguard autostart and lauch service
+- name: enable wireguard autostart and launch service
   systemd:
     name: "wg-quick@wg0"
     state: restarted

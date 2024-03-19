@@ -8,3 +8,4 @@
     - ufw-management
     - gost-docker
     - outline-compose
+    - wg-install
