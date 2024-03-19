@@ -1,15 +1,11 @@
 ---
 wg_vpn_net_addr: "10.12.0.9/32"
 wg_srv: "1.2.3.4"
-wg_srv_port: 53841
+wg_srv_port: 52843
 wg_persistent_keepalive: 25
 
 wg_ext_client_net: 10.199.199.0/24
 
-wg_route_int: ens10
+wg_route_int: "{{ ansible_default_ipv4.interface }}"
 
 wg_private_key: "{{ vault_dict_users_secret.private_key }}"
-
-# todo remove
-#interface_device: '{{ansible_enp7s0.device}}'
-#interface_device: "{{ ansible_facts[second_interface_name].device }}"
