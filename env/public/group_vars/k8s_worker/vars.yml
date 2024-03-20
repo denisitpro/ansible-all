@@ -11,6 +11,8 @@ iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
     - { name: "self-control-panel", protocol: "tcp", port: "10250"}
+#    - { name: "ingress-80", protocol: "tcp", port: "80"} # for future
+#    - { name: "ingress-443", protocol: "tcp", port: "443"}  # for future
     - { name: "worked-node", protocol: "tcp", port: "30000:32767"}
     - { name: "calico-bgp", protocol: "tcp", port: "179" }
     - { name: "calico-vxvlan", protocol: "udp", port: "4789" }
@@ -20,6 +22,8 @@ iptables:
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "self-control-panel", protocol: "tcp", port: "10250"}
+#    - { name: "ingress-80", protocol: "tcp", port: "80"} # for future
+#    - { name: "ingress-443", protocol: "tcp", port: "443"}  # for future
     - { name: "worked-node", protocol: "tcp", port: "30000:32767"}
     - { name: "calico-bgp", protocol: "tcp", port: "179" }
     - { name: "calico-vxvlan", protocol: "udp", port: "4789" }
