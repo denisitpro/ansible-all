@@ -7,6 +7,7 @@ k8s_master: true
 
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
+# calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
 iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
@@ -15,6 +16,11 @@ iptables:
     - { name: "k8s-self-control-panel", protocol: "tcp", port: "10250" }
     - { name: "k8s-controller-manager", protocol: "tcp", port: "10257" }
     - { name: "k8s-kube-scheduler", protocol: "tcp", port: "10259" }
+    - { name: "calico-bgp", protocol: "tcp", port: "179" }
+    - { name: "calico-vxvlan", protocol: "udp", port: "4789" }
+    - { name: "calico-Typha", protocol: "tcp", port: "5473" }
+    - { name: "calico-Wireguard", protocol: "udp", port: "51820:51821" }
+    - { name: "calico-flannel", protocol: "tcp", port: "4789" }
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "k8s-api-server", protocol: "tcp", port: "6443" }
@@ -22,3 +28,8 @@ iptables:
     - { name: "k8s-self-control-panel", protocol: "tcp", port: "10250" }
     - { name: "k8s-controller-manager", protocol: "tcp", port: "10257" }
     - { name: "k8s-kube-scheduler", protocol: "tcp", port: "10259" }
+    - { name: "calico-bgp", protocol: "tcp", port: "179" }
+    - { name: "calico-vxvlan", protocol: "udp", port: "4789" }
+    - { name: "calico-Typha", protocol: "tcp", port: "5473" }
+    - { name: "calico-Wireguard", protocol: "udp", port: "51820:51821" }
+    - { name: "calico-flannel", protocol: "tcp", port: "4789" }
