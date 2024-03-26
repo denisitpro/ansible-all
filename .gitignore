@@ -3,4 +3,6 @@
 *.retry
 *.idea
 .DS_Store
-*.secret
+*.log
+.vscode
+vault.secret
