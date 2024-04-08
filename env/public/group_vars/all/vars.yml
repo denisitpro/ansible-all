@@ -4,9 +4,10 @@ global:
   domain: "example.com"
 
 company_name: companyname
+cloud_provider: hetzner
 
-dns1: 1.1.1.1
-dns2: 8.8.8.8
+#dns1: 1.1.1.1
+#dns2: 8.8.8.8
 searchdomain: beta-82.win
 
 

@@ -1,19 +1,4 @@
 ---
-# todo remove - legacy
-#- name: remove /etc/localtime
-#  file:
-#    path: /etc/localtime
-#    state: absent
-#
-#- name: create symlink
-#  file:
-#    src: /usr/share/zoneinfo/UTC
-#    dest: /etc/localtime
-#    owner: root
-#    group: root
-#    state: link
-#  notify: restart systemd-timesyncd
-#
 - name: copy adjtime
   copy:
     src: adjtime
