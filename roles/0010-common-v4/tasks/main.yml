@@ -2,7 +2,7 @@
 - import_tasks: 105-netplan-general.yml
   when:
     - ansible_distribution == 'Ubuntu'
-    - dc_code == "fsn1"
+    - netplan_management is defined
     - wg_type is not defined
     - netplan_route_all is not defined
     - strongswan_server is not defined
@@ -11,7 +11,7 @@
     - netplan
 
 - import_tasks: 107-netplan-wg.yml
-  when: wg_type is defined and wg_type == 'server' and dc_code == 'fsn1'
+  when: wg_type is defined and wg_type == 'server' and  netplan_management is defined
   tags:
     - route
     - netplan
@@ -25,13 +25,12 @@
 
 
 - import_tasks: 110-config-systemd-resolved.yml
-  when:
-    - force_dns_ext is  not defined
+  when: force_dns_ext is not defined and dns_management is defined
   tags: [dns]
 
 - import_tasks: 125-dns-resolvconf.yml
   when:
-    - force_dns_ext is defined
+    - force_dns_ext is defined and dns_management is defined
   tags: [dns]
 
 
@@ -41,7 +40,8 @@
     - update-os
 
 - import_tasks: 140-install-base-packages.yml
-  tags: [base]
+  tags:
+    - base-packages
 
 - import_tasks: 150-time.yml
   tags:
@@ -63,11 +63,11 @@
     - hostname
     - hosts
 
-- import_tasks: 180-portmapper.yml
-  tags:
-    - portmapper
-    - rpcbind
-  when: dc_code == "fsn1" or dc_code == "nbg1"
+#- import_tasks: 180-portmapper.yml
+#  tags:
+#    - portmapper
+#    - rpcbind
+#  when: cloud_provider is defined and cloud_provider == "hetzner"
 
 - import_tasks: 301-security.yml
   tags:

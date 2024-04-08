@@ -13,12 +13,12 @@
       - htop
       - iotop
       - tcpdump
-      - lvm2
       - dnsutils
       - unzip
-      - nfs-common
       - jq
-      - cracklib-runtime
+#      - cracklib-runtime
+#      - nfs-common
+#      - lvm2
     state: latest
     update_cache: yes
     cache_valid_time: 3600
