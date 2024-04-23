@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - mtproxy
+  template:
+    src: "docker-compose.mtproxy.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker') }}/mtproxy/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

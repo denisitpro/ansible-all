@@ -19,6 +19,9 @@ wg_internet : true
 
 wg_private_key: set_me # add support vault
 
+# mtproxy secrets "head -c 16 /dev/urandom | xxd -ps"
+mtproxy_secret: set_me
+
 wg:
   peer:
     - {name: "denis1", pub_key: "eA9hE5BWt+Qynrv9cB8D6/P4KvPr1cn7dYvYTcTYPxk=", allow_ip: "10.12.30.21/32" }
@@ -34,6 +37,7 @@ iptables:
     - { name: "outline client port", protocol: "tcp", port: "18655"}
     - { name: "outline api port", protocol: "tcp", port: "18654"}
     - { name: "wg client port", protocol: "udp", port: "52843"}
+    - { name: "mtproxy", protocol: "tcp", port: "443"}
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "gost_ports", protocol: "tcp", port: "18092:18099" }
@@ -41,3 +45,4 @@ iptables:
     - { name: "outline client port", protocol: "tcp", port: "18655"}
     - { name: "outline api port", protocol: "tcp", port: "18654"}
     - { name: "wg client port", protocol: "udp", port: "52843"}
+    - { name: "mtproxy", protocol: "tcp", port: "443"}
