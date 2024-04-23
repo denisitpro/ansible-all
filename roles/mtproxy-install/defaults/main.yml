@@ -1,0 +1,6 @@
+---
+mtproxy_conf_path: /opt/mtproxy
+mtproxy_image_version: 1.4
+
+folder_apps:
+  - mtproxy

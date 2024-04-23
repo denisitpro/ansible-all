@@ -9,3 +9,4 @@
     - gost-docker
     - outline-compose
     - wg-install
+    - mtproxy-install

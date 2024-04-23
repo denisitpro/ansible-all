@@ -1,0 +1,15 @@
+---
+- import_tasks: 05-create-folder.yml
+  tags:
+    - mtproxy
+    - mtproxy-path
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - mtproxy
+    - mtproxy-compose
+
+- import_tasks: 50-lauch.yml
+  tags:
+    - mtproxy
+    - mtproxy-compose
