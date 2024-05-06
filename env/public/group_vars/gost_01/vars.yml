@@ -20,7 +20,7 @@ wg_internet : true
 wg_private_key: set_me # add support vault
 
 # mtproxy secrets "head -c 16 /dev/urandom | xxd -ps"
-mtproxy_secret: set_me
+#mtproxy_secret: set_me
 
 wg:
   peer:

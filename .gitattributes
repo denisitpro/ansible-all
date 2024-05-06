@@ -1,1 +1,2 @@
 secret.example filter=git-crypt diff=git-crypt
+secrets-vars.yml filter=git-crypt diff=git-crypt
