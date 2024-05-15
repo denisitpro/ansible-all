@@ -22,6 +22,15 @@ wg_private_key: set_me # add support vault
 # mtproxy secrets "head -c 16 /dev/urandom | xxd -ps"
 #mtproxy_secret: set_me
 
+vector:
+  - {
+    name: syslog1,
+    type: loki,
+    log_path: "/var/log/syslog",
+    endpoint: "https://loki.beta-82.win"
+  }
+
+
 wg:
   peer:
     - {name: "denis1", pub_key: "eA9hE5BWt+Qynrv9cB8D6/P4KvPr1cn7dYvYTcTYPxk=", allow_ip: "10.12.30.21/32" }
