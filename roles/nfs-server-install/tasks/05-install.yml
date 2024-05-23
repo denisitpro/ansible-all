@@ -1,0 +1,5 @@
+---
+- name: install nfs-server
+  apt:
+    name:
+      - nfs-kernel-server

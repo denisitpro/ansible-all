@@ -1,0 +1,10 @@
+---
+- name: create folder nfs data
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0777'
+    owner: nobody
+    group: nogroup
+  with_items:
+    - "{{nfs_data_dir}}"

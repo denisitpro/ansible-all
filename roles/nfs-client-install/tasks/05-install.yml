@@ -1,0 +1,5 @@
+---
+- name: install nfs-client
+  apt:
+    name:
+      - nfs-common

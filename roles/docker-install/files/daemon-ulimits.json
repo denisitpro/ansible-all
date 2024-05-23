@@ -1,0 +1,14 @@
+{
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 200000,
+      "Soft": 100000
+    },
+    "nproc": {
+      "Name": "nproc",
+      "Hard": 128000,
+      "Soft": 64000
+    }
+  }
+}
