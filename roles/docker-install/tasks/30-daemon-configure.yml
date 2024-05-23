@@ -1,0 +1,26 @@
+- name: Create the file daemon.json
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 644
+  notify: restart docker
+
+
+- name: Create the file daemon.json
+  template:
+    src: docker.service.j2
+    dest: /lib/systemd/system/docker.service
+    owner: root
+    group: root
+    mode: 644
+  when: docker_api_enable is defined
+
+- name: reload and start docker daemon
+  systemd:
+    name: "docker"
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: docker_api_enable is defined

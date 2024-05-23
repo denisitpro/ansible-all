@@ -10,9 +10,10 @@
       - apt-transport-https
       - ca-certificates
       - curl
-      - gnupg-agent
+      - gnupg2
       - software-properties-common
       - containerd.io
+      - docker-buildx-plugin
     update_cache: yes
   tags:
     - docker-install

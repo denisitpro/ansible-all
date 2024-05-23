@@ -1,0 +1,13 @@
+---
+- name: copy exports file
+  template:
+    src: "exports.j2"
+    dest: "/etc/exports"
+    mode: 0600
+  register: exports_file
+#  notify: nfs-server restart
+  notify: nfs-server reload
+
+- name: Run exporter command if /etc/exports was modified
+  command: "/usr/sbin/exportfs -a"
+  when: exports_file.changed
