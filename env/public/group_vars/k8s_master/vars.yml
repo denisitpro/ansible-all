@@ -4,6 +4,7 @@
 
 k8s_cls_name: k8s.beta-82.win
 k8s_master: true
+#k8s_ipv6: true # support ipv6 install
 # test set specific port
 ##k8s_cls_port: 443
 

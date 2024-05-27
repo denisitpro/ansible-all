@@ -1,0 +1,28 @@
+---
+# install calico  50 nodes or less
+# https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
+- name: Print cni_network
+  ansible.builtin.debug:
+    msg: CNI network {{ cni_network }}
+
+- name: "Check {{ cni_network }} daemonset is working"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} get ds --all-namespaces | grep {{ cni_network }}"
+  run_once: true
+  register: check_net
+  ignore_errors: true
+  changed_when: false
+
+- name: "Create operator"
+  when: check_net is failed
+  command: "kubectl --kubeconfig={{ kubeadmin_config }} create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
+  run_once: true
+
+- name: copy ipv6 config
+  copy:
+    src: calico-ipv6-crd.yml
+    dest: /tmp/calico-ipv6-crd.yml
+
+- name: install calico
+  when: check_net is failed
+  command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico-ipv6-crd.yml"
+  run_once: true

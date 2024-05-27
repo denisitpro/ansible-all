@@ -18,7 +18,7 @@
 
 - name: Init Kubernetes cluster
   when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-  ansible.builtin.shell: "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{k8s_cls_name}} --upload-certs{% endif %}{% if k8s_cls_port is defined %} --apiserver-bind-port={{k8s_cls_port}}{% endif %}"
+  ansible.builtin.shell: "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{k8s_cls_name}} --upload-certs{% endif %}{% if k8s_cls_port is defined %} --apiserver-bind-port={{k8s_cls_port}}{% endif %} {% if k8s_ipv6 is defined %}--pod-network-cidr=10.48.0.0/21,2001::00/64 --service-cidr=10.48.0.0/21,2001::00/108{% endif %}"
   register: init_cluster
   ignore_errors: yes
   delegate_to: "{{ groups[k8s_master_group_name][0] }}"
