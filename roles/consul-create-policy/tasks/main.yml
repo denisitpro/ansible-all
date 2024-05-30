@@ -1,10 +1,15 @@
 ---
 - import_tasks: 05-prefly.yml
+  delegate_to: localhost
+  run_once: true
+  become: no
   tags:
     - consul-policy
 
 - import_tasks: 30-policy-create.yml
-  when: "inventory_hostname == groups[admin_jump_ansible_group][0]"
+  delegate_to: localhost
+  run_once: true
+  become: no
   tags:
     - never
     - consul-policy

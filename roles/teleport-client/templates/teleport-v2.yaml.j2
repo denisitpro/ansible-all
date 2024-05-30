@@ -19,7 +19,7 @@ auth_service:
 ssh_service:
   enabled: "yes"
   labels:
-    dc: {{dc_code| default('not_set')}}
+    stand: {{stand_type| default('not_set')}}
     cluster: {{teleport_cluster_name | default('cls1')}}
     company: {{company_code| default('not_set')}}
     ssh_acl_level: {{teleport_ssh_acl_level | default('none')}}
@@ -37,14 +37,20 @@ proxy_service:
 app_service:
     enabled: yes
     debug_app: false
-{% for app in teleport.app %}
     apps:
+{% for app in teleport.app %}
     - name: "{{app.name}}"
       uri: "{{app.uri}}"
       public_addr: "{{app.public_addr}}"
       insecure_skip_verify: {{app.insecure_skip_verify |default('false')}}
+{% if teleport_grafana is defined %}
+      rewrite:
+        headers:
+        - "Host: localhost"
+        - "Origin: https://localhost:3000"
+{% endif %}
       labels:
-        dc: "{{app.dc_code | default (dc_code) }}"
+        stand: "{{app.dc_code | default ('not_set') }}"
         cluster: "{{teleport_cluster_name | default('cls1')}}"
         company: "{{app.company_code| default(company_code)}}"
         env: "{{app.stand_type | default (stand_type)}}"

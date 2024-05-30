@@ -1,4 +1,7 @@
 ---
+- import_tasks: 04-clean.yml
+  tags: ['never', 'teleport-clean']
+
 - import_tasks: 05-prefly.yml
   tags:
     - teleport
