@@ -1,4 +1,6 @@
 ---
+- ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+
 - name: create path
   file:
     path: "{{item}}"

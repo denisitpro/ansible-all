@@ -1,0 +1,5 @@
+---
+- name: remove telepor data
+  ansible.builtin.file:
+    path: "/var/lib/teleport"
+    state: absent

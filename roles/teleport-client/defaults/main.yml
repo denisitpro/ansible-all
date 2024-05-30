@@ -1,5 +1,5 @@
 ---
-teleport_version: stable/v13
+teleport_version: stable/v15
 teleport_proxy_host: teleport.example.com:443
 teleport_node_name: "{{inventory_hostname_short}}"
 

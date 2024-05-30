@@ -3,11 +3,11 @@
   throttle: 1
   shell: "docker compose down && docker compose up -d && sleep 10"
   args:
-    chdir: "{{ docker_compose_path }}/consul"
+    chdir: "{{ docker_compose_path | default('/opt/docker') }}/consul"
   when: consul_mode is defined and consul_mode == "server"
 
 - name: Run docker compose file
   shell: "docker compose down && docker compose up -d"
   args:
-    chdir: "{{ docker_compose_path }}/consul"
+    chdir: "{{ docker_compose_path | default('/opt/docker') }}/consul"
   when: consul_mode is not defined

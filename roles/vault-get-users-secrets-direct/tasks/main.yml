@@ -3,12 +3,14 @@
   delegate_to: localhost
   run_once: true
   become: no
+  connection: local
   tags: [ 'always', 'vault' ]
 
 - import_tasks: 20-get-users-secrets.yml
   delegate_to: localhost
   run_once: true
   become: no
+  connection: local
   tags: [ 'always', 'vault' ]
 
 #- import_tasks: 99-debug.yml

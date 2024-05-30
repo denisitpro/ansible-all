@@ -49,19 +49,19 @@
     - "telemetry.hcl"
   when: consul_telemetry is not defined
 
-- name: Create a directoris for docker compose consul
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: '0755'
-  loop:
-    - "{{ docker_compose_path }}"
-    - "{{ docker_compose_path }}/consul"
+#- name: Create a directoris for docker compose consul
+#  ansible.builtin.file:
+#    path: "{{ item }}"
+#    state: directory
+#    mode: '0755'
+#  loop:
+#    - "{{ docker_compose_path | default('/opt/docker') }}"
+#    - "{{ docker_compose_path | default('/opt/docker') }}/consul"
 
 - name: copy compose consul
   template:
     src: docker-compose.consul.yml.j2
-    dest: "{{docker_compose_path}}/consul/docker-compose.yml"
+    dest: "{{docker_compose_path | default('/opt/docker')}}/consul/docker-compose.yml"
     owner: root
     group: root
     mode: 0644

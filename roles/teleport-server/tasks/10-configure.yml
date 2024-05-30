@@ -2,7 +2,7 @@
 - name: copy compose-file - teleport
   template:
     src: "docker-compose.teleport.yml.j2"
-    dest: "{{docker_compose_path}}/teleport/docker-compose.yml"
+    dest: "{{docker_compose_path |default('/opt/docker') }}/teleport/docker-compose.yml"
     mode: 0600
 
 - name: copy config file
