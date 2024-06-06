@@ -14,7 +14,7 @@
   notify: restart consul
   when:
     - consul_config_dir_exists.stat.exists
-    - consul_docker is not defined
+    - consul_unit is  defined
 
 - name: Copy node_exporter consul config - notify docker
   ansible.builtin.template:
@@ -24,4 +24,4 @@
   notify: restart-docker consul
   when:
     - consul_config_dir_exists.stat.exists
-    - consul_docker is defined
+    - consul_unit is not  defined

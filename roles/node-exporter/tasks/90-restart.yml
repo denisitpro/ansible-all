@@ -5,8 +5,8 @@
     name: node-exporter
     state: restarted
 
-- name: restart-docker consul
-  shell: "docker compose restart consul"
-  args:
-    chdir: "{{docker_compose_path}}/consul"
-  when: consul_docker is defined
+#- name: restart-docker consul
+#  shell: "docker compose restart consul"
+#  args:
+#    chdir: "{{docker_compose_path}}/consul"
+#  when: consul_docker is defined

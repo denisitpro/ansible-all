@@ -1,12 +1,4 @@
 ---
-- name: install gitlab-runner - centos
-  yum:
-    name:
-      - gitlab-runner
-    state: latest
-    update_cache: yes
-  when: ansible_distribution == 'CentOS'
-
 - name: install gitlab-runner - ubuntu
   apt:
     name:
@@ -15,18 +7,6 @@
     update_cache: yes
   when: ansible_distribution == 'Ubuntu'
 
-- name: for rpm build supprot - centos
-  yum:
-    name:
-      - yum-utils
-      - device-mapper-persistent-data
-      - lvm2
-      - rpm-build
-    state: latest
-    update_cache: yes
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - install
 
 - name: check docker status
   shell: systemctl status docker
