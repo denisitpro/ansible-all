@@ -1,7 +1,7 @@
 service {
   name = "redis-exporter"
   tags = ["redis-exporter", "prometheus", "{{ stand_type }}"]
-  address = "{{ redis_exporter_bind_addr }}"
+#  address = "{{ redis_exporter_bind_addr }}"
   port = {{ redis_exporter_port }}
 {% if consul_agent_disabled is not defined %}
   token = "{{ redis_exporter_consul_token }}"

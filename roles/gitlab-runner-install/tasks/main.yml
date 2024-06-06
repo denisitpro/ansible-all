@@ -1,7 +1,9 @@
 ---
-- import_tasks: 00-repo.yml
+- import_tasks: 10-repo.yml
+  when: ansible_distribution == 'Ubuntu'
   tags:
-    - runner
-- import_tasks: 01-install.yml
+    - gitlab-runner
+
+- import_tasks: 20-install.yml
   tags:
-    - runner
+    - gitlab-runner

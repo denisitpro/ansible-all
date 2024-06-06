@@ -16,7 +16,7 @@ searchdomain: example.com
 default_timezone: UTC
 
 ntp_servers:
-  - ntp.hetzner.com
+  - time.cloudflare.com
   - time.google.com
 
 # list of fallback NTP-servers

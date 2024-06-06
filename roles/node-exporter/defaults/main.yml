@@ -1,4 +1,8 @@
 ---
+node_exporter_version_binary: "1.8.1"
+node_exporter_bind_port: '9100'
+
+
 go_arch_map:
   i386: '386'
   x86_64: 'amd64'
@@ -8,15 +12,13 @@ go_arch_map:
 
 go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
 
-docker_compose_app_path: "/opt/docker"
+#docker_compose_path: "/opt/docker"
 
-node_exporter_version_binary: "1.7.0"
-node_exporter_bind_port: '9100'
 #node_exporter_web_listen_address: "{{ node_exporter_bind_addr | default(ansible_default_ipv4.address) }}:{{ node_exporter_bind_port }}"
 #node_exporter_bind_addr: "{{ global_bind_addr | default(ansible_default_ipv4.address) }}"
 
-node_exporter_system_group: "node-exporter"
-node_exporter_system_user: "{{ node_exporter_system_group }}"
+node_exporter_system_user: "node-exporter"
+node_exporter_system_group: "{{ node_exporter_system_user }}"
 
 node_epxorter_binary_path: "/usr/local/bin/node_exporter"
 node_exporter_textfile_dir: "/var/lib/node-exporter"

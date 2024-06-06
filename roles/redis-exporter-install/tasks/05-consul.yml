@@ -6,5 +6,4 @@
     mode: 0644
   loop:
     - "redis_exporter.hcl"
-    # - "redis.hcl"
-  notify: restart-docker folder consul
+  notify: restart-docker consul
