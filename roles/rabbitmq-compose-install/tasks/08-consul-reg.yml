@@ -5,6 +5,8 @@
     dest: "/etc/consul.d/{{ item }}"
     mode: 0644
   loop:
-    - "rabbitmq_exporter.hcl"
-    - "rabbitmq.hcl"
-  notify: restart-docker folder consul
+    - "rabbitmq_metrics.hcl"
+#    - "rabbitmq.hcl"
+  notify: restart-docker consul
+
+

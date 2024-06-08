@@ -1,0 +1,95 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{{ ansible_managed | comment }}
+# http://prometheus.io/docs/operating/configuration/
+
+global:
+  {{ prometheus_global | to_nice_yaml(indent=2) | indent(2, False) }}
+  external_labels:
+    {{ prometheus_external_labels | to_nice_yaml(indent=2) | indent(4, False) }}
+
+{% if prometheus_remote_write != [] %}
+remote_write:
+  {{ prometheus_remote_write | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif %}
+
+{% if prometheus_remote_read != [] %}
+remote_read:
+  {{ prometheus_remote_read | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif %}
+
+rule_files:
+  - {{ prometheus_config_dir }}/rules/*.rules
+
+{% if prometheus_alertmanager_config | length > 0 %}
+alerting:
+  alertmanagers:
+  {{ prometheus_alertmanager_config | to_nice_yaml(indent=2) | indent(2,False) }}
+  {% if prometheus_alert_relabel_configs | length > 0 %}
+  alert_relabel_configs:
+  {{ prometheus_alert_relabel_configs | to_nice_yaml(indent=2) | indent(2,False) }}
+  {% endif %}
+{% endif %}
+
+scrape_configs:
+  {{ prometheus_scrape_configs | to_nice_yaml(indent=2) | indent(2,False) }}
+{% if scrape_discovery is defined %}
+{% for target in scrape_discovery.target %}
+  - consul_sd_configs:
+    - server: {{ consul_sd_server }}
+{% if consul_agent_disabled is not defined %}
+      token: {{ consul_prometheus_access_token }}
+{% endif %}
+      datacenter: {{ consul_dc_name | default('dc_set_me') }}
+{% if target.services is defined %}
+      services:
+      - {{ target.services }}
+{% endif %}
+{% if target.tags is defined %}
+      tags:
+{% for tag in target.tags %}
+      - {{ tag }}
+{% endfor %}
+{% endif %}
+    job_name: {{ target.job_name }}
+{% if target.scrape_interval is defined %}
+    scrape_interval: {{ target.scrape_interval }}
+{% endif %}
+    metrics_path: "{{ target.metrics_path | default ('/metrics') }}"
+{% if target.job_name != 'consul_clickhouse_metrics' %}
+    params:
+      format: ['{{ target.format | default ('prometheus') }}']
+{% endif %}
+{% if target.scheme is defined %}
+    scheme: {{ target.scheme }}
+    tls_config:
+      insecure_skip_verify: {{ target.insecure_skip_verify }}
+{% endif %}
+    relabel_configs:
+    - action: keep
+      regex: .*,prometheus,.*
+      source_labels:
+      - __meta_consul_tags
+    - source_labels:
+      - __meta_consul_service
+      target_label: job
+    - action: replace
+      replacement: $1$2
+      separator: ':'
+      source_labels:
+      - __meta_consul_node
+      - __meta_consul_service_port
+      target_label: instance
+    - action: replace
+      replacement: $1$2
+      separator: ':'
+      source_labels:
+      - __meta_consul_node
+      - __meta_consul_service_port
+      target_label: __address__
+    - regex:  "{{ stands_regexp }}"
+      replacement: $1
+      source_labels:
+      - __meta_consul_tags
+      target_label: stand
+{% endfor %}
+{% endif %}

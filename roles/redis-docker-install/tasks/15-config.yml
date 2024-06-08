@@ -1,8 +1,8 @@
 ---
 - name: Copy redis config
   ansible.builtin.template:
-    src: "redis-master.conf.j2"
-    dest: "{{ redis_node_data_path }}/redis.conf"
+    src: "{{redis_conf_name | default ('redis-master.conf')}}.j2"
+    dest: "{{ redis_conf_path }}/redis.conf"
     owner: root
     group: root
     mode: 0644

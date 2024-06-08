@@ -7,7 +7,7 @@
     owner: "{{ rabbitmq_docker_user_uid }}"
     group: "{{ rabbitmq_docker_user_gid }}"
   notify:
-    - Restart rabbitmq
+    - restart rabbitmq
 
 - name: Copy rabbitmq.conf
   ansible.builtin.template:
@@ -17,14 +17,14 @@
     owner: "{{ rabbitmq_docker_user_uid }}"
     group: "{{ rabbitmq_docker_user_gid }}"
   notify:
-    - Restart rabbitmq
+    - restart rabbitmq
 
-- name: Copy erlang.cookie
-  ansible.builtin.template:
-    src: ".erlang.cookie.j2"
-    dest: "{{ rabbitmq_dir }}/.erlang.cookie"
-    owner: "{{ rabbitmq_docker_user_uid }}"
-    group: "{{ rabbitmq_docker_user_gid }}"
-    mode: 0400
-  notify:
-    - Restart rabbitmq
+#- name: Copy erlang.cookie
+#  ansible.builtin.template:
+#    src: ".erlang.cookie.j2"
+#    dest: "{{ rabbitmq_dir }}/.erlang.cookie"
+#    owner: "{{ rabbitmq_docker_user_uid }}"
+#    group: "{{ rabbitmq_docker_user_gid }}"
+#    mode: 0400
+#  notify:
+#    - restart rabbitmq-compose

@@ -133,11 +133,11 @@ ssl_options.keyfile              = {{ rabbitmq_ssl_options_keyfile }}
 ##
 ## Relevant doc guide: https://rabbitmq.com//cluster-formation.html
 ##
-
+{% if rabbitmq_cluster is defined %}
 {% if rabbitmq_cluster and rabbitmq_cluster_formation_peer_discovery_backend=="dns" %}
 cluster_formation.peer_discovery_backend={{ rabbitmq_cluster_formation_peer_discovery_backend }}
 cluster_formation.dns.hostname={{ rabbitmq_cluster_formation_dns_hostname }}
-{% endif %}
+{% endif %}{% endif %}
 #cluster_formation.peer_discovery_backend     = rabbit_peer_discovery_classic_config
 #
 #cluster_formation.classic_config.nodes.1 = rabbit1@hostname
