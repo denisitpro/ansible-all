@@ -1,6 +1,6 @@
 ---
 # base directory config
-alertmanager_docker_compose_path: "{{ docker_compose_path }}/alertmanager"
+alertmanager_docker_compose_path: "{{ docker_compose_path | default('/opt/docker') }}/alertmanager"
 alertmanager_data_path: /opt/alertmanager
 alertmanager_db_dir: "{{ alertmanager_data_path }}/data"
 alertmanager_config_path: "{{ alertmanager_data_path }}/config"
@@ -8,8 +8,8 @@ alertmanager_config_dir: /etc/alertmanager
 alertmanager_user_uid: "65534"
 alertmanager_user_gid: "65534"
 #version and bind
-alertmanager_image: "v0.25.0"
-alertmanager_bind_address: "{{ global_bind_addr }}"
+alertmanager_image: "v0.27.0"
+alertmanager_bind_address: "{{ global_bind_addr | default ('[::]')}}"
 alertmanager_http_location: "/"
 alertmanager_web_listen_address: "{{ alertmanager_bind_address }}:9093"
 alertmanager_web_external_url: "http://{{ alertmanager_bind_address }}:9093{{ alertmanager_http_location }}"

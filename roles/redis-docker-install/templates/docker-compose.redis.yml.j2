@@ -1,4 +1,4 @@
-version: "3.9"
+# {{ ansible_managed }}
 
 services:
   redis:
@@ -10,8 +10,11 @@ services:
 #      net.core.somaxconn : 65535
     network_mode: host
     volumes:
-      - {{ redis_node_data_path }}:{{ redis_node_data_path }}
-    command: redis-server /opt/redis/redis.conf
+      - {{ redis_conf_path }}:{{ redis_conf_path }}
+{% if redis_data is defined %}
+      - {{redis_data_path}}:/data
+{% endif %}
+    command: redis-server {{redis_conf_path}}/redis.conf
 {% if redis_restart is defined %}
     restart: always
 {% endif %}

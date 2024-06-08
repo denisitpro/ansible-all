@@ -3,7 +3,7 @@ service {
   port = 15692,
   tags = ["rabbitmq-explorer", "prometheus", "{{ stand_type }}"],
 {% if consul_agent_disabled is not defined %}
-  token = "{{ consul_rabbitmq_exporter_token }}",
+  token = "{{ consul_rabbitmq_explorer_token}}",
 {% endif %}
   check = {
     id = "rabbitmq-explorer"

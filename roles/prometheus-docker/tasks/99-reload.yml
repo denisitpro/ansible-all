@@ -1,0 +1,4 @@
+---
+- name: Reload prometheus is docker
+  ansible.builtin.shell:
+    cmd: "docker kill --signal=HUP prometheus"

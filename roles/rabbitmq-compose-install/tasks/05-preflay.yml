@@ -1,14 +1,5 @@
 ---
-- name: Import docker-compose dir
-  ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
-
-- name: Create docker-compose dir for rabbitmq
-  ansible.builtin.file:
-    path: "{{ rabbitmq_docker_compose_path }}"
-    mode: 0755
-    owner: root
-    group: root
-    state: directory
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
 
 - name: Create folder for rabbimq
   ansible.builtin.file:
