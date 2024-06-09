@@ -40,6 +40,7 @@
   tags:
     - k8s
     - k8s-calico
+    - k8s-calico-ipv4
 
 - ansible.builtin.import_tasks: 42-cni-calico-ipv6.yml
   delegate_to: "{{ groups[k8s_master_group_name][0] }}"
@@ -47,6 +48,7 @@
   tags:
     - k8s
     - k8s-calico
+    - k8s-calico-ipv6
 
 
 
