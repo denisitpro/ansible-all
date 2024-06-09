@@ -12,17 +12,47 @@
   ignore_errors: true
   changed_when: false
 
+- name: "Check if Calico operator exists"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} get deployment tigera-operator -n tigera-operator --ignore-not-found"
+  register: calico_operator_check
+  changed_when: false
+  check_mode: no
+
+
 - name: "Create operator"
-  when: check_net is failed
+#  when: check_net is failed
   command: "kubectl --kubeconfig={{ kubeadmin_config }} create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
   run_once: true
+  when: calico_operator_check.stdout == "" and check_net is failed
 
-- name: copy ipv6 config
-  copy:
-    src: calico-ipv6-crd.yml
-    dest: /tmp/calico-ipv6-crd.yml
+- name: copy init config calico
+  template:
+    src: "calico.yaml.j2"
+    dest: /tmp/calico.yaml
+    owner: root
+    group: root
+    mode: 0600
+  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+  tags:
+    - k8s-calico-copy
+    - calico-install
 
-- name: install calico
+- name: install calico v2
   when: check_net is failed
-  command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico-ipv6-crd.yml"
+  command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico.yaml"
   run_once: true
+  tags:
+    calico-install
+
+
+# todo remove old
+#- name: copy ipv6 config
+#  copy:
+#    src: calico-ipv6-crd.yml
+#    dest: /tmp/calico-ipv6-crd.yml
+
+
+#- name: install calico
+#  when: check_net is failed
+#  command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico-ipv6-crd.yml"
+#  run_once: true
