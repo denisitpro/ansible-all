@@ -9,7 +9,10 @@ PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -i {{ wg_ro
 {% endif %}
 
 {% if wg_internet is defined %}
-PostUp = iptables -t nat -I POSTROUTING 1 -s {{ wg_ext_client_net }} -o {{ wg_route_int }} -j MASQUERADE
+PostUp = iptables -t nat -I POSTROUTING 1 -s {{ wg_ext_client_net4 }} -o {{ wg_route_int }} -j MASQUERADE
+#PostUp = ip6tables -t nat -I POSTROUTING 1 -s {{ wg_ext_client_net6 }} -o {{ wg_route_int }} -j MASQUERADE
+PostDown = ip6tables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -i {{ wg_route_int }} -j ACCEPT
+
 {% endif %}
 
 {% if wg.peer is defined %}

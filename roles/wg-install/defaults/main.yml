@@ -4,7 +4,8 @@ wg_srv: "1.2.3.4"
 wg_srv_port: 52843
 wg_persistent_keepalive: 25
 
-wg_ext_client_net: 10.199.199.0/24
+wg_ext_client_net4: 10.199.199.0/24
+wg_ext_client_net6: 2a01:4f5:c11:1aaa::1/64
 
 wg_route_int: "{{ ansible_default_ipv4.interface }}"
 

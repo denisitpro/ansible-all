@@ -14,10 +14,9 @@ wss_user_pass: "{{socks5_user_pass}}"
 wg_type: server
 wg_srv_port: 52843
 wg_vpn_net_addr: "10.12.0.9/32"
-wg_ext_client_net: "10.12.0.0/16"
+wg_ext_client_net4: "10.12.0.0/16"
 wg_internet : true
 
-wg_private_key: set_me # add support vault
 
 # mtproxy secrets "head -c 16 /dev/urandom | xxd -ps"
 #mtproxy_secret: set_me
@@ -30,11 +29,6 @@ vector:
     endpoint: "https://loki.beta-82.win"
   }
 
-
-wg:
-  peer:
-    - {name: "denis1", pub_key: "eA9hE5BWt+Qynrv9cB8D6/P4KvPr1cn7dYvYTcTYPxk=", allow_ip: "10.12.30.21/32" }
-    - {name: "denis2", pub_key: "UCo/3BChhaZ9OFJxIfK2W8c0RWIbyhOO6tbMpVTJY0w=", allow_ip: "10.12.30.22/32" }
 
 
 
