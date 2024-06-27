@@ -1,6 +1,6 @@
 ---
 - import_tasks: shared/tasks/create-dir-docker-compose.yml
-- import_tasks: shared/tasks/copy-security-limits.yml
+#- import_tasks: shared/tasks/copy-security-limits.yml
 
 - name: create folder blackbox-exporter
   ansible.builtin.file:

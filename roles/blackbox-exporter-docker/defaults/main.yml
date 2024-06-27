@@ -1,13 +1,9 @@
 ---
-appname: blackbox_exporter
-app_path: /opt/docker
-
-blackbox_exporter_bind_addr: "{{global_bind_addr}}"
 blackbox_exporter_port: 9115
 blackbox_exporter_config_data_path: "/opt/blackbox_exporter"
-blackbox_exporter_version: v0.21.1
+blackbox_exporter_version: v0.25.0
 blackbox_api_key: blackbox
-blackbox_docker_compose_path: "{{ docker_compose_path }}/blackbox"
+blackbox_docker_compose_path: "{{ docker_compose_path | default('/opt/docker')}}/blackbox"
 
 blackbox_config:
   modules: 
@@ -17,12 +13,9 @@ blackbox_config:
     http_200_module:
       prober: http
       timeout: 5s
-      http:
-        preferred_ip_protocol: "ip4"
-    http_coin_module:
-      prober: http
-      timeout: 5s
-      http:
-        preferred_ip_protocol: "ip4"
-        headers:
-          x-example-api-key: "{{ blackbox_api_key }}"
+#      http:
+#        preferred_ip_protocol: "ip4" #default ipv6 https://github.com/prometheus/blackbox_exporter/blob/master/CONFIGURATION.md
+
+
+folder_apps:
+  - blackbox
