@@ -3,7 +3,7 @@
   tags:
     - blackbox-exporter
 
-- import_tasks: 01-copy-compose.yml
+- import_tasks: 05-copy-compose.yml
   tags:
     - blackbox-exporter
 
