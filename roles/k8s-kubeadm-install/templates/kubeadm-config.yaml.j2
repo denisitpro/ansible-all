@@ -1,6 +1,6 @@
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
-kubernetesVersion: v1.29.0
+kubernetesVersion: v{{k8s_cls_version}}
 {% if k8s_cls_name is defined %}
 controlPlaneEndpoint: "{{ k8s_cls_name |default('k8s.example.com') }}:{{ k8s_cls_port |default('6443') }}"
 {% endif %}

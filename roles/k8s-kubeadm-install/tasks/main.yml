@@ -26,6 +26,7 @@
   when: ansible_distribution == 'Ubuntu'
   tags:
     - k8s
+    - k8s-components
 
 - ansible.builtin.import_tasks: 35-k8s-init-cls.yml
   when: k8s_master is defined # todo set check group or another cluster vars

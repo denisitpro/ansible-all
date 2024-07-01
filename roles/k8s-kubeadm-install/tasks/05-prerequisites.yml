@@ -38,6 +38,12 @@
     mode: 0644
   when: k8s_hostname_force is defined
 
-- name: Set hostname k8s - inventory hostname
-  ansible.builtin.shell: hostnamectl set-hostname "{{ inventory_hostname }}"
+# todo remove
+#- name: Set hostname k8s - inventory hostname
+#  ansible.builtin.shell: hostnamectl set-hostname "{{ inventory_hostname }}"
+#  when: k8s_hostname_force is defined
+
+- name: Set a hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
   when: k8s_hostname_force is defined
