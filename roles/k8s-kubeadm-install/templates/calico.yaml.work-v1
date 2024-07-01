@@ -12,7 +12,7 @@ spec:
       nodeSelector: all()
     - blockSize: 122
       cidr: fd00:10:48::/64
-      encapsulation: VXLAN
+      encapsulation: None
       natOutgoing: Enabled
       nodeSelector: all()
   nodeUpdateStrategy:
@@ -42,4 +42,4 @@ spec:
   blockSize: 122
   nodeSelector: all()
   ipipMode: Never
-  vxlanMode: Always # support VXLAN for IPv6
+  vxlanMode: Never
