@@ -21,7 +21,7 @@
 
 - name: "Create operator"
 #  when: check_net is failed
-  command: "kubectl --kubeconfig={{ kubeadmin_config }} create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
+  command: "kubectl --kubeconfig={{ kubeadmin_config }} create -f https://raw.githubusercontent.com/projectcalico/calico/{{calico_operator_version}}/manifests/tigera-operator.yaml"
   run_once: true
   when: calico_operator_check.stdout == "" and check_net is failed
 
