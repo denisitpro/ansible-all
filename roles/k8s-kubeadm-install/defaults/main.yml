@@ -23,3 +23,5 @@ cni_network: calico
 
 
 k8s_master_group_name: k8s_master
+
+k8s_master_init_host: "{{ groups[k8s_master_group_name][0] }}"

@@ -8,6 +8,8 @@ k8s_ipv6: true # support ipv6 install
 # test set specific port
 ##k8s_cls_port: 443
 
+# example set specific first master node
+k8s_master_init_host: k8s-02.beta-82.win
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
