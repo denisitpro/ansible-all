@@ -4,58 +4,34 @@
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
 
-#- name: debug order
+#- name: debug init host name
 #  ansible.builtin.debug:
-#    msg: hello
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+#    msg: k8s master init host "{{k8s_master_init_host}}"
+#  tags:
+#    - k8s-debug
 
-- name: init k8s cluster or reset if k8s_rest_cls_force defined
+- name: Check if Kubernetes cluster is up and running
+  command: kubectl --kubeconfig={{ kubeadmin_config }} cluster-info
+  register: cluster_info
+  failed_when: cluster_info.rc != 0 and kubeadm_ca.stat.exists
+  changed_when: false
+  ignore_errors: true
+  tags:
+    - k8s-check-cls
+
+#- name: debug  cluster info status
+#  ansible.builtin.debug:
+#    msg: cls info - "{{cluster_info.rc}}"
+#  tags:
+#    - k8s-check-cls
+
+- name: reset if k8s_rest_cls_force defined
   ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
-  when: not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined
-
-#- name: print command ipv4
-#  ansible.builtin.debug:
-#    msg: commannd -  "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{k8s_cls_name}} --upload-certs{% endif %}{% if k8s_cls_port is defined %} --apiserver-bind-port={{k8s_cls_port}}{% endif %} {% if k8s_ipv6 is defined %}--pod-network-cidr=10.48.0.0/21,2001::00/64 --service-cidr=10.48.0.0/21,2001::00/108{% endif %}"
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
-#  tags:
-#    k8s-debug
-
-#- name: print command ipv6
-#  ansible.builtin.debug:
-#    msg: commannd -  "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{ k8s_cls_name }} --upload-certs{% endif %}{% if k8s_cls_port is defined %} --apiserver-bind-port={{ k8s_cls_port }}{% endif %} --pod-network-cidr={% if k8s_ipv6 is defined %}fd00:10:244::/56,{% endif %}10.48.0.0/21 --service-cidr={% if k8s_ipv6 is defined %}fd00:10:96::/112,{% endif %}10.96.0.0/12"
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
-#  tags:
-#    k8s-debug
+#  when: not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined # todo remove
+  when: k8s_rest_cls_force is defined
 
 
-#- name: Init Kubernetes cluster - shell v1
-#  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-#  ansible.builtin.shell: "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{k8s_cls_name}} --upload-certs{% endif %}{% if k8s_cls_port is defined %} --apiserver-bind-port={{k8s_cls_port}}{% endif %} {% if k8s_ipv6 is defined %}--pod-network-cidr=10.48.0.0/21,2001::00/64 --service-cidr=10.48.0.0/21,2001::00/108{% endif %}"
-#  register: init_cluster
-#  ignore_errors: yes
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
-#  tags:
-#    - k8s-debug
-#    - k8s-init
-
-#- name: Initialize Kubernetes cluster shell v2
-#  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-##  ansible.builtin.shell: "kubeadm init{% if k8s_cls_name is defined %} --control-plane-endpoint={{ k8s_cls_name }} --upload-certs{% endif %}{% if k8s_cls_port is defined %} --apiserver-bind-port={{ k8s_cls_port }}{% endif %} --pod-network-cidr={% if k8s_ipv6 is defined %}fd00:10:244::/56,{% endif %}10.48.0.0/21 --service-cidr={% if k8s_ipv6 is defined %}fd00:10:96::/112,{% endif %}10.96.0.0/12"
-#  ansible.builtin.shell: >
-#    kubeadm init
-#    {% if k8s_cls_name is defined %} --control-plane-endpoint={{ k8s_cls_name }} --upload-certs{% endif %}
-#    {% if k8s_cls_port is defined %} --apiserver-bind-port={{ k8s_cls_port }}{% endif %}
-#    --pod-network-cidr="10.48.0.0/21,{% if k8s_ipv6 is defined %}fd00:10:244::/56{% endif %}" --service-cidr="10.96.0.0/12,{% if k8s_ipv6 is defined %}fd00:10:96::/112{% endif %}"
-#  register: init_cluster
-#  ignore_errors: yes
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
-#  tags:
-#    - k8s-debug
-#    - k8s-init
-
-
-# todo remove
 - name: copy init config k8s-cluster
   template:
     src: "kubeadm-config.yaml.j2"
@@ -63,23 +39,25 @@
     owner: root
     group: root
     mode: 0600
-  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+  delegate_to: "{{k8s_master_init_host}}"
   tags:
     - k8s-config-copy
 
 - name: Init Kubernetes cluster - manifest
-  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
   ansible.builtin.shell: "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs"
+#  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
+  when: (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
   register: init_cluster
   ignore_errors: yes
-  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+  delegate_to: "{{k8s_master_init_host}}"
   tags:
     - k8s-init
-
+    - k8s-init-cls
 
 #- name: Store init output - need only for debug
 #  action: copy content="{{ init_cluster.stdout }}" dest="/etc/kubernetes/kubeadm-init.stdout"
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+#  delegate_to: "{{k8s_master_init_host}}"
 #  ignore_errors: yes
 #  when: init_cluster.skipped == 'True'
 #  tags:
@@ -89,27 +67,29 @@
 - name: fetch the join command
   ansible.builtin.shell: kubeadm token create --print-join-command
   register: k8s_join_token
-  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+  delegate_to: "{{k8s_master_init_host}}"
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
+
 
 #- name: debug join info
 #  ansible.builtin.debug:
 #    msg: token info for debug -  {{ k8s_join_token.stdout }}
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+#  delegate_to: k8s_master_init_host
 
 # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/
 # very high kostili and velosiped
-
 - name: fetch certificate
   ansible.builtin.shell: kubeadm init phase upload-certs --upload-certs  | sed '3!D'
   register: k8s_cert
-  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+  delegate_to: "{{k8s_master_init_host}}"
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
   run_once: true
 
 
 #- name: debug cert info
 #  ansible.builtin.debug:
 #    msg: cert -  {{ k8s_cert.stdout }}
-#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+#  delegate_to: "{{k8s_master_init_host}}"
 #  run_once: true
 #  tags:
 #    - k8s-debug
@@ -120,5 +100,6 @@
   register: kubeadm_ca
 
 - name: join replica master to cluster
-  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
   ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"
+  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
+#  when: kubeadm_ca.stat.exists and (cluster_info.rc == 0 or k8s_rest_cls_force is defined)

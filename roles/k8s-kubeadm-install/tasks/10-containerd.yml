@@ -44,7 +44,7 @@
     url: "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service"
     dest: "/usr/local/lib/systemd/system/containerd.service"
 
-- name:  force systemd to reread configs
+- name:  force systemd to re-read configs
   ansible.builtin.systemd:
     daemon_reload: true
 
