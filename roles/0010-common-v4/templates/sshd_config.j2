@@ -5,6 +5,9 @@
 
 Include /etc/ssh/sshd_config.d/*.conf
 
+
+{% if freeipa_client_installed is not defined %}
 # for ipa
 AuthorizedKeysCommand /usr/bin/sss_ssh_authorizedkeys
 AuthorizedKeysCommandUser nobody
+{% endif %}

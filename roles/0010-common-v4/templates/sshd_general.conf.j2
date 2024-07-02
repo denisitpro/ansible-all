@@ -73,7 +73,9 @@ X11Forwarding no
 PrintMotd no
 Compression no
 
-KbdInteractiveAuthentication yes
+#KbdInteractiveAuthentication yes
+# The option disables keyboard-interactive authentication. This is one method of authentication that may include a password prompt or other forms of authentication.
+KbdInteractiveAuthentication no
 
 {% if ssh_override_port is defined %}
 #different ssh port for gitlab work

@@ -9,5 +9,5 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 
 {% if k8s_hostname_force is defined %}
-{{ ansible_default_ipv4.address }} {{ inventory_hostname }}
+{{ ansible_default_ipv4.address }} {{ ansible_fqdn  }}
 {% endif %}

@@ -40,6 +40,7 @@
     - update-os
 
 - import_tasks: 140-install-base-packages.yml
+  when: ansible_distribution == 'Ubuntu'
   tags:
     - base-packages
 
