@@ -1,4 +1,8 @@
-- name: install base software - ubuntu
+---
+#- name: Distribution major version
+#  debug: msg="{{ ansible_distribution_version}}"
+
+- name: install base software - ubuntu all
   apt:
     name:
       - nano
@@ -6,8 +10,6 @@
       - lsof
       - wget
       - telnet
-      - netcat
-      - mlocate
       - git
       - vim
       - htop
@@ -16,10 +18,21 @@
       - dnsutils
       - unzip
       - jq
-#      - cracklib-runtime
-#      - nfs-common
-#      - lvm2
+      - plocate
     state: latest
     update_cache: yes
     cache_valid_time: 3600
-  when: ansible_distribution == 'Ubuntu'
+
+- name: install base software - ubuntu 22.04
+  apt:
+    name:
+      - netcat
+    state: latest
+  when: ansible_distribution_version == '22.04'
+
+- name: install base software - ubuntu 24.04
+  apt:
+    name:
+      - netcat-traditional
+    state: latest
+  when: ansible_distribution_version == '24.04'

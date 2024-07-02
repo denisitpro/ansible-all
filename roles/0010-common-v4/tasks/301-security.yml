@@ -1,4 +1,9 @@
 ---
+- name: Set daemon name based on Ubuntu version
+  set_fact:
+    ssh_daemon: "{{ 'sshd' if ansible_distribution_version == '22.04' else 'ssh' }}"
+  when: ansible_distribution == 'Ubuntu'
+
 - name: copy login.defs
   template:
     src: login.defs.j2
@@ -39,7 +44,7 @@
     group: root
     validate: "/usr/sbin/sshd -T -f %s"
     backup: yes
-  notify: restart sshd
+  notify: "restart {{ ssh_daemon }}"
   tags: [sshd]
   when: "(ansible_distribution == 'Ubuntu')"
 
@@ -54,5 +59,5 @@
     validate: "/usr/sbin/sshd -T -f %s"
     backup: yes
   tags: [sshd]
-  notify: restart sshd
+  notify: "restart {{ ssh_daemon }}"
   when: "(ansible_distribution == 'Ubuntu')"
