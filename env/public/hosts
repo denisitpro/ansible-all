@@ -2,10 +2,10 @@
 gost-01.beta-82.win
 
 [k8s_master]
-k8s-01.beta-82.win
-k8s-02.beta-82.win
-k8s-03.beta-82.win
-#k8s-04.beta-82.win
+#k8s-01.beta-82.win
+#k8s-02.beta-82.win
+#k8s-03.beta-82.win
+k8s-04.beta-82.win
 #k8s-05.beta-82.win
 
 [k8s_worker]

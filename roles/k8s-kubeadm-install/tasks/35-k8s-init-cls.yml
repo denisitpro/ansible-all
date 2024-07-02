@@ -16,20 +16,21 @@
   failed_when: cluster_info.rc != 0 and kubeadm_ca.stat.exists
   changed_when: false
   ignore_errors: true
+  delegate_to: "{{k8s_master_init_host}}"
   tags:
     - k8s-check-cls
 
-#- name: debug  cluster info status
-#  ansible.builtin.debug:
-#    msg: cls info - "{{cluster_info.rc}}"
-#  tags:
-#    - k8s-check-cls
+- name: debug  cluster info status
+  ansible.builtin.debug:
+    msg: cls info - "{{cluster_info.rc}}"
+  tags:
+    - k8s-check-cls
 
-- name: reset if k8s_rest_cls_force defined
+- name: reset if k8s_reset_cls_force defined
   ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
-#  when: not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined # todo remove
-  when: k8s_rest_cls_force is defined
+#  when: not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined # todo remove
+  when: k8s_reset_cls_force is defined
 
 
 - name: copy init config k8s-cluster
@@ -45,9 +46,9 @@
 
 - name: Init Kubernetes cluster - manifest
   ansible.builtin.shell: "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs"
-#  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
-  when: (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
+#  when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
+  when: (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   register: init_cluster
   ignore_errors: yes
   delegate_to: "{{k8s_master_init_host}}"
@@ -68,7 +69,7 @@
   ansible.builtin.shell: kubeadm token create --print-join-command
   register: k8s_join_token
   delegate_to: "{{k8s_master_init_host}}"
-#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
 
 
 #- name: debug join info
@@ -82,7 +83,7 @@
   ansible.builtin.shell: kubeadm init phase upload-certs --upload-certs  | sed '3!D'
   register: k8s_cert
   delegate_to: "{{k8s_master_init_host}}"
-#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_rest_cls_force is defined)
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   run_once: true
 
 
@@ -101,5 +102,5 @@
 
 - name: join replica master to cluster
   ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"
-  when: (not kubeadm_ca.stat.exists or k8s_rest_cls_force is defined) and reset_cluster is succeeded
-#  when: kubeadm_ca.stat.exists and (cluster_info.rc == 0 or k8s_rest_cls_force is defined)
+  when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
+#  when: kubeadm_ca.stat.exists and (cluster_info.rc == 0 or k8s_reset_cls_force is defined)
