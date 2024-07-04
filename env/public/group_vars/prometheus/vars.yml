@@ -1,0 +1,34 @@
+---
+teleport_ssh_acl_level: 300
+
+teleport:
+  app:
+    - {name: prom, uri: "http://{{prometheus_web_listen_address}}", public_addr: "prom.tp.example.org", app_acl_level: 100}
+    - {name: alertmanager, uri: "http://{{alertmanager_web_listen_address}}", public_addr: "alertmanager.tp.example.org", app_acl_level: 100}
+
+alertmanager_bind_address: 127.0.0.1
+alertmanager_web_listen_address: "{{ alertmanager_bind_address }}:9093"
+
+
+vault:
+  secret:
+    - {kv: "example", path: "teleport/general",  key_name: "teleport_join_token"}
+    - {kv: "example", path: "consul/cls-example",  key_name: "consul_encrypt_key"}
+    - {kv: "example", path: "consul/cls-example/autoreg",  key_name: "consul_agent_token"}
+    - {kv: "example", path: "consul/cls-example/autoreg",  key_name: "consul_node_exporter_token"}
+    - {kv: "example", path: "consul/cls-example/autoreg",  key_name: "consul_prometheus_access_token"}
+    - {kv: "example", path: "telegram/bot_company_notify",  key_name: "telegram_bot_token"}
+
+iptables:
+  ipv4:
+#### system rules
+    - { name: "all access", protocol: "tcp", port: "22"}
+### consul agent gossip - stands
+    - { name: "consul_access", protocol: "tcp", port: "8300:8302"}
+    - { name: "consul_access", protocol: "udp", port: "8300:8302"}
+  ipv6:
+#### system rules v6
+    - { name: "all access", protocol: "tcp", port: "22"}
+### consul agent gossip - stands
+    - { name: "consul_access", protocol: "tcp", port: "8300:8302"}
+    - { name: "consul_access", protocol: "udp", port: "8300:8302"}

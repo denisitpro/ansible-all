@@ -1,0 +1,31 @@
+---
+alertmanager_route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: receiver-telegram-infra
+  routes:
+  - match:
+      alertname: Watchdog
+    group_by: ['alertname']
+    receiver: receiver-telegram-infra
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 24h
+
+alertmanager_receivers:
+  - name: "receiver-telegram-infra"
+#    slack_configs:
+#      - send_resolved: true
+#        channel: '#example-prom'
+#        color: !unsafe '{{ template "slack.color" . }}'
+#        title: !unsafe '{{ template "slack.title" . }}'
+#        text: !unsafe '{{ template "slack.text" . }}'
+    telegram_configs:
+      - bot_token: "{{ vault_dict_users_secret.telegram_bot_token  | default('set_me') }}"
+        api_url: https://api.telegram.org
+        chat_id: -4222760201
+#        message: !unsafe '{{ template "telegram.default.message" . }}'
+        message: !unsafe '{{ template "telegram.c1_infra.message" . }}'
+#        parse_mode: HTML

@@ -1,0 +1,68 @@
+---
+stands_regexp: ".*,(devel|qa|prod),.*"
+
+
+scrape_discovery:
+  target:
+    - { job_name: "consul_node_exporter", services: "node-exporter" }
+    - { job_name: "consul_redis_exporter", services: "redis-exporter" }
+    - { job_name: "consul_rabbitmq_explorer", services: "rabbitmq-explorer" }
+
+prometheus_external_labels:
+  environment: "prom-infra"
+  monitoring: monitoring
+
+
+prometheus_scrape_configs:
+  - job_name: "federate_https"
+    honor_labels: true
+    metrics_path: /federate
+    scheme: https
+    params:
+      match[]:
+#      - '{job=~".*."}'
+      - '{job=~"ingress-nginx-controller|kube-state-metrics|calico|kube-proxy|coredns|apiserver|kubelet|kube-scheduler|kube-controller-manager|etcd|prometheus|cadvisor"}'
+    static_configs:
+    - targets:
+      - prom-devel.example.com
+      labels:
+        instance: "prometheus-devel"
+        cluster: "devel"
+        where: "devel"
+    basic_auth:
+      username: 'user'
+      password: 'pass'
+  - job_name: "blackbox-infra"
+    metrics_path: /probe
+    params:
+      module:
+       - http_200_module
+       - icmp
+    static_configs:
+    - targets:
+        - https://vault.example.com/
+    relabel_configs:
+     - source_labels: [__address__]
+       target_label: __param_target
+     - source_labels: [__param_target]
+       target_label: instance
+     - target_label: __address__
+       replacement: localhost:9115
+  - job_name: "domain_expire"
+    scrape_interval: 5m
+    metrics_path: /probe
+    static_configs:
+    - targets:
+        - example.com
+    relabel_configs:
+    - source_labels: [__address__]
+      target_label: __param_target
+    - source_labels: [__param_target]
+      target_label: instance
+    - target_label: __address__
+      replacement: exporters-01.example.com:9222
+
+
+prometheus_alertmanager_config:
+   - static_configs:
+       - targets: ["{{alertmanager_web_listen_address}}"]
