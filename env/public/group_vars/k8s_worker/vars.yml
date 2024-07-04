@@ -8,9 +8,15 @@
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
+
+# need config how master nodes
+k8s_ipv6: true # support ipv6 install
+
 iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "coredns", protocol: "tcp", port: "53"} # need for work dns query
+    - { name: "coredns", protocol: "udp", port: "53"} # need for work dns query
     - { name: "self-control-panel", protocol: "tcp", port: "10250"}
     - { name: "ingress-80", protocol: "tcp", port: "80"} # for future
     - { name: "ingress-443", protocol: "tcp", port: "443"}  # for future
@@ -22,6 +28,8 @@ iptables:
     - { name: "calico-flannel", protocol: "tcp", port: "4789" }
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "coredns", protocol: "tcp", port: "53"} # need for work dns query
+    - { name: "coredns", protocol: "udp", port: "53"} # need for work dns query
     - { name: "self-control-panel", protocol: "tcp", port: "10250"}
     - { name: "ingress-80", protocol: "tcp", port: "80"} # for future
     - { name: "ingress-443", protocol: "tcp", port: "443"}  # for future
