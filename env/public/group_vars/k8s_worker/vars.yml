@@ -3,7 +3,8 @@
 #k8s_rest_cls_force: true
 #k8s_cls_name: k8s.beta-82.win
 
-kubeadmin_config: /etc/kubernetes/kubelet.conf
+#kubeadmin_config: /etc/kubernetes/kubelet.conf
+k8s_force_join: true
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements

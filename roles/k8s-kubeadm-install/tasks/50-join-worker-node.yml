@@ -5,7 +5,7 @@
   register: kubeadm_ca
 
 - name: Check if Kubernetes cluster is up and running
-  command: kubectl --kubeconfig={{ kubeadmin_config }} cluster-info
+  command: kubectl --kubeconfig={{ kubeadmin_config | default(' /etc/kubernetes/kubelet.conf') }} cluster-info
   register: cluster_info
   failed_when: cluster_info.rc != 0 and kubeadm_ca.stat.exists
   changed_when: false

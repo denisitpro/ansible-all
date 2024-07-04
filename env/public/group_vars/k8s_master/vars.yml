@@ -9,14 +9,15 @@ k8s_ipv6: true # support ipv6 install
 ##k8s_cls_port: 443
 
 # example set specific first master node
-k8s_master_init_host: k8s-02.beta-82.win
+#k8s_master_init_host: k8s-02.beta-82.win
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
 iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
-#    - { name: "k8s-api-server443", protocol: "tcp", port: "443" }
+    - { name: "k8s-api-server80", protocol: "tcp", port: "80" }
+    - { name: "k8s-api-server443", protocol: "tcp", port: "443" }
     - { name: "k8s-api-server6443", protocol: "tcp", port: "6443" }
     - { name: "k8s-etcd", protocol: "tcp", port: "2379:2380" }
     - { name: "k8s-self-control-panel", protocol: "tcp", port: "10250" }
@@ -29,7 +30,8 @@ iptables:
     - { name: "calico-flannel", protocol: "tcp", port: "4789" }
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
-#    - { name: "k8s-api-server443", protocol: "tcp", port: "443" }
+    - { name: "k8s-api-server80", protocol: "tcp", port: "80" }
+    - { name: "k8s-api-server443", protocol: "tcp", port: "443" }
     - { name: "k8s-api-server6443", protocol: "tcp", port: "6443" }
     - { name: "k8s-etcd", protocol: "tcp", port: "2379:2380" }
     - { name: "k8s-self-control-panel", protocol: "tcp", port: "10250" }

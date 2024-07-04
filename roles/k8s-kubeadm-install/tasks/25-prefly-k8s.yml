@@ -10,4 +10,8 @@
   apt_repository:
     repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{kubeadmin_version}}/deb/ /
 
-
+# need for set corrected hostname
+- name: restart systemd-resolved
+  systemd:
+    name: systemd-resolved
+    state: restarted
