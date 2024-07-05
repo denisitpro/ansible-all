@@ -34,18 +34,17 @@
     - k8s
     - k8s-init
 
+# todo remove
+#- ansible.builtin.import_tasks: 40-cni-calico-ipv4.yml
+#  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
+#  when: k8s_master is defined and k8s_ipv6 is not defined
+#  tags:
+#    - k8s
+#    - k8s-calico
+#    - k8s-calico-ipv4
 
-- ansible.builtin.import_tasks: 40-cni-calico-ipv4.yml
-  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
-  when: k8s_master is defined and k8s_ipv6 is not defined
-  tags:
-    - k8s
-    - k8s-calico
-    - k8s-calico-ipv4
-
-- ansible.builtin.import_tasks: 42-cni-calico-ipv6.yml
-  delegate_to: "{{ groups[k8s_master_group_name][0] }}"
-  when: k8s_master is defined and k8s_ipv6 is  defined
+- ansible.builtin.import_tasks: 42-cni-calico.yml
+  delegate_to: "{{k8s_master_init_host}}"
   tags:
     - k8s
     - k8s-calico

@@ -58,11 +58,11 @@
     - hostname
     - hosts
 
-- import_tasks: 172-hosts-and-hostname-aws.yml
-  when: cloud_provider is defined and cloud_provider == "aws"
-  tags:
-    - hostname
-    - hosts
+#- import_tasks: 172-hosts-and-hostname-aws.yml
+#  when: cloud_provider is defined and cloud_provider == "aws"
+#  tags:
+#    - hostname
+#    - hosts
 
 #- import_tasks: 180-portmapper.yml
 #  tags:
