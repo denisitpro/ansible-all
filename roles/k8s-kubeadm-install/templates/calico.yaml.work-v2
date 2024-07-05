@@ -10,13 +10,11 @@ spec:
       encapsulation: IPIP
       natOutgoing: Enabled
       nodeSelector: all()
-{% if k8s_ipv6 is defined %}
     - blockSize: 122
       cidr: fd00:10:48::/64
       encapsulation: VXLAN
       natOutgoing: Enabled
       nodeSelector: all()
-{% endif %}
   nodeUpdateStrategy:
     rollingUpdate:
       maxUnavailable: 1
@@ -33,7 +31,6 @@ spec:
   nodeSelector: all()
   ipipMode: Always
   vxlanMode: Never
-{% if k8s_ipv6 is defined %}
 ---
 apiVersion: crd.projectcalico.org/v1
 kind: IPPool
@@ -46,4 +43,3 @@ spec:
   nodeSelector: all()
   ipipMode: Never
   vxlanMode: Always # support VXLAN for IPv6
-{% endif %}
