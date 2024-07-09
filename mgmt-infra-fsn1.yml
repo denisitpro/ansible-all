@@ -1,0 +1,13 @@
+---
+- hosts: mgmt_infra_fsn1
+  become: yes
+  roles:
+    - 0010-common-v4
+#    - vault-get-users-secrets-teleport
+#    - teleport-client
+#    - consul-unit-install
+#    - node-exporter
+    - docker-install
+    - ufw-base-configure
+    - ufw-management
+

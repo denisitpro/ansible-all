@@ -1,0 +1,10 @@
+---
+
+iptables:
+  ipv4:
+# mgmt access
+    - { name: "mgmt net", protocol: "tcp", port: "22", source: "{{mgmt_local_net}}"}
+    - { name: "mgmt1_ip4", protocol: "tcp", port: "22", source: "{{mgmt1_ext_ip4}}"}
+  ipv6:
+# mgmt access
+    - { name: "mgmt1_ip6", protocol: "tcp", port: "22", source: "{{mgmt1_ext_ip6}}"}

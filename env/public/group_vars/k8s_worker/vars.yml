@@ -1,4 +1,6 @@
 ---
+disable_hostname_management: true
+
 # only for debug
 #k8s_rest_cls_force: true
 #k8s_cls_name: k8s.beta-82.win
