@@ -1,4 +1,6 @@
 ---
+disable_hostname_management: true
+
 # only for debug
 #k8s_reset_cls_force: true
 

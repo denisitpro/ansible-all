@@ -27,7 +27,7 @@
   ansible.builtin.hostname:
     name: "{{ server_hostname }}"
 #  when: not name_check_str_ipv4 and not name_check_str_ipv6
-  when: hostname_management is defined
+  when: disable_hostname_management is not defined
   notify: restart systemd-resolved
 
 

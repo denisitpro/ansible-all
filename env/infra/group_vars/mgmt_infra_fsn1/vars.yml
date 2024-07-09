@@ -1,0 +1,17 @@
+---
+teleport_ssh_acl_level: 500
+
+mgmt_jump: true
+force_dns_ext: true
+dns1: 1.1.1.1
+dns2: 8.8.8.8
+
+server_hostname: "fsn1-c1-infra-mgmt-01.{{searchdomain}}"
+
+
+
+iptables:
+  ipv4:
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
