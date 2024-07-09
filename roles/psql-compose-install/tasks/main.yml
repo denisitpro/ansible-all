@@ -41,8 +41,8 @@
     - psql-docker
     - psql-consul
 
-- name: Import compose
-  ansible.builtin.import_tasks: 20-compose.yml
+
+- ansible.builtin.import_tasks: 20-compose.yml
   tags:
     - psql
     - psql-docker

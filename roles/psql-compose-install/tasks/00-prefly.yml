@@ -1,8 +1,8 @@
 ---
-- name: Import docker-compose dir
+- name: create docekr dir
   ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
 
-- name: Import docker-compose path
+- name: create backup dir
   ansible.builtin.import_tasks: shared/tasks/create-backup-directory.yml
 
 - name: Create folder psql-conf

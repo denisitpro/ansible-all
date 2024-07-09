@@ -1,24 +1,23 @@
 ---
-#- name: restart rabbitmq
-#  systemd:
-#    name: rabbitmq-server
-#    state: restarted
-
-- name: reload rabbitmq-ssl
-  ansible.builtin.command:
-    cmd: "docker compose exec -t rabbitmqctl eval 'ssl:clear_pem_cache().'"
-  args:
-    chdir: "{{docker_compose_path |default('/opt/docker')}}/rabbitmq"
-
-
-- name: restart rabbitmq-compose
-  ansible.builtin.shell:
-    cmd: "docker compose down && docker compose up -d"
-  args:
-    chdir: "{{docker_compose_path |default('/opt/docker')}}/rabbitmq"
-
 - name: restart rabbitmq
+  systemd:
+    name: rabbitmq-server
+    state: restarted
+
+- name: Reload rabbitmq-ssl
+  ansible.builtin.command:
+    cmd: "docker-compose exec -t rabbitmqctl eval 'ssl:clear_pem_cache().'"
+  args:
+    chdir: "{{ rabbitmq_docker_compose_path }}"
+
+- name: Restart rabbitmq-compose
+  ansible.builtin.shell:
+    cmd: "docker-compose down && docker-compose up -d"
+  args:
+    chdir: "{{ rabbitmq_docker_compose_path }}"
+
+- name: Restart rabbitmq
   ansible.builtin.command:
     cmd: "docker compose restart rabbitmq"
   args:
-    chdir: "{{docker_compose_path |default('/opt/docker')}}/rabbitmq"
+    chdir: "{{ rabbitmq_docker_compose_path }}"
