@@ -3,6 +3,8 @@
   ansible.builtin.stat:
     path: "{{ postgres_init_path }}"
   register: postgres_init_result
+  tags:
+    - psql-compose
 
 
 - name: Print postgres init status
