@@ -2,12 +2,12 @@
 - name: copy certbot
   template:
     src: "docker-compose.certbot.j2"
-    dest: "{{docker_compose_path}}/certbot/docker-compose.yml"
+    dest: "{{docker_compose_path | default('/opt/docker') }}/certbot/docker-compose.yml"
     owner: root
     group: root
     mode: 0644
 
-- name: run restart compose
-  shell: "docker-compose up -d"
-  args:
-    chdir: "{{docker_compose_path}}/certbot"
+#- name: run restart compose
+#  shell: "docker-compose up -d"
+#  args:
+#    chdir: "{{docker_compose_path| default('/opt/docker')}}/certbot"

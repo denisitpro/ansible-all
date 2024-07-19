@@ -1,0 +1,119 @@
+	log_format  main  escape=json '$remote_addr - $remote_user [$time_local] "$request" '
+					  '$status $body_bytes_sent "$http_referer" '
+					  '"$http_user_agent" "$http_x_forwarded_for"';
+
+	log_format advanced '$remote_addr - $remote_user [$time_local] - $server_name:$server_port to: $upstream_addr: '
+						'"$request" $status $body_bytes_sent '
+						'"$http_referer" "$http_user_agent" "$request_time" '
+						'"$upstream_response_time" "$http_x_forwarded_for"';
+
+	log_format requestid '$remote_addr - $remote_user [$time_local] - $server_name:$server_port to: $upstream_addr: '
+						'"$requestid" "$request" $status $body_bytes_sent '
+						'"$http_referer" "$http_user_agent" "$request_time" '
+						'"$upstream_response_time" "$http_x_forwarded_for"';
+
+	log_format upstream_time '$remote_addr - $remote_user [$time_local] '
+						 '"$scheme" "$host" "$requestid" "$request" $status $body_bytes_sent '
+						 '"$http_referer" "$http_user_agent" '
+						 'rt="$request_time" urt="$upstream_response_time" '
+						 '$server_name to: $upstream_addr $ssl_protocol "$ssl_cipher"';
+
+	log_format x_real_ip 'http_x_real_ip - $http_x_real_ip remote_addr - $remote_addr '
+						 'http_x_forwarded_for - $http_x_forwarded_for '
+						 'x-real-ip $realip_remote_addr'
+						 ' - $remote_user [$time_local] '
+						 '"$scheme" "$host" "$requestid" "$request" $status $body_bytes_sent '
+						 '"$http_referer" "$http_user_agent" '
+						 'rt="$request_time" urt="$upstream_response_time" '
+						 '$server_name to: $upstream_addr $ssl_protocol "$ssl_cipher"';
+
+	log_format ssl-log '$remote_addr - $remote_user [$time_local] '
+						 '$ssl_client_s_dn($ssl_client_serial) $ssl_client_verify sslid:$ssl_session_id'
+						 ' "$scheme" "$host" "$requestid" "$request" $status $body_bytes_sent '
+						 '"$http_referer" "$http_user_agent" '
+						 'rt="$request_time" urt="$upstream_response_time" '
+						 '$server_name to: $upstream_addr';
+
+	log_format body_log escape=json '$remote_addr - $remote_user [$time_local] '
+						 '"$scheme" "$host" "$requestid" "$request" $status $body_bytes_sent '
+						 '"$http_referer" "$http_user_agent" '
+						 '"$request_body"';
+
+	log_format http_cookie '$remote_addr - $remote_user [$time_local] '
+						 '"$scheme" "$host" "$requestid" "$request" $status $body_bytes_sent '
+						 '"$http_referer" "$http_user_agent" '
+						 'rt="$request_time" urt="$upstream_response_time" '
+						 '$server_name to: $upstream_addr $ssl_protocol "$ssl_cipher" "cookies=$http_cookie;"';
+
+	log_format qurator '2xFFFFFF|:,_|$bytes_sent|:,_|$http_accept|:,_|$http_accept_encoding|:,_|$http_accept_language|:,_|$http_cookie|:,_|$http_host|:,_|$http_referer|:,_|$http_user_agent|:,_|$http_x_forwarded_for|:,_|$remote_addr|:,_|$request|:,_|$request_time|:,_|$status|:,_|$time_local|:,_|$upstream_response_time|:,_|$http_x_requested_with|:,_|$http_authorization|:,_|$remote_port|:,_|-|:,_|$msec|:,_|';
+
+	log_format ddos_l2 '$remote_addr - $remote_user [$time_local] '
+						 '"$scheme" "$host" "$request" $status'
+						 '"$http_referer" "$http_user_agent" '
+						 'rt="$request_time" urt="$upstream_response_time" '
+						 '$server_name to: $upstream_addr';
+
+log_format general_json escape=json
+'{ "timestamp": "$time_iso8601", '
+	'"remote_addr": "$remote_addr", '
+	'"remote_user": "$remote_user", '
+	'"host": "$host", '
+	'"server_name": "$server_name", '
+	'"server_port": "$server_port", '
+	'"request_method": "$request_method", '
+	'"requestid": "$requestid", '
+	'"request_uri": "$request_uri", '
+	'"status": "$status", '
+	'"body_bytes_sent": "$body_bytes_sent", '
+	'"http_referer": "$http_referer", '
+	'"http_user_agent": "$http_user_agent", '
+	'"http_x_forwarded_for": "$http_x_forwarded_for", '
+	'"http_version": "$http_version", '
+	'"scheme": "$scheme", '
+	'"ssl_protocol": "$ssl_protocol", '
+	'"ssl_cipher": "$ssl_cipher", '
+	'"request_time": "$request_time", '
+	'"upstream_addr": "$upstream_addr", '
+	'"upstream_response_time": "$upstream_response_time", '
+	'"format": "json" }';
+
+log_format extend_json escape=json
+'{ "timestamp": "$time_iso8601", '
+	'"remote_addr": "$remote_addr", '
+	'"remote_user": "$remote_user", '
+	'"host": "$host", '
+	'"server_name": "$server_name", '
+	'"server_port": "$server_port", '
+	'"request_method": "$request_method", '
+	'"requestid": "$requestid", '
+	'"request_uri": "$request_uri", '
+	'"status": "$status", '
+	'"body_bytes_sent": "$body_bytes_sent", '
+	'"http_referer": "$http_referer", '
+	'"http_user_agent": "$http_user_agent", '
+	'"http_x_forwarded_for": "$http_x_forwarded_for", '
+	'"http_version": "$http_version", '
+	'"scheme": "$scheme", '
+	'"ssl_protocol": "$ssl_protocol", '
+	'"ssl_cipher": "$ssl_cipher", '
+	'"request_time": "$request_time", '
+	'"upstream_addr": "$upstream_addr", '
+	'"upstream_response_time": "$upstream_response_time", '
+	'"connection_requests": "$connection_requests", '
+	'"content_type": "$content_type", '
+	'"pipe": "$pipe", '
+	'"proxy_host": "$proxy_host", '
+	'"proxy_add_x_forwarded_for": "$proxy_add_x_forwarded_for", '
+	'"args": "$args", '
+	'"server_protocol": "$server_protocol", '
+	'"ssl_early_data": "$ssl_early_data", '
+	'"ssl_server_name": "$ssl_server_name", '
+	'"ssl_session_id": "$ssl_session_id", '
+	'"uid_got": "$uid_got", '
+	'"uid_set": "$uid_set", '
+	'"upstream_connect_time": "$upstream_connect_time", '
+	'"upstream_status": "$upstream_status", '
+	'"upstream_cache_status": "$upstream_cache_status", '
+	'"hostname": "$hostname", '
+	'"http_cf_ray": "$http_cf_ray", '
+	'"format": "json" }';

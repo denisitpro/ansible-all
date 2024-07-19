@@ -1,0 +1,33 @@
+---
+- name: check exist adnl_id
+  ansible.builtin.stat:
+    path: "{{ tonproxy_data_path }}/keyring/adnl_id.txt"
+  register: adnl_id_status
+
+
+- name: create key
+  shell: "docker run --rm -v {{tonproxy_data_path}}/keyring:/opt/ton-proxy tonstakers/ton-proxy:{{tonproxy_image_version}} generate-random-id -m adnlid"
+  register: node_adnl_id
+  when: not adnl_id_status.stat.exists
+
+- name: Save adnl_id to file on host
+  copy:
+    content: "{{ node_adnl_id.stdout }}"
+    dest: "{{ tonproxy_data_path }}/keyring/adnl_id.txt"
+  when: not adnl_id_status.stat.exists
+
+- name: get adnl_id use file
+  shell: "cat {{ tonproxy_data_path }}/keyring/adnl_id.txt |  awk '{print $2}'"
+  register: node_adnl_id_clear
+  tags:
+    - ton-proxy-compose
+
+#- name: print adnl id - debug
+#  ansible.builtin.debug:
+#    msg: "{{ node_adnl_id_clear.stdout }}"
+
+- name: set adnl_id of exist
+  set_fact:
+      toproxy_adnl_id: "{{ node_adnl_id_clear.stdout }}"
+  tags:
+    - ton-proxy-compose

@@ -1,8 +1,11 @@
 ---
+global_bind_addr: "{{ ansible_default_ipv4.address }}"
 nginx_bind_addr: "{{ global_bind_addr }}"
 nginx_data_path: /opt/nginx
+docker_compose_path: /opt/docker
 
-nginx_version_docker: 1.22.1-alpine
+
+nginx_version_docker: 1.25.3-alpine
 
 nginx_http_port: 80
 nginx_https_port: 443
@@ -19,8 +22,5 @@ nginx_docker_ulimits:
 fluent_async: "true"
 fluendt_buffer_limit: 200000
 
-nginx_ssl_path: /opt/ssl
-cert_ssl_path: "{{nginx_ssl_path}}"
-
-nginx_docker: true
-
+nginx_host_cert_ssl_path: "/opt/ssl"
+nginx_container_ssl_path: "/etc/nginx/ssl"

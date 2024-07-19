@@ -52,3 +52,10 @@ http {
 # set real ip
 	include /etc/nginx/include/ddos-guard-ip-list.conf;
 }
+{% if nginx_streams is defined %}
+stream	{
+	include	{{ nginx_streams_maps_path }}/*.conf;
+	include	{{ nginx_streams_upstreamd_path }}/*.conf;
+	include	{{ nginx_streams_enabled_path }}/*.conf;
+}
+{% endif %}

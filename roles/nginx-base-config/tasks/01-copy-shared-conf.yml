@@ -1,22 +1,22 @@
 ---
-- name: copy files
-  copy:
-    src: "{{ item }}"
-    dest: "/etc/nginx/include/{{item}}"
+- name: Copy files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/nginx/include/{{ item }}"
     owner: root
     group: root
-    mode: 644
-  with_items:
+    mode: '0644'
+  loop:
     - log_format.conf
-    - pci-dss_2018.conf
+#    - pci-dss_2018.conf
     - requestid_dmz.conf
     - requestid_proxy.conf
     - ssl-user-auth.conf
-    - stapling_v1.conf
+#    - stapling_v1.conf
     - stapling_v2.conf
-    - ssl-exchange2019.conf
+#    - ssl-exchange2019.conf
     - ssl-session-v1.conf
     - tls1_2-tls1_3.conf
     - ddos-guard-ip-list.conf
   tags:
-    nginx_include
+    - nginx_include

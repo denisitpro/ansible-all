@@ -1,23 +1,24 @@
-- name: copy base config - gen2
-  template:
+---
+- name: Copy base config - gen2
+  ansible.builtin.template:
     src: nginx.conf.gen2.j2
     dest: /etc/nginx/nginx.conf
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   notify:
     - reload nginx
   when: nginx.config is not defined
   tags:
     - nginx_config
 
-- name: copy {{nginx.config}}
-  template:
-    src: "{{nginx.config}}.j2"
+- name: "Copy {{ nginx.config }}"
+  ansible.builtin.template:
+    src: "{{ nginx.config }}.j2"
     dest: /etc/nginx/nginx.conf
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   notify:
     - reload nginx
   when: nginx.config is defined
@@ -25,11 +26,51 @@
     - nginx_config
     - nginx_conf
 
-
-- name: set default.conf
-  template:
+- name: Set default.conf
+  ansible.builtin.template:
     src: default.conf.j2
     dest: /etc/nginx/conf.d/default.conf
+    mode: '0644'
+    owner: root
+    group: root
   tags:
     - default
 
+- name: Copy geoip database file when openresty_geoip_enable is true
+  ansible.builtin.template:
+    src: geoip.conf.j2
+    dest: /etc/nginx/conf.d/geoip.conf
+    mode: '0644'
+    owner: root
+    group: root
+  when: openresty_geoip_enable is defined and openresty_geoip_enable is sameas true
+
+- name: Nginx prometheus metrics
+  when:
+    - openresty_statt_nginx is sameas true
+  tags:
+    - nginx-metrics
+  notify:
+    - restart nginx
+  block:
+    - name: Create directory for lua libs
+      ansible.builtin.file:
+        state: directory
+        path: "{{ nginx_conf_base }}/lua"
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Copy metrics
+      ansible.builtin.template:
+        src: "{{ item.src }}.j2"
+        dest: "{{ item.dest }}"
+        owner: "{{ item.owner | default('root') }}"
+        group: "{{ item.group | default('root') }}"
+        mode: "{{ item.mode | default('0644') }}"
+      loop:
+        - { src: "metrics.conf", dest: "{{ nginx_confd_path }}/metrics.conf" }
+        - { src: "prometheus.{{ nginx_lua_prometheus_version }}.lua", dest: "{{ nginx_conf_base }}/lua/prometheus.lua" }
+        - { src: "prometheus_keys.{{ nginx_lua_prometheus_version }}.lua", dest: "{{ nginx_conf_base }}/lua/prometheus_keys.lua" }
+        - { src: "prometheus_resty_counter.{{ nginx_lua_prometheus_version }}.lua", dest: "{{ nginx_conf_base }}/lua/prometheus_resty_counter.lua" }
+        - { src: "prometheus.conf", dest: "{{ nginx_confd_path }}/prometheus.conf" }

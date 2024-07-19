@@ -1,13 +1,14 @@
 ---
-- name: create path folder
-  file:
-     path: "{{item}}"
-     state: directory
-     recurse: yes
-  with_items:
+- name: Create path folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  loop:
+    - "/etc/nginx"
     - "/etc/nginx/conf.d"
     - "/etc/nginx/include"
-    - "{{nginx_log_path}}"
-    - "{{nginx_ssl_path}}"
+    - "{{ nginx_log_path | default('/var/log/nginx') }}"
+    - "{{ nginx_ssl_path | default('/opt/nginx/ssl') }}"
     - "/etc/nginx/upstream.d"
     - "/etc/nginx/sites-enabled"

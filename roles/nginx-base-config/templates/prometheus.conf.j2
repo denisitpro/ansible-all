@@ -1,0 +1,118 @@
+lua_shared_dict prometheus_metrics {{ nginx_prometheus_metrics_size | default('20M') }};
+lua_package_path        "{{ nginx_conf_base }}/lua/?.lua;;";
+
+init_worker_by_lua_block {
+	prometheus = require("prometheus").init("prometheus_metrics")
+
+	nginx_info = prometheus:gauge(
+		"nginx_info",
+		"Nginx Info",
+		{"nginx_version", "lua_version"})
+
+	nginx_info:set(1, {ngx.config.nginx_version, ngx.config.ngx_lua_version})
+
+	metric_requests = prometheus:counter(
+		"nginx_http_requests_total", 
+		"Number of HTTP requests", 
+		{"host", "status", "method"})
+
+	metric_latency = prometheus:histogram(
+		"nginx_http_request_duration_seconds", 
+		"HTTP request latency", 
+		{"host", "status", "method"}, 
+		{	0.005, 0.01, 0.02, 0.03, 0.05, 
+			0.075, 0.1, 0.2, 0.3, 0.4, 0.5, 
+			0.75, 1, 1.5, 2, 3, 4, 5, 10, 
+			15, 20, 25, 30, 35, 40, 45,
+			50, 55, 60, 70, 80, 90, 100, 
+			120, 140, 160, 180, 200, 220, 
+			240, 260, 280, 300, 320, 340, 
+			360, 380, 400, 420, 440, 460, 
+			480, 500, 520, 540, 560, 580, 
+			600})
+
+	metric_connections = prometheus:gauge(
+		"nginx_http_connections", 
+		"Number of HTTP connections", 
+		{"state"})
+
+	metric_upstream_requests = prometheus:counter(
+		"nginx_upstream_requests_total", 
+		"Number of requests to upstrem", 
+		{"host", "addr", "status"})
+
+	metric_upstream_latency = prometheus:histogram(
+		"nginx_upstream_request_duration_seconds", 
+		"Upstream request latency", 
+		{"host", "addr", "status"}, 
+		{	0.005, 0.01, 0.02, 0.03, 0.05, 
+			0.075, 0.1, 0.2, 0.3, 0.4, 0.5, 
+			0.75, 1, 1.5, 2, 3, 4, 5, 10, 
+			15, 20, 25, 30, 35, 40, 45, 
+			50, 55, 60, 70, 80, 90, 100, 
+			120, 140, 160, 180, 200, 220, 
+			240, 260, 280, 300, 320, 340, 
+			360, 380, 400, 420, 440, 460, 
+			480, 500, 520, 540, 560, 580, 
+			600})
+
+	metric_upstream_connect_latency = prometheus:histogram(
+		"nginx_upstream_request_connect_duration_seconds", 
+		"Upstream request connect latency", 
+		{"host", "addr", "status"}, 
+		{	0.005, 0.01, 0.02, 0.03, 0.05, 
+			0.075, 0.1, 0.2, 0.3, 0.4, 0.5, 
+			0.75, 1, 1.5, 2, 3, 4, 5, 10, 
+			15, 20, 25, 30, 35, 40, 45, 
+			50, 55, 60, 70, 80, 90, 100, 
+			120, 140, 160, 180, 200, 220, 
+			240, 260, 280, 300, 320, 340, 
+			360, 380, 400, 420, 440, 460, 
+			480, 500, 520, 540, 560, 580, 
+			600})
+}
+
+log_by_lua_block {
+	-- if	ngx.var.monitor_host == nil or ngx.var.monitor_host == "" then
+	--	return
+	-- end
+
+	local function split(str)
+		local array = {}
+		for mem in string.gmatch(str, "([^, ]+)") do
+			table.insert(array, mem)
+		end
+		return array
+	end
+
+	local function getWithIndex(str, idx)
+		if str == nil then
+			return nil
+		end
+		return split(str)[idx]
+	end
+
+	-- local host = ngx.var.host:gsub("^www.","")
+	local host = ngx.var.host
+	metric_requests:inc(1, {host, ngx.var.status, ngx.var.request_method})
+	metric_latency:observe(tonumber(ngx.var.request_time), {host, ngx.var.status, ngx.var.request_method})
+
+	local	upstream_addr	=	ngx.var.upstream_addr
+	if	upstream_addr	~=	nil and upstream_addr:len() > 0 then
+		local	addrs	=	split(upstream_addr)
+		if	#addrs > 1 then
+			local upstream_response_time = split(ngx.var.upstream_response_time)
+			local upstream_response_status = split(ngx.var.upstream_status)
+			local upstream_connect_time = split(ngx.var.upstream_connect_time)
+			for idx, addr in ipairs(addrs) do
+				metric_upstream_requests:inc(1, {host, addr, upstream_response_status[idx]})
+				metric_upstream_latency:observe(tonumber(upstream_response_time[idx]), {host, addr, upstream_response_status[idx]})
+				metric_upstream_connect_latency:observe(tonumber(upstream_connect_time[idx]), {host, addr, upstream_response_status[idx]})
+			end
+		else
+			metric_upstream_requests:inc(1, {host, addrs[1], ngx.var.upstream_status})
+			metric_upstream_latency:observe(tonumber(ngx.var.upstream_response_time), {host, addrs[1], ngx.var.upstream_status})
+			metric_upstream_connect_latency:observe(tonumber(ngx.var.upstream_connect_time), {host, addrs[1], ngx.var.upstream_status})
+		end
+	end
+}
