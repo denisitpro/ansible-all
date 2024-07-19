@@ -1,5 +1,5 @@
 ---
-- name: run docker-compose file nginx
-  shell: "docker-compose down && docker-compose up -d"
+- name: run docker compose file nginx
+  shell: "docker compose down && docker compose up -d"
   args:
     chdir: "{{docker_compose_path}}/nginx"

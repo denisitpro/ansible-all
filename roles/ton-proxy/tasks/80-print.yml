@@ -1,0 +1,4 @@
+---
+- name: print adnl id
+  ansible.builtin.debug:
+    msg: "adnl and key - {{ node_adnl_id_clear.stdout }}"

@@ -1,0 +1,25 @@
+---
+- import_tasks: 05-create-folder.yml
+  tags:
+    - ton-proxy
+    - ton-proxy-path
+
+- import_tasks: 10-prefly.yml
+  tags:
+    - ton-proxy
+    - ton-proxy-key
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - ton-proxy
+    - ton-proxy-compose
+
+- import_tasks: 50-lauch.yml
+  tags:
+    - ton-proxy
+    - ton-proxy-compose
+
+- import_tasks: 80-print.yml
+  tags:
+    - ton-proxy
+    - ton-proxy-key

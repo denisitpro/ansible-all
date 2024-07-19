@@ -1,33 +1,35 @@
 ---
-- name: check name format string or ip address
-  ansible.builtin.set_fact:
-    name_check_str_ipv4: "{{ server_hostname is ansible.utils.ipv4 }}"
-    
-- name: check name format string or ip address
-  ansible.builtin.set_fact:
-    name_check_str_ipv6: "{{ server_hostname is ansible.utils.ipv6 }}"
+# todo remove
+#- name: check name format string or ip address
+#  ansible.builtin.set_fact:
+#    name_check_str_ipv4: "{{ server_hostname is ansible.utils.ipv4 }}"
+#
+#- name: check name format string or ip address
+#  ansible.builtin.set_fact:
+#    name_check_str_ipv6: "{{ server_hostname is ansible.utils.ipv6 }}"
+#
+#- name: print debug name - ipv4
+#  ansible.builtin.debug:
+#    msg: Ansible inventory name ip address ? {{ name_check_str_ipv4 }}
+#
+#- name: print debug name - ipv6
+#  ansible.builtin.debug:
+#    msg: Ansible inventory name ip address ? {{ name_check_str_ipv6 }}
 
-- name: print debug name - ipv4
-  ansible.builtin.debug:
-    msg: Ansible inventory name ip address ? {{ name_check_str_ipv4 }}
+# todo remove
+#- name: Set hosts file - not use tag
+#  ansible.builtin.template:
+#    src: hosts.j2
+#    dest: /etc/hosts
+#    mode: 0644
+#  when: not name_check_str_ipv4 and not name_check_str_ipv6
+#  notify: restart systemd-resolved
 
-- name: print debug name - ipv6
-  ansible.builtin.debug:
-    msg: Ansible inventory name ip address ? {{ name_check_str_ipv6 }}
-
-- name: Set hosts file - not use tag
-  ansible.builtin.template:
-    src: hosts.j2
-    dest: /etc/hosts
-    mode: 0644
-  when: not name_check_str_ipv4 and not name_check_str_ipv6
-  notify: restart systemd-resolved
-
-- name: Set a hostname  - hetzner
+- name: force set hostname
   ansible.builtin.hostname:
     name: "{{ server_hostname }}"
-#  when: not name_check_str_ipv4 and not name_check_str_ipv6
-  when: disable_hostname_management is not defined
+#  when: not name_check_str_ipv4 and not name_check_str_ipv6 and set_hostname_management is  defined
+  when: set_hostname_management is  defined
   notify: restart systemd-resolved
 
 

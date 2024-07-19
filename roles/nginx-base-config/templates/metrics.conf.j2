@@ -1,0 +1,22 @@
+server  {
+	listen	{{ global_bind_addr }}:{{ nginx_metrics_port | default('9113') }};
+	# allow	127.0.0.0/8;
+	# allow	172.16.0.0/12;
+	# deny 	all;
+	
+	access_log  off;
+{% if nginx_logs_stdout is defined %}
+	error_log   /dev/stdout;
+{% else %}
+	error_log   {{ nginx_log_path }}/metrics-error.log;
+{% endif %}
+
+	location	/metrics {
+		content_by_lua_block	{
+			metric_connections:set(ngx.var.connections_reading, {"reading"})
+			metric_connections:set(ngx.var.connections_waiting, {"waiting"})
+			metric_connections:set(ngx.var.connections_writing, {"writing"})
+			prometheus:collect()
+		}
+	}
+}

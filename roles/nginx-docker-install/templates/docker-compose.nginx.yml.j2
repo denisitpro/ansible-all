@@ -1,22 +1,23 @@
-version: "3.7"
-
 services:
   nginx:
     image: nginx:{{nginx_version_docker}}
     container_name: nginx
     network_mode: host
+{% if nginx_userns_host is defined %}
+    userns_mode: host
+{% endif %}
     volumes:
       - /etc/nginx/:/etc/nginx/
-      - {{cert_ssl_path}}:{{cert_ssl_path}}
+      - {{nginx_host_cert_ssl_path |default('/opt/ssl')}}:{{nginx_container_ssl_path}}
       - {{nginx_data_path}}/logs:/var/log/nginx/
 {% if nginx_restart is defined %}
     restart: always
 {% endif %}
     logging:
-{% if vector is defined %}
+{% if vector_server_fluent_address is defined %}
       driver: fluentd
       options:
-        fluentd-address: {{vector_srv}}:{{vector_port}}
+        fluentd-address: {{vector_server_fluent_address}}:{{ vector_server_fluent_port | default('24224') }}
         tag: nginx-docker
         fluentd-async: "{{fluent_async}}"
         fluentd-buffer-limit: "{{fluendt_buffer_limit}}"

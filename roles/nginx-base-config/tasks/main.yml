@@ -1,18 +1,36 @@
 ---
-- import_tasks: 00-create-path.yml
+- name: Import create path
+  ansible.builtin.import_tasks: 00-create-path.yml
   tags:
     - nginx_base_conf
+    - nginx-base
 
-- import_tasks: 01-copy-shared-conf.yml
+- name: Import copy shared
+  ansible.builtin.import_tasks: 01-copy-shared-conf.yml
   tags:
     - nginx_base_conf
+    - nginx-base
 
-#- import_tasks: 03-create-selfsign-cert.yml
+- ansible.builtin.import_tasks: 03-create-selfsign-cert.yml
+  when: ssl_domain == "selfsigned"
+  tags:
+    - nginx-cert
 
-- import_tasks: 04-nginx-conf.yml
+#- name: Import ssl role
+#  ansible.builtin.import_role:
+#    name: "ssl-selfsigned-cert"
+#  when: ssl_domain == "selfsigned"
+#  tags:
+#    - nginx-cert
+
+
+- name: Import nginx conf
+  ansible.builtin.import_tasks: 04-nginx-conf.yml
   tags:
     - nginx_base_conf
+    - nginx-base
 
-- import_tasks: 07-logrotate.yml
+- name: Import logrotate
+  ansible.builtin.import_tasks: 07-logrotate.yml
   tags:
     - logrotate

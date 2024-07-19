@@ -1,0 +1,13 @@
+---
+tonproxy_port_in: 4291
+tonproxy_blockchain_in: 29323
+
+tonproxy_conf_path: /opt/ton-proxy
+tonproxy_image_version: latest
+
+tonproxy_data_path: /opt/tonproxy
+
+tonproxy_bind_addr: "{{ansible_default_ipv4.address}}"
+
+folder_apps:
+  - tonproxy

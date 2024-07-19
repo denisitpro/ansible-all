@@ -1,30 +1,37 @@
 # worker_processes = CPU count http://nginx.org/ru/docs/ngx_core_module.html
-worker_processes  auto;
+worker_processes	auto;
 
 #Number of file descriptors used for Nginx.
-worker_rlimit_nofile 65535;
+worker_rlimit_nofile	65535;
 
-pid        /var/run/nginx.pid;
+pid	/var/run/nginx.pid;
+
+{% if openresty_statt_nginx is sameas true %}
+pcre_jit	on;
+{% if openresty_geoip_enable is defined and openresty_geoip_enable is sameas true %}
+load_module modules/ngx_http_geoip_module.so;
+{% endif %}
+{% endif %}
 
 events {
-              worker_connections  {{nginx_worker_connections}};
-              # epoll — эффективный метод, используемый в Linux 2.6+ http://nginx.org/ru/docs/events.html
-              use epoll;
-              # Рабочий процесс за один раз будет принимать сразу все новые соединения
-              multi_accept on;
+	worker_connections	{{ nginx_worker_connections }};
+	# epoll — эффективный метод, используемый в Linux 2.6+ http://nginx.org/ru/docs/events.html
+	use	epoll;
+	# Рабочий процесс за один раз будет принимать сразу все новые соединения
+	multi_accept	on;
 }
 
 http {
 {% if map_hash_bucket_size is defined %}
-    map_hash_bucket_size {{map_hash_bucket_size}};
+	map_hash_bucket_size {{ map_hash_bucket_size }};
 {% endif %}
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-    #Number of requests a client can make over the keep-alive connection.
-    keepalive_requests 1000;
+	include       /etc/nginx/mime.types;
+	default_type  application/octet-stream;
+	#Number of requests a client can make over the keep-alive connection.
+	keepalive_requests 1000;
 
-    #Allow the server to close the connection after a client stops responding.
-    reset_timedout_connection on;
+	#Allow the server to close the connection after a client stops responding.
+	reset_timedout_connection on;
 
 #    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
 #                      '$status $body_bytes_sent "$http_referer" '
@@ -34,21 +41,42 @@ http {
 #                        '"$http_referer" "$http_user_agent" "$request_time" '
 #                        '"$upstream_response_time" "$http_x_forwarded_for"';
 
-        include /etc/nginx/include/{{nginx_requestid_source}};
-        include /etc/nginx/include/log_format.conf;
+{% if openresty_statt_nginx is sameas true %}
+	client_body_temp_path	/var/run/openresty/nginx-client-body;
+	proxy_temp_path			/var/run/openresty/nginx-proxy;
+	fastcgi_temp_path		/var/run/openresty/nginx-fastcgi;
+	uwsgi_temp_path			/var/run/openresty/nginx-uwsgi;
+	scgi_temp_path			/var/run/openresty/nginx-scgi;
+{% endif %}
 
-        access_log  {{nginx_log_path}}/access.log  main;
-        error_log  {{nginx_log_path}}/error.log warn;
+	include	{{ nginx_include_path }}/{{ nginx_requestid_source }};
+	include	{{ nginx_include_path }}/log_format.conf;
+
+	access_log	{{ nginx_log_path }}/access.log	main;
+	error_log	{{ nginx_log_path }}/error.log	warn;
 
 	#### PCI-DSS Compliance # Don’t show the Nginx version number (in error pages / headers)
-        server_tokens off;
+	server_tokens	off;
+{% if openresty_statt_nginx is sameas true %}
+{% if openresty_hide_headers is defined %}
+{% for hide_header in openresty_hide_headers %}
+	more_clear_headers {{ hide_header }};
+{% endfor %}
+{% endif %}
+{% endif %}
 
 ############ base section #####
-    sendfile        on;
-    tcp_nopush     on;
-    tcp_nodelay on;
-    keepalive_timeout  30;
-    gzip  on;
+	sendfile	on;
+	tcp_nopush	on;
+	tcp_nodelay	on;
+	keepalive_timeout	{{ nginx_keepalive_timeout | d(30) }};
+{% if nginx_proxy_read_timeout is defined %}
+	proxy_read_timeout	{{ nginx_proxy_read_timeout }};
+{% endif %}
+{% if nginx_client_max_body_size is defined %}
+	client_max_body_size	{{ nginx_client_max_body_size }};
+{% endif %}
+	gzip	on;
 ####### end base section####
 
 ##### old section
@@ -65,9 +93,17 @@ http {
 ### end old section
 
 	# start include section
-	include /etc/nginx/conf.d/*.conf;
-	include /etc/nginx/sites-enabled/*.conf;
-	include /etc/nginx/upstream.d/*.conf;
+	include	{{ nginx_confd_path }}/*.conf;
+	include	{{ nginx_upstreamd_path }}/*.conf;
+	include	{{ nginx_sites_enabled_path }}/*.conf;
 # set real ip
-	include /etc/nginx/include/ddos-guard-ip-list.conf;
+	include	{{ nginx_include_path }}/ddos-guard-ip-list.conf;
 }
+
+{% if nginx_streams is defined %}
+stream	{
+	include	{{ nginx_streams_maps_path }}/*.conf;
+	include	{{ nginx_streams_upstreamd_path }}/*.conf;
+	include	{{ nginx_streams_enabled_path }}/*.conf;
+}
+{% endif %}

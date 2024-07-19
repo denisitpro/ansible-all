@@ -7,7 +7,7 @@ dns_resolved_domains:
 
 aws_fqdn_domain: example.com
 
-company_name: companyname
+company_code: companyname
 dns1: 1.1.1.1
 dns2: 8.8.8.8
 dc_code: dc_example

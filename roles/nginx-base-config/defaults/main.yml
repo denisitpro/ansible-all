@@ -6,16 +6,20 @@ nginx_logrotate_permission: "0644"
 
 nginx_worker_connections: "20000"
 
-nginx_bind_addr: "{{ global_bind_addr }}"
+nginx_bind_addr: "{{ global_bind_addr | default(ansible_default_ipv4.address) }}"
 
-nginx_confd_path: "/etc/nginx/conf.d"
-nginx_include_path: "/etc/nginx/include"
-nginx_upstreamd_path: "/etc/nginx/upstream.d"
-nginx_sites_enabled_path: "/etc/nginx/sites-enabled"
-nginx_self_signed_name: "debug.local"
 nginx_conf_base: "/etc/nginx"
+nginx_confd_path: "{{ nginx_conf_base }}/conf.d"
+nginx_include_path: "{{ nginx_conf_base }}/include"
+nginx_upstreamd_path: "{{ nginx_conf_base }}/upstream.d"
+nginx_sites_enabled_path: "{{ nginx_conf_base }}/sites-enabled"
+nginx_streams_enabled_path: "{{ nginx_conf_base }}/streams-enabled"
+nginx_streams_upstreamd_path: "{{ nginx_conf_base }}/streams-upstream.d"
+nginx_streams_maps_path: "{{ nginx_conf_base }}/streams-maps.d"
+nginx_self_signed_name: "debug.local"
 
-nginx_log_path: /var/log/nginx
-nginx_ssl_path: /opt/ssl
+nginx_lua_prometheus_version: "0.20221218"
+nginx_prometheus_metrics_size: '100M'
+
 nginx_requestid_source: requestid_proxy.conf
-
+nginx_log_path: /var/log/nginx

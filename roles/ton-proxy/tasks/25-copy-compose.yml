@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - tonproxy
+  template:
+    src: "docker-compose.tonproxy.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker') }}/tonproxy/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

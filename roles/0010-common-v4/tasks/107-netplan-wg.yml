@@ -2,7 +2,7 @@
 - name: copy netplan config wg
   template:
     src: 65-netplan-wg.yaml.j2
-    dest: "/etc/netplan/60-{{company_name}}.yaml"
+    dest: "/etc/netplan/60-{{company_code}}.yaml"
     owner: root
     group: root
     force: yes
