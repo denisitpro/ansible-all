@@ -1,6 +1,6 @@
 ---
-tonproxy_port_in: 4291
-tonproxy_blockchain_in: 29323
+tonproxy_port_in: 8080
+tonproxy_blockchain_in: 3333
 
 tonproxy_conf_path: /opt/ton-proxy
 tonproxy_image_version: latest
