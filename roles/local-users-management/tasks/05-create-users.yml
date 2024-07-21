@@ -18,6 +18,7 @@
     state: present
     key: "{{ lookup('file', '{{item.alias |default(item.name)}}.pub') }}"
   loop: "{{ local_users }}"
+#  when: item.public_key is defined
 
 
 - name: Copy sudoers file
