@@ -1,0 +1,18 @@
+---
+- name: check node-ton port
+  ansible.builtin.shell: "jq -r '.addrs[0].port' /var/ton-work/db/config.json"
+  register: node_ton_port
+
+- name: Echo node-ton port
+  ansible.builtin.debug:
+    msg: "Node-ton port is {{ node_ton_port.stdout }}"
+
+- name: open ton-node port - UDP
+  community.general.ufw:
+    rule: "allow"
+    direction: "in"
+    proto: "udp"
+    port: "{{ node_ton_port.stdout }}"
+    comment: "ton node communication port - UDP"
+  when:
+    - node_ton_port.stdout is defined

@@ -1,0 +1,31 @@
+---
+- name: Get memory info
+  command: free -g
+  register: mem_info
+
+- name: Parse memory size
+  set_fact:
+    memory_gb: "{{ mem_info.stdout_lines[1].split()[1] | int }}"
+
+- name: Subtract 4 from memory size
+  set_fact:
+      adjusted_memory_gb: "{{ memory_gb - 4 }}"
+
+- name: Display memory size
+  debug:
+    msg: "Total memory: {{ memory_gb }} GB, set memory limit unit - {{adjusted_memory_gb}}"
+
+- name: set retention period - if archive node enable
+  set_fact:
+      ton_node_retention_period: "315360000"
+  when: ton_archive_node is defined
+
+- name: copy validator.service
+  template:
+    src: "validator.service.j2"
+    dest: "/etc/systemd/system/{{ton_node_unit_name}}.service"
+    owner: root
+    group: root
+    mode: 0640
+  notify: restart ton-node-validator
+

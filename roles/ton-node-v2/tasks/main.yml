@@ -1,0 +1,28 @@
+---
+- ansible.builtin.import_tasks: 05-check-exist.yml
+  tags:
+    - ton-node
+    - ton-prefly
+
+- ansible.builtin.import_tasks: 10-prefly.yml
+  when: not config_file_status.stat.exists
+  tags:
+    - ton-node
+    - ton-prefly
+
+- ansible.builtin.import_tasks: 15-validator-install.yml
+  when: not config_file_status.stat.exists
+  tags:
+    - ton-node
+    - ton-install
+
+- ansible.builtin.import_tasks: 20-unit.yml
+  tags:
+    - ton-node
+    - ton-unit
+
+- ansible.builtin.import_tasks: 25-firewall.yml
+  tags:
+    - ton-node
+    - ton-firewall
+    - ton-ufw

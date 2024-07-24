@@ -1,7 +1,0 @@
----
-- hosts: firewall_example
-  become: yes
-  roles:
-    - common-v2
-    - ufw-configure
-    - ufw-management

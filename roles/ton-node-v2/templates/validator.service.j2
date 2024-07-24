@@ -1,0 +1,32 @@
+[Unit]
+Description = TON Node Validator
+After = network.target
+
+[Service]
+Type = simple
+Restart = always
+RestartSec = 30
+MemoryLimit={{adjusted_memory_gb}}G
+
+ExecStart = /usr/bin/ton/validator-engine/validator-engine \
+  --threads 15 \
+  --daemonize \
+  --global-config /usr/bin/ton/global.config.json \
+  --db /var/ton-work/db/ \
+  --logname /var/ton-work/log \
+  --verbosity 1 \
+  --catchain-max-block-delay 0.2 \
+  --state-ttl {{ton_node_retention_period}} \
+  --archive-ttl {{ton_node_retention_period}} \
+  --block-ttl {{ton_node_retention_period}}
+
+ExecStopPost = /bin/echo service down
+User = validator
+Group = validator
+# WorkingDirectory not set
+LimitNOFILE = infinity
+LimitNPROC = infinity
+LimitMEMLOCK = infinity
+
+[Install]
+WantedBy = multi-user.target
