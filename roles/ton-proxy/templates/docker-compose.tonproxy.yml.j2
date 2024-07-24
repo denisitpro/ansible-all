@@ -9,7 +9,11 @@ services:
 {% endif %}
     volumes:
       - {{tonproxy_data_path}}/keyring:/opt/ton-proxy/keyring
+{% if ton_proxy_mode == "direct" %}
     command: "rldp-http-proxy -p {{tonproxy_port_in}} -a {{tonproxy_bind_addr}}:{{tonproxy_blockchain_in}} -C global.config.json -A {{toproxy_adnl_id}} -d"
+{% else %}
+    command: "rldp-http-proxy -a  {{tonproxy_bind_addr}}:{{tonproxy_blockchain_in}} -R '*'@{{tonproxy_reverse_addr}} -C global.config.json -A {{toproxy_adnl_id}} -d"
+{% endif %}
     logging:
 {% if vector_server_fluent_address is defined %}
       driver: fluentd

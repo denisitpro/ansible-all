@@ -1,0 +1,15 @@
+---
+validator_user: commander
+
+repo_author: tonstakers
+repo_name: "mytonctrl-v2"
+repo_version: "master"
+
+mytonctrl_install_path: "/tmp/mytonctrl-v2.sh"
+
+ton_network: mainnet
+ton_node_version: v2024.06 #latest stable version
+ton_node_unit_name: validator
+
+
+ton_node_retention_period: 1209600 # 14 days to seconds
