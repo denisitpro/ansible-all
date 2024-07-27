@@ -1,0 +1,6 @@
+---
+xray_date_path: /opt/xray
+xray_image_version: 1.8.21
+
+folder_apps:
+  - xray
