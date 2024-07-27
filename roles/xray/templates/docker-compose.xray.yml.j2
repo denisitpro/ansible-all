@@ -1,0 +1,21 @@
+services:
+  xray:
+    image: ghcr.io/xtls/xray-core:{{xray_image_version | default('latest')}}
+    container_name: xray
+    hostname: xray-{{ stand_type | default('none') }}
+    network_mode: host
+{% if xray_restart is defined %}
+    restart: always
+{% endif %}
+    volumes:
+      - {{xray_date_path}}:{{xray_date_path}}
+      - /etc/letsencrypt/:{{xray_date_path}}/cert
+    command: ["run", "-config", "{{ xray_date_path }}/{{ xray_conf_name }}"]
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+
+

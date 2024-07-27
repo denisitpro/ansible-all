@@ -1,0 +1,21 @@
+---
+- import_tasks: 05-create-folder.yml
+  tags:
+    - xray
+    - xray-path
+
+- import_tasks: 10-config.yml
+  tags:
+    - xray
+    - xray-config
+
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - xray
+    - xray-compose
+
+- import_tasks: 50-lauch.yml
+  tags:
+    - xray
+    - xray-compose

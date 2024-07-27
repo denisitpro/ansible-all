@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - xray
+  template:
+    src: "docker-compose.xray.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker') }}/xray/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure

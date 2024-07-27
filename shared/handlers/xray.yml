@@ -1,0 +1,4 @@
+- name: restart xray
+  shell: "docker compose restart xray"
+  args:
+    chdir: "{{docker_compose_app_path| default('/opt/docker')}}/xray"
