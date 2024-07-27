@@ -9,7 +9,7 @@ services:
 {% endif %}
     volumes:
       - {{xray_date_path}}:{{xray_date_path}}
-      - /etc/letsencrypt/:{{xray_date_path}}/cert
+      - {{xray_host_cert_path}}:{{xray_date_path}}/cert
     command: ["run", "-config", "{{ xray_date_path }}/{{ xray_conf_name }}"]
     logging:
       driver: json-file
