@@ -13,7 +13,7 @@
 - name: restart-docker prometheus
   shell: "docker compose restart prometheus"
   args:
-    chdir: "{{docker_compose_app_path}}"
+    chdir: "{{docker_compose_path | default('/opt/docker')}}/prometheus"
 
 - name: Reload-docker prometheus
   ansible.builtin.shell:

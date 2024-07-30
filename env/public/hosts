@@ -1,6 +1,9 @@
 [gost_01]
 gost-01.beta-82.win
 
+[gost_04]
+gost-04.beta-82.win
+
 [k8s_master]
 k8s-01.beta-82.win
 k8s-02.beta-82.win

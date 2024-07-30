@@ -4,16 +4,23 @@
 ####  your changes will be lost
 
 server {
-        listen {{ nginx_bind_addr }}:{{ item.http_port | default ("80")}} ;
-        server_name {{ item.servername }};
-
-        return 301 https://$host$request_uri;
+    {% if nginx_bind_addr %}
+    listen {{ nginx_bind_addr }}:{{ item.http_port | default("80") }};
+    {% else %}
+    listen {{ item.http_port | default("80") }};
+    {% endif %}
+    server_name {{ item.servername }};
+    return 301 https://$host$request_uri;
 }
 
 server {
-        listen  {{ nginx_bind_addr }}:{{ item.https_ports | default ("443") }} ssl;
-        http2  on;
-        server_name {{ item.servername }};
+    {% if nginx_bind_addr %}
+    listen {{ nginx_bind_addr }}:{{ item.https_ports | default("443") }} ssl;
+    {% else %}
+    listen {{ item.https_ports | default("443") }} ssl;
+    {% endif %}
+    http2 on;
+    server_name {{ item.servername }};
 
 # log project use  include
 {% if nginx_logs_stdout is not defined %}
@@ -28,15 +35,13 @@ server {
 
 ## include ssl certificate
 {% if nginx.vhosts %}
-    ssl_certificate     {{ nginx_ssl_path | default ("/etc/nginx/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
-    ssl_certificate_key {{ nginx_ssl_path | default ("/etc/nginx/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+    ssl_certificate     {{ nginx_ssl_path | default ("/etc/nginx/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ nginx_ssl_path | default ("/etc/nginx/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% endif %}
 
-# Ansible management
 {% for included in  nginx.include %}
     include  {{ included }};
 {% endfor %}
-### end ansible management
 
 {% if nginx.size_upload_files  is defined %}
 {% for included in  nginx.size_upload_files %}
@@ -44,8 +49,8 @@ server {
     client_max_body_size  {{ included.client_max_body_size }};
 {% endfor %}
 {% endif %}
-### end ansible management
 
+{% if vhosts_metrics is defined %}
 ### location /metrics is enabled on this host ###
     location   ~   ^/metrics {
 {% if item.metrics_allow is defined %}
@@ -65,7 +70,8 @@ server {
         rewrite /metrics(/.*)$ $1 break;
         proxy_pass  {% if item.metrics_protocol is defined %}{{ item.metrics_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_metrics is defined %}{{ item.upstream_metrics }}{% else %}{{ item.upstream_name }}{% endif %};
    }
-
+{% endif %}
+{% if vhosts_hc is defined %}
 ### location /hc is enabled on this host ###
     location    ~   ^/hc {
 {% if item.hc_allow is defined %}
@@ -84,7 +90,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_pass  {% if item.hc_protocol is defined %}{{ item.hc_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_hc is defined %}{{ item.upstream_hc }}{% else %}{{ item.upstream_name }}{% endif %};
     }
-
+{% endif %}
     location / {
 {% if item.client_max_body_size is defined %}
         client_max_body_size  {{ item.client_max_body_size }};
