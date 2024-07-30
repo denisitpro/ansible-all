@@ -1,6 +1,6 @@
 ---
 - name: "restart blackbox docker"
-  shell: "docker-compose down && docker-compose up -d"
+  shell: "docker compose down && docker compose up -d"
   args:
-    chdir: "{{ blackbox_docker_compose_path }}"
+    chdir: "{{ docker_compose_path | default('/opt/docker')}}/blackbox"
  
