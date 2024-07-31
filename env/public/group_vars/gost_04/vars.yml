@@ -4,11 +4,6 @@ gost_restart: true
 outline_hostname: gost-01.beta-82.win
 outline_sb_default_server_name: outline-beta
 
-#todo add support vault
-socks5_user_pass: set_me
-http3_user_pass: "{{socks5_user_pass}}"
-dtls_user_pass: "{{socks5_user_pass}}"
-wss_user_pass: "{{socks5_user_pass}}"
 
 
 wg_type: server
