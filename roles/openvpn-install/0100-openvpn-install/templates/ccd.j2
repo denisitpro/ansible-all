@@ -1,7 +1,0 @@
-ifconfig-push {{ item.address }} 255.255.255.0
-{% if 'push_route' in item %}
-{% for route in item.push_route %}
-#push "route {{ route }}"
-iroute {{ route }}
-{% endfor %}
-{% endif %}

@@ -1,2 +1,0 @@
-auth    requisite       /usr/lib/x86_64-linux-gnu/security/pam_google_authenticator.so secret={{ openvpn_root_path }}/server/otp/${USER}.google_authenticator  user=root debug forward_pass
-account    required     pam_permit.so

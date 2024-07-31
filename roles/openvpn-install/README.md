@@ -13,8 +13,10 @@ example create user
   ```
 
 example remove user
-```openvpn:
+```
+openvpn:
   remove:
     - {user: test1}
     - {user: test2}
-    - {user: test3}```
+    - {user: test3}
+    ```

@@ -1,22 +1,23 @@
 ---
-- include: 00-create-path-backup.yml
-  tags:
-    -  backup-openvpn
-- include: 05-install.yml
+#- import_tasks: 00-create-path-backup.yml
+#  tags:
+#    -  backup-openvpn
+
+- import_tasks: 05-install.yml
   tags:
     - reconfigure
-- include: 07-sysctl.yml
+- import_tasks: 07-sysctl.yml
   tags:
     - sysctl
-- include: 10-cert.yml
-- include: 15-service.yml
-- include: 20-users.yml
+- import_tasks: 10-cert.yml
+- import_tasks: 15-service.yml
+- import_tasks: 20-users.yml
   tags: [openvpn-user]
 
-- include: 25-remove-users.yml
+- import_tasks: 25-remove-users.yml
   when: openvpn.remove is defined
-  tags: [openvpn-remove-user]
+  tags: [openvpn-remove-user, never]
 
 
-- include: 30-ufw-configure.yml
+- import_tasks: 30-ufw-configure.yml
   tags: [ufw]

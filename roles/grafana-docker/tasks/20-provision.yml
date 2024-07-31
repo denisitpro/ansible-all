@@ -61,7 +61,7 @@
     owner: "{{grafana_user_uid | default('472')}}"
     group: root
     mode: 0640
-#  notify: restart-docker grafana
+  notify: restart-docker grafana
   tags:
     - grafana-dashboards
 
@@ -72,7 +72,7 @@
     owner: "{{grafana_user_uid | default('472')}}"
     group: root
     mode: 0640
-#  notify: restart-docker grafana
+  notify: restart-docker grafana
   when: grafana_dashboards_provision is defined
   loop: "{{ grafana_dashboards_provision.dashboards }}"
   tags:

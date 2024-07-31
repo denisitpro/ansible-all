@@ -1,5 +1,5 @@
 ---
-node_exporter_version_binary: "1.8.1"
+node_exporter_version_binary: "1.8.2"
 node_exporter_bind_port: '9100'
 
 
