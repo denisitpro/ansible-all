@@ -19,5 +19,5 @@
     - { path: "{{ grafana_data_path }}/etc/provisioning/notifiers" }
     - { path: "{{ grafana_data_path }}/etc/provisioning/plugins" }
     - { path: "{{ grafana_data_path }}/data", owner: "{{ grafana_user_uid }}" }
-    - { path: "{{ docker_compose_path }}/grafana" }
+    - { path: "{{ docker_compose_path | default('/opt/docker') }}/grafana" }
     - { path: "{{ grafana_ssl_path }}", owner: "{{ grafana_user_uid }}" }

@@ -1,2 +1,2 @@
 ---
-- include: shared/handlers/openvpn.yml
+- import_tasks: shared/handlers/openvpn.yml

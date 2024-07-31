@@ -1,7 +1,7 @@
 ---
 - name: copy sysctl config for nat
   template:
-    src: "shared/templates/sysctl/050-wg-sysctl.conf.j2"
+    src: "050-wg-sysctl.conf.j2"
     dest: "/etc/sysctl.d/050-wg.conf"
     owner: root
     group: root

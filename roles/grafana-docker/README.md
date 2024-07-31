@@ -1,5 +1,22 @@
 # EXAMPLE VARS FOR COPY DASHBOARD
 
+# Example work env - base
+```commandline
+grafana_restart: true
+gf_server_root_url: https://grafana.example.com
+grafana_allowed_origins: "https://localhost:3000"
+ssl_key_app_path: "{{grafana_ssl_path}}"
+grafana_protocol: h2
+
+grafana_ssl_enabled: true
+grafana_self_sign_used: true
+
+#grafana_use_provisioning: true
+```
+
+
+# Example work env - provision
+
 ```commandline
 grafana_use_provisioning: true
 

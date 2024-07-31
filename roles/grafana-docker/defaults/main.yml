@@ -1,11 +1,12 @@
 ---
-docker_compose_path: /opt/docker
+grafana_version: "11.1.0"
+
+
 backup_path: /mnt/backup
 gf_server_root_url: https://grafana.example.com
 gf_server_domain: example.com
 grafana_data_path: /opt/grafana
 grafana_ssl_path: "{{grafana_data_path}}/ssl"
-grafana_version: "10.2.3"
 grafana_image: 'grafana/grafana'
 
 grafana_bind_port: '3000'
