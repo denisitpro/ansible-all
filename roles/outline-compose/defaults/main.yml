@@ -1,6 +1,6 @@
 ---
 outline_docker_image_name: "quay.io/outline/shadowbox"
-outline_docker_image_version: "v1.8.1"
+outline_docker_image_version: "v1.9.0"
 
 outline_docker_compose_path: "/opt/docker/outline"
 
