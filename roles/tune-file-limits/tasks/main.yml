@@ -1,0 +1,16 @@
+---
+# todo remove
+#- import_tasks: 05-ulimits.yml
+#  tags:
+#    - ulimits
+
+# file tune base role
+- import_tasks: 10-nofiles.yml
+  tags:
+    - ulimits
+
+- import_tasks: 15-inotify.yml
+  when: inotify_tune is defined
+  tags:
+    - inotify
+    - ulimits

@@ -10,32 +10,32 @@
 
     - name: Create selfsigned key
       community.crypto.openssl_privatekey:
-        path: "{{ ssl_privkey_path }}"
+        path: "{{ ssl_privkey_path | default('/opt/ssl/selfsign/privkey.pem') }}"
         mode: 0600
         owner: "{{ ssl_user | default('root') }}"
         group: "{{ ssl_group | default('root') }}"
 
     - name: "Create selfsigned csr"
       community.crypto.openssl_csr:
-        privatekey_path: "{{ ssl_privkey_path }}"
-        path: "{{ ssl_path }}/service.csr"
+        privatekey_path: "{{ ssl_privkey_path | default('/opt/ssl/selfsign/privkey.pem') }}"
+        path: "{{ ssl_path | default('/opt/ssl/selfsign') }}/service.csr"
         mode: 0644
         owner: "{{ ssl_user | default('root') }}"
         group: "{{ ssl_group | default('root') }}"
-        country_name: "{{ ssl_country_name | default('DE') }}"
-        state_or_province_name: "{{ ssl_state_or_province_name | default('DE') }}"
-        locality_name: "{{ ssl_locality_name | default('DE') }}"
+        country_name: "{{ ssl_country_name | default('AA') }}"
+        state_or_province_name: "{{ ssl_state_or_province_name | default('MONDE') }}"
+        locality_name: "{{ ssl_locality_name | default('NONE') }}"
         organization_name: "{{ ssl_organization_name | default('DE') }}"
-        organizational_unit_name: "{{ ssl_organizational_unit_name | default('DE') }}"
+        organizational_unit_name: "{{ ssl_organizational_unit_name | default('NONE') }}"
         common_name: "{{ ssl_common_name | default('selfsigned') }}"
-        email_address: "{{ ssl_email_address | default('slefsigned@de.de') }}"
+        email_address: "{{ ssl_email_address | default('slefsigned@none.none') }}"
         force: "{{ ssl_recreate_force | default(false) }}"
 
     - name: "Create selfsigned crt"
       community.crypto.x509_certificate:
-        path: "{{ ssl_cert_path }}"
-        privatekey_path: "{{ ssl_privkey_path }}"
-        csr_path: "{{ ssl_path }}/service.csr"
+        path: "{{ ssl_path | default('/opt/ssl/selfsign') }}/fullchain.pem"
+        privatekey_path: "{{ ssl_privkey_path | default('/opt/ssl/selfsign/privkey.pem') }}"
+        csr_path: "{{ ssl_path | default('/opt/ssl/selfsign') }}/service.csr"
         provider: selfsigned
         mode: 0644
         owner: "{{ ssl_user | default('root') }}"
