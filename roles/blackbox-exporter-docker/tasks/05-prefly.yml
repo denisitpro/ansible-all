@@ -1,6 +1,5 @@
 ---
 - import_tasks: shared/tasks/create-dir-docker-compose.yml
-#- import_tasks: shared/tasks/copy-security-limits.yml
 
 - name: create folder blackbox-exporter
   ansible.builtin.file:
@@ -9,7 +8,7 @@
     mode: '0755'
   with_items:
     - "{{ blackbox_exporter_config_data_path }}"
-    - "{{ blackbox_docker_compose_path }}"
+    - "{{docker_compose_path | default('/opt/docker')}}/blackbox"
 
 - name: copy block-exporter config
   ansible.builtin.template:
