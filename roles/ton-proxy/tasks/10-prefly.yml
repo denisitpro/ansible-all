@@ -6,7 +6,7 @@
 
 
 - name: create key
-  shell: "docker run --rm -v {{tonproxy_data_path}}/keyring:/opt/ton-proxy tonstakers/ton-proxy:{{tonproxy_image_version}} generate-random-id -m adnlid"
+  shell: "docker run --rm -v {{tonproxy_data_path}}/keyring:/opt/ton-proxy tonstakers/ton-proxy:{{tonproxy_image_version | default('latest')}} generate-random-id -m adnlid"
   register: node_adnl_id
   when: not adnl_id_status.stat.exists
 
@@ -31,3 +31,10 @@
       toproxy_adnl_id: "{{ node_adnl_id_clear.stdout }}"
   tags:
     - ton-proxy-compose
+
+- name: download global config file
+  ansible.builtin.get_url:
+    url: "{{ton_proxy_global_config_url}}"
+    dest: "{{tonproxy_data_path}}/global.config.json"
+
+

@@ -10,7 +10,10 @@ tonproxy_data_path: /opt/tonproxy
 tonproxy_bind_addr: "{{ansible_default_ipv4.address}}"
 
 tonproxy_reverse_addr: "127.0.0.1:80"
-ton_proxy_mode: direct
+tonproxy_mode: direct
+ton_proxy_log_level: 3
+
+ton_proxy_global_config_url: https://raw.githubusercontent.com/ton-blockchain/ton-blockchain.github.io/main/global.config.json
 
 folder_apps:
   - tonproxy

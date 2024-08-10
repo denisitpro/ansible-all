@@ -5,6 +5,13 @@
     - ton-proxy-path
 
 - import_tasks: 10-prefly.yml
+  when: tonproxy_node_adnl_id_force is not defined
+  tags:
+    - ton-proxy
+    - ton-proxy-key
+
+- import_tasks: 15-force-adnl.yml
+  when: tonproxy_node_adnl_id_force is defined
   tags:
     - ton-proxy
     - ton-proxy-key

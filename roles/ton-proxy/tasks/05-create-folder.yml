@@ -10,7 +10,9 @@
     group: 1001
   with_items:
     - "{{tonproxy_data_path}}"
+    - "{{tonproxy_data_path}}/adnl"
     - "{{tonproxy_data_path}}/keyring"
+    - "{{tonproxy_data_path}}/tonlib-cache"
 
 
 

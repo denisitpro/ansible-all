@@ -1,0 +1,4 @@
+---
+- name: set adnl_id_force
+  set_fact:
+      toproxy_adnl_id: "{{ tonproxy_node_adnl_id_force }}"

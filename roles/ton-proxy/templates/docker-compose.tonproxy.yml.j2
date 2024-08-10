@@ -8,18 +8,21 @@ services:
     restart: always
 {% endif %}
     volumes:
+      - {{tonproxy_data_path}}/adnl:/opt/ton-proxy/adnl
       - {{tonproxy_data_path}}/keyring:/opt/ton-proxy/keyring
-{% if ton_proxy_mode == "direct" %}
-    command: "rldp-http-proxy -p {{tonproxy_port_in}} -a {{tonproxy_bind_addr}}:{{tonproxy_blockchain_in}} -C global.config.json -A {{toproxy_adnl_id}} -d"
+      - {{tonproxy_data_path}}/tonlib-cache:/opt/ton-proxy/tonlib-cache
+      - {{tonproxy_data_path}}/global.config.json:/opt/ton-proxy/global.config.json
+{% if tonproxy_mode == "direct" %}
+    command: "rldp-http-proxy -p {{tonproxy_port_in}} -a {{tonproxy_bind_addr}}:{{tonproxy_blockchain_in}} -C global.config.json -A {{toproxy_adnl_id}} -d -v{{ton_proxy_log_level}}"
 {% else %}
-    command: "rldp-http-proxy -a  {{tonproxy_bind_addr}}:{{tonproxy_blockchain_in}} -R '*'@{{tonproxy_reverse_addr}} -C global.config.json -A {{toproxy_adnl_id}} -d"
+    command: "rldp-http-proxy -a  {{tonproxy_bind_addr}}:{{tonproxy_blockchain_in}} -R '*'@{{tonproxy_reverse_addr}} -C global.config.json -A {{toproxy_adnl_id}} -d -v{{ton_proxy_log_level}}"
 {% endif %}
     logging:
 {% if vector_server_fluent_address is defined %}
       driver: fluentd
       options:
         fluentd-address: {{vector_server_fluent_address}}:{{ vector_server_fluent_port | default('24224') }}
-        tag: nginx-docker
+        tag: tonproxy
         fluentd-async: "{{fluent_async}}"
         fluentd-buffer-limit: "{{fluendt_buffer_limit}}"
 {% else %}

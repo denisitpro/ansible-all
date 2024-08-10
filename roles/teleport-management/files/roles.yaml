@@ -13,7 +13,7 @@ spec:
       'ssh_acl_level': '50'
           # List of application labels users can access
     app_labels:
-      'env': 'c3-devel'
+      'env': 'c1-infra'
 
     # RBAC rules for various resources within a cluster. This
     # example provides access to the Audit Log and replaying a user's own sessions.
