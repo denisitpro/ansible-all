@@ -6,10 +6,10 @@
     mode: '0644'
   with_items:
     - roles.yaml
-    - users.yaml
+#    - users.yaml
   tags:
     - teleport-roles
-    - teleport-users
+#    - teleport-users
 
 - name: Copy templates
   ansible.builtin.template:
@@ -37,12 +37,12 @@
   tags:
     - teleport-roles
 
-- name: create users
-  ansible.builtin.shell: "tctl create -f /tmp/{{item}}"
-  with_items:
-    - users.yaml
-  tags:
-    - teleport-users
+#- name: create users
+#  ansible.builtin.shell: "tctl create -f /tmp/{{item}}"
+#  with_items:
+#    - users.yaml
+#  tags:
+#    - teleport-users
 
 
 - name: clean

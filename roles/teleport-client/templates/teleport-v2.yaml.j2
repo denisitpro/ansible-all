@@ -4,7 +4,7 @@ teleport:
   nodename: {{teleport_node_name}}
   data_dir: /var/lib/teleport
   join_params:
-    token_name: "{{ vault_dict_users_secret.teleport_join_token | default('need_join_token') }}"
+    token_name: "{{teleport_join_token}}"
     method: token
   proxy_server: {{teleport_proxy_host}}
   log:

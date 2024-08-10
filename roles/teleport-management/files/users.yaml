@@ -1,17 +1,17 @@
-kind: user
-version: v2
-metadata:
-  name: user1
-spec:
-  roles: ['local-access-50']
-  traits:
-    logins: ['ubuntu', 'root']
----
-kind: user
-version: v2
-metadata:
-  name: user2
-spec:
-  roles: ['local-access-50']
-  traits:
-    logins: ['ubuntu', 'root']
+#kind: user
+#version: v2
+#metadata:
+#  name: user1
+#spec:
+#  roles: ['local-access-50']
+#  traits:
+#    logins: ['ubuntu', 'root']
+#---
+#kind: user
+#version: v2
+#metadata:
+#  name: user2
+#spec:
+#  roles: ['local-access-50']
+#  traits:
+#    logins: ['ubuntu', 'root']
