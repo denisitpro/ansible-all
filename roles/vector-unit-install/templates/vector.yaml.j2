@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+{% for v in vector %}
+sources:
+  {{v.name}}_in:
+    type: "file"
+    include:
+      - "{{v.log_path}}"
+
+sinks:
+  {{v.name}}_out:
+    inputs:
+      - "{{v.name}}_in"
+    type: "{{v.type | default('elasticsearch')}}"
+    healthcheck: true
+    {% if v.type == 'elasticsearch' %}
+    endpoints:
+      - "{{ es_proto | default('http') }}://{{ es_srv }}:{{ es_port }}"
+    bulk:
+      index: "{{ v.index_name | default(v.name) }}-%Y-%m-%d"
+    {% endif %}
+    {% if v.type == 'loki' %}
+encoding:
+        codec: "{{v.codec | default('json')}}"
+    endpoint: "{{v.endpoint | default('http://localhost:3100') }}"
+    labels:
+      app: "{{v.name}}"
+      stand: "{{stand_type | default('not_set') }}"
+      hostname: "{{ansible_hostname}}"
+    {% endif %}
+{% endfor %}

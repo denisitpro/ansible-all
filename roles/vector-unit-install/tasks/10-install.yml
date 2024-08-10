@@ -1,5 +1,37 @@
 ---
-- name: install vector - unit
+#- name: Add Docker GPG key - Ubuntu
+#  apt_key: "https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public"
+#  loop:
+#    - DATADOG_APT_KEY_CURRENT.public
+#    - DATADOG_APT_KEY_C0962C7D.public
+#    - DATADOG_APT_KEY_F14F620E.public
+
+- name: Add VECTOR GPG key - Ubuntu
+  ansible.builtin.apt_key:
+    url: "https://keys.datadoghq.com/{{ item }}"
+    keyring: "/etc/apt/trusted.gpg.d/{{item}}.gpg"
+  loop:
+    - DATADOG_APT_KEY_CURRENT.public
+    - DATADOG_APT_KEY_C0962C7D.public
+    - DATADOG_APT_KEY_F14F620E.public
+
+
+- name: Add Vector APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/DATADOG_APT_KEY_C0962C7D.public.gpg] https://apt.vector.dev/ stable vector-0"
+    state: present
+    filename: "vector"
+
+- name: install base software - ubuntu all
   apt:
-    deb: "{{vector_repo_source}}v{{vector_version}}/vector_{{vector_version}}-1_amd64.deb"
-    install_recommends: yes
+    name:
+      - vector
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+
+# todo remove
+#- name: install vector - unit
+#  apt:
+#    deb: "{{vector_repo_source}}v{{vector_version}}/vector_{{vector_version}}-1_amd64.deb"
+#    install_recommends: yes

@@ -1,3 +1,9 @@
+---
+- name: remove default config file
+  ansible.builtin.file:
+    path: /etc/vector/vector.yaml
+    state: absent
+
 - name: copy conf file
   template:
     src: "{{item}}.j2"
@@ -6,6 +12,8 @@
   with_items:
     - "{{vector_config_file | default('vector.toml')}}"
   notify: restart vector
+
+
 
 - name: copy unit file
   ansible.builtin.template:
