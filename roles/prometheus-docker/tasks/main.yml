@@ -16,10 +16,7 @@
     - prom-docker
     - prom-compose
 
-# todo refactoring
-#- name: Import Reload
-#  ansible.builtin.import_tasks:
-#    file: "99-reload.yml"
-#  tags:
-#    - never
-#    - prom-reload
+- import_tasks: 99-reload.yml
+  tags:
+    - never
+    - prom-reload

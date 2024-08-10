@@ -1,5 +1,5 @@
 ---
-prometheus_image: "v2.52.0"
+prometheus_image: "v2.53.1"
 
 
 ## base directory config

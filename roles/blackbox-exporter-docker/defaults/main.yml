@@ -1,21 +1,34 @@
 ---
+blackbox_exporter_bind_addr: "{{global_bind_addr | default(ansible_default_ipv4.address) }}"
 blackbox_exporter_port: 9115
 blackbox_exporter_config_data_path: "/opt/blackbox_exporter"
 blackbox_exporter_version: v0.25.0
 blackbox_api_key: blackbox
-blackbox_docker_compose_path: "{{ docker_compose_path | default('/opt/docker')}}/blackbox"
+blackbox_docker_compose_path: "{{ docker_compose_path |default('/opt/docker') }}/blackbox"
+
+# todo remove
+#blackbox_config:
+#  modules:
+#    icmp:
+#      prober: icmp
+#      timeout: 5s
+#    http_200_module:
+#      prober: http
+#      timeout: 5s
+#      http:
+#        preferred_ip_protocol: "ip4"
 
 blackbox_config:
-  modules: 
+  modules:
     icmp:
       prober: icmp
       timeout: 5s
     http_200_module:
       prober: http
       timeout: 5s
-#      http:
-#        preferred_ip_protocol: "ip4" #default ipv6 https://github.com/prometheus/blackbox_exporter/blob/master/CONFIGURATION.md
-
-
-folder_apps:
-  - blackbox
+    http_404_module:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [404]
+        method: GET

@@ -11,17 +11,15 @@
     - nginx_base_conf
     - nginx-base
 
-- ansible.builtin.import_tasks: 03-create-selfsign-cert.yml
-  when: ssl_domain == "selfsigned"
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "ssl-selfsigned-cert"
+  when: selfsigned is defined
   tags:
-    - nginx-cert
+    - nginx_base_conf
+    - nginx-base
+    - nginx-selfsign
 
-#- name: Import ssl role
-#  ansible.builtin.import_role:
-#    name: "ssl-selfsigned-cert"
-#  when: ssl_domain == "selfsigned"
-#  tags:
-#    - nginx-cert
 
 
 - name: Import nginx conf
