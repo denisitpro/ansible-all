@@ -2,100 +2,23 @@
 # Set global options
 data_dir = "{{ vector_data_path }}"
 
-# Vector's API (disabled by default)
-# Enable and try it out with the vector top command
-[api]
-#enabled = false
-#address = "127.0.0.1:24224"
-
-# Ingest data by tailing one or more files
-[sources.fluent_logs_input]
+{% for v in  vector %}
+[sources.{{v.name}}_in]
 type = "fluent"
-### address = "0.0.0.0:{{ vector_port }}" # todo remove
-address = "[::]:{{ vector_port }}" # for ipv6 support and ipv4
+address = "{{vector_bind_addr}}:{{ vector_port }}"
 
-{% if vector.cluster is defined %}
-# docs https://assume-role-docs--vector-project.netlify.app/docs/reference/transforms/json_parser/
-[transforms.json_parser_general]
-type = "json_parser"
-inputs = ["fluent_logs_input"]
-#drop_invalid = true
-drop_field = false
-field = "log"
-overwrite_target = true
-target_field = "target"
-
-{% for item in vector.cluster %}
-[transforms.{{ item.name }}]
-type = "field_filter"
-inputs = ["json_parser_general"]
-field = "tag"
-value = "{{ item.value }}"
-
-{% endfor %}
-
-[sinks.es_cluster]
-inputs = ["json_parser_general"]
-type   = "elasticsearch"
-endpoints = ["{{ es_proto | default('http') }}://{{ es_srv }}:{{ es_port }}"]
-bulk.index = "{{ vector_default_index_name }}-%Y-%m-%d"
-healthcheck = true
-
-{% for item in vector.cluster %}
-[sinks.es_{{ item.name }}]
-inputs = ["{{ item.name }}"]
-type   = "elasticsearch"
-endpoints = ["{{ es_proto | default('http') }}://{{ item.endpoint | default (es_srv) }}:{{ es_port }}"]
-bulk.index = "{{ item.index }}"
-healthcheck = true
-
-{% endfor %}
-
-
-{% else %}
-[transforms.remap_es_index]
-type="remap"
-inputs=["fluent_logs_input"]
-source='''
-.index = string(.tag)  ?? "vector"
-'''
-
-# docs https://assume-role-docs--vector-project.netlify.app/docs/reference/transforms/json_parser/
-[transforms.json_parser_general]
+[transforms.{{v.name}}_extract_tag]
 type = "remap"
-inputs = ["remap_es_index"]
-drop_on_abort = true
-drop_on_error = true
-reroute_dropped = true
-source='''
-del(.target)
-.target = parse_json!(.log)
+inputs = ["{{v.name}}_in"]
+source = '''
+.app = string(.tag)  ?? "vector"
 '''
 
-[sinks.es_cluster]
-inputs = ["json_parser_general"]
-type   = "elasticsearch"
-endpoints = ["{{ es_proto | default('http') }}://{{ es_srv }}:{{ es_port }}"]
-bulk.index = "{{ '{{' }} index {{ '}}' }}-%Y-%m-%d"
+[sinks.{{v.name}}_out]
+inputs = ["{{v.name}}_extract_tag"]
+type   = "{{v.type |default('loki')}}"
 healthcheck = true
-
-[sinks.es_cluster_vector]
-inputs = ["json_parser_general.dropped"]
-type   = "elasticsearch"
-endpoints = ["{{ es_proto | default('http') }}://{{ es_srv }}:{{ es_port }}"]
-bulk.index = "{{ '{{' }} index {{ '}}' }}-%Y-%m-%d"
-healthcheck = true
-
-{% endif %}
-
-{% if vector_metrics is defined %}
-[sources.metrics_id]
-type = "internal_metrics"
-scrape_interval_secs = 1
-
-[sinks.sync_metrics_id]
-type = "prometheus_exporter"
-inputs = [ "metrics_id"]
-address = "0.0.0.0:{{ vector_metrics_port }}"
-default_namespace = "service"
-{% endif %}
+encoding.codec = "{{v.codec | default('json')}}"
+endpoint = "{{v.endpoint | default('http://localhost:3100') }}"
+labels ={ app = "{{ '{{' }}  app {{ '}}' }}",stand="{{stand_type| default('not_set') }}",hostname="{{ansible_hostname}}" }
+{% endfor %}

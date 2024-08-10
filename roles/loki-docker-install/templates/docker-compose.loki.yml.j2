@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   loki:
     image: grafana/loki:{{loki_version}}
@@ -7,7 +5,7 @@ services:
     hostname: loki-{{ stand_type }}
     network_mode: host
     volumes:
-      - {{ loki_data_path }}/data:/tmp/loki
+      - {{loki_data_path }}/data:/opt/loki
       - {{loki_data_path}}/config:/etc/loki/
     command: -config.file=/etc/loki/local-config.yaml
 {% if loki_restart is defined %}
