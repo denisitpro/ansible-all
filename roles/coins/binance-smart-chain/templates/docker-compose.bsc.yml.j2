@@ -1,0 +1,22 @@
+services:
+  bsc.node:
+    container_name: bsc.node
+    image: {{bsc_registry_addr | default('denisitpro/coin-bsc')}}:{{bsc_image_name |default('latest')}}
+    network_mode: host
+    volumes:
+      - {{bsc_node_data_path}}:{{bsc_node_data_path}}
+    command: bscd
+       --config={{bsc_node_data_path}}/node/bsc.toml
+       --cache 8000
+       --rpc.allow-unprotected-txs
+       --history.transactions 0
+       --tries-verify-mode none
+       --state.scheme path
+{% if bsc_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

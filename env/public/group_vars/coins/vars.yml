@@ -1,0 +1,17 @@
+---
+
+# todo remove
+#bsc_genesis_version: v1.4.12
+bsc_image_name: latest
+
+iptables:
+  ipv4:
+    - { name: "ssh any-access", protocol: "tcp", port: "22"}
+    - { name: "bsc_p2p_port", protocol: "tcp", port: "{{bsc_p2p_port | default('30311')}}"}
+    - { name: "bsc_p2p_port", protocol: "udp", port: "{{bsc_p2p_port | default('30311')}}"}
+
+  ipv6:
+    - { name: "ssh any-access", protocol: "tcp", port: "22"}
+    - { name: "bsc_p2p_port", protocol: "tcp", port: "{{bsc_p2p_port | default('30311')}}"}
+    - { name: "bsc_p2p_port", protocol: "udp", port: "{{bsc_p2p_port | default('30311')}}"}
+

@@ -1,0 +1,88 @@
+---
+
+- name: create folder for node
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{docker_compose_path | default('/opt/docker')}}/bsc"
+    - "{{bsc_node_data_path}}/node"
+    - "{{bsc_node_data_path}}/node/db"
+
+
+- name: download mainnet genesis files
+  ansible.builtin.get_url:
+    url: "https://github.com/bnb-chain/bsc/releases/download/{{bsc_genesis_version}}/{{bsc_network}}.zip"
+    dest: "/tmp/mainnet-{{bsc_genesis_version}}.zip"
+    mode: '0644'
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+
+- name: unpack genesis file binaries
+  become: false
+  unarchive:
+    src:  "/tmp/{{bsc_network}}-{{bsc_genesis_version}}.zip"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: copy genesis
+  copy:
+    src: "/tmp/genesis.json"
+    dest: "{{bsc_node_data_path}}/node/genesis.json"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  tags:
+    - bsc-conf
+
+- name: copy bsc config
+  template:
+    src: "bsc.toml.j2"
+    dest: "{{bsc_node_data_path}}/node/bsc.toml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - bsc-conf
+
+#- name: check bsc init phase
+#  stat:
+#    path: "{{bsc_init_path}}"
+#  register: bsc_init_result
+#
+#- name: print bsc init status
+#  ansible.builtin.debug:
+#    msg: bsc {{ bsc_init_result.stat.exists }}
+#
+#- name: copy compose-file - bsc
+#  template:
+#    src: "docker-compose.bsc.yml.j2"
+#    dest: "{{docker_compose_path | default('/opt/docker')}}/bsc/docker-compose.yml"
+#    mode: 0600
+#  tags:
+#    - config
+#    - reconfigure
+#  when: bsc_init_result.stat.exists == False
+#  ignore_errors: yes
+#
+#- name: Log into DockerHub
+#  community.docker.docker_login:
+#    username: "{{c2_registry_pull}}"
+#    password: "{{ vault_dict_users_secret.c2_nodes_pull_token }}"
+#
+#- name: run restart compose
+#  shell: "docker-compose down && docker-compose up -d"
+#  args:
+#    chdir: "{{docker_compose_path | default('/opt/docker')}}/bsc"
+#
+#- name: create file succes init
+#  ansible.builtin.file:
+#    path: "{{bsc_init_path}}"
+#    state: touch
+#  when: bsc_init_result.stat.exists == False

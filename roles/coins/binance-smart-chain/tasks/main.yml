@@ -1,0 +1,19 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+  tags:
+    - bsc
+
+- import_tasks: 05-preflay.yml
+  tags:
+    - bsc
+    - bsc-conf
+
+- import_tasks: 10-configure.yml
+  tags:
+    - bsc
+    - bsc-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - bsc
+    - bsc-compose

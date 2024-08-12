@@ -1,0 +1,36 @@
+---
+#appname: bsc
+#
+
+bsc_network: mainnet
+
+bsc_genesis_version: v1.4.12
+bsc_image_name: "{{bsc_genesis_version}}"
+bsc_node_data_path: "/opt/bsc"
+
+folder_apps:
+  - bsc
+
+#
+#bsc_p2p_port: 30311
+#bsc_rpc_port: 9545
+#bsc_ws_port: 9546
+#
+#bsc_prom_port: 6060
+#
+#bsc_init_path: "{{bsc_node_data_path}}/node/init_success"
+
+#sentry_dsn_bsc: ""
+
+
+#bsc_bind_addr: "{{global_bind_addr}}"
+#bsc_metrics_bind_addr: "{{global_bind_addr}}"
+
+#bsc_registry_addr: herodevopss/node-bsc
+#bsc_image_name: 1.1.18
+
+
+
+bsc_database_cache_size: 4096
+bsc_snapshot_cache: 20
+bsc_max_peers: 120

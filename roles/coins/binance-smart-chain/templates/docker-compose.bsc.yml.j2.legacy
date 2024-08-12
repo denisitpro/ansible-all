@@ -1,0 +1,41 @@
+version: "3.7"
+
+networks:
+  bsc:
+    driver: bridge
+    name: bsc
+    attachable: true
+
+services:
+  bsc.node:
+    container_name: bsc.node
+    image: {{bsc_registry_addr}}:{{bsc_image_name}}
+    networks:
+      - bsc
+    ports:
+      - {{bsc_p2p_port}}:{{bsc_p2p_port}} # bsc_p2p_port - {{bsc_net}}
+      - {{bsc_bind_addr}}:{{bsc_rpc_port}}:{{bsc_rpc_port}} # bsc_rpc_port - {{bsc_net}}
+      - {{bsc_bind_addr}}:{{bsc_ws_port}}:{{bsc_ws_port}} # bsc_ws_port - {{bsc_net}}
+      - {{bsc_metrics_bind_addr}}:{{bsc_prom_port}}:{{bsc_prom_port}} #  bsc_prom_port - {{bsc_net}}
+    volumes:
+      - {{bsc_node_data_path}}:{{bsc_node_data_path}}
+{% if bsc_init_result.stat.exists == True %}
+    command: bscd
+       --config={{bsc_node_data_path}}/node/bsc.toml
+       --diffsync
+       --cache 8000
+       --metrics
+       --metrics.addr="0.0.0.0"
+       --metrics.port={{bsc_prom_port}}
+{% endif %}
+{% if bsc_init_result.stat.exists == False %}
+    command: bscd --config={{bsc_node_data_path}}/node/bsc.toml init {{bsc_node_data_path}}/node/genesis.json
+{% endif %}
+{% if bsc_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

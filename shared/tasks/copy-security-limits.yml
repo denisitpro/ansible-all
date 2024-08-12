@@ -1,7 +1,7 @@
 - name: copy security limits
   template:
     src: "shared/templates/limits.d/security_limits.conf.j2"
-    dest: "/etc/security/limits.d/security_limits.conf"
+    dest: "/etc/security/limits.d/20-nofiles.conf"
     owner: root
     group: root
     mode: 0644
