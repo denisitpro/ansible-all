@@ -1,0 +1,17 @@
+---
+#- name: re-check bsc init phase
+#  stat:
+#    path: "{{bsc_init_path}}"
+#  register: bsc_init_result
+#
+#- name: re-check print bsc init status
+#  ansible.builtin.debug:
+#    msg: bsc {{ bsc_init_result.stat.exists }}
+#
+
+- name: copy compose-file - bsc
+  template:
+    src: "docker-compose.bsc.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker')}}/bsc/docker-compose.yml"
+    mode: 0600
+
