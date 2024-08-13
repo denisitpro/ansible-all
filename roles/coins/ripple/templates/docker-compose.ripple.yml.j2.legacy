@@ -1,0 +1,32 @@
+version: "3.7"
+
+networks:
+  c3:
+    driver: bridge
+    name: c3
+    attachable: true
+
+services:
+  ripple.node:
+    container_name: ripple.node
+    image: {{xrp_registry_addr}}:{{xrp_image_name}}
+    networks:
+      - c3
+    ports:
+      - {{xrp_peer_port}}:{{xrp_peer_port}} #xrp_peer_port - {{xrp_net}}
+      - {{xrp_bind_addr}}:{{xrp_ws_public_port}}:{{xrp_ws_public_port}} #xrp_ws_public_port  - {{xrp_net}}
+      - {{xrp_bind_addr}}:{{xrp_http_public_port}}:{{xrp_http_public_port}} #xrp_http_public_port  - {{xrp_net}}
+    volumes:
+      - {{node_data_path}}:{{node_data_path}}
+    init: true
+    command: rippled --conf {{node_data_path}}/node/rippled.cfg
+{% if xrp_net == "mainnet" %}
+    restart: always
+{% endif %}
+#    logging:
+#      driver: "none"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

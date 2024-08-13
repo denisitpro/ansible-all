@@ -1,0 +1,25 @@
+---
+node_data_path: /opt/ripple
+ripple_registry_addr: denisitpro/coin-ripple
+#ripple_image_name: 2.2.1
+ripple_peer_port: 51235
+
+# todo remove
+#ripple_net: mainnet
+
+#ripple_ws_public_port: 6005
+#ripple_http_public_port: 6009
+#ripple_peer_port: 51235
+#ripple_node_size: huge
+#
+#
+#sentry_dsn_ripple: ""
+#
+
+#
+#ripple_bind_addr: "{{global_bind_addr}}"
+
+
+
+folder_apps:
+  - ripple

@@ -1,0 +1,50 @@
+## {{ ansible_managed }} ##
+# base config generate ripppled version 2.2.1
+[server]
+port_rpc_admin_local
+port_peer
+port_ws_admin_local
+
+[port_rpc_admin_local]
+port = 5005
+ip = 127.0.0.1
+admin = 127.0.0.1
+protocol = http
+
+[port_peer]
+port = {{ripple_peer_port | default('51235')}}
+ip = 0.0.0.0
+protocol = peer
+
+[port_ws_admin_local]
+port = 6006
+ip = 127.0.0.1
+admin = 127.0.0.1
+protocol = ws
+send_queue_limit = 500
+
+[port_grpc]
+port = 50051
+ip = 127.0.0.1
+secure_gateway = 127.0.0.1
+
+[node_db]
+type=NuDB
+path={{node_data_path}}/node/db/nudb
+online_delete=10000
+advisory_delete=0
+
+[database_path]
+{{node_data_path}}/node/db/
+
+[debug_logfile]
+{{node_data_path}}/node/debug.log
+
+[validators_file]
+validators.txt
+
+[rpc_startup]
+{ "command": "log_level", "severity": "warning" }
+
+[ssl_verify]
+1

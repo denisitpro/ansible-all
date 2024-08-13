@@ -1,0 +1,19 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+  tags:
+    - ripple
+
+- import_tasks: 05-preflay.yml
+  tags:
+    - ripple
+    - ripple-config
+
+- import_tasks: 10-configure.yml
+  tags:
+    - ripple
+    - ripple-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - ripple
+    - ripple-compose
