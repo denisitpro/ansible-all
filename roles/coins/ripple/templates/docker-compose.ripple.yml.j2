@@ -1,0 +1,16 @@
+services:
+  ripple.node:
+    container_name: ripple.node
+    image: {{ripple_registry_addr}}:{{ripple_image_name | default('latest')}}
+    volumes:
+      - {{node_data_path}}:{{node_data_path}}
+    init: true
+    command: rippled --conf {{node_data_path}}/node/rippled.cfg
+{% if ripple_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

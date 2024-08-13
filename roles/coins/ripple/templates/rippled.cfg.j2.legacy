@@ -1,0 +1,206 @@
+
+#
+# 10. Example Settings
+#
+#--------------------
+#
+#   Administrators can use these values as a starting point for configuring
+#   their instance of rippled, but each value should be checked to make sure
+#   it meets the business requirements for the organization.
+#
+# Server
+#
+#   These example configuration settings create these ports:
+#
+#   "peer"
+#
+#       Peer protocol open to everyone. This is required to accept
+#       incoming rippled connections. This does not affect automatic
+#       or manual outgoing Peer protocol connections.
+#
+#   "rpc"
+#
+#       Administrative RPC commands over HTTPS, when originating from
+#       the same machine (via the loopback adapter at 127.0.0.1).
+#
+#   "wss_admin"
+#
+#       Admin level API commands over Secure Websockets, when originating
+#       from the same machine (via the loopback adapter at 127.0.0.1).
+#
+#   This port is commented out but can be enabled by removing
+#   the '#' from each corresponding line including the entry under [server]
+#
+#   "wss_public"
+#
+#       Guest level API commands over Secure Websockets, open to everyone.
+#
+#   For HTTPS and Secure Websockets ports, if no certificate and key file
+#   are specified then a self-signed certificate will be generated on startup.
+#   If you have a certificate and key file, uncomment the corresponding lines
+#   and ensure the paths to the files are correct.
+#
+#   NOTE
+#
+#       To accept connections on well known ports such as 80 (HTTP) or
+#       443 (HTTPS), most operating systems will require rippled to
+#       run with administrator privileges, or else rippled will not start.
+
+[server]
+port_rpc_admin_local
+port_peer
+port_ws_admin_local
+port_ws_public
+port_public_http
+
+#ssl_key = /etc/ssl/private/server.key
+#ssl_cert = /etc/ssl/certs/server.crt
+
+[port_rpc_admin_local]
+port = 5005
+ip = 127.0.0.1
+admin = 127.0.0.1
+protocol = http
+
+[port_peer]
+port = 51235
+ip = 0.0.0.0
+# alternatively, to accept connections on IPv4 + IPv6, use:
+#ip = ::
+protocol = peer
+
+[port_ws_admin_local]
+port = 6006
+ip = 127.0.0.1
+admin = 127.0.0.1
+protocol = ws
+
+#[port_grpc]
+#port = 50051
+#ip = 0.0.0.0
+#secure_gateway = 127.0.0.1
+
+[port_ws_public]
+port = 6005
+ip = 0.0.0.0
+protocol = ws
+
+[port_public_http]
+port = {{xrp_http_public_port}}
+ip = 0.0.0.0
+protocol = http
+
+#-------------------------------------------------------------------------------
+
+[node_size]
+{{xrp_node_size}}
+
+# This is primary persistent datastore for rippled.  This includes transaction
+# metadata, account states, and ledger headers.  Helpful information can be
+# found at https://xrpl.org/capacity-planning.html#node-db-type
+# type=NuDB is recommended for non-validators with fast SSDs. Validators or
+#    slow / spinning disks should use RocksDB. Caution: Spinning disks are
+#    not recommended. They do not perform well enough to consistently remain
+#    synced to the network.
+# online_delete=512 is recommended to delete old ledgers while maintaining at
+#    least 512.
+# advisory_delete=0 allows the online delete process to run automatically
+#    when the node has approximately two times the "online_delete" value of
+#    ledgers. No external administrative command is required to initiate
+#    deletion.
+[node_db]
+type=NuDB
+path={{node_data_path}}/node/db/nudb
+online_delete=1000000
+advisory_delete=0
+#type=RocksDB
+#path={{node_data_path}}/node/db/rocksdb
+#open_files=512
+#filter_bits=12
+#cache_mb=512
+#file_size_mb=64
+#file_size_mult=2
+#online_delete=2000
+#advisory_delete=0
+
+
+# This is the persistent datastore for shards. It is important for the health
+# of the ripple network that rippled operators shard as much as practical.
+# NuDB requires SSD storage. Helpful information can be found at
+# https://xrpl.org/history-sharding.html
+#[shard_db]
+#path=/var/lib/rippled/db/shards/nudb
+#max_historical_shards=50
+#
+# This optional section can be configured with a list
+# of paths to use for storing historical shards. Each
+# path must correspond to a unique filesystem.
+#[historical_shard_paths]
+#/path/1
+#/path/2
+
+[database_path]
+/opt/ripple/node/db
+
+
+# To use Postgres, uncomment this section and fill in the appropriate connection
+# info. Postgres can only be used in Reporting Mode.
+# To disable writing to the transaction database, uncomment this section, and
+# set use_tx_tables=0
+# [ledger_tx_tables]
+# conninfo = postgres://[username]:[password]@[ip]/[database]
+# use_tx_tables=1
+
+
+# This needs to be an absolute directory reference, not a relative one.
+# Modify this value as required.
+[debug_logfile]
+{{node_data_path}}/node/debug.log
+
+[sntp_servers]
+time.windows.com
+time.apple.com
+time.nist.gov
+pool.ntp.org
+
+# To use the XRP test network
+# (see https://xrpl.org/connect-your-rippled-to-the-xrp-test-net.html),
+# use the following [ips] section:
+{% if xrp_net == "testnet" %}
+[ips]
+s.altnet.rippletest.net 51235
+{% endif %}
+{% if xrp_net == "testnet" %}
+# [ips]
+{% endif %}
+# r.altnet.rippletest.net 51235
+
+# File containing trusted validator keys or validator list publishers.
+# Unless an absolute path is specified, it will be considered relative to the
+# folder in which the rippled.cfg file is located.
+[validators_file]
+validators.txt
+
+# Turn down default logging to save disk space in the long run.
+# Valid values here are trace, debug, info, warning, error, and fatal
+[rpc_startup]
+{ "command": "log_level", "severity": "warning" }
+
+# If ssl_verify is 1, certificates will be validated.
+# To allow the use of self-signed certificates for development or internal use,
+# set to ssl_verify to 0.
+[ssl_verify]
+1
+
+
+# To run in Reporting Mode, uncomment this section and fill in the appropriate
+# connection info for one or more ETL sources.
+# [reporting]
+# etl_source
+#
+#
+# [etl_source]
+# source_grpc_port=50051
+# source_ws_port=6005
+# source_ip=127.0.0.1
+

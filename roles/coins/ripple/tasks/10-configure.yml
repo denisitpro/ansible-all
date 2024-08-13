@@ -1,0 +1,6 @@
+---
+- name: copy compose-file - ripple
+  template:
+    src: "docker-compose.ripple.yml.j2"
+    dest: "{{docker_compose_path | default ('/opt/docker')}}/ripple/docker-compose.yml"
+    mode: 0600

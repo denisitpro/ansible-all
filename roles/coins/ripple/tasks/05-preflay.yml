@@ -1,0 +1,29 @@
+---
+- name: create folder for node
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{node_data_path}}/node"
+    - "{{node_data_path}}/node/db/"
+    - "{{docker_compose_path | default ('/opt/docker')}}/ripple"
+
+- name: copy ripple config
+  template:
+    src: "rippled.cfg.j2"
+    dest: "{{node_data_path}}/node/rippled.cfg"
+    owner: root
+    group: root
+    mode: 0644
+
+
+- name: copy validators.txt
+  template:
+    src: "validators.txt.j2"
+    dest: "{{node_data_path}}/node/validators.txt"
+    owner: root
+    group: root
+    mode: 0644
+
+
