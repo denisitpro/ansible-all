@@ -2,6 +2,7 @@ services:
   ripple.node:
     container_name: ripple.node
     image: {{ripple_registry_addr}}:{{ripple_image_name | default('latest')}}
+    network_mode: host
     volumes:
       - {{node_data_path}}:{{node_data_path}}
     init: true
