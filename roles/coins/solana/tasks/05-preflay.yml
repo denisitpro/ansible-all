@@ -1,0 +1,37 @@
+---
+- name: create folder for node
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ node_data_path }}"
+#    - "{{ node_data_path }}/db"
+#    - "{{ node_data_path }}/conf"
+    - "{{docker_compose_path | default('/opt/docker')}}/solana"
+
+## https://docs.solana.com/running-validator/validator-start
+- name: copy sysctl config for solana
+  copy:
+    src: "055-solana-tune.conf"
+    dest: "/etc/sysctl.d/055-solana-tune.conf"
+    owner: root
+    group: root
+  tags: [sysctl]
+
+- name: apply tune config
+  shell: /usr/sbin/sysctl -p /etc/sysctl.d/055-solana-tune.conf
+  tags: [sysctl]
+
+- name: "Check file {{ node_data_path }}/conf/validator-keypair.json"
+  ansible.builtin.stat:
+    path: "{{ node_data_path }}/conf/validator-keypair.json"
+  register: validator_file
+  tags:
+    - validator-file
+
+- name: "Generate new keypair"
+  ansible.builtin.shell: "docker run --rm -v {{ node_data_path }}:/tmp {{solana_registry_addr}}:{{solana_image_version | default('latest')}} solana-keygen new -s --no-bip39-passphrase  -o /tmp/validator-keypair.json"
+  when: not validator_file.stat.exists
+  tags:
+    - validator-file

@@ -1,0 +1,7 @@
+---
+- name: copy compose-file - solana
+  template:
+    src: "docker-compose.solana.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker')}}/solana/docker-compose.yml"
+    mode: 0600
+

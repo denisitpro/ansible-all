@@ -1,0 +1,19 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+  tags:
+    - solana
+
+- import_tasks: 05-preflay.yml
+  tags:
+    - solana
+    - solana-prefly
+
+- import_tasks: 10-configure.yml
+  tags:
+    - solana
+    - solana-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - solana
+    - solana-compose
