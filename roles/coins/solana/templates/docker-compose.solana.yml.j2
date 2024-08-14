@@ -1,0 +1,43 @@
+services:
+  solana_node:
+    container_name: solana_node
+    image: {{solana_registry_addr}}:{{solana_image_version | default('latest')}}
+    network_mode: host
+    volumes:
+      - /opt/solana:/opt/solana
+    privileged: true # need for net.core.wmem_default
+    ulimits:
+      nofile:
+        soft: "{{solana_soft_nofile |default('1000000')}}"
+        hard: "{{solana_hard_nofile |default('1000000')}}"
+    init: true
+# config https://docs.solanalabs.com/ru/clusters/available
+    command: solana-validator
+      --identity /opt/solana/node/validator-keypair.json
+      --known-validator 7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2
+      --known-validator GdnSyH3YtwcxFvQrVVJMm1JhTS4QVX7MFsX56uJLUfiZ
+      --known-validator DE1bawNcRJB9rVm3buyMVfr8mBEoyyu73NBovf2oXJsJ
+      --known-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S
+      --ledger /opt/solana/node/db
+      --rpc-port {{sol_rpc_port | default('8899')}}
+      --dynamic-port-range 8000-8020
+      --entrypoint entrypoint.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint2.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint3.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint4.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint5.mainnet-beta.solana.com:8001
+      --expected-genesis-hash 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d
+      --wal-recovery-mode skip_any_corrupted_record
+      --limit-ledger-size
+      --log solana.log
+      --no-voting
+#      --enable-rpc-transaction-history - need research
+#      --no-untrusted-rpc - need research
+{% if solana_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

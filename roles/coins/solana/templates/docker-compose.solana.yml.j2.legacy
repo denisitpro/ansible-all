@@ -1,0 +1,137 @@
+version: "3.7"
+
+services:
+  solana.node:
+    container_name: solana.node
+    image: hregestiry-{{sol_image}}:{{sol_image_name}}
+    network_mode: host
+#    ports:
+#      - {{sol_rpc_port}}:{{sol_rpc_port}}
+# port required https://docs.solana.com/running-validator/validator-reqs
+# port for global api https://docs.solana.com/developing/clients/jsonrpc-api
+#      - 8000:8000
+#      - 8001:8001
+#      - 8900:8900
+#      - 8002-8020:8002-8020
+#      - 8002-8020:8002-8020/udp
+    volumes:
+      - {{node_data_path}}:{{node_data_path}}
+      - {{node_data_path}}/conf:{{node_data_path}}/conf
+    ulimits:
+      nofile:
+        soft: "{{soft_nofile}}"
+        hard: "{{hard_nofile}}"
+{% if sol_net == "mainnet" %}
+### mainnet
+    command: solana-validator
+      --gossip-port 8001
+      --dynamic-port-range 8002-8020
+      --log -
+      --ledger {{node_data_path}}/db
+      --identity {{node_data_path}}/conf/validator-keypair.json
+      --trusted-validator 7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2
+      --trusted-validator GdnSyH3YtwcxFvQrVVJMm1JhTS4QVX7MFsX56uJLUfiZ
+      --trusted-validator DE1bawNcRJB9rVm3buyMVfr8mBEoyyu73NBovf2oXJsJ
+      --trusted-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S
+      --no-untrusted-rpc
+      --rpc-port {{sol_rpc_port}}
+      --private-rpc
+      --full-rpc-api
+      --rpc-bind-address 0.0.0.0
+      --entrypoint entrypoint.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint2.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint3.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint4.mainnet-beta.solana.com:8001
+      --entrypoint entrypoint5.mainnet-beta.solana.com:8001
+      --expected-genesis-hash 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d
+      --wal-recovery-mode skip_any_corrupted_record
+      --limit-ledger-size 50000000
+      --no-voting
+      --enable-rpc-transaction-history
+      --health-check-slot-distance 500
+      --account-index spl-token-owner
+    environment:
+      - SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=mainnet-beta,u=mainnet-beta_write,p=password
+{% endif %}
+{% if sol_net == "testnet" %}
+### testnet
+    command: solana-validator
+      --log -
+      --ledger {{node_data_path}}/db
+      --identity {{node_data_path}}/conf/validator-keypair.json
+      --trusted-validator 5D1fNXzvv5NjV1ysLjirC4WY92RNsVH18vjmcszZd8on
+      --trusted-validator 7XSY3MrYnK8vq693Rju17bbPkCN3Z7KvvfvJx4kdrsSY
+      --trusted-validator Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN
+      --trusted-validator 9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv
+      --no-untrusted-rpc
+      --full-rpc-api
+      --private-rpc
+      --rpc-bind-address 0.0.0.0
+      --rpc-port {{sol_rpc_port}}
+      --dynamic-port-range 8000-8012
+      --entrypoint entrypoint.testnet.solana.com:8001
+      --entrypoint entrypoint2.testnet.solana.com:8001
+      --entrypoint entrypoint3.testnet.solana.com:8001
+      --expected-genesis-hash 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY
+      --wal-recovery-mode skip_any_corrupted_record
+      --limit-ledger-size
+      --no-voting
+      --enable-rpc-transaction-history
+      --no-os-network-limits-test
+      --account-index spl-token-owner
+    environment:
+      - SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=tds,u=testnet_write,p=c4fa841aa918bf8274e3e2a44d77568d9861b3ea
+{% endif %}
+{% if sol_net == "devnet" %}
+### devnet
+    command: solana-validator
+      --log -
+      --ledger {{node_data_path}}/db
+      --identity {{node_data_path}}/conf/validator-keypair.json
+      --trusted-validator dv1LfzJvDF7S1fBKpFgKoKXK5yoSosmkAdfbxBo1GqJ
+      --no-untrusted-rpc
+      --rpc-port {{sol_rpc_port}}
+      --dynamic-port-range 8000-8012
+      --entrypoint entrypoint.devnet.solana.com:8001
+      --expected-genesis-hash EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG
+      --wal-recovery-mode skip_any_corrupted_record
+      --limit-ledger-size
+      --no-voting
+      --enable-rpc-transaction-history
+    environment:
+      - SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=devnet,u=scratch_writer,p=topsecret
+{% endif %}
+{% if sol_net == "mainnet" %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+{% if cacherpc is defined %}
+  cacherpc:
+    image: {{cacherpc_registry}}:{{cacherpc_image}}
+    container_name: cacherpc
+    network_mode: host
+#    ports:
+#      - {{casherpc_port}}:{{casherpc_port}}
+    depends_on:
+      - solana.node
+    command: cacherpc
+      --rpc-api-url http://127.0.0.1:8899
+      --websocket-url ws://127.0.0.1:8900
+      --account-request-limit 500
+      --program-request-limit 15
+      --body-cache-size 1000
+      --websocket-connections 40
+      --time-to-live 300s
+      --slot-distance 500
+      --listen 0.0.0.0:{{casherpc_port}}
+#      --ignore-base58-limit false
+#     --log-format — the format, in which to output the logs: plain | json
+#     --rules — path to firewall rules written in lua
+#     --control-socket-path — path to socket file, e.g. /run/cacherpc.sock
+    restart: always
+{% endif %}

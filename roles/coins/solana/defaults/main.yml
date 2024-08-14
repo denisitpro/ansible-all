@@ -1,0 +1,38 @@
+---
+node_data_path: /opt/solana/node
+solana_registry_addr: denisitpro/coin-solana
+solana_image_version: latest
+
+
+folder_apps:
+  - solana
+
+#appname: solana
+#sol_net: testnet
+#
+#sentry_dsn_solana: ""
+#
+#
+#sol_bind_addr: "{{global_bind_addr}}"
+#sol_rpc_port: 8899
+#casherpc_port: 8888
+#
+#sol_image_name_testnet: 1.10.10
+#sol_image_name_mainnet: 1.13.5
+#sol_image_name: "{{sol_image_name_mainnet}}"
+#sol_image: mainnet
+#
+####cacherpc
+#cacherpc_registry: herodevopss/node-cacherpc
+#cacherpc_image: 0.2.17
+#
+### need generate keypare https://techjedi.myjetbrains.com/youtrack/articles/DO-A-71/0026-IT---Solana
+#keypair: ""
+#
+### base mon and support mon disk size
+#zabbix:
+#  apply_tag:
+#    - linux
+#    - solana
+#  params:
+#    - 'files.size_max[*],du -bs $1 | sort -nr | head -n 1 | cut -f 1'
