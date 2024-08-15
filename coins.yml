@@ -7,6 +7,7 @@
     - tune-file-limits
 #    - coins/binance-smart-chain
 #    - coins/ripple
-    - coins/solana
+#    - coins/solana
+    - coins/avalanche
     - ufw-base-configure
     - ufw-management

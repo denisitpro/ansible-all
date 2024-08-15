@@ -1,0 +1,21 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+  tags:
+    - avax
+
+- import_tasks: 05-preflay.yml
+  tags:
+    - avax
+    - avax-prefly
+
+- import_tasks: 10-configure.yml
+  tags:
+    - avax
+    - avax-compose
+    - avax-prefly
+
+- import_tasks: 15-launch.yml
+  tags:
+    - avax
+    - avax-compose
+    - avax-config

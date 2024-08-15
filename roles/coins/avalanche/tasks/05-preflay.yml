@@ -1,0 +1,30 @@
+---
+- name: create folder for node
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{docker_compose_path | default('/opt/docker')}}/avalanche"
+    - "{{avax_node_data_path}}"
+#    - "{{avax_node_data_path}}/node"
+#    - "{{avax_node_data_path}}/node/db"
+#    - "{{avax_node_data_path}}/node/staking"
+#    - "{{avax_node_data_path}}/node/logs"
+
+#- name: Copy staking crt
+#  ansible.builtin.copy:
+#    src: "{{avax_node_crt_filename}}"
+#    dest: "{{avax_node_data_path}}/node/staking/staker.crt"
+#    owner: root
+#    group: root
+#    mode: '0400'
+#
+#
+#- name: Copy staking keys
+#  ansible.builtin.copy:
+#    src: "{{avax_node_key_filename}}"
+#    dest: "{{avax_node_data_path}}/node/staking/staker.key"
+#    owner: root
+#    group: root
+#    mode: '0400'

@@ -1,0 +1,23 @@
+---
+folder_apps:
+  - avalanche
+
+avax_registry_addr: denisitpro/coin-avalanche
+avax_node_data_path: "/opt/avalanche"
+avalanche_staking_port: 9651
+
+
+#
+#avax_net: mainnet
+#
+#avax_consensus_port: 9651
+#avax_api_port: 9650
+#
+#sentry_dsn_avax: ""
+#
+#ortelius_node_data_path: "/opt/ortelius"
+#
+#avax_bind_addr: "{{global_bind_addr}}"
+#
+#avax_registry_addr: herodevopss/node-avalanche
+#avax_image_name: 1.9.4
