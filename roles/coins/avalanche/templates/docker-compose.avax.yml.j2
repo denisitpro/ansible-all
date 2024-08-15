@@ -1,0 +1,17 @@
+services:
+  avax.node:
+    container_name: avax.node
+    image: {{avax_registry_addr}}:{{avax_image_name | default('latest')}}
+    network_mode: host
+    volumes:
+      - {{avax_node_data_path}}:{{avax_node_data_path}}
+#    command: avalanchego --http-host=0.0.0.0 --index-enabled
+    command: avalanchego --http-host=0.0.0.0 --data-dir {{avax_node_data_path}}
+{% if avax_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

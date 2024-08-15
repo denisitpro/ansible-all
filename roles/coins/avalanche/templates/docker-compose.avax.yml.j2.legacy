@@ -1,0 +1,30 @@
+version: "3.7"
+
+networks:
+  avax:
+    driver: bridge
+    name: avax
+    attachable: true
+
+services:
+  avax.node:
+    container_name: avax.node
+    image: {{avax_registry_addr}}:{{avax_image_name}}
+    networks:
+      - avax
+    ports:
+      - {{avax_bind_addr}}:{{avax_consensus_port}}:{{avax_consensus_port}} # avax_consensus_port - {{avax_net}}
+      - {{avax_bind_addr}}:{{avax_api_port}}:{{avax_api_port}} # avax_api_port - {{avax_net}}
+    volumes:
+      - {{avax_node_data_path}}/node/staking:/data/.avalanchego/staking
+      - {{avax_node_data_path}}/node/db:/data/.avalanchego/db
+      - {{avax_node_data_path}}/node/logs:/data/.avalanchego/logs
+    command: avalanchego --http-host=0.0.0.0 --index-enabled
+{% if avax_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
