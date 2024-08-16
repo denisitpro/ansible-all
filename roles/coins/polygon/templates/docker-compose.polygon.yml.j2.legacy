@@ -1,0 +1,130 @@
+version: "3.7"
+
+networks:
+  polygon:
+    driver: bridge
+    name: polygon
+    attachable: true
+
+
+## specific launch read https://chasewright.com/how-to-run-a-polygon-matic-mainnet-node/
+services:
+  polygon.node:
+    container_name: polygon.node
+    image: {{matic_registry_addr}}:{{matic_image_name}}
+    networks:
+      - polygon
+    ports:
+      - {{matic_p2p_port}}:{{matic_p2p_port}} # matic_p2p_port - {{matic_net}}
+      - {{matic_p2p_port}}:{{matic_p2p_port}}/udp # matic_p2p_port - {{matic_net}}
+      - {{matic_bind_addr}}:{{matic_rpc_port}}:{{matic_rpc_port}} # matic_rpc_port - {{matic_net}}
+      - {{matic_bind_addr}}:{{matic_ws_port}}:{{matic_ws_port}} # matic_ws_port - {{matic_net}}
+    volumes:
+      - {{matic_node_data_path}}:{{matic_node_data_path}}
+### For trim Polygon
+#    command: bor snapshot prune-state --datadir=/opt/polygon/node
+### Default launch
+    command:
+         bor server
+         --syncmode=snap
+         --datadir={{matic_node_data_path}}/node
+         --chain=mainnet
+         --bor.heimdall=http://heimdallr.node:1317
+         --port={{matic_p2p_port}}
+         --ws
+         --ws.addr=0.0.0.0
+         --ws.port={{matic_ws_port}}
+         --http
+         --http.addr=0.0.0.0
+         --http.vhosts=*
+         --http.corsdomain=*
+         --http.port={{matic_rpc_port}}
+         --http.api=eth,net,web3,bor
+         --cache=4096
+         --cache.trie=30
+         --cache.gc=0
+         --cache.snapshot=20
+         --ipcdisable
+         --nat=none
+         --metrics
+         --bootnodes=enode://b8f1cc9c5d4403703fbf377116469667d2b1823c0daf16b7250aa576bacf399e42c3930ccfcb02c5df6879565a2b8931335565f0e8d3f8e72385ecf4a4bf160a@3.36.224.80:30303","enode://8729e0c825f3d9cad382555f3e46dcff21af323e89025a0e6312df541f4a9e73abfa562d64906f5e59c51fe6f0501b3e61b07979606c56329c020ed739910759@54.194.245.5:30303
+         --maxpeers=200
+{% if matic_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+#      driver: fluentd
+#      options:
+#         tag: polygon
+
+  heimdalld.node:
+    container_name: heimdalld.node
+    image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
+    networks:
+      - polygon
+    volumes:
+      - {{matic_node_data_path}}/heimdall:/data/.heimdalld
+    ports:
+      - {{heimdall_p2p_port}}:{{heimdall_p2p_port}} # heimdall_p2p_port - {{matic_net}}
+    depends_on:
+      - polygon.rabbitmq
+### Only first launch only
+#    command: heimdalld init
+### Default launch
+    command: heimdalld start --chain=mainnet
+{% if matic_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+#      driver: fluentd
+#      options:
+#         tag: polygon
+
+  heimdallr.node:
+    container_name: heimdallr.node
+    image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
+    networks:
+      - polygon
+    volumes:
+      - {{matic_node_data_path}}/heimdall:/data/.heimdalld
+#    ports:
+#      - "{{matic_bind_addr}}:{{heimdall_rpc_port}}:{{heimdall_rpc_port}}" # heimdall_rpc_port Heimdall REST API
+    depends_on:
+      - heimdalld.node
+    command:
+      - heimdalld
+      - rest-server
+      - --chain=mainnet
+      - --laddr=tcp://0.0.0.0:{{heimdall_rpc_port}}
+      - --node=tcp://heimdalld.node:26657
+      - --home=/data/.heimdalld
+{% if matic_restart is defined %}
+    restart: always
+{% endif %}
+
+  polygon.rabbitmq:
+    container_name: polygon.rabbitmq
+    image: rabbitmq:{{matic_rabbitmq_version}}
+    networks:
+      - polygon
+    volumes:
+      - {{matic_node_data_path}}/rabbitmq:/var/lib/rabbitmq
+{% if matic_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+#      driver: fluentd
+#      options:
+#         tag: polygon
