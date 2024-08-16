@@ -1,0 +1,19 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+  tags:
+    - cardano
+
+- import_tasks: 05-preflay.yml
+  tags:
+    - cardano
+    - cardano-prefly
+
+- import_tasks: 10-configure.yml
+  tags:
+    - cardano
+    - cardano-compose
+
+- import_tasks: 15-launch.yml
+  tags:
+    - cardano
+    - cardano-compose

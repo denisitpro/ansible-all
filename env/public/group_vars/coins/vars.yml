@@ -15,7 +15,8 @@ iptables:
 #    - { name: "solana_prc_port", protocol: "tcp", port: "{{sol_rpc_port | default('8899')}}"}
 #    - { name: "solana_dynamic_ports", protocol: "tcp", port: "8000:8020"}
 #    - { name: "solana_dynamic_ports", protocol: "udp", port: "8000:8020"}
-    - { name: "avalanche_staking_port", protocol: "tcp", port: "{{avalanche_staking_port | default('9651')}}"}
+#    - { name: "avalanche_staking_port", protocol: "tcp", port: "{{avalanche_staking_port | default('9651')}}"}
+    - { name: "cardano_port", protocol: "tcp", port: "{{ada_port | default('9651')}}"}
   ipv6:
     - { name: "ssh any-access", protocol: "tcp", port: "22"}
 #    - { name: "bsc_p2p_port", protocol: "tcp", port: "{{bsc_p2p_port | default('30311')}}"}
@@ -24,5 +25,6 @@ iptables:
 #    - { name: "solana_prc_port", protocol: "tcp", port: "{{sol_rpc_port | default('8899')}}"}
 #    - { name: "solana_dynamic_ports", protocol: "tcp", port: "8000:8020"}
 #    - { name: "solana_dynamic_ports", protocol: "udp", port: "8000:8020"}
-    - { name: "avalanche_staking_port", protocol: "tcp", port: "{{avalanche_staking_port | default('9651')}}"}
+#    - { name: "avalanche_staking_port", protocol: "tcp", port: "{{avalanche_staking_port | default('9651')}}"}
+    - { name: "cardano_port", protocol: "tcp", port: "{{ada_port | default('9651')}}"}
 

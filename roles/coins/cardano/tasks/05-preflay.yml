@@ -1,0 +1,30 @@
+---
+- name: create folder for cardano
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+    recurse: yes
+  with_items:
+    - "{{docker_compose_path | default('/opt/docker')}}/cardano"
+    - "{{ada_node_data_path}}/node"
+    - "{{ada_node_data_path}}/node/db"
+
+- name: download config file for cardano
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/IntersectMBO/cardano-node/master/configuration/cardano/{{item}}"
+    dest: "{{ada_node_data_path}}/node/{{item}}"
+    mode: '0644'
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+  with_items:
+    - "{{ada_net}}-config.json"
+    - "{{ada_net}}-config.yaml"
+    - "{{ada_net}}-byron-genesis.json"
+    - "{{ada_net}}-shelley-genesis.json"
+    - "{{ada_net}}-topology.json"
+    - "{{ada_net}}-alonzo-genesis.json"
+    - "{{ada_net}}-conway-genesis.json"
+
