@@ -1,0 +1,10 @@
+---
+folder_apps:
+  - cardano
+
+ada_registry_addr: denisitpro/coin-cardano
+ada_image_name: latest
+
+ada_node_data_path: /opt/cardano
+ada_net: mainnet
+ada_port: 3001

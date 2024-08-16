@@ -8,6 +8,7 @@
 #    - coins/binance-smart-chain
 #    - coins/ripple
 #    - coins/solana
-    - coins/avalanche
+#    - coins/avalanche
+    - coins/cardano
     - ufw-base-configure
     - ufw-management

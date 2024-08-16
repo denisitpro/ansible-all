@@ -1,0 +1,36 @@
+version: "3.7"
+
+networks:
+  c3:
+    driver: bridge
+    name: c3
+    attachable: true
+
+services:
+  cardano.node:
+    container_name: cardano.node
+    image: {{ada_registry_addr}}:{{ada_image_name}}
+    networks:
+      - c3
+    ports:
+      - {{ada_bind_addr}}:{{ada_port}}:{{ada_port}} # application port - {{ada_net}}
+    volumes:
+      - {{ada_node_data_path}}:{{ada_node_data_path}}
+    command: cardano-node run
+     --topology {{ada_node_data_path}}/node/{{ada_net}}-topology.json
+     --database-path {{ada_node_data_path}}/node/db
+     --socket-path {{ada_node_data_path}}/node.socket
+     --host-addr 0.0.0.0
+     --port {{ada_port}}
+     --config {{ada_node_data_path}}/node/{{ada_net}}-config.json
+     --validate-db
+{% if ada_net == "mainnet" %}
+    restart: always
+{% endif %}
+#    logging:
+#      driver: "none"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
