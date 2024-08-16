@@ -9,6 +9,6 @@
 #    - coins/ripple
 #    - coins/solana
 #    - coins/avalanche
-    - coins/cardano
+    - coins/polygon
     - ufw-base-configure
     - ufw-management
