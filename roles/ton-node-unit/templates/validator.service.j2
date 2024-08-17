@@ -5,7 +5,8 @@ After = network.target
 [Service]
 Type = simple
 Restart = always
-RestartSec = 30
+# delay need for monitoring failure alert
+RestartSec=300 # restart after failure delay 5 minute
 MemoryLimit={{adjusted_memory_gb}}G
 
 ExecStart = /usr/bin/ton/validator-engine/validator-engine \
@@ -13,7 +14,7 @@ ExecStart = /usr/bin/ton/validator-engine/validator-engine \
   --daemonize \
   --global-config /usr/bin/ton/global.config.json \
   --db /var/ton-work/db/ \
-  --logname /var/ton-work/log \
+  --logname /var/ton-work/node.log \
   --verbosity 1 \
   --catchain-max-block-delay 0.2 \
   --state-ttl {{ton_node_retention_period}} \
@@ -22,7 +23,8 @@ ExecStart = /usr/bin/ton/validator-engine/validator-engine \
 
 ExecStopPost = /bin/echo service down
 User = validator
-Group = validator
+Group = {{ton_node_validator_group| default ('validator') }}
+
 # WorkingDirectory not set
 LimitNOFILE = infinity
 LimitNPROC = infinity

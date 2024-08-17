@@ -15,3 +15,7 @@ testing only for ubuntu 22.04
 - **TON Node version:** Added support for TON Node version
 - **Added support for different branches from mytonctl**: Ensures mytonctl works correctly when executing commands when the repo is not default
 - **Resource Validation:** Added support for different values ​​for testnet and mainnet.
+
+
+# Options
+* `ton_node_force_install: true` - set force install ton node and remove mytonctrl-v2

@@ -1,0 +1,5 @@
+---
+- name: restart process-exporter
+  systemd:
+    name: process-exporter
+    state: restarted

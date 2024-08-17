@@ -3,15 +3,22 @@
   tags:
     - ton-node
     - ton-prefly
+    - ton-print-install
+
+
+- ansible.builtin.import_tasks: 07-force-install-prepare.yml
+  when: ton_node_force_install is defined
+  tags:
+    - ton-node
 
 - ansible.builtin.import_tasks: 10-prefly.yml
-  when: not config_file_status.stat.exists
+  when: not config_file_status.stat.exists or ton_node_force_install is defined
   tags:
     - ton-node
     - ton-prefly
 
 - ansible.builtin.import_tasks: 15-validator-install.yml
-  when: not config_file_status.stat.exists
+  when: not config_file_status.stat.exists  or ton_node_force_install is defined
   tags:
     - ton-node
     - ton-install
@@ -26,3 +33,9 @@
     - ton-node
     - ton-firewall
     - ton-ufw
+
+- ansible.builtin.import_tasks: 30-log-permission.yml
+  when: ton_node_permission_fix is defined
+  tags:
+    - ton-node
+    - ton-logs
