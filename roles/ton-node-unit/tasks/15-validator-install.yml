@@ -1,0 +1,12 @@
+---
+- name: debug print launch command
+  ansible.builtin.debug:
+    msg:
+      - "command for launch: {{mytonctrl_install_path}} -a {{repo_author}} -r {{repo_name}} -b {{repo_version}} -v {{ton_node_version}} -m {{ton_node_mode}} -c {{ton_node_config_url}} {% if ton_node_ignore_reqiurements is defined %}-i{% endif %}"
+  tags:
+    - ton-print-install
+
+- name: install ton-node and mytonctrl - takes approximately 20 minutes
+  ansible.builtin.shell: "{{mytonctrl_install_path}} -a {{repo_author}} -r {{repo_name}} -b {{repo_version}} -v {{ton_node_version}} -m {{ton_node_mode}} -c {{ton_node_config_url}} {% if ton_node_ignore_reqiurements is defined %}-i{% endif %} > /tmp/ton-node-install-{{ ansible_date_time.iso8601_basic_short }}.log 2>&1"
+# for original mytonctrl - not support version ton-node
+#  ansible.builtin.shell: "{{mytonctrl_install_path}} -a {{repo_author}} -r {{repo_name}} -b {{repo_version}} -m {{ton_node_mode}} -c {{ton_node_config_url}} {% if ton_node_ignore_reqiurements is defined %}-i{% endif %} > /tmp/ton-node-install-{{ ansible_date_time.iso8601_basic_short }}.log 2>&1"

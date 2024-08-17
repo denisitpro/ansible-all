@@ -1,0 +1,22 @@
+---
+- name: create folder script
+  ansible.builtin.file:
+    path: "{{scripts_path | default('/opt/script')}}/"
+    state: directory
+    mode: '0755'
+
+
+- name: copy scripts fix permision
+  copy:
+    src: fix-permision.sh
+    dest: "{{scripts_path | default('/opt/script')}}/fix-permision.sh"
+    owner: root
+    group: root
+    mode: 0700
+
+- name: add task to cront
+  cron:
+    name: "fix-permision-logs-ton-node"
+    minute: "*/10"
+    job: "{{scripts_path | default('/opt/script')}}/fix-permision.sh"
+    user: "root"

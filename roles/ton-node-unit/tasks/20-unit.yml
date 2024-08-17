@@ -9,7 +9,7 @@
 
 - name: Subtract 4 from memory size
   set_fact:
-      adjusted_memory_gb: "{{ memory_gb - 4 }}"
+      adjusted_memory_gb: "{{ memory_gb - 6 }}"
 
 - name: Display memory size
   debug:
@@ -26,6 +26,6 @@
     dest: "/etc/systemd/system/{{ton_node_unit_name}}.service"
     owner: root
     group: root
-    mode: 0640
+    mode: 0644
   notify: restart ton-node-validator
 
