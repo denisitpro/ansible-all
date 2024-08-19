@@ -23,7 +23,7 @@ iptables:
     - { name: "bor_p2p_port", protocol: "tcp", port: "30303"}
     - { name: "bor_p2p_port", protocol: "udp", port: "30303"}
     - { name: "heimdall_p2p_port", protocol: "tcp", port: "{{heimdall_p2p_port | default('26656')}}"}
-
+#    - { name: "heimdall_grpc_port", protocol: "tcp", port: "3132"} # I'm not sure if it's needed, I need to test it further
   ipv6:
     - { name: "ssh any-access", protocol: "tcp", port: "22"}
 #    - { name: "bsc_p2p_port", protocol: "tcp", port: "{{bsc_p2p_port | default('30311')}}"}
@@ -37,3 +37,4 @@ iptables:
     - { name: "bor_p2p_port", protocol: "tcp", port: "30303"}
     - { name: "bor_p2p_port", protocol: "udp", port: "30303"}
     - { name: "heimdall_p2p_port", protocol: "tcp", port: "{{heimdall_p2p_port | default('26656')}}"}
+#    - { name: "heimdall_grpc_port", protocol: "tcp", port: "3132"} # I'm not sure if it's needed, I need to test it further
