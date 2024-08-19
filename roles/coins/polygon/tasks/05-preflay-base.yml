@@ -1,0 +1,35 @@
+---
+
+- name: create folder for node
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{docker_compose_path | default('/opt/docker')}}/polygon"
+    - "{{matic_node_data_path}}"
+    - "{{matic_node_data_path}}/node"
+    - "{{matic_node_data_path}}/heimdall"
+    - "{{matic_node_data_path}}/heimdall/config"
+    - "{{matic_node_data_path}}/heimdall/data"
+    - "{{matic_node_data_path}}/rabbitmq"
+
+# todo support genesis online
+- name: copy genesis file matic
+  copy:
+    src: "genesis.json"
+    dest: "{{matic_node_data_path}}/node/genesis.json"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: check priv_validator_state.json init phase
+  stat:
+    path: "{{matic_node_data_path}}/heimdall/data/priv_validator_state.json"
+  register: priv_validator_state_init_result
+
+- name: print priv_validator_state_init_result init status
+  ansible.builtin.debug:
+    msg: priv_validator_state_init_result {{ priv_validator_state_init_result.stat.exists }}

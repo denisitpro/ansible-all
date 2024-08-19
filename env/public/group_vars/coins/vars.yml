@@ -6,6 +6,8 @@ bsc_image_name: latest
 
 ripple_image_name: 2.2.1
 
+#matic_restart: true
+
 iptables:
   ipv4:
     - { name: "ssh any-access", protocol: "tcp", port: "22"}
@@ -17,8 +19,10 @@ iptables:
 #    - { name: "solana_dynamic_ports", protocol: "udp", port: "8000:8020"}
 #    - { name: "avalanche_staking_port", protocol: "tcp", port: "{{avalanche_staking_port | default('9651')}}"}
 #    - { name: "cardano_port", protocol: "tcp", port: "{{ada_port | default('9651')}}"}
+#    - { name: "bor_http_port", protocol: "tcp", port: "8545"} # todo open only specific adress
     - { name: "bor_p2p_port", protocol: "tcp", port: "30303"}
-
+    - { name: "bor_p2p_port", protocol: "udp", port: "30303"}
+    - { name: "heimdall_p2p_port", protocol: "tcp", port: "{{heimdall_p2p_port | default('26656')}}"}
 
   ipv6:
     - { name: "ssh any-access", protocol: "tcp", port: "22"}
@@ -30,4 +34,6 @@ iptables:
 #    - { name: "solana_dynamic_ports", protocol: "udp", port: "8000:8020"}
 #    - { name: "avalanche_staking_port", protocol: "tcp", port: "{{avalanche_staking_port | default('9651')}}"}
 #    - { name: "cardano_port", protocol: "tcp", port: "{{ada_port | default('9651')}}"}
-
+    - { name: "bor_p2p_port", protocol: "tcp", port: "30303"}
+    - { name: "bor_p2p_port", protocol: "udp", port: "30303"}
+    - { name: "heimdall_p2p_port", protocol: "tcp", port: "{{heimdall_p2p_port | default('26656')}}"}

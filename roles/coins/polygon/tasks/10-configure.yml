@@ -1,4 +1,27 @@
 ---
+- name: copy polygon config
+  template:
+    src: "matic.toml.j2"
+    dest: "{{matic_node_data_path}}/node/matic.toml"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - polygon-conf
+
+- name: copy heimdall configs
+  template:
+    src: "{{item}}.j2"
+    dest: "{{matic_node_data_path}}/heimdall/config/{{item}}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "app.toml"
+    - "config.toml"
+    - "heimdall-config.toml"
+
+
 - name: copy compose-file - polygon
   template:
     src: "docker-compose.polygon.yml.j2"

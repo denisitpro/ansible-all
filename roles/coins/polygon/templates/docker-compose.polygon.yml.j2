@@ -1,10 +1,11 @@
+## {{ ansible_managed }} ##
 
 ## specific launch read https://chasewright.com/how-to-run-a-polygon-matic-mainnet-node/
 services:
   polygon.node:
     container_name: polygon.node
     image: {{matic_registry_addr}}:{{matic_image_name}}
-    networks_mode: host
+    network_mode: host
     volumes:
       - {{matic_node_data_path}}:{{matic_node_data_path}}
 ### For trim Polygon
@@ -15,7 +16,7 @@ services:
          --syncmode=snap
          --datadir={{matic_node_data_path}}/node
          --chain=mainnet
-         --bor.heimdall=http://heimdallr.node:1317
+         --bor.heimdall=http://127.0.0.1:1317
          --port={{matic_p2p_port}}
          --ws
          --ws.addr=0.0.0.0
@@ -47,14 +48,11 @@ services:
   heimdalld.node:
     container_name: heimdalld.node
     image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
-    networks_mode: host
+    network_mode: host
     volumes:
       - {{matic_node_data_path}}/heimdall:/data/.heimdalld
     depends_on:
       - polygon.rabbitmq
-### Only first launch only
-#    command: heimdalld init
-### Default launch
     command: heimdalld start --chain=mainnet
 {% if matic_restart is defined %}
     restart: always
@@ -68,7 +66,7 @@ services:
   heimdallr.node:
     container_name: heimdallr.node
     image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
-    networks_mode: host
+    network_mode: host
     volumes:
       - {{matic_node_data_path}}/heimdall:/data/.heimdalld
     depends_on:
@@ -78,7 +76,7 @@ services:
       - rest-server
       - --chain=mainnet
       - --laddr=tcp://0.0.0.0:{{heimdall_rpc_port}}
-      - --node=tcp://heimdalld.node:26657
+      - --node=tcp://127.0.0.1:26657
       - --home=/data/.heimdalld
 {% if matic_restart is defined %}
     restart: always
@@ -87,7 +85,7 @@ services:
   polygon.rabbitmq:
     container_name: polygon.rabbitmq
     image: rabbitmq:{{matic_rabbitmq_version}}
-    networks_mode: host
+    network_mode: host
     volumes:
       - {{matic_node_data_path}}/rabbitmq:/var/lib/rabbitmq
 {% if matic_restart is defined %}
