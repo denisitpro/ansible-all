@@ -19,9 +19,20 @@
     mode: 0644
     remote_src: yes
   with_items:
-    - "genesis.json"
     - "node_key.json"
     - "priv_validator_key.json"
+
+# https://docs.polygon.technology/pos/how-to/full-node/full-node-docker/#heimdall-setup
+# The default init command provides a genesis.json but that will not work with Polygon Mainnet or Mumbai. If you’re setting up a mainnet node, you can run this command to download the correct genesis file:
+- name: download mainnet genesis files - HAIMDALL
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/maticnetwork/heimdall/master/builder/files/genesis-mainnet-v1.json"
+    dest: "{{matic_node_data_path}}/heimdall/config/genesis.json"
+    mode: '0644'
+  retries: 5
+  delay: 2
+
+
 
 - name: copy hendmail init files
   copy:

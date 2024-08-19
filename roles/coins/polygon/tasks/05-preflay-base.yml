@@ -16,14 +16,15 @@
     - "{{matic_node_data_path}}/heimdall/data"
     - "{{matic_node_data_path}}/rabbitmq"
 
-# todo support genesis online
-- name: copy genesis file matic
-  copy:
-    src: "genesis.json"
+
+# https://docs.polygon.technology/pos/how-to/full-node/full-node-docker/#starting-bor
+- name: download mainnet genesis files - MATIC
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/maticnetwork/bor/master/builder/files/genesis-mainnet-v1.json"
     dest: "{{matic_node_data_path}}/node/genesis.json"
-    owner: root
-    group: root
-    mode: 0644
+    mode: '0644'
+  retries: 5
+  delay: 2
 
 - name: check priv_validator_state.json init phase
   stat:
