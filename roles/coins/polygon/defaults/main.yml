@@ -4,30 +4,36 @@ folder_apps:
 
 matic_registry_addr: denisitpro/coin-polygon
 matic_image_name: latest
-#
-heimdall_registry_addr: denisitpro/polygon-heimdall
+# todo set use original image
+#heimdall_registry_addr: 0xpolygon/heimdall
+heimdall_registry_addr: denisitpro/coin-heimdall
 heimdall_image_name: latest
 
-#appname: polygon
-#
+matic_node_data_path: "/opt/polygon"
+#heimdall_init_path: "/tmp/heimdall-init-{{ timestamp_folder.stdout }}"
+heimdall_init_path: "/tmp/heimdall-init"
+
+# docs https://docs.polygon.technology/pos/how-to/validator/prerequisites/#install-rabbitmq
+matic_rabbitmq_version: 3.10.8-alpine
+
+matic_p2p_port: 30303
+matic_rpc_port: 8545
+matic_ws_port: 8546
+
+heimdall_p2p_port: 26656
+heimdall_rpc_port: 1317
+
 #matic_net: mainnet
 #
-#matic_p2p_port: 30303
-#matic_rpc_port: 8545
-#matic_ws_port: 8546
-#
-#heimdall_p2p_port: 26656
-#heimdall_rpc_port: 1317
+
 #
 #heimdall_node_key_filename: need_set
 #heimdall_priv_validator_key_filename: need_set
 #
-#
-#matic_rabbitmq_version: 3.9.1-alpine
+
 #
 #sentry_dsn_polygon: ""
 #
-#matic_node_data_path: "/opt/polygon"
 #
 #matic_bind_addr: "{{ global_bind_addr }}"
 #

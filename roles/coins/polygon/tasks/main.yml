@@ -3,7 +3,13 @@
   tags:
     - polygon
 
-- import_tasks: 05-preflay.yml
+- import_tasks: 05-preflay-base.yml
+  tags:
+    - polygon
+    - polygon-prefly
+
+- import_tasks: 06-preflay-hendmail.yml
+  when: priv_validator_state_init_result.stat.exists == False
   tags:
     - polygon
     - polygon-prefly
@@ -12,6 +18,7 @@
   tags:
     - polygon
     - polygon-compose
+    - polygon-config
 
 - import_tasks: 15-launch.yml
   tags:

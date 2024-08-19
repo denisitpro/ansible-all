@@ -1,0 +1,35 @@
+---
+- name: Create directory
+  ansible.builtin.file:
+    path: "{{heimdall_init_path}}"
+    state: directory
+
+- name: "Generate file for heimdall"
+#  ansible.builtin.shell: "docker run --rm -v {{heimdall_init_path}}:/heimdall-home:rw --entrypoint /usr/bin/heimdalld  {{heimdall_registry_addr}}:{{heimdall_image_name}} init --home=/heimdall-home"
+  ansible.builtin.shell: "docker run --rm -v {{heimdall_init_path}}:/heimdall-home:rw --entrypoint /usr/local/bin/heimdalld  {{heimdall_registry_addr}}:{{heimdall_image_name}} init --home=/heimdall-home"
+
+  when: priv_validator_state_init_result.stat.exists == False
+
+- name: copy hendmail init files
+  copy:
+    src: "{{heimdall_init_path}}/config/{{item}}"
+    dest: "{{matic_node_data_path}}/heimdall/config/{{item}}"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  with_items:
+    - "genesis.json"
+    - "node_key.json"
+    - "priv_validator_key.json"
+
+- name: copy hendmail init files
+  copy:
+    src: "{{heimdall_init_path}}/data/{{item}}"
+    dest: "{{matic_node_data_path}}/heimdall/data/{{item}}"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  with_items:
+    - "priv_validator_state.json"
