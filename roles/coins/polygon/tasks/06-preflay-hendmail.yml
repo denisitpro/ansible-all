@@ -29,7 +29,7 @@
     dest: "{{matic_node_data_path}}/heimdall/data/{{item}}"
     owner: root
     group: root
-    mode: 0644
+    mode: 0600
     remote_src: yes
   with_items:
     - "priv_validator_state.json"

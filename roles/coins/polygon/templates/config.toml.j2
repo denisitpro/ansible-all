@@ -8,7 +8,7 @@
 proxy_app = "tcp://127.0.0.1:26658"
 
 # A custom human readable name for this node
-moniker = "808193ce399e"
+moniker = "b2d40e147591"
 
 # If this node is many blocks behind the tip of the chain, FastSync
 # allows them to catchup quickly by downloading blocks in parallel
@@ -159,8 +159,10 @@ external_address = ""
 
 # Comma separated list of seed nodes to connect to
 #seeds = ""
-## docs https://docs.matic.network/docs/validate/mainnet/validator-guide/#setup-sentry-node-for-matic-mainnet
-seeds="1500161dd491b67fb1ac81868952be49e2509c9f@52.78.36.216:26656,dd4a3f1750af5765266231b9d8ac764599921736@3.36.224.80:26656,8ea4f592ad6cc38d7532aff418d1fb97052463af@34.240.245.39:26656,e772e1fb8c3492a9570a377a5eafdb1dc53cd778@54.194.245.5:26656,6726b826df45ac8e9afb4bdb2469c7771bd797f1@52.209.21.164:26656"
+# docs https://docs.polygon.technology/pos/how-to/full-node/full-node-docker/#seed-nodes-and-bootnodes
+seeds="8542cd7e6bf9d260fef543bc49e59be5a3fa9074@seed.publicnode.com:27656,1500161dd491b67fb1ac81868952be49e2509c9f@52.78.36.216:26656,dd4a3f1750af5765266231b9d8ac764599921736@3.36.224.80:26656,8ea4f592ad6cc38d7532aff418d1fb97052463af@34.240.245.39:26656,e772e1fb8c3492a9570a377a5eafdb1dc53cd778@54.194.245.5:26656,6726b826df45ac8e9afb4bdb2469c7771bd797f1@52.209.21.164:26656"
+
+
 # Comma separated list of nodes to keep persistent connections to
 persistent_peers = ""
 
@@ -175,10 +177,10 @@ addr_book_file = "config/addrbook.json"
 addr_book_strict = true
 
 # Maximum number of inbound peers
-max_num_inbound_peers = 40
+max_num_inbound_peers = 100
 
 # Maximum number of outbound peers to connect to, excluding persistent peers
-max_num_outbound_peers = 10
+max_num_outbound_peers = 100
 
 # Time to wait before flushing messages out on the connection
 flush_throttle_timeout = "100ms"
