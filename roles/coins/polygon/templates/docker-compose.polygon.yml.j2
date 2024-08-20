@@ -15,6 +15,7 @@ services:
          bor server
          --syncmode=snap
          --datadir={{matic_node_data_path}}/node
+         --config {{matic_node_data_path}}/node/matic.toml
 {% if matic_restart is defined %}
     restart: always
 {% endif %}
@@ -29,10 +30,10 @@ services:
     image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
     network_mode: host
     volumes:
-      - {{matic_node_data_path}}/heimdall:/data/.heimdalld
+      - {{matic_node_data_path}}/heimdall:{{matic_node_data_path}}/heimdall
     depends_on:
       - polygon.rabbitmq
-    command: heimdalld start --chain=mainnet
+    command: heimdalld start --chain=mainnet  --home={{matic_node_data_path}}/heimdall
 {% if matic_restart is defined %}
     restart: always
 {% endif %}
@@ -47,7 +48,7 @@ services:
     image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
     network_mode: host
     volumes:
-      - {{matic_node_data_path}}/heimdall:/data/.heimdalld
+      - {{matic_node_data_path}}/heimdall:{{matic_node_data_path}}/heimdall
     depends_on:
       - heimdalld.node
     command:
@@ -56,7 +57,7 @@ services:
       - --chain=mainnet
       - --laddr=tcp://0.0.0.0:{{heimdall_rpc_port}}
       - --node=tcp://127.0.0.1:26657
-      - --home=/data/.heimdalld
+      - --home={{matic_node_data_path}}/heimdall
 {% if matic_restart is defined %}
     restart: always
 {% endif %}
