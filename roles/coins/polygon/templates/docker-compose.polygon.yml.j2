@@ -15,27 +15,7 @@ services:
          bor server
          --syncmode=snap
          --datadir={{matic_node_data_path}}/node
-         --chain=mainnet
-         --bor.heimdall=http://127.0.0.1:1317
-         --port={{matic_p2p_port}}
-         --ws
-         --ws.addr=0.0.0.0
-         --ws.port={{matic_ws_port}}
-         --http
-         --http.addr=0.0.0.0
-         --http.vhosts=*
-         --http.corsdomain=*
-         --http.port={{matic_rpc_port}}
-         --http.api=eth,net,web3,bor
-         --cache=4096
-         --cache.trie=30
-         --cache.gc=0
-         --cache.snapshot=20
-         --ipcdisable
-         --nat=none
-         --metrics
-         --bootnodes=enode://0cb82b395094ee4a2915e9714894627de9ed8498fb881cec6db7c65e8b9a5bd7f2f25cc84e71e89d0947e51c76e85d0847de848c7782b13c0255247a6758178c@44.232.55.71:30303", "enode://88116f4295f5a31538ae409e4d44ad40d22e44ee9342869e7d68bdec55b0f83c1530355ce8b41fbec0928a7d75a5745d528450d30aec92066ab6ba1ee351d710@159.203.9.164:30303
-         --maxpeers=200
+         --config {{matic_node_data_path}}/node/matic.toml
 {% if matic_restart is defined %}
     restart: always
 {% endif %}
@@ -50,10 +30,10 @@ services:
     image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
     network_mode: host
     volumes:
-      - {{matic_node_data_path}}/heimdall:/data/.heimdalld
+      - {{matic_node_data_path}}/heimdall:{{matic_node_data_path}}/heimdall
     depends_on:
       - polygon.rabbitmq
-    command: heimdalld start --chain=mainnet
+    command: heimdalld start --chain=mainnet  --home={{matic_node_data_path}}/heimdall
 {% if matic_restart is defined %}
     restart: always
 {% endif %}
@@ -68,7 +48,7 @@ services:
     image: {{heimdall_registry_addr}}:{{heimdall_image_name}}
     network_mode: host
     volumes:
-      - {{matic_node_data_path}}/heimdall:/data/.heimdalld
+      - {{matic_node_data_path}}/heimdall:{{matic_node_data_path}}/heimdall
     depends_on:
       - heimdalld.node
     command:
@@ -77,7 +57,7 @@ services:
       - --chain=mainnet
       - --laddr=tcp://0.0.0.0:{{heimdall_rpc_port}}
       - --node=tcp://127.0.0.1:26657
-      - --home=/data/.heimdalld
+      - --home={{matic_node_data_path}}/heimdall
 {% if matic_restart is defined %}
     restart: always
 {% endif %}
