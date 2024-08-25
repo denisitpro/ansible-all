@@ -50,10 +50,12 @@ app_service:
         - "Origin: https://localhost:3000"
 {% endif %}
       labels:
-        stand: "{{app.dc_code | default ('not_set') }}"
+        stand: "{{stand_type| default ('not_set') }}"
         cluster: "{{teleport_cluster_name | default('cls1')}}"
         company: "{{app.company_code| default(company_code)}}"
         env: "{{app.stand_type | default (stand_type)}}"
-        app_acl_level: {{app.app_acl_level | default('none')}}
+{% for level in app.app_acl_level %}
+        app_acl_level{{ level }}: {{ level }}
+{% endfor %}
 {% endfor %}
 {% endif %}
