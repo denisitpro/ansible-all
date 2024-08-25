@@ -10,5 +10,5 @@ nameserver {{dns1}}
 nameserver {{dns2}}
 {% endif %}
 
-search {% for dom in  domains %}{% if ansible_distribution == 'CentOS' %}~{% endif %}{{dom}} {% endfor %}
+search {% for dom in  dns_resolved_domains %}{% if ansible_distribution == 'CentOS' %}~{% endif %}{{dom}} {% endfor %}
 

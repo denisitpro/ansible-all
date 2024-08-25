@@ -1,7 +1,7 @@
 ---
 - name: Import ssl role
   ansible.builtin.import_role:
-    name: "selfsigned-cert"
+    name: "ssl-selfsigned-cert"
   vars:
     ssl_path: "{{ outline_docker_host_data_path }}/data"
     # ssl_domain: "{{ outline_hostname }}"

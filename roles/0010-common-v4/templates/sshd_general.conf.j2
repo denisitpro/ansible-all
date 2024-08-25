@@ -81,3 +81,7 @@ KbdInteractiveAuthentication no
 #different ssh port for gitlab work
 Port {{ssh_override_port}}
 {% endif %}
+
+{% if required_ssh_hw_key is defined %}
+PubkeyAcceptedKeyTypes sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com
+{% endif %}

@@ -1,0 +1,45 @@
+---
+- import_tasks: 05-create-folder.yml
+  tags:
+    - vault
+    - vault-path
+
+- import_tasks: 08-config-single.yml
+  when: vault_cls_enabled is not defined
+  tags:
+    - vault
+    - vault-config
+
+
+- import_tasks: 10-config-cls.yml
+  when: vault_cls_enabled is defined
+  tags:
+    - vault
+    - vault-cls
+    - vault-config
+
+- import_tasks: 15-copy-ssl.yml
+  when:
+    - vault_cls_enabled is defined
+  tags:
+    - vault
+    - vault-ssl
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - vault
+    - vault-compose
+
+- import_tasks: 50-lauch.yml
+  tags:
+    - vault
+    - vault-compose
+    - vault-config
+    
+- import_tasks: 60-create-backup-dir.yml
+  when: backup_vault is defined
+  tags:
+    - backup-dir
+
+- import_tasks: 80-vault-clean.yml
+  tags: ['never','vault-clean']

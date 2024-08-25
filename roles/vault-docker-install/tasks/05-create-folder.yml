@@ -1,0 +1,15 @@
+---
+- name: create folder vault
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: 1000
+  with_items:
+    - "{{vault_conf_path}}"
+    - "{{vault_data_path}}"
+    - "{{vault_data_path}}/raft"
+
+
+- import_tasks: shared/tasks/create-dir-docker-compose.yml

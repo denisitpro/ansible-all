@@ -1,0 +1,10 @@
+---
+- name: stop docker-compose
+  shell: "docker-compose down"
+  args:
+    chdir: "{{docker_compose_path}}"
+
+- name: remove vault data
+  ansible.builtin.file:
+    path: "{{vault_conf_path}}"
+    state: absent

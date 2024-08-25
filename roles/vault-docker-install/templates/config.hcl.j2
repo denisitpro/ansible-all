@@ -3,7 +3,13 @@ disable_mlock = true
 ui = true
 listener "tcp" {
    address          = "0.0.0.0:8200"
+{% if  vault_domain is defined %}
+   tls_cert_file    = "{{ vault_conf_path }}/ssl/fullchain.pem"
+   tls_key_file     = "{{ vault_conf_path }}/ssl/privkey.pem"
+{% else %}
    tls_disable      = 1
+{% endif %}
+
 }
 storage "file" {
    path  = "{{vault_data_path}}"

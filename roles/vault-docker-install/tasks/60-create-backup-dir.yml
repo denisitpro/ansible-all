@@ -1,0 +1,8 @@
+---
+- import_tasks: shared/tasks/create-backup-directory.yml
+  ignore_errors: true
+
+- import_tasks: shared/tasks/gpg-key-distribute.yml
+  when: backup_encrypted is defined
+  tags:
+    - gpg-key
