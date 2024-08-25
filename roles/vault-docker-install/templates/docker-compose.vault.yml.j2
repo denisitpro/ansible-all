@@ -1,5 +1,3 @@
-version: "3.7"
-
 networks:
   vault:
     driver: bridge
@@ -13,15 +11,17 @@ services:
     networks:
        - vault
     ports:
-       - {{vault_listener_addr}}:{{vault_port}}:{{vault_port}}
-#    restart: always
-    environment:
-      - PORT={{vault_port}}
+       - {{vault_bind_addr}}:{{vault_app_port}}:{{vault_app_port}}
+{% if vault_cls_enabled is defined %}
+       - {{vault_bind_addr}}:{{vault_cls_port}}:{{vault_cls_port}}
+{% endif %}
+{% if vault_restart is defined %}
+    restart: always
+{% endif %}
     volumes:
       - {{vault_conf_path}}:{{vault_conf_path}}
     cap_add:
       - IPC_LOCK
-
     command: vault server -config={{vault_conf_path}}/config.hcl
 
 

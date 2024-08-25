@@ -10,8 +10,6 @@ aws_fqdn_domain: example.com
 company_code: companyname
 dns1: 1.1.1.1
 dns2: 8.8.8.8
-dc_code: dc_example
-searchdomain: example.com
 
 default_timezone: UTC
 

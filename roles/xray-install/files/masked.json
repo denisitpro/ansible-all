@@ -1,0 +1,62 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "routing": {
+    "rules": [],
+    "domainStrategy": "AsIs"
+  },
+  "inbounds": [
+    {
+      "port": 8443,
+      "protocol": "vless",
+      "tag": "vless_tls",
+      "settings": {
+        "clients": [
+          {
+            "id": "88c70523-2ced-4b91-8329-dc06fd6144c9",
+            "email": "user1@myserver",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+		"realitySettings": {
+			"show": false,
+			"dest": "in-two.com:443",
+			"xver": 0,
+			"serverNames": [
+				"in-two.com"
+			],
+			"privateKey": "EMhUlu7QcUytVjaaS2giUlFIBW3f3Uzoj1MzR8aWnj4",
+			"minClientVer": "",
+			"maxClientVer": "",
+			"maxTimeDiff": 0,
+			"shortIds": [
+				"4f61645b80fb67e7"
+			]
+		}
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ]
+}

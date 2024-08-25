@@ -1,0 +1,62 @@
+
+
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "routing": {
+    "rules": [],
+    "domainStrategy": "AsIs"
+  },
+  "inbounds": [
+    {
+      "port": 8443,
+      "protocol": "vless",
+      "tag": "vless_tls",
+      "settings": {
+        "clients": [
+          {
+            "id": "8931832e-84b6-4dbb-8400-0fff803334de",
+            "email": "user1@myserver",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "alpn": [
+            "http/1.1",
+            "h2"
+          ],
+          "certificates": [
+            {
+              "certificateFile": "/opt/xray/cert/live/r1.beta-82.win/fullchain.pem",
+              "keyFile": "/opt/xray/cert/live/r1.beta-82.win/privkey.pem"
+            }
+          ]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    }
+
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ]
+}

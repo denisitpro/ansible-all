@@ -1,0 +1,31 @@
+---
+docker_compose_path: /opt/docker
+#service_env: dev
+#service_name: vault
+#service_state: present
+
+vault_bind_addr: "{{ansible_default_ipv4.address}}"
+
+
+vault_cluster_name: "vault-{{stand_type}}"
+
+vault_app_port: 8200
+vault_cls_port: 8201
+
+vault_conf_path: /opt/vault
+vault_data_path: "{{vault_conf_path}}/data"
+
+
+vault_image: vault:1.13.3
+#vault_domain: "example.com"
+
+vault_listener_addr: "0.0.0.0:8200"
+vault_cluster_addr:  "0.0.0.0:8201"
+
+vault_cert_path: "/etc/nginx/ssl/{{internal_domain}}"
+
+
+bkp_user: root
+
+folder_apps:
+  - vault
