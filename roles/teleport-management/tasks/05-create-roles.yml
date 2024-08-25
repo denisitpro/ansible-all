@@ -1,0 +1,24 @@
+---
+- name: Copy file
+  ansible.builtin.template:
+    src: "{{item}}.j2"
+    dest: "/tmp/{{item}}"
+    mode: '0644'
+  with_items:
+    - roles.yaml
+
+- name: create roles
+  ansible.builtin.shell: "tctl create -f /tmp/{{item}}"
+  with_items:
+    - roles.yaml
+
+
+
+- name: clean
+  ansible.builtin.file:
+    path: "/tmp/{{item}}"
+    state: absent
+  with_items:
+    - roles.yaml
+    - users.yaml
+    - connector.yaml

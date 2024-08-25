@@ -1,5 +1,17 @@
 ---
-github_client_id: set_me
-github_client_secret_id: set_me
+teleport_github_client_id: set_me
+teleport_github_client_secret_id: set_me
 teleport_server: teleport.example.com
+teleport_github_display_name: GitHub
 teleport_github_org: example-org1
+
+
+teleport_roles:
+  - name: "github-sso-50"
+    logins: ["login1"]
+    app_acl_level: "50"
+    max_session_ttl: "24h0m0s"
+  - name: "github-sso-100"
+    logins: ["login2"]
+    ssh_acl_level: "100"
+    app_acl_level: "100"

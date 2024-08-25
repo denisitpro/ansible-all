@@ -1,12 +1,24 @@
 ---
-- import_tasks: 05-create.yml
+- import_tasks: 05-create-roles.yml
   delegate_to: localhost
   run_once: true
   become: no
-  tags: ['teleport-create' ]
+  tags:
+    - teleport-create
+    - teleport-role
 
-- import_tasks: 10-reset.yaml
+- import_tasks: 10-create-connector.yml
   delegate_to: localhost
   run_once: true
   become: no
-  tags: [ 'never', 'reset-password' ]
+  tags:
+    - teleport-create
+    - teleport-connector
+
+
+
+- import_tasks: 99-reset.yaml
+  delegate_to: localhost
+  run_once: true
+  become: no
+  tags: [ 'never', 'teleport-reset-password' ]

@@ -4,21 +4,15 @@ metadata:
   name: github
 spec:
   api_endpoint_url: ""
-  client_id: {{github_client_id | default('set_me') }}
-  client_secret: {{github_client_secret_id| default('set_me')}}
-  display: GitHub
+  client_id: {{ teleport_github_client_id | default('set_me') }}
+  client_secret: {{ teleport_github_client_secret_id | default('set_me') }}
+  display: {{ teleport_github_display_name | default('GitHub') }}
   endpoint_url: ""
-  redirect_url: https://{{teleport_server}}/v1/webapi/github/callback
+  redirect_url: https://{{ teleport_server }}/v1/webapi/github/callback
   teams_to_roles:
-  - organization: {{teleport_github_org}}
+{% for role in teleport_roles %}
+  - organization: {{ teleport_github_org }}
     roles:
-        - github-sso-50
-    team: github-sso-50
-  - organization: {{teleport_github_org}}
-    roles:
-        - github-sso-100
-    team: github-sso-100
-  - organization: {{teleport_github_org}}
-    roles:
-        - github-sso-300
-    team: github-sso-300
+      - {{ role.name }}
+    team: {{ role.name }}
+{% endfor %}
