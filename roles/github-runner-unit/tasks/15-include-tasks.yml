@@ -1,0 +1,64 @@
+---
+- name: Check if .service file exists for the runner
+  ansible.builtin.stat:
+    path: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/.service"
+  register: service_file_check
+
+
+
+- name: create folder github-runner
+  ansible.builtin.file:
+    path: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ github_runner_base_user }}"
+    group: "{{ github_runner_base_user }}"
+  when: not service_file_check.stat.exists
+
+- name: Unpack GitHub Runner for each repo
+  unarchive:
+    src: "/tmp/actions-runner-linux-x64-{{ github_runner_version }}.tar.gz"
+    dest: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/"
+    remote_src: yes
+  when: not service_file_check.stat.exists
+
+- name: Change ownership of GitHub Runner folders recursively
+  ansible.builtin.file:
+    path: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/"
+    owner: "{{ github_runner_base_user }}"
+    group: "{{ github_runner_base_user }}"
+    recurse: yes
+  when: not service_file_check.stat.exists
+
+- name: Register runners for each repo
+  ansible.builtin.command:
+    cmd: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/config.sh  \
+    --url {{ item.full_url }} \
+    --token {{ item.token }} \
+    --name '{{ inventory_hostname_short }}-{{ item.name }}' \
+    --labels {{ item.labels | join(',') }} \
+    --unattended"
+    chdir: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/"
+  become: false
+  when: not service_file_check.stat.exists
+
+- name: Install service for the runner
+  ansible.builtin.command: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/svc.sh install {{ github_runner_unit_user }}"
+  args:
+    chdir: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/"
+  when: not service_file_check.stat.exists
+
+
+
+
+- name: Extract service name from .service file
+  ansible.builtin.command: "cat {{ service_file_check.stat.path }}"
+  register: service_name
+  args:
+    chdir: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/"
+
+- name: Enable and start the service if .service file exists
+  ansible.builtin.systemd:
+    name: "{{ service_name.stdout }}"
+    enabled: yes
+    state: started

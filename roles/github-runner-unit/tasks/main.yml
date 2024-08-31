@@ -1,0 +1,10 @@
+---
+- import_tasks: 05-download.yml
+  tags:
+    - github-runner
+    - github-runner-donwload
+
+- import_tasks: 10-start-cycle.yml
+  tags:
+    - github-runner
+    - github-runner-install

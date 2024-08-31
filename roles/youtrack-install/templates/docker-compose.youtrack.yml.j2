@@ -1,5 +1,3 @@
-version: '3.7'
-
 networks:
   youtrack:
     driver: bridge
@@ -11,6 +9,7 @@ services:
     image: jetbrains/youtrack:{{youtrack_image}}
     container_name: youtrack
     hostname: youtrack-{{stand_type}}
+#    network_mode: host
     networks:
       - youtrack
     ports:

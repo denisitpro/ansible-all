@@ -1,0 +1,17 @@
+---
+- name: download archive
+  become: false
+  ansible.builtin.get_url:
+    url: "https://github.com/actions/runner/releases/download/v{{github_runner_version}}/actions-runner-linux-x64-{{github_runner_version}}.tar.gz"
+    dest: "/tmp/actions-runner-linux-x64-{{github_runner_version}}.tar.gz"
+    mode: 0644
+  retries: 5
+  delay: 2
+  check_mode: false
+
+- name: install tar
+  apt:
+    name:
+      - tar
+    state: latest
+  when: ansible_distribution == 'Ubuntu'

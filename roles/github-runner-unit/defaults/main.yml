@@ -1,0 +1,20 @@
+---
+github_runner_version: 2.319.1
+github_runner_base_path: /opt
+github_runner_base_user: ubuntu
+github_runner_unit_user: root
+
+# Список репозиториев для настройки GitHub Runner
+github_repos:
+  - name: repo1
+    full_url: https://github.com/repo-author/repo-name1
+    token: token_for_repo1
+    labels: ["label1", "label2"]
+  - name: repo2
+    full_url: https://github.com/repo-author/repo-name2
+    token: token_for_repo2
+    labels: ["label3", "label4"]
+  - name: repo3
+    full_url: https://github.com/repo-author/repo-name3
+    token: token_for_repo3
+    labels: ["label5", "label6"]

@@ -1,0 +1,6 @@
+---
+- name: start include array task
+  include_tasks: 15-include-tasks.yml
+  loop: "{{ github_repos }}"
+  loop_control:
+    loop_var: item

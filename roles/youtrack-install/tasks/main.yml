@@ -1,4 +1,8 @@
 ---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+  tags:
+    - youtrack
+
 - import_tasks: 05-prefly.yml
   tags:
     - youtrack
