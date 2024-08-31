@@ -6,7 +6,14 @@
   tags:
     - consul
 
-- import_tasks: 10-configure.yml
+- import_tasks: 08-configure-srv.yml
+  when: consul_mode is defined and consul_mode == "server"
+  tags:
+    - consul
+    - consul-config
+    - consul-compose
+
+- import_tasks: 10-configure-all.yml
   tags:
     - consul
     - consul-config
@@ -19,8 +26,7 @@
     - consul-compose
 
 - import_tasks: 20-repair.yml
-  tags:
-    - never
+  tags: ['never','consul-repair' ]
 
 - import_tasks: 99-debug.yml
   tags: [ 'never', 'debug' ]

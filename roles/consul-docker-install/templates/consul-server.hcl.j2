@@ -1,8 +1,7 @@
 datacenter = "{{consul_dc_name}}"
 data_dir = "{{consul_data_path}}"
-encrypt = "{{ vault_dict_users_secret.consul_encrypt_key }}"
+encrypt = "{{consul_encrypt_key}}"
 retry_join = [{{consul_cls_master | map('to_json') | join(', ')  }}, "{{consul_cls_pub_name | default('consul.example.com') }}"]
-#retry_join = [{{consul_cls_master | map('to_json') | join(', ')  }}]
 
 bind_addr = "{{consul_bind_addr}}"
 reconnect_timeout = "{{reconnect_timeout}}"
@@ -10,3 +9,7 @@ reconnect_timeout = "{{reconnect_timeout}}"
 performance {
   raft_multiplier = 1
 }
+
+{% if consul_dns_suffix_disable is not  defined %}
+node_name = "{{ ansible_hostname }}.{{ consul_internal_domain | default('example.com')}}"
+{% endif %}

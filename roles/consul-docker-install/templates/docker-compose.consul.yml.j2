@@ -1,6 +1,6 @@
 services:
   consul:
-    image: hashicorp/consul:{{ consul_agent_image }}
+    image: hashicorp/consul:{{ consul_server_version }}
     container_name: consul
     hostname: "{{ ansible_fqdn }}{% if consul_internal_domain is defined %}.{{ consul_internal_domain }}{% endif %}"
 {% if docker_daemon_json_userns_remap is defined and docker_daemon_json_userns_remap == "default" %}userns_mode: host{% endif %}
