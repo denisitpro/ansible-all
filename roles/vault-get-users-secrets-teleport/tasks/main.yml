@@ -3,11 +3,13 @@
   delegate_to: localhost
   run_once: true
   become: no
+  connection: local
   tags: [ 'always', 'vault' ]
 
-- import_tasks: 20-get-users-secrets.yml
+- import_tasks: 25-get-users-secrets-curl.yml
   delegate_to: localhost
   run_once: true
+  connection: local
   become: no
   tags: [ 'always', 'vault' ]
 

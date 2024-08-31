@@ -2,7 +2,7 @@ services:
   alertmanager:
     image: prom/alertmanager:{{alertmanager_image}}
     container_name: alertmanager
-    hostname: {{ansible_hostname}}.{{internal_domain}}
+    hostname: {{ansible_hostname}}.{{internal_domain | default('example.com')}}
     network_mode: host
     volumes:
       - {{ alertmanager_config_path }}:/etc/alertmanager
