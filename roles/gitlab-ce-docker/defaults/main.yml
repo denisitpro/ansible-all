@@ -1,7 +1,7 @@
 ---
-gitlab_bind_addr: "{{global_bind_addr}}"
+gitlab_bind_addr: "{{ansible_default_ipv4.address}}"
 gitlab_registry: gitlab/gitlab-ce
-gitlab_image: 16.8.1-ce.0
+gitlab_image: 17.3.1-ce.0
 gitlab_data_path: /opt/gitlab
 gitlab_conf_path: "{{gitlab_data_path}}/conf"
 gitlab_ssh_port: 2224
@@ -20,4 +20,3 @@ folder_apps:
 
 gitlab_settings:
    - external_url '{{gitlab_external_url}}'
-   - prometheus_monitoring['enable'] = false
