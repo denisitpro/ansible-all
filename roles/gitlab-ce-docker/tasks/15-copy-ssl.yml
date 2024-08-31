@@ -9,7 +9,7 @@
   with_items:
     - "{{gitlab_conf_path}}/ssl"
 
-- import_tasks: shared/tasks/generate-ssl-selfsign.yml
+#- import_tasks: shared/tasks/generate-ssl-selfsign.yml
 
 #- name: reload nginx in gitlab container
 #  shell: "docker exec -t gitlab gitlab-ctl restart nginx"

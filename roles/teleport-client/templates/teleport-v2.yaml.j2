@@ -17,7 +17,7 @@ teleport:
 auth_service:
   enabled: "no"
 ssh_service:
-  enabled: "yes"
+  enabled: "{{teleport_ssh_service_enabled | default('yes')}}"
   labels:
     stand: {{stand_type| default('not_set')}}
     cluster: {{teleport_cluster_name | default('cls1')}}
