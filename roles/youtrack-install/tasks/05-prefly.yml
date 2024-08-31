@@ -1,7 +1,4 @@
 ---
-- import_tasks: shared/tasks/create-dir-docker-compose.yml
-- import_tasks: shared/tasks/copy-security-limits.yml
-
 - name: create folder youtrack
   ansible.builtin.file:
     path: "{{item}}"
