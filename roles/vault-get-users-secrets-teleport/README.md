@@ -16,6 +16,24 @@ export VAULT_ADDR="https://example-vault.teleport.example.com"
 vault login -method=oidc role=example-vault-mgmt-rw
 ```
 
+# Work for consul
+Supports variable names, useful when logging into multiple applications simultaneously.”
+```commandline
+teleport_vaul_app_name: vault-01
+```
+
+Example consul export vars
+```commandline
+tsh login --proxy=tp.example.com --auth=github
+
+tsh app login consul-01
+export CONSUL_CLIENT_CERT="$(tsh app config --format=cert consul-01)"
+export CONSUL_CLIENT_KEY="$(tsh app config --format=key consul-01)"
+export CONSUL_HTTP_ADDR=https://consul-01.tp.glorytech.bet
+export CONSUL_HTTP_TOKEN=our_token
+
+```
+
 # Secret Storage
 * To work with secrets, they must be located in the expected location with the expected set of fields. There are different approaches to storing secrets, such as storing all secrets under one path or the approach used here - each secret has its own path, with a single record in the format of key: value. This is done intentionally for more granular access control.
 * To store a secret in Vault, you must log in to Vault as shown in the example above, and then execute the following command. kv is separated as a separate entity because the API path requires kvname/v1/path/ depending on the version, hence the chosen scheme with three values.
