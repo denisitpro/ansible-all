@@ -4,8 +4,14 @@ Linux local user management. SSH public key - required
 ## Array user for create
 ```commandline
 local_users:
-  - {name: user1, group: "test-group" ,public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AA1bCmk user1@local" }
-  - {name: user2, public_key: "ssh-ed25519 AAAAC3NzaC1 user2@local" }
+  - name: user01
+    group: "supr-group"
+    public_keys:
+      - "ssh-ed25519 aaa user1@local"
+  - name: user02
+    public_keys:
+      - "ssh-ed25519 bbb user2@local"
+      - "ssh-ed25519 bbb reserve@key"
 ```
 
 ## Array for delete

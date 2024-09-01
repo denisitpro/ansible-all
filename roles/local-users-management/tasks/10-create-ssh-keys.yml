@@ -1,0 +1,13 @@
+---
+# tassk need for usage cycle include another cycle
+- name: Remove old authorized_keys
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.ssh/authorized_keys"
+    state: absent
+
+- name: Add authorized keys for user {{ user.name }}
+  ansible.posix.authorized_key:
+    user: "{{ user.name }}"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ user.public_keys }}"
