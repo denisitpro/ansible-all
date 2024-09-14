@@ -2,13 +2,15 @@
 ## {{ ansible_managed }} ##
 #
 #
-bind * -::*
+bind {{redis_bind_addr}}
 protected-mode no
 port {{redis_port}}
 tcp-backlog 511
 timeout 0
 tcp-keepalive 300
-pidfile {{redis_node_data_path}}/redis-server.pid
+{% if redis_data is defined %}
+pidfile {{redis_base_path}}/redis-server.pid
+{% endif %}
 loglevel notice
 databases 16
 always-show-logo yes
@@ -19,7 +21,9 @@ stop-writes-on-bgsave-error yes
 rdbcompression yes
 rdbchecksum yes
 dbfilename dump.rdb
-dir {{redis_node_data_path}}
+{% if redis_data is defined %}
+dir {{redis_data_path}}
+{% endif %}
 slave-serve-stale-data yes
 slave-read-only yes
 repl-diskless-sync no

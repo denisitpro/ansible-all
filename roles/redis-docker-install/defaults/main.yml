@@ -1,5 +1,5 @@
 ---
-redis_version: "7.2.4-alpine3.19"
+redis_version: "7.2.5-alpine3.20"
 
 redis_base_path: /opt/redis
 redis_data_path: "{{redis_base_path}}/data"
@@ -9,7 +9,7 @@ redis_user: "redis"
 redis_docker_compose_path: "{{ docker_compose_path |default('/opt/docker') }}/redis"
 redis_user_uid: '999'
 redis_user_gid: '999'
-redis_bind_addr: "{{ global_bind_addr }}"
+redis_bind_addr: "* -::*"
 redis_port: 6379
 redis_image: "redis"
 
