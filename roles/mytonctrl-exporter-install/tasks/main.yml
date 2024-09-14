@@ -1,0 +1,10 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - mytonctrl-exporter
+    - mytonctrl-exporter-prefly
+
+- import_tasks: 10-unit.yml
+  tags:
+    - mytonctrl-exporter
+    - mytonctrl-exporter-unit

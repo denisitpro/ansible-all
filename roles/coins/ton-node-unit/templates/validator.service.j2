@@ -16,7 +16,7 @@ ExecStart = /usr/bin/ton/validator-engine/validator-engine \
   --db /var/ton-work/db/ \
   --logname /var/ton-work/node.log \
   --verbosity 1 \
-  --catchain-max-block-delay 0.2 \
+  --catchain-max-block-delay {{ton_catchain_max_block_delay}} \
   --state-ttl {{ton_node_retention_period}} \
   --archive-ttl {{ton_node_retention_period}} \
   --block-ttl {{ton_node_retention_period}}

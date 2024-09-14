@@ -1,0 +1,47 @@
+---
+- name: download file
+  become: false
+  get_url:
+    url: "https://github.com/tonstakers/mytonctrl-exporter/archive/refs/tags/{{mytonctrl_exporter_version}}.tar.gz"
+    dest: "/tmp/mytonctrl-exporter-{{mytonctrl_exporter_version}}.tar.gz"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+
+
+- name: unpack
+  become: false
+  unarchive:
+    src: "/tmp/mytonctrl-exporter-{{mytonctrl_exporter_version}}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/mytonctrl-exporter-{{mytonctrl_exporter_version}}"
+    remote_src: yes
+
+- name: create app filder
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{mytonctrl_exporter_path}}"
+
+- name: copy app files
+  copy:
+    src: "/tmp/mytonctrl-exporter-{{mytonctrl_exporter_version}}/{{item}}"
+    dest: "{{mytonctrl_exporter_path}}/{{item}}"
+    mode: 0644
+    owner: root
+    group: root
+    remote_src: true
+  with_items:
+    - metrics.py
+    - requirements.txt
+  notify:
+    - restart mytonctrl-exporter
+
+
+- name: install dependens use requirements.txt
+  pip:
+    requirements: "{{mytonctrl_exporter_path}}/requirements.txt"
+    executable: pip3

@@ -4,6 +4,7 @@
     - ton-node
     - ton-prefly
     - ton-print-install
+    - ton-print-install
 
 
 - ansible.builtin.import_tasks: 07-force-install-prepare.yml
