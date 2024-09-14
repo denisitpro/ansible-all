@@ -10,10 +10,7 @@ services:
 #      net.core.somaxconn : 65535
     network_mode: host
     volumes:
-      - {{ redis_conf_path }}:{{ redis_conf_path }}
-{% if redis_data is defined %}
-      - {{redis_data_path}}:/data
-{% endif %}
+      - {{ redis_base_path }}:{{ redis_base_path }}
     command: redis-server {{redis_conf_path}}/redis.conf
 {% if redis_restart is defined %}
     restart: always

@@ -1,0 +1,6 @@
+---
+- name: restart mytonctrl-exporter
+  systemd:
+    daemon_reload: true
+    name:  mytonctrl-exporter
+    state: restarted
