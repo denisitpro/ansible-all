@@ -1,0 +1,12 @@
+---
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "ssl-selfsigned-cert"
+  vars:
+    ssl_path: "{{ loki_data_path }}/ssl"
+    ssl_domain: "selfsigned"
+    ssl_cert_path: "{{ loki_data_path }}/ssl/fullchain.pem"
+    ssl_privkey_path: "{{ loki_data_path }}/ssl/privkey.pem"
+    ssl_notify: "restart-docker loki"
+    ssl_user: "{{loki_user_id}}"
+    ssl_group: "{{loki_group_id}}"

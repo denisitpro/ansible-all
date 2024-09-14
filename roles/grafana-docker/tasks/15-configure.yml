@@ -9,6 +9,9 @@
   loop:
     - "grafana.ini"
   notify: restart-docker grafana
+  tags:
+    - grafana-base-config
+    - grafana-config-base
 
 
 - name: copy config  ldap

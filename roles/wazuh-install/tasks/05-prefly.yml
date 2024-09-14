@@ -1,0 +1,17 @@
+---
+- name: Ensure Wazuh GPG key is installed
+  apt_key:
+    url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+    state: present
+
+- name: Add Wazuh GPG key - Ubuntu
+  ansible.builtin.apt_key:
+    url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+    keyring: /etc/apt/trusted.gpg.d/wazuh.gpg
+
+
+- name: Add Wazuh repository
+  apt_repository:
+    repo: 'deb https://packages.wazuh.com/4.x/apt/ stable main'
+    state: present
+

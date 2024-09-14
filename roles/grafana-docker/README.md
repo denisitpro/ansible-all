@@ -1,5 +1,27 @@
-# EXAMPLE VARS FOR COPY DASHBOARD
+# Description
 
+## Get GitHub Team ID
+
+To retrieve your GitHub team ID, you can use the following `curl` command:
+
+```bash
+curl -H "Authorization: token YOUR_GITHUB_TOKEN" https://api.github.com/orgs/ORG_NAME/teams
+```
+
+Replace `YOUR_GITHUB_TOKEN` with your actual GitHub token and `ORG_NAME` with the name of your organization.
+
+## Get Your GitHub Token
+
+To generate or manage your GitHub personal access token, refer to the [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+
+### Classic GitHub Token Usage
+
+If you are using a classic GitHub token, ensure it has the following scope:
+- `admin:org_hook`
+---
+
+todo:
+Need to refactore
 # Example work env - base
 ```commandline
 grafana_restart: true

@@ -6,10 +6,11 @@
     path: "{{item}}"
     state: directory
     mode: 0755
-    owner: 10001
-    group: 10001
+    owner: "{{loki_user_id}}"
+    group: "{{loki_group_id}}"
   with_items:
     - "{{loki_data_path}}"
     - "{{loki_data_path}}/config"
     - "{{loki_data_path}}/data"
+    - "{{loki_data_path}}/ssl"
 
