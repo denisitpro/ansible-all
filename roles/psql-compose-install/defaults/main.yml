@@ -21,7 +21,7 @@ postgres_privkey: "{{ psql_docker_conf_dir }}/ssl/privkey.pem"
 postgres_node_cert: "{{ psql_node_data_ssl }}/fullchain.pem"
 postgres_node_privkey: "{{ psql_node_data_ssl }}/privkey.pem"
 psql_backup_dir: "/mnt/pgbackup"
-psql_version: 16.0-alpine3.18
+psql_version: 16.4-alpine3.20
 psql_image: "postgres"
 bkp_user: "root"
 
