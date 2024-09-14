@@ -3,3 +3,4 @@
   ansible.builtin.stat:
     path: /usr/bin/ton/global.config.json
   register: config_file_status
+  ignore_errors: true

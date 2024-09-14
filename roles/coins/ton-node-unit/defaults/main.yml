@@ -1,21 +1,24 @@
 ---
 validator_user: commander
 
-repo_author: tonstakers
-repo_name: "mytonctrl-v2"
+repo_author: ton-blockchain
+repo_name: "mytonctrl"
 repo_version: "master"
 ton_node_mode: full
-ton_node_config_url: "https://ton-blockchain.github.io/global.config.json"
-ton_node_ignore_reqiurements: true
 
-mytonctrl_install_path: "/tmp/mytonctrl-v2.sh"
+# todo remove
+#ton_node_config_url: "https://ton-blockchain.github.io/global.config.json"
+#ton_node_ignore_reqiurements: true
+
+mytonctrl_install_path: "/tmp/mytonctrl.sh"
 
 ton_network: mainnet
-ton_node_version: v2024.06 #latest stable version
+ton_node_version: v2024.09
 ton_node_unit_name: validator
 
 
 ton_node_retention_period: 1209600 # 14 days to seconds
+ton_catchain_max_block_delay: 0.2 # https://t.me/anatolii_makosov/43 and https://t.me/tonstatus/138
 
 
-ton_node_mytonctrl_folder_name: "mytonctrl-v2"
+ton_node_mytonctrl_folder_name: "mytonctrl"

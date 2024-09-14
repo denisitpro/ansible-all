@@ -1,0 +1,16 @@
+[Unit]
+Description=mytonctr exporter
+After=network.target
+
+[Service]
+Type = simple
+ExecStart=/usr/bin/python3 {{mytonctrl_exporter_path}}/metrics.py
+WorkingDirectory={{mytonctrl_exporter_path}}
+User=root
+Group=root
+
+Restart = always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target
