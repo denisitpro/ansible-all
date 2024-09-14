@@ -1,7 +1,10 @@
 ---
-loki_version: 3.1.0
+loki_version: 3.1.1
 loki_data_path: /opt/loki
 
+loki_user_id: 10001
+loki_group_id: 10001
+loki_http_port: 3100
 
 folder_apps:
   - loki

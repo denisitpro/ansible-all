@@ -1,9 +1,20 @@
 auth_enabled: false
 
 server:
-  http_listen_port: 3100
+  http_listen_port: {{loki_http_port | default('3100')}}
   grpc_listen_port: 9095
   grpc_listen_address: {{loki_grpc_addr | default('127.0.0.1')}}
+{% if loki_ssl is defined %}
+  http_tls_config:
+    cert_file: {{loki_data_path}}/ssl/{{loki_cert_name | default('fullchain.pem')}}
+    key_file: {{loki_data_path}}/ssl/{{loki_key_name | default('privkey.pem')}}
+{% endif %}
+  http_server_read_timeout: {{loki_http_server_read_timeout | default('120s')}}
+  http_server_write_timeout: {{loki_http_server_write_timeout |default('120s')}}
+  grpc_server_max_recv_msg_size: {{loki_grpc_server_max_recv_msg_size | default ('104857600')}}  # 100 Mb
+  grpc_server_max_send_msg_size: {{loki_grpc_server_max_send_msg_size | default('104857600')}}  # 100 Mb
+  log_level: {{loki_log_level | default('info')}}
+
 
 common:
   instance_addr: 127.0.0.1

@@ -1,12 +1,30 @@
+{% if loki_ssl is defined %}
+networks:
+  loki:
+    driver: bridge
+    name: loki
+    attachable: true
+{% endif %}
+
 services:
   loki:
     image: grafana/loki:{{loki_version}}
     container_name: loki
     hostname: loki-{{ stand_type }}
+{% if loki_ssl is defined %}
+    networks:
+      - loki
+    ports:
+      - {{loki_publish_http_port | default('443')}}:{{loki_http_port}}
+{% else %}
     network_mode: host
+{% endif %}
     volumes:
       - {{loki_data_path }}/data:/opt/loki
       - {{loki_data_path}}/config:/etc/loki/
+{% if loki_ssl is defined %}
+      - {{ loki_data_path }}/ssl:/opt/loki/ssl
+{% endif %}
     command: -config.file=/etc/loki/local-config.yaml
 {% if loki_restart is defined %}
     restart: always

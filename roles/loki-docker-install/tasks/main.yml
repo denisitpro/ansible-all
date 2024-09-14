@@ -2,6 +2,13 @@
 - import_tasks: 05-prefly.yml
   tags:
     - loki
+    - loki-prefly
+
+- import_tasks: 08-loki-ssl.yml
+  when: loki_ssl is defined
+  tags:
+    - loki
+    - loki-ssl
 
 - import_tasks: 10-configure.yml
   tags:

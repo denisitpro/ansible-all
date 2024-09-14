@@ -1,0 +1,15 @@
+
+- import_tasks: 05-prefly.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - wazuh
+
+- import_tasks: 10-install.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - wazuh
+
+- import_tasks: 15-configure.yml
+  tags:
+    - wazuh
+    - wazuh-config
