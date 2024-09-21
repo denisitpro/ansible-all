@@ -3,6 +3,7 @@
   ansible.builtin.stat:
     path: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/.service"
   register: service_file_check
+  ignore_errors: true
 
 
 
@@ -48,7 +49,10 @@
     chdir: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/"
   when: not service_file_check.stat.exists
 
-
+- name: repeat check if .service file exists for the runner - need for new runner
+  ansible.builtin.stat:
+    path: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/.service"
+  register: service_file_check
 
 
 - name: Extract service name from .service file
@@ -58,7 +62,7 @@
     chdir: "{{ github_runner_base_path }}/actions-runner-{{ item.name }}/"
 
 - name: Enable and start the service if .service file exists
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: "{{ service_name.stdout }}"
     enabled: yes
-    state: started
+    state: restarted

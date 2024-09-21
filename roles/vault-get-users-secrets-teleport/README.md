@@ -1,51 +1,94 @@
-# Description
-To work with the role, the following must be installed on the computer from which the playbook is launched:
-* Teleport client (tsh)
-* jq - JSON formatting utility
+# Vault Role - Quick Start Guide
 
-# Limitations
-The role is designed for Vault, where we log in using OIDC.
+This guide provides a straightforward setup for interacting with Vault using OIDC authentication. Follow the instructions below to configure and use the role effectively.
 
-```commandline
-tsh app login vault-c1
- 
-export VAULT_CLIENT_CERT="$(tsh app config --format=cert example-vault)"
-export VAULT_CLIENT_KEY="$(tsh app config --format=key example-vault)"
-export VAULT_ADDR="https://example-vault.teleport.example.com"
- 
-vault login -method=oidc role=example-vault-mgmt-rw
-```
+## Prerequisites
 
-# Work for consul
-Supports variable names, useful when logging into multiple applications simultaneously.”
-```commandline
-teleport_vaul_app_name: vault-01
-```
+Ensure the following are installed on the system where the playbook is executed:
 
-Example consul export vars
-```commandline
-tsh login --proxy=tp.example.com --auth=github
+- **Teleport client** (`tsh`)
+- **jq** - A utility for formatting JSON
 
-tsh app login consul-01
-export CONSUL_CLIENT_CERT="$(tsh app config --format=cert consul-01)"
-export CONSUL_CLIENT_KEY="$(tsh app config --format=key consul-01)"
-export CONSUL_HTTP_ADDR=https://consul-01.tp.glorytech.bet
-export CONSUL_HTTP_TOKEN=our_token
+## Role Limitations
 
-```
+This role is specifically designed for use with Vault instances that require OIDC for login.
 
-# Secret Storage
-* To work with secrets, they must be located in the expected location with the expected set of fields. There are different approaches to storing secrets, such as storing all secrets under one path or the approach used here - each secret has its own path, with a single record in the format of key: value. This is done intentionally for more granular access control.
-* To store a secret in Vault, you must log in to Vault as shown in the example above, and then execute the following command. kv is separated as a separate entity because the API path requires kvname/v1/path/ depending on the version, hence the chosen scheme with three values.
+## Token Management
 
-```commandline
-vault kv put kvname/store_path/key/ value="value_example"
-```
+To enable this role to work correctly, create a file named `vault.secret` in the root of the repository. This file will store your Vault token.
 
-To ensure correct operation, create a file named "vault.secret" in the root of the repository and write your token obtained during the login to Vault (described above in the regular login section) in the following format:
+1. After logging in to Vault, obtain your token and store it in the `vault.secret` file in the following format:
 
-```commandline
-vault_token: s.PbWMasdasddTI9vCxxiX
-```
+    ```yaml
+    vault_token: s.PbWMasdasddTI9vCxxiX
+    ```
 
-For security reasons, the ".gitignore" file excludes "*.secret" files. This means that the file will not be included in the repository and will always remain local to you.
+2. For security reasons, all `*.secret` files are excluded from the repository via `.gitignore`, ensuring that sensitive data remains local.
+
+
+
+## Getting Started
+
+To interact with Vault, follow these steps:
+
+1. Log in to the Vault application using Teleport:
+
+    ```bash
+    tsh app login vault-c1
+    ```
+
+2. Export the necessary environment variables for Vault:
+
+    ```bash
+    export VAULT_CLIENT_CERT="$(tsh app config --format=cert example-vault)"
+    export VAULT_CLIENT_KEY="$(tsh app config --format=key example-vault)"
+    export VAULT_ADDR="https://example-vault.teleport.example.com"
+    ```
+
+3. Log in to Vault using OIDC:
+
+    ```bash
+    vault login -method=oidc role=example-vault-mgmt-rw
+    ```
+
+## Consul Integration
+
+This role supports variable configuration, allowing for simultaneous login to multiple applications.
+
+To log in to Consul, follow these steps:
+
+1. Log in via Teleport using GitHub authentication:
+
+    ```bash
+    tsh login --proxy=tp.example.com --auth=github
+    ```
+
+2. Log in to the Consul application:
+
+    ```bash
+    tsh app login consul-01
+    ```
+
+3. Export the necessary environment variables for Consul:
+
+    ```bash
+    export CONSUL_CLIENT_CERT="$(tsh app config --format=cert consul-01)"
+    export CONSUL_CLIENT_KEY="$(tsh app config --format=key consul-01)"
+    export CONSUL_HTTP_ADDR=https://consul-01.tp.glorytech.bet
+    export CONSUL_HTTP_TOKEN=our_token
+    ```
+
+## Secret Management in Vault
+
+Vault stores secrets under unique paths for better access control. Each secret is stored as a single key-value pair in its own path.
+
+### Storing a Secret in Vault
+
+1. Log in to Vault as described in the [Getting Started](#getting-started) section.
+2. Use the following command to store a secret in Vault:
+
+    ```bash
+    vault kv put kvname/store_path/key/ value="value_example"
+    ```
+
+   - Note: The `kvname` is separated as its own entity due to the Vault API's path structure, which may vary based on version (`kvname/v1/path/`).
