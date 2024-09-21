@@ -33,7 +33,7 @@ proxy_service:
   https_keypairs: []
   https_keypairs_reload_interval: 0s
   acme: {}
-{% if teleport is defined %}
+{% if teleport.app is defined %}
 app_service:
     enabled: yes
     debug_app: false
@@ -47,7 +47,7 @@ app_service:
       rewrite:
         headers:
         - "Host: localhost"
-        - "Origin: https://localhost:3000"
+        - "Origin: {{app.uri}}"
 {% endif %}
       labels:
         stand: "{{stand_type| default ('not_set') }}"
