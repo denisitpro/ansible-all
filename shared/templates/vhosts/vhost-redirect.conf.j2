@@ -6,13 +6,13 @@
 
 
 server {
-    listen {{nginx_bind_addr}}:{{item.http_port | default ("80")}};
+    listen {{nginx_bind_addr_ipv4}}:{{item.http_port | default ("80")}};
     server_name {{item.servername}};
     return 301 https://$host$request_uri;
 }
 
 server {
-        listen  {{nginx_bind_addr}}:{{item.https_ports | default ("443")}} ssl;
+        listen  {{nginx_bind_addr_ipv4}}:{{item.https_ports | default ("443")}} ssl;
         server_name {{item.servername}};
 
 # log project use  include
