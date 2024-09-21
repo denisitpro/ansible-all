@@ -1,0 +1,6 @@
+---
+#twilio_conf_path: /opt/twilio
+twilio_image_version: 0.4.2
+
+folder_apps:
+  - twilio

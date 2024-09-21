@@ -1,0 +1,9 @@
+---
+- import_tasks: 03-init.yml
+  tags:
+    - ssh-add-key
+    - ssh-key-add
+
+# todo refactore
+#- import_tasks: 10-remove.yml
+#  tags: ['ssh-remove-key','never']

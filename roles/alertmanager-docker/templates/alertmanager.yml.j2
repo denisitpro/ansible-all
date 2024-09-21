@@ -5,8 +5,8 @@ global:
 {% for key, value in alertmanager_smtp.items() %}
   smtp_{{ key }}: {{ value | quote }}
 {% endfor %}
-{% if alertmanager_slack_api_url is defined and alertmanager_slack_api_url | length %}
-  slack_api_url: {{ alertmanager_slack_api_url | default('https://example.webhook.com') | quote }}
+{% if alertmanager_slack_api_url | length %}
+  slack_api_url: {{ alertmanager_slack_api_url | quote }}
 {% endif %}
 {% if alertmanager_http_config | length %}
   http_config:

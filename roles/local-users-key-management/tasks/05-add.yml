@@ -1,7 +1,0 @@
----
-- name: Set up multiple authorized keys
-  ansible.posix.authorized_key:
-    user: "{{user_for_add_key | default('ubuntu')}}"
-    state: present
-    key: "{{ lookup('file', item) }}"
-  loop: "{{ ssh_key_files }}"

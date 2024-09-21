@@ -1,0 +1,19 @@
+---
+- name: Debug user info
+  ansible.builtin.debug:
+    msg: "Processing user: {{ user.name }}, keys: {{ user.public_keys }}"
+  tags:
+    - ssh-add-key
+
+
+- name: Remove old authorized_keys
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.ssh/authorized_keys"
+    state: absent
+
+- name: Add authorized keys for user {{ user.name }}
+  ansible.posix.authorized_key:
+    user: "{{ user.name }}"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ user.public_keys }}"

@@ -1,7 +1,0 @@
----
-- import_tasks: 05-add.yml
-  tags:
-    - ssh-add-key
-
-- import_tasks: 10-remove.yml
-  tags: ['ssh-remove-key','never']

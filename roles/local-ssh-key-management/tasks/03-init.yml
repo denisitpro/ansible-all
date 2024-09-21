@@ -1,0 +1,6 @@
+---
+- name: Set authorized keys for users
+  ansible.builtin.include_tasks: 05-add.yml
+  with_items: "{{ local_users }}"
+  loop_control:
+    loop_var: user

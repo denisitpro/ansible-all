@@ -1,0 +1,16 @@
+---
+- import_tasks: 05-create-folder.yml
+  tags:
+    - twilio
+    - twilio-path
+
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - twilio
+    - twilio-compose
+
+- import_tasks: 50-lauch.yml
+  tags:
+    - twilio
+    - twilio-compose
