@@ -4,21 +4,23 @@
 ####  your changes will be lost
 
 server {
-    {% if nginx_bind_addr %}
-    listen {{ nginx_bind_addr }}:{{ item.http_port | default("80") }};
-    {% else %}
+{% if nginx_bind_addr_ipv4 %}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }};
+{% else %}
     listen {{ item.http_port | default("80") }};
-    {% endif %}
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("80") }};
+{% endif %}
     server_name {{ item.servername }};
     return 301 https://$host$request_uri;
 }
 
 server {
-    {% if nginx_bind_addr %}
-    listen {{ nginx_bind_addr }}:{{ item.https_ports | default("443") }} ssl;
-    {% else %}
+{% if nginx_bind_addr_ipv4 %}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_ports | default("443") }} ssl;
+{% else %}
     listen {{ item.https_ports | default("443") }} ssl;
-    {% endif %}
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("443") }} ssl;
+{% endif %}
     http2 on;
     server_name {{ item.servername }};
 

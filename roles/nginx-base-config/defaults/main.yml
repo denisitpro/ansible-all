@@ -6,7 +6,7 @@ nginx_logrotate_permission: "0644"
 
 nginx_worker_connections: "20000"
 
-nginx_bind_addr: "{{ global_bind_addr | default(ansible_default_ipv4.address) }}"
+nginx_bind_addr_ipv4: "{{ global_bind_addr | default(ansible_default_ipv4.address) }}"
 
 nginx_conf_base: "/etc/nginx"
 nginx_confd_path: "{{ nginx_conf_base }}/conf.d"
