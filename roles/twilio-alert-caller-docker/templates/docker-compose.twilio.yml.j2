@@ -1,0 +1,25 @@
+services:
+  twilio:
+    image: denisitpro/twilio-alert-caller:{{twilio_image_version | default('latest')}}
+    container_name: twilio
+    hostname: twilio-{{ stand_type | default('none') }}
+    network_mode: host
+{% if twilio_restart is defined %}
+    restart: always
+{% endif %}
+    environment:
+      - TWILIO_ACCOUNT_SID={{twilio_account_sid | default('set_me')}}
+      - TWILIO_AUTH_TOKEN={{twilio_auth_token | default('set_me')}}
+      - TWILIO_PHONE_NUMBER={{twilio_phone_number | default('set_me')}}
+      - TWILIO_BIND_ADDRESS=127.0.0.1
+#      - TWIML_URL={{twilio_twiml_url | default('http://demo.twilio.com/docs/voice.xml')}}
+#      - TWILIO_PORT=5000
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+
+
+

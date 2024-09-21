@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - twilio
+  template:
+    src: "docker-compose.twilio.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker') }}/twilio/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure
