@@ -27,6 +27,7 @@
 - ansible.builtin.import_tasks: 20-unit.yml
   tags:
     - ton-node
+    - ton-node-unit
     - ton-unit
 
 - ansible.builtin.import_tasks: 25-firewall.yml

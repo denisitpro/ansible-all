@@ -11,8 +11,17 @@ server {
     listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("80") }};
 {% endif %}
     server_name {{ item.servername }};
-    return 301 https://$host$request_uri;
+{% if item.acme is defined %}
+    location /.well-known/acme-challenge/ {
+        root {{nginx_certbot_path | default('/var/www/certbot')}};
+    }
+{% endif %}
+    location / {
+        return 301 https://$host$request_uri;
+    }
 }
+
+
 
 server {
 {% if nginx_bind_addr_ipv4 %}
@@ -37,8 +46,8 @@ server {
 
 ## include ssl certificate
 {% if nginx.vhosts %}
-    ssl_certificate     {{ nginx_ssl_path | default ("/etc/nginx/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
-    ssl_certificate_key {{ nginx_ssl_path | default ("/etc/nginx/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+    ssl_certificate     {{  item.ssl_path | default ("/etc/nginx/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path| default ("/etc/nginx/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% endif %}
 
 {% for included in  nginx.include %}
