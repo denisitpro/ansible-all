@@ -7,6 +7,7 @@
   loop:
     - "{{ docker_compose_path }}"
     - "{{ docker_compose_path }}/nginx"
+    - "{{certbot_path | default('/opt/certbot') }}/www"
 
 - name: create path folder
   file:

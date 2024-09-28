@@ -1,10 +1,12 @@
 ---
 - import_tasks: 00-copy-config.yml
   tags:
+    - nginx
     - nginx-sites
     - vhosts
 
 - import_tasks: 02-check-host-nginx.yml
   tags:
+    - nginx
     - nginx-sites
     - vhosts

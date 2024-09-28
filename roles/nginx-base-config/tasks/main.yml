@@ -2,12 +2,14 @@
 - name: Import create path
   ansible.builtin.import_tasks: 00-create-path.yml
   tags:
+    - nginx
     - nginx_base_conf
     - nginx-base
 
 - name: Import copy shared
   ansible.builtin.import_tasks: 01-copy-shared-conf.yml
   tags:
+    - nginx
     - nginx_base_conf
     - nginx-base
 
@@ -16,6 +18,7 @@
     name: "ssl-selfsigned-cert"
   when: selfsigned is defined
   tags:
+    - nginx
     - nginx_base_conf
     - nginx-base
     - nginx-selfsign
@@ -25,10 +28,12 @@
 - name: Import nginx conf
   ansible.builtin.import_tasks: 04-nginx-conf.yml
   tags:
+    - nginx
     - nginx_base_conf
     - nginx-base
 
 - name: Import logrotate
   ansible.builtin.import_tasks: 07-logrotate.yml
   tags:
+    - nginx
     - logrotate
