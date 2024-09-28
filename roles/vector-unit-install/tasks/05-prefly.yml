@@ -1,0 +1,10 @@
+---
+- name: "create path"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{vector_user}}"
+    group: "{{vector_group}}"
+  with_items:
+    - "{{ vector_data_path }}"
