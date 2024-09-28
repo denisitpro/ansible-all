@@ -6,18 +6,6 @@ blackbox_exporter_version: v0.25.0
 blackbox_api_key: blackbox
 blackbox_docker_compose_path: "{{ docker_compose_path |default('/opt/docker') }}/blackbox"
 
-# todo remove
-#blackbox_config:
-#  modules:
-#    icmp:
-#      prober: icmp
-#      timeout: 5s
-#    http_200_module:
-#      prober: http
-#      timeout: 5s
-#      http:
-#        preferred_ip_protocol: "ip4"
-
 blackbox_config:
   modules:
     icmp:
@@ -26,9 +14,40 @@ blackbox_config:
     http_200_module:
       prober: http
       timeout: 5s
+      http:
+        valid_status_codes: [200]
+        method: GET
+    http_200_auth:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [200]
+        method: GET
+#        tls_config:
+#          insecure_skip_verify: true
+        basic_auth:
+          username: "{{blackbox_http_200_auth_login | default('set_me_login')}}"
+          password: "{{blackbox_http_200_auth_pass | default('set_me_pass')}}"
+    http_403_module:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [403]
+        method: GET
     http_404_module:
       prober: http
       timeout: 5s
       http:
         valid_status_codes: [404]
         method: GET
+    http_404_auth:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [404]
+        method: GET
+#        tls_config:
+#          insecure_skip_verify: true
+        basic_auth:
+          username: "{{blackbox_http_404_auth_login | default('set_me_login')}}"
+          password: "{{blackbox_http_404_auth_pass | default('set_me_pass')}}"

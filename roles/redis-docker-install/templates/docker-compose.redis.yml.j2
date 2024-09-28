@@ -19,10 +19,10 @@ services:
 {% if vector is defined %}
       driver: fluentd
       options:
-        fluentd-address: {{ vector_srv }}:{{ vector_port }}
-        tag: redis
-        fluentd-async: "{{ fluent_async }}"
-        fluentd-buffer-limit: "{{ fluendt_buffer_limit }}"
+        fluentd-address: {{vector_server_fluent_address}}:{{ vector_server_fluent_port | default('24224') }}
+        tag:  {{ psql_docker_container_name | default('redis') }}
+        fluentd-async: "{{ fluent_async | default('true') }}"
+        fluentd-buffer-limit: "{{ fluendt_buffer_limit | default('200000') }}"
 {% else %}
       driver: json-file
       options:
