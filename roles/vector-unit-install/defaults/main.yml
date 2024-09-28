@@ -1,6 +1,10 @@
 ---
+vector_data_path: "/opt/vector"
+
 vector_repo_source: https://github.com/vectordotdev/vector/releases/download/
-vector_version: 0.39.0
+vector_version: 0.41.1
+vector_user: vector
+vector_group: "{{vector_user}}"
 
 # todo check required and set default level vars
 #elasticsearch: example.com

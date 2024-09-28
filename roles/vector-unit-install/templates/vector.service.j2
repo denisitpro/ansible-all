@@ -5,8 +5,8 @@ After=network-online.target
 Requires=network-online.target
 
 [Service]
-User=vector
-Group=vector
+User={{vector_user}}
+Group={{vector_group}}
 ExecStartPre=/usr/bin/vector validate /etc/vector/*.*
 ExecStart=/usr/bin/vector --config-dir /etc/vector
 ExecReload=/usr/bin/vector validate /etc/vector/*.*
