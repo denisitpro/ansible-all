@@ -10,6 +10,10 @@ services:
       - /etc/nginx/:/etc/nginx/
       - {{nginx_host_cert_ssl_path |default('/opt/ssl')}}:{{nginx_container_ssl_path}}
       - {{nginx_data_path}}/logs:/var/log/nginx/
+{% if certbot_cert_usage is defined %}
+      - {{certbot_path | default('/opt/certbot') }}/www:{{nginx_certbot_path | default('/var/www/certbot')}}
+      - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{nginx_container_ssl_certbot_path| default('/opt/certbot/ssl')}}
+{% endif %}
 {% if nginx_restart is defined %}
     restart: always
 {% endif %}

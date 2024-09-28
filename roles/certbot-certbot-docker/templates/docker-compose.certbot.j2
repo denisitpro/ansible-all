@@ -1,0 +1,18 @@
+services:
+  certbot:
+    image: {{certbot_image}}:{{certbot_version}}
+    container_name: certbot
+    network_mode: host
+    volumes:
+      - {{certbot_path}}/www:/var/www/certbot
+      - {{certbot_path}}/data:/etc/letsencrypt
+      - {{certbot_path}}/conf:/var/lib/letsencrypt
+    command: >
+      certonly
+      --webroot
+      -w /var/www/certbot
+      --agree-tos
+      --email {{certbot_email}}
+      --no-eff-email
+      --server https://acme-v02.api.letsencrypt.org/directory -d {{certbot_domain}}
+

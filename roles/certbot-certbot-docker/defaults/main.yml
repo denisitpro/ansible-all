@@ -1,0 +1,10 @@
+---
+docker_compose_path: /opt/docker
+certbot_image: certbot/certbot
+certbot_version: v2.11.0
+
+certbot_path: /opt/certbot
+
+certbot_email: mail@example.com
+certbot_domain: domain1.example.com
+
