@@ -13,12 +13,14 @@
     src: "/usr/src/{{ton_node_mytonctrl_folder_name}}"
     dest: "/opt/backup/{{ton_backup_dir}}"
     remote_src: yes
+  ignore_errors: true
 
 - name: copy ton-binary to backup
   copy:
     src: "/usr/bin/ton"
     dest: "/opt/backup/{{ton_backup_dir}}"
     remote_src: yes
+  ignore_errors: true
 
 - name: stop ton units
   ansible.builtin.systemd_service:

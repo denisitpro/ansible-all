@@ -5,18 +5,20 @@ After = network.target
 [Service]
 Type = simple
 Restart = always
-# delay need for monitoring failure alert
-RestartSec=300 # restart after failure delay 5 minute
+# delay need for monitoring failure alert # restart after failure delay 5 minute
+RestartSec=300s
 MemoryLimit={{adjusted_memory_gb}}G
 
 ExecStart = /usr/bin/ton/validator-engine/validator-engine \
-  --threads 15 \
+  --threads {{ansible_processor_vcpus | int - 1}} \
   --daemonize \
   --global-config /usr/bin/ton/global.config.json \
   --db /var/ton-work/db/ \
   --logname /var/ton-work/node.log \
   --verbosity 1 \
+{% if tonproxy_catchain_max_block_delay_force is defined %}
   --catchain-max-block-delay {{ton_catchain_max_block_delay}} \
+{% endif %}
   --state-ttl {{ton_node_retention_period}} \
   --archive-ttl {{ton_node_retention_period}} \
   --block-ttl {{ton_node_retention_period}}

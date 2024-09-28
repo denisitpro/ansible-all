@@ -1,5 +1,5 @@
 ---
-- name: download scrip install mytonctrl - v2
+- name: download scrip install mytonctrl
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/{{repo_author}}/{{repo_name}}/{{repo_version}}/scripts/install.sh"
     dest: "{{mytonctrl_install_path}}"
