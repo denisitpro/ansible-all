@@ -1,6 +1,3 @@
-[gost_01]
-gost-01.beta-82.win
-
 [gost_04]
 gost-04.beta-82.win
 
@@ -12,7 +9,4 @@ k8s-03.beta-82.win
 [k8s_worker]
 w-01.beta-82.win
 w-02.beta-82.win
-w-03.beta-82.win
-
-[coins]
-coin-01.beta-82.win
+#w-03.beta-82.win

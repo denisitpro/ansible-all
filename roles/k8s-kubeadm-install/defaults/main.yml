@@ -1,13 +1,13 @@
 ---
-k8s_cls_version: "1.30.2"
+k8s_cls_version: "1.31.1"
 
 kubelet_ver: "{{k8s_cls_version}}-1.1"
 kubeadm_ver: "{{kubelet_ver}}"
 kubectl_ver: "{{kubelet_ver}}"
 
-kubeadmin_version: v1.30
-containerd_version: 1.7.14
-runc_version: 1.1.12
+kubeadmin_version: v1.31
+containerd_version: 1.7.22
+runc_version: 1.1.15
 cni_version: 1.5.1
 
 container_runtime: containerd
@@ -15,7 +15,7 @@ kubeadmin_config: /etc/kubernetes/admin.conf
 
 
 #calico_version: 3.27.2 # todo remove
-calico_operator_version: v3.28.0
+calico_operator_version: v3.28.2
 cilium_cli_version: 0.16.0
 
 # support  CNI networks -  calico, cilium
