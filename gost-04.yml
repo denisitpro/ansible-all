@@ -6,6 +6,7 @@
     - docker-install
     - mtproxy-install
     - ton-proxy
+    - gost-docker
     - xray-install
     - ufw-base-configure
     - ufw-management
