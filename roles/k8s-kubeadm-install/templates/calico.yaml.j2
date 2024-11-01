@@ -4,6 +4,10 @@ metadata:
   name: default
 spec:
   calicoNetwork:
+{% if k8s_calico_set_iface_autodetect is defined %}
+    nodeAddressAutodetectionV4:
+       interface: {{k8s_calico_set_iface_autodetect}}
+{% endif %}
     ipPools:
     - blockSize: 26
       cidr: 10.48.0.0/21

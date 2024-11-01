@@ -12,6 +12,7 @@ k8s_master: true
 
 # example set specific first master node
 #k8s_master_init_host: k8s-02.beta-82.win
+k8s_calico_set_iface_autodetect: eth0
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
