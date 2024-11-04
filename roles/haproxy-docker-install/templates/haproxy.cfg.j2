@@ -49,6 +49,7 @@ backend k8s-api-backend
     mode tcp
     option ssl-hello-chk
     balance     roundrobin
-    server k8s-01 k8s-01.beta-82.win:6443 check
-    server k8s-02 k8s-02.beta-82.win:6443 check
-    server k8s-03 k8s-03.beta-82.win:6443 check
+    {% for server in k8s_master_servers %}
+    server {{ server.name }} {{ server.address }}:6443 check
+    {% endfor %}
+
