@@ -1,0 +1,24 @@
+global
+    log stdout format raw local0
+    maxconn 2000
+    daemon
+
+defaults
+    log global
+    mode tcp
+    option tcplog
+    timeout connect 5s
+    timeout client  50s
+    timeout server  50s
+
+frontend k8s-api-frontend
+    bind *:6443
+    default_backend k8s-api-backend
+
+backend k8s-api-backend
+    balance roundrobin
+    option tcp-check
+    default-server inter 3s fall 3 rise 2
+    server k8s-01 k8s-01.beta-82.win:6443 check
+    server k8s-02 k8s-02.beta-82.win:6443 check
+    server k8s-03 k8s-03.beta-82.win:6443 check

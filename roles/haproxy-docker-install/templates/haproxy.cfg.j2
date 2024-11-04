@@ -1,24 +1,54 @@
+## {{ ansible_managed }} ##
+# docs https://github.com/kubernetes/kubeadm/blob/d4b2a53/docs/ha-considerations.md#options-for-software-load-balancing
+# /etc/haproxy/haproxy.cfg
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
 global
     log stdout format raw local0
     maxconn 2000
     daemon
 
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
 defaults
-    log global
-    mode tcp
-    option tcplog
-    timeout connect 5s
-    timeout client  50s
-    timeout server  50s
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 1
+    timeout http-request    10s
+    timeout queue           20s
+    timeout connect         5s
+    timeout client          20s
+    timeout server          20s
+    timeout http-keep-alive 10s
+    timeout check           10s
 
+#---------------------------------------------------------------------
+# apiserver frontend which proxys to the masters
+#---------------------------------------------------------------------
 frontend k8s-api-frontend
     bind *:6443
+    mode tcp
+    option tcplog
     default_backend k8s-api-backend
 
+
+#---------------------------------------------------------------------
+# round robin balancing for apiserver
+#---------------------------------------------------------------------
 backend k8s-api-backend
-    balance roundrobin
-    option tcp-check
-    default-server inter 3s fall 3 rise 2
+    option httpchk GET /healthz
+    http-check expect status 200
+    mode tcp
+    option ssl-hello-chk
+    balance     roundrobin
     server k8s-01 k8s-01.beta-82.win:6443 check
     server k8s-02 k8s-02.beta-82.win:6443 check
     server k8s-03 k8s-03.beta-82.win:6443 check
