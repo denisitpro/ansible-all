@@ -1,16 +1,21 @@
 ---
+- name: check exist self-sign cert
+  ansible.builtin.import_tasks: 05-check-exist.yml
+  tags:
+    - cert
+
 - name: Import dir
-  ansible.builtin.import_tasks: 00-create-dir.yml
+  ansible.builtin.import_tasks: 10-create-dir.yml
   when:
-    - selfsigned is defined
+    - selfsigned is defined and not file_check.stat.exists
 #    - ssl_domain == "selfsigned"
   tags:
     - cert
 
 - name: Import ssl
-  ansible.builtin.import_tasks: 05-create-cert.yml
+  ansible.builtin.import_tasks: 15-create-cert.yml
   when:
-    - selfsigned is defined
+    - selfsigned is defined and not file_check.stat.exists
 #    - ssl_domain == "selfsigned"
 #  notify:
 #    - "{{ ssl_notify }}"

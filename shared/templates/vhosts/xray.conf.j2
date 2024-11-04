@@ -1,0 +1,67 @@
+## {{ ansible_managed }} ##
+server {
+{% if nginx_bind_addr_ipv4  is defined%}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_ports | default("443") }} ssl;
+{% else %}
+    listen {{ item.https_ports | default("443") }} ssl;
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("443") }} ssl ipv6only=on so_keepalive=on;
+{% endif %}
+    http2 on;
+    server_name {{ item.servername }};
+
+    # static file
+    index index.html;
+	root /var/www/html;
+
+# log project use  include
+{% if nginx_logs_stdout is not defined %}
+        access_log  {{ nginx_log_path | default('/var/log/nginx') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extend_json") }};
+        error_log   {{ nginx_log_path | default('/var/log/nginx')}}/{{ item.servername.split(' ')[0] }}-error.log;
+{% endif %}
+{% if nginx_logs_stdout is defined %}
+        access_log  /dev/stdout  {{nginx_log_format | default ("extend_json")}};
+        error_log   /dev/stdout;
+{% endif %}
+
+## include ssl certificate
+{% if nginx.vhosts %}
+    ssl_certificate     {{  item.ssl_path | default ("/etc/nginx/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path| default ("/etc/nginx/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% endif %}
+
+{% for included in  nginx.include %}
+    include  {{ included }};
+{% endfor %}
+
+
+	client_header_timeout 52w;
+    keepalive_timeout 52w;
+	# xray GRPC security path
+    location /{{xray_grpc_security_path | default('TestChatGRPC') }} {
+		if ($content_type !~ "application/grpc") {
+			return 404;
+		}
+		client_max_body_size 0;
+		client_body_buffer_size 512k;
+		grpc_set_header X-Real-IP $remote_addr;
+		client_body_timeout 52w;
+		grpc_read_timeout 52w;
+		grpc_pass grpc://127.0.0.1:{{xray_grpc_port| default('8888')}};
+	}
+
+    # xray WS security path
+    location /{{xray_ws_security_path | default('TestChatWS') }} {
+		if ($http_upgrade != "websocket") {
+			return 404;
+		}
+		proxy_pass http://127.0.0.1:{{xray_ws_port| default('8889')}};
+		proxy_redirect off;
+	    proxy_http_version 1.1;
+	    proxy_set_header Upgrade $http_upgrade;
+	    proxy_set_header Connection "upgrade";
+	    proxy_set_header Host $host;
+	    proxy_set_header X-Real-IP $remote_addr;
+	    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	    proxy_read_timeout 52w;
+	}
+}

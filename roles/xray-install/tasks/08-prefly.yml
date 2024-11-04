@@ -1,0 +1,9 @@
+---
+- name: copy web page example
+  copy:
+    src: "index.html"
+    dest: "{{nginx_static_path |default('/opt/nginx/static')}}/index.html"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart xray

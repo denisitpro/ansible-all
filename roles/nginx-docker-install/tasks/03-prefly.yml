@@ -8,6 +8,8 @@
     - "{{ docker_compose_path }}"
     - "{{ docker_compose_path }}/nginx"
     - "{{certbot_path | default('/opt/certbot') }}/www"
+    - "/opt/nginx"
+    - "{{nginx_static_path}}"
 
 - name: create path folder
   file:
@@ -16,3 +18,12 @@
      recurse: yes
   with_items:
     - "{{nginx_data_path}}"
+
+- name: copy files
+  ansible.builtin.copy:
+    src: "{{item}}"
+    dest: "/etc/nginx/{{item}}"
+    mode: 0644
+  with_items:
+    - "mime.types"
+    - "fastcgi_params"

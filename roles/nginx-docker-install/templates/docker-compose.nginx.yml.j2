@@ -14,6 +14,9 @@ services:
       - {{certbot_path | default('/opt/certbot') }}/www:{{nginx_certbot_path | default('/var/www/certbot')}}
       - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{nginx_container_ssl_certbot_path| default('/opt/certbot/ssl')}}
 {% endif %}
+{% if nginx_static_file is defined %}
+      - {{nginx_static_path}}:/var/www/html:ro
+{% endif %}
 {% if nginx_restart is defined %}
     restart: always
 {% endif %}
