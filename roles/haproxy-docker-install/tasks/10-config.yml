@@ -1,0 +1,9 @@
+---
+- name: copy haproxy config
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "{{haproxy_base_path}}/conf/haproxy.cfg"
+    owner: root
+    group: '99'
+    mode: 0644
+  notify: reload-docker haproxy

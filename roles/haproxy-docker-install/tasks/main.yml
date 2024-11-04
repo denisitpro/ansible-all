@@ -1,0 +1,21 @@
+---
+- import_tasks: 05-create-folder.yml
+  tags:
+    - haproxy
+    - haproxy-path
+
+- import_tasks: 10-config.yml
+  tags:
+    - haproxy
+    - haproxy-config
+
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - haproxy
+    - haproxy-compose
+
+- import_tasks: 50-lauch.yml
+  tags:
+    - haproxy
+    - haproxy-compose

@@ -8,3 +8,12 @@
   systemd:
     name: haproxy
     state: reloaded
+
+- name: reload-docker haproxy
+  shell: "docker kill -s HUP haproxy"
+
+
+- name: restart-docker haproxy
+  shell: "docker compose restart haproxy"
+  args:
+    chdir: "{{docker_compose_path |default('/opt/docker') }}/haproxy"

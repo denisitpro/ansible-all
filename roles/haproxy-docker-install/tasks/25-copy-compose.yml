@@ -1,0 +1,9 @@
+---
+- name: copy compose-file - haproxy
+  template:
+    src: "docker-compose.haproxy.yml.j2"
+    dest: "{{docker_compose_path | default('/opt/docker') }}/haproxy/docker-compose.yml"
+    mode: 0600
+  tags:
+    - config
+    - reconfigure
