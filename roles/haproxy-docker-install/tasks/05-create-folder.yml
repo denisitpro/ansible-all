@@ -1,0 +1,19 @@
+---
+- import_tasks: shared/tasks/create-dir-docker-compose.yml
+
+# useruid haproxy  https://hub.docker.com/layers/library/haproxy/3.0.5-bookworm/images/sha256-ae9eae084b25d9d6b8cb5c1876b6d6a8b61f7baadd92a42efba829e3755e7c78?context=explore
+
+- name: create folder haproxy
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: 99
+  with_items:
+    - "{{haproxy_base_path}}"
+    - "{{haproxy_base_path}}/conf"
+    - "{{haproxy_base_path}}/data"
+
+
+

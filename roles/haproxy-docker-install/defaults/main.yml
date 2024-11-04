@@ -1,0 +1,6 @@
+---
+haproxy_base_path: /opt/haproxy
+haproxy_image_version: 3.0.5-bookworm
+
+folder_apps:
+  - haproxy

@@ -1,0 +1,31 @@
+services:
+  haproxy:
+    image: haproxy:{{haproxy_image_version | default('latest')}}
+    container_name: haproxy
+    hostname: haproxy-{{ stand_type | default('none') }}
+    network_mode: host
+{% if haproxy_restart is defined %}
+    restart: always
+{% endif %}
+    volumes:
+      - {{haproxy_base_path}}/conf/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - {{haproxy_base_path}}/data:/var/lib/haproxy
+{% if vector is defined %}
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: {{ vector_server_fluent_address }}:{{ vector_server_fluent_port | default('24224') }}
+        tag: {{ haproxy_docker_container_name | default('haproxy') }}
+        fluentd-async: "{{ fluent_async | default('true') }}"
+        fluentd-buffer-limit: "{{ fluendt_buffer_limit | default('200000') }}"
+{% else %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+
+
+
+
