@@ -5,9 +5,12 @@ gost-04.beta-82.win
 gost-05.beta-82.win
 
 [k8s_master]
-k8s-01.beta-82.win
-k8s-02.beta-82.win
-k8s-03.beta-82.win
+#k8s-01.beta-82.win
+#k8s-02.beta-82.win
+#k8s-03.beta-82.win
+k8s-local-01.beta-82.win
+k8s-local-02.beta-82.win
+k8s-local-03.beta-82.win
 
 [k8s_worker]
 w-01.beta-82.win
@@ -15,4 +18,5 @@ w-02.beta-82.win
 #w-03.beta-82.win
 
 [haproxy_lb]
-ha-01.beta-82.win
+49.13.9.164
+#ha-01.beta-82.win

@@ -26,6 +26,12 @@
   tags:
     - k8s-check-cls
 
+#- name: debug  local address
+#  ansible.builtin.debug:
+#    msg: local address info - {{ ansible_enp7s0.ipv4.address }}
+#  tags:
+#    - k8s-local-ip-debug
+
 - name: reset if k8s_reset_cls_force defined
   ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
@@ -101,6 +107,8 @@
   register: kubeadm_ca
 
 - name: join replica master to cluster
+  # test local address support
+#  ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }} --apiserver-advertise-address {{ ansible_enp7s0.ipv4.address }}"
   ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"
   when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
 #  when: kubeadm_ca.stat.exists and (cluster_info.rc == 0 or k8s_reset_cls_force is defined)
