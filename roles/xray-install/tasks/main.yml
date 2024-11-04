@@ -4,6 +4,11 @@
     - xray
     - xray-path
 
+- import_tasks: 08-prefly.yml
+  tags:
+    - xray
+    - xray-prefly
+
 - import_tasks: 10-config.yml
   tags:
     - xray
@@ -13,6 +18,7 @@
 - import_tasks: 25-copy-compose.yml
   tags:
     - xray
+    - xray-config
     - xray-compose
 
 - import_tasks: 50-lauch.yml

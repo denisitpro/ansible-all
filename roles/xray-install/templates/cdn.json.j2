@@ -1,0 +1,41 @@
+{
+    "log": {
+      "loglevel": "info"
+    },
+    "routing": {
+      "rules": [],
+      "domainStrategy": "AsIs"
+    },
+    "inbounds": [
+      {
+        "listen": "127.0.0.1",
+        "port": {{xray_grpc_port| default('8888')}},
+        "protocol": "vless",
+        "tag": "grpc",
+        "settings": {
+          "clients": [
+            {
+              "id": "{{xray_grpc_uuid | default('set_me')}}"
+            }
+          ],
+          "decryption": "none"
+        },
+        "streamSettings": {
+          "network": "grpc",
+          "grpcSettings": {
+            "serviceName": "{{xray_grpc_security_path | default('TestChatGRPC') }}"
+          }
+        }
+      }
+    ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ]
+}

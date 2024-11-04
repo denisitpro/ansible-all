@@ -1,7 +1,18 @@
 ---
+# todo remove
+#- name: copy xray config
+#  copy:
+#    src: "{{xray_conf_name}}"
+#    dest: "{{xray_date_path}}/{{xray_conf_name}}"
+#    owner: root
+#    group: root
+#    mode: 0644
+#  notify: restart xray
+
+
 - name: copy xray config
-  copy:
-    src: "{{xray_conf_name}}"
+  template:
+    src: "{{xray_conf_name}}.j2"
     dest: "{{xray_date_path}}/{{xray_conf_name}}"
     owner: root
     group: root

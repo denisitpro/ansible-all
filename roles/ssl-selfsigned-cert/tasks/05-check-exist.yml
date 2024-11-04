@@ -1,0 +1,10 @@
+---
+- name: check exist file
+  stat:
+    path: "{{ssl_privkey_path}}"
+  register: file_check
+
+- name: print notify
+  debug:
+    msg: "current self-sign cert found"
+  when: file_check.stat.exists
