@@ -6,4 +6,5 @@
     owner: root
     group: '99'
     mode: 0644
-  notify: reload-docker haproxy
+#  notify: reload-docker haproxy
+  notify: restart-docker haproxy
