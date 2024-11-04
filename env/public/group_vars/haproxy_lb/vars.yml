@@ -1,10 +1,23 @@
 ---
 # todo simplifcation - support shorname address
 # todo support use ansible master server group
+
+# external address
+#k8s_master_servers:
+#  - name: k8s-01
+#    address: k8s-01.beta-82.win
+#  - name: k8s-02
+#    address: k8s-02.beta-82.win
+#  - name: k8s-03
+#    address: k8s-03.beta-82.win
+
+#mgmt_jump: true
+
+# interbal address
 k8s_master_servers:
   - name: k8s-01
-    address: k8s-01.beta-82.win
+    address: k8s-local-01.beta-82.win
   - name: k8s-02
-    address: k8s-02.beta-82.win
+    address: k8s-local-02.beta-82.win
   - name: k8s-03
-    address: k8s-03.beta-82.win
+    address: k8s-local-03.beta-82.win
