@@ -10,6 +10,8 @@ disable_hostname_management: true
 # local k8s address - todo remove
 k8s_cls_name: k8s-lb-local-01.beta-82.win
 #k8s_api_local_adddr: true
+dns_management: true
+k8s_local_network_force: true
 
 k8s_master: true
 #k8s_ipv6: true # support ipv6 install

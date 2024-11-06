@@ -47,3 +47,8 @@
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
   when: k8s_hostname_force is defined
+
+#- name: install socat
+#  ansible.builtin.apt:
+#    name:
+#      - socat
