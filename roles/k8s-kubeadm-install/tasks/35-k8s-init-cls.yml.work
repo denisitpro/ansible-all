@@ -26,23 +26,11 @@
   tags:
     - k8s-check-cls
 
-
-### local serctions
-- name: debug  local address
-  ansible.builtin.debug:
-    msg: local address info - {{ ansible_enp7s0.ipv4.address }}
-  when: k8s_local_network_force is defined
-  tags:
-    - k8s-local-ip-debug
-    - k8s-config-copy
-
-- name: Gather IP address of primary master
-  set_fact:
-    k8s_master_init_host_ip: "{{ ansible_enp7s0.ipv4.address }}"
-  delegate_to: "{{k8s_master_init_host}}"
-  when: k8s_local_network_force is defined
-  tags:
-    - k8s-config-copy
+#- name: debug  local address
+#  ansible.builtin.debug:
+#    msg: local address info - {{ ansible_enp7s0.ipv4.address }}
+#  tags:
+#    - k8s-local-ip-debug
 
 - name: reset if k8s_reset_cls_force defined
   ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
@@ -50,24 +38,20 @@
 #  when: not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined # todo remove
   when: k8s_reset_cls_force is defined
 
-# todo separate logical local net and global
+
 - name: copy init config k8s-cluster
   template:
-    src: "kubeadm-config.yaml"
+    src: "kubeadm-config.yaml.j2"
     dest: /tmp/kubeadm-config.yaml
     owner: root
     group: root
     mode: 0600
   delegate_to: "{{k8s_master_init_host}}"
-  vars:
-    master_ip: "{{ hostvars[k8s_master_init_host]['k8s_master_init_host_ip'] }}"
   tags:
     - k8s-config-copy
 
 - name: Init Kubernetes cluster - manifest
   ansible.builtin.shell: "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs"
-#  ansible.builtin.shell: "kubeadm init --upload-certs --apiserver-advertise-address={{ hostvars[k8s_master_init_host]['k8s_master_init_host_ip'] }}"
-
 #  when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
 #  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   when: (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
@@ -91,40 +75,13 @@
   ansible.builtin.shell: kubeadm token create --print-join-command
   register: k8s_join_token
   delegate_to: "{{k8s_master_init_host}}"
-  run_once: true
-  tags:
-    - k8s-token
-
-- name: Set kubeadm join command as fact
-  set_fact:
-    kubeadm_join_command: "{{ k8s_join_token.stdout }}"
-  tags:
-    - k8s-token
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
 
 
-#- name: fetch only token
-#  ansible.builtin.shell: kubeadm token create
-#  register: k8s_only_join_token
-#  delegate_to: "{{k8s_master_init_host}}"
-#  run_once: true
-#  tags:
-#    - k8s-token
-
-- name: debug join string
-  ansible.builtin.debug:
-    msg: token info for debug -  {{ k8s_join_token.stdout }}
-  delegate_to: k8s_master_init_host
-  run_once: true
-  tags:
-    - k8s-token
-
-#- name: debug only token info
+#- name: debug join info
 #  ansible.builtin.debug:
-#    msg: token info for debug -  {{ k8s_only_join_token.stdout }}
+#    msg: token info for debug -  {{ k8s_join_token.stdout }}
 #  delegate_to: k8s_master_init_host
-#  run_once: true
-#  tags:
-#    - k8s-token
 
 # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/
 # very high kostili and velosiped
@@ -132,9 +89,9 @@
   ansible.builtin.shell: kubeadm init phase upload-certs --upload-certs  | sed '3!D'
   register: k8s_cert
   delegate_to: "{{k8s_master_init_host}}"
+#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   run_once: true
-  tags:
-    - k8s-token
+
 
 #- name: debug cert info
 #  ansible.builtin.debug:
@@ -148,8 +105,6 @@
   stat:
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
-  tags:
-    - k8s-token
 
 - name: join replica master to cluster
   # test local address support
@@ -157,45 +112,3 @@
   ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"
   when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
 #  when: kubeadm_ca.stat.exists and (cluster_info.rc == 0 or k8s_reset_cls_force is defined)
-
-
-#- name: Extract caCertHashes
-#  set_fact:
-#    k8s_ca_cert_hash: "{{ kubeadm_join_command | regex_search('sha256:[a-f0-9]+') }}"
-#    k8s_join_token: "{{ kubeadm_join_command | regex_search('[a-z0-9]{6}\\.[a-z0-9]{16}') }}"
-#  delegate_to: "{{k8s_master_init_host}}"
-#  run_once: true
-#  tags:
-#    - k8s-token
-#
-#- name: Debug output of ca_cert_hash
-#  delegate_to: "{{k8s_master_init_host}}"
-#  run_once: true
-#  debug:
-#    msg:
-#      - "Extracted discovery-token-ca-cert-hash is {{ k8s_ca_cert_hash }}"
-#      - "Extracted token is {{ k8s_join_token }}"
-#  tags:
-#    - k8s-token
-#
-#
-#- name: copy config join replica master to cluster
-#  template:
-#    src: "kubeadm-join-config.yaml"
-#    dest: /tmp/kubeadm-join-config.yaml
-#    owner: root
-#    group: root
-#    mode: 0600
-#  vars:
-#    master_ip: "{{ ansible_enp7s0.ipv4.address }}"
-#    controlPlaneEndpoint: "{{ k8s_cls_name | default('k8s.example.com') }}:{{ k8s_cls_port | default('6443') }}"
-#    bootstrap_token: "{{ k8s_join_token }}"
-#    caCertHashes:  "{{k8s_ca_cert_hash}}"
-#  tags:
-#    - k8s-join-config
-#    - k8s-token
-#
-#- name: Join replica master to cluster using kubeadm join with manifest
-#  ansible.builtin.shell: "kubeadm join --config=/tmp/kubeadm-join-config.yaml"
-#  when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
-#  delegate_to: "{{ inventory_hostname }}"
