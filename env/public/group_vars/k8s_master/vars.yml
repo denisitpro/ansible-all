@@ -1,17 +1,11 @@
 ---
-disable_hostname_management: true
-
-# only for debug
-#k8s_reset_cls_force: true
-
 # todo enable
-#k8s_cls_name: k8s.beta-82.win
+k8s_cls_name: k8s.beta-82.win
 
 # local k8s address - todo remove
-k8s_cls_name: k8s-lb-local-01.beta-82.win
-#k8s_api_local_adddr: true
+#k8s_cls_name: k8s-lb-local-01.beta-82.win
 dns_management: true
-k8s_local_network_force: true
+#k8s_local_network_force: true
 
 k8s_master: true
 #k8s_ipv6: true # support ipv6 install

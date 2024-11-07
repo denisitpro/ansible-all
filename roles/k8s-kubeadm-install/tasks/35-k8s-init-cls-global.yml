@@ -20,28 +20,22 @@
   tags:
     - k8s-check-cls
 
-- name: debug  cluster info status
+- name: print cluster info status
   ansible.builtin.debug:
     msg: cls info - "{{cluster_info.rc}}"
   tags:
     - k8s-check-cls
 
-#- name: debug  local address
-#  ansible.builtin.debug:
-#    msg: local address info - {{ ansible_enp7s0.ipv4.address }}
-#  tags:
-#    - k8s-local-ip-debug
 
 - name: reset if k8s_reset_cls_force defined
   ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
-#  when: not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined # todo remove
   when: k8s_reset_cls_force is defined
 
 
 - name: copy init config k8s-cluster
   template:
-    src: "kubeadm-config.yaml.j2"
+    src: "kubeadm-master-global.yaml.j2"
     dest: /tmp/kubeadm-config.yaml
     owner: root
     group: root
@@ -52,8 +46,6 @@
 
 - name: Init Kubernetes cluster - manifest
   ansible.builtin.shell: "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs"
-#  when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
-#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   when: (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   register: init_cluster
   ignore_errors: yes
@@ -89,7 +81,6 @@
   ansible.builtin.shell: kubeadm init phase upload-certs --upload-certs  | sed '3!D'
   register: k8s_cert
   delegate_to: "{{k8s_master_init_host}}"
-#  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   run_once: true
 
 
@@ -107,8 +98,5 @@
   register: kubeadm_ca
 
 - name: join replica master to cluster
-  # test local address support
-#  ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }} --apiserver-advertise-address {{ ansible_enp7s0.ipv4.address }}"
   ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"
   when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
-#  when: kubeadm_ca.stat.exists and (cluster_info.rc == 0 or k8s_reset_cls_force is defined)
