@@ -14,24 +14,17 @@ apiServer:
     - "10.15.1.2"
     - "10.15.1.3"
     - "10.15.2.100"
-  extraArgs:
-#    advertise-address: "{{ master_ip }}"
-    bind-address: "{{ master_ip }}"
-#kubeProxy:
-#  config:
-#    kind: KubeProxyConfiguration
-#    apiVersion: kubeproxy.config.k8s.io/v1alpha1
-#    bindAddress: "{{ master_ip }}"
-#    healthzBindAddress: "{{ master_ip }}"
-#    healthzPort: "10256"
+#  extraArgs:
+#    bind-address: "{{ master_ip }}"
 ---
 apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
+patches:
+  directory: /etc/kubernetes/patches
 localAPIEndpoint:
   advertiseAddress: "{{ master_ip }}"
   bindPort: 6443
 nodeRegistration:
-#  name: "k8s-01"
   kubeletExtraArgs:
     node-ip: "{{ master_ip }}"
     address: "{{ master_ip }}"
