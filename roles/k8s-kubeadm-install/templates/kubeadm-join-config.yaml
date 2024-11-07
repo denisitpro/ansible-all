@@ -17,13 +17,3 @@ nodeRegistration:
   kubeletExtraArgs:
     node-ip: "{{ master_ip }}"
     address: "{{ master_ip }}"
-localAPIEndpoint:
-  advertiseAddress: "{{ master_ip }}"
-  bind-address: "{{ master_ip }}"
-  bindPort: 6443
-#---
-#apiVersion: kubeadm.k8s.io/v1beta3
-#kind: ClusterConfiguration
-#apiServer:
-#  extraArgs:
-#    bind-address:  "{{ master_ip }}"

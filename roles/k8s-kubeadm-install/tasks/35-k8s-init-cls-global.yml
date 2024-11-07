@@ -1,16 +1,16 @@
 ---
-- name: Check if kubeadm has already run
+- name: Check if kubeadm has already run - global
   stat:
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
 
-#- name: debug init host name
+#- name: debug init host name - global
 #  ansible.builtin.debug:
 #    msg: k8s master init host "{{k8s_master_init_host}}"
 #  tags:
 #    - k8s-debug
 
-- name: Check if Kubernetes cluster is up and running
+- name: Check if Kubernetes cluster is up and running - global
   command: kubectl --kubeconfig={{ kubeadmin_config }} cluster-info
   register: cluster_info
   failed_when: cluster_info.rc != 0 and kubeadm_ca.stat.exists
@@ -20,20 +20,20 @@
   tags:
     - k8s-check-cls
 
-- name: print cluster info status
+- name: print cluster info status - global
   ansible.builtin.debug:
     msg: cls info - "{{cluster_info.rc}}"
   tags:
     - k8s-check-cls
 
 
-- name: reset if k8s_reset_cls_force defined
+- name: reset if k8s_reset_cls_force defined - global
   ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
   when: k8s_reset_cls_force is defined
 
 
-- name: copy init config k8s-cluster
+- name: copy init config k8s-cluster - global
   template:
     src: "kubeadm-master-global.yaml.j2"
     dest: /tmp/kubeadm-config.yaml
@@ -44,7 +44,7 @@
   tags:
     - k8s-config-copy
 
-- name: Init Kubernetes cluster - manifest
+- name: Init Kubernetes cluster - manifest - global
   ansible.builtin.shell: "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs"
   when: (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
   register: init_cluster
@@ -54,7 +54,7 @@
     - k8s-init
     - k8s-init-cls
 
-#- name: Store init output - need only for debug
+#- name: Store init output - need only for debug - global
 #  action: copy content="{{ init_cluster.stdout }}" dest="/etc/kubernetes/kubeadm-init.stdout"
 #  delegate_to: "{{k8s_master_init_host}}"
 #  ignore_errors: yes
@@ -63,28 +63,28 @@
 #    - k8s-debug
 
 
-- name: fetch the join command
+- name: fetch the join command - global
   ansible.builtin.shell: kubeadm token create --print-join-command
   register: k8s_join_token
   delegate_to: "{{k8s_master_init_host}}"
 #  when: not kubeadm_ca.stat.exists and (cluster_info.rc != 0 or k8s_reset_cls_force is defined)
 
 
-#- name: debug join info
+#- name: debug join info - global
 #  ansible.builtin.debug:
 #    msg: token info for debug -  {{ k8s_join_token.stdout }}
 #  delegate_to: k8s_master_init_host
 
 # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/
 # very high kostili and velosiped
-- name: fetch certificate
+- name: fetch certificate - global
   ansible.builtin.shell: kubeadm init phase upload-certs --upload-certs  | sed '3!D'
   register: k8s_cert
   delegate_to: "{{k8s_master_init_host}}"
   run_once: true
 
 
-#- name: debug cert info
+#- name: debug cert info - global
 #  ansible.builtin.debug:
 #    msg: cert -  {{ k8s_cert.stdout }}
 #  delegate_to: "{{k8s_master_init_host}}"
@@ -92,11 +92,11 @@
 #  tags:
 #    - k8s-debug
 
-- name: Check if kubeadm has already run - repeat, need for skip join master
+- name: Check if kubeadm has already run - repeat, need for skip join master - global
   stat:
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
 
-- name: join replica master to cluster
+- name: join replica master to cluster - global
   ansible.builtin.shell: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"
   when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
