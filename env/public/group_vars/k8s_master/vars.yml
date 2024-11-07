@@ -7,7 +7,7 @@ k8s_cls_name: k8s-lb-local-01.beta-82.win
 dns_management: true
 k8s_local_network_force: true
 k8s_local_iface_autodetect: true
-k8s_calico_typha_disable:
+k8s_calico_typha_disable: true
 
 
 k8s_master: true
