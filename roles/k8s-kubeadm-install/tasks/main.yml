@@ -29,7 +29,13 @@
     - k8s-components
 
 - ansible.builtin.import_tasks: 35-k8s-init-cls-global.yml
-  when: k8s_master is defined and k8s_local_network_force is not defined # todo set check group or another cluster vars
+  when: k8s_master is defined and k8s_local_network_force is not defined
+  tags:
+    - k8s
+    - k8s-init
+
+- ansible.builtin.import_tasks: 37-k8s-init-cls-specific-iface.yml
+  when: k8s_master is defined and k8s_local_network_force is defined
   tags:
     - k8s
     - k8s-init

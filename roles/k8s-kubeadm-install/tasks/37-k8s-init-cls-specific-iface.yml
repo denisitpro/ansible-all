@@ -20,7 +20,7 @@
   tags:
     - k8s-check-cls
 
-- name: debug  cluster info status
+- name: print cluster info status
   ansible.builtin.debug:
     msg: cls info - "{{cluster_info.rc}}"
   tags:
@@ -53,7 +53,7 @@
 # todo separate logical local net and global
 - name: copy init config k8s-cluster
   template:
-    src: "kubeadm-config.yaml"
+    src: "kubeadm-master-specific-iface.yaml"
     dest: /tmp/kubeadm-config.yaml
     owner: root
     group: root
@@ -165,15 +165,15 @@
   tags:
     - k8s-token
 
-- name: Debug output of ca_cert_hash
-  delegate_to: "{{k8s_master_init_host}}"
-  run_once: true
-  debug:
-    msg:
-      - "Extracted discovery-token-ca-cert-hash is {{ k8s_ca_cert_hash }}"
-      - "Extracted token is {{ k8s_join_token }}"
-  tags:
-    - k8s-token
+#- name: Debug output of ca_cert_hash
+#  delegate_to: "{{k8s_master_init_host}}"
+#  run_once: true
+#  debug:
+#    msg:
+#      - "Extracted discovery-token-ca-cert-hash is {{ k8s_ca_cert_hash }}"
+#      - "Extracted token is {{ k8s_join_token }}"
+#  tags:
+#    - k8s-token
 
 
 - name: copy config join replica master to cluster
@@ -192,7 +192,7 @@
     - k8s-join-config
     - k8s-token
 
-- name: Join replica master to cluster using kubeadm join with manifest
-  ansible.builtin.shell: "kubeadm join --config=/tmp/kubeadm-join-config.yaml"
-  when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
-  delegate_to: "{{ inventory_hostname }}"
+#- name: Join replica master to cluster using kubeadm join with manifest
+#  ansible.builtin.shell: "kubeadm join --config=/tmp/kubeadm-join-config.yaml"
+#  when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
+#  delegate_to: "{{ inventory_hostname }}"

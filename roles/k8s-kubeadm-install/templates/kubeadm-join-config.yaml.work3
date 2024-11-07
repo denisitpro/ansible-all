@@ -22,9 +22,9 @@ discovery:
 #  advertiseAddress: "{{ master_ip }}"
 #  bindPort: {{ k8s_cls_port | default('6443') }}
 nodeRegistration:
-  name: "{{inventory_hostname_short}}"
   kubeletExtraArgs:
-    node-ip: "{{ master_ip }}"
-#apiServer:
-#  extraArgs:
-#    bind-address: "{{ master_ip }}"
+  - name: node-ip
+    value: "{{ master_ip }}"
+apiServer:
+  extraArgs:
+    bind-address: "{{ master_ip }}"
