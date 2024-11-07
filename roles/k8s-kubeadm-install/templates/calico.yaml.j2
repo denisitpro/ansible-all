@@ -3,10 +3,20 @@ kind: Installation
 metadata:
   name: default
 spec:
+{% if k8s_calico_typha_disable is defined %}
+  typhaAffinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values: []
+{% endif %}
   calicoNetwork:
-{% if k8s_calico_set_iface_autodetect is defined %}
+{% if k8s_local_iface_autodetect is defined %}
     nodeAddressAutodetectionV4:
-       interface: {{k8s_calico_set_iface_autodetect}}
+       kubernetes: NodeInternalIP
 {% endif %}
     ipPools:
     - blockSize: 26
