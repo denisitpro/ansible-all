@@ -46,6 +46,47 @@
           "path": "{{xray_ws_security_path | default('TestChatWS') }}"
         }
       }
+    },
+    {
+      "port": {{xray_vless_tcp_port | default('8443')}},
+      "protocol": "vless",
+      "tag": "vless_tls",
+      "settings": {
+        "clients": [
+          {
+            "id": "{{xray_vless_tcp_uuid | default('set_me') }}",
+            "email": "user1@myserver",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "in-two.com:443",
+          "xver": 0,
+          "serverNames": [
+            "in-two.com"
+          ],
+          "privateKey": "{{xray_vless_tcp_privkey | default('set_me') }}",
+          "minClientVer": "",
+          "maxClientVer": "",
+          "maxTimeDiff": 0,
+          "shortIds": [
+            "{{xray_vless_tcp_short_ids | default('set_me')}}"
+          ]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
     }
   ],
   "outbounds": [
