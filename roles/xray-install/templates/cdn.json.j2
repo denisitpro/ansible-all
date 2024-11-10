@@ -1,33 +1,53 @@
 {
-    "log": {
-      "loglevel": "info"
-    },
-    "routing": {
-      "rules": [],
-      "domainStrategy": "AsIs"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": {{xray_grpc_port| default('8888')}},
-        "protocol": "vless",
-        "tag": "grpc",
-        "settings": {
-          "clients": [
-            {
-              "id": "{{xray_grpc_uuid | default('set_me')}}"
-            }
-          ],
-          "decryption": "none"
-        },
-        "streamSettings": {
-          "network": "grpc",
-          "grpcSettings": {
-            "serviceName": "{{xray_grpc_security_path | default('TestChatGRPC') }}"
+  "log": {
+    "loglevel": "info"
+  },
+  "routing": {
+    "rules": [],
+    "domainStrategy": "AsIs"
+  },
+  "inbounds": [
+    {
+      "listen": "127.0.0.1",
+      "port": {{xray_grpc_port | default('8888')}},
+      "protocol": "vless",
+      "tag": "grpc",
+      "settings": {
+        "clients": [
+          {
+            "id": "{{xray_grpc_uuid | default('set_me')}}"
           }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "grpc",
+        "grpcSettings": {
+          "serviceName": "{{xray_grpc_security_path | default('TestChatGRPC') }}"
         }
       }
-    ],
+    },
+    {
+      "listen": "127.0.0.1",
+      "port": {{xray_ws_port | default('8889')}},
+      "protocol": "vless",
+      "tag": "ws",
+      "settings": {
+        "clients": [
+          {
+            "id": "{{xray_ws_uuid | default('set_me')}}"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "ws",
+        "wsSettings": {
+          "path": "{{xray_ws_security_path | default('TestChatWS') }}"
+        }
+      }
+    }
+  ],
   "outbounds": [
     {
       "protocol": "freedom",
