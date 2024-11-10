@@ -1,34 +1,41 @@
 ---
 gost_restart: true
-
 tonproxy_restart: true
-
-xray_conf_name: masked.json
-#xray_conf_name: vmess-tcp.json
-xray_restart: true
-
-
 mtproxy_restart: true
 
+
+xray_conf_name: cdn.json
+xray_restart: true
+
+selfsigned: true
+nginx_static_file: true
+
+upstream_multi:
+  upstream:
+    - { name: "w2_upstream", server: "127.0.0.1", port: 8043, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g2.conf.j2"}
+  type: ip_hash
+
+nginx:
+  vhosts:
+    - { servername: "w2.beta-82.win",
+        domain: "selfsign",
+        config_file: "xray.conf.j2",
+        upstream_protocol: http,
+        upstream_name: "w2_upstream",
+    }
+  include:
+    - "/etc/nginx/include/tls1_2-tls1_3.conf"
 
 iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
     - { name: "gost_ports", protocol: "tcp", port: "18092:18099" }
     - { name: "gost_ports", protocol: "udp", port: "18092:18099" }
-    - { name: "mtproxy", protocol: "tcp", port: "443"}
-    - { name: "ton-proxy", protocol: "tcp", port: "8080"}
-    - { name: "ton-network", protocol: "udp", port: "3333"}
-    - { name: "nginx", protocol: "tcp", port: "80"}
     - { name: "nginx", protocol: "tcp", port: "443"}
     - { name: "ray", protocol: "tcp", port: "8443"}
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "gost_ports", protocol: "tcp", port: "18092:18099" }
     - { name: "gost_ports", protocol: "udp", port: "18092:18099" }
-    - { name: "mtproxy", protocol: "tcp", port: "443"}
-    - { name: "ton-proxy", protocol: "tcp", port: "8080"}
-    - { name: "ton-network", protocol: "udp", port: "3333"}
-    - { name: "nginx", protocol: "tcp", port: "80"}
     - { name: "nginx", protocol: "tcp", port: "443"}
     - { name: "ray", protocol: "tcp", port: "8443"}

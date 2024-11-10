@@ -4,7 +4,7 @@
 ####  your changes will be lost
 
 server {
-{% if nginx_bind_addr_ipv4 %}
+{% if nginx_bind_addr_ipv4  is defined%}
     listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }};
 {% else %}
     listen {{ item.http_port | default("80") }};
@@ -24,7 +24,7 @@ server {
 
 
 server {
-{% if nginx_bind_addr_ipv4 %}
+{% if nginx_bind_addr_ipv4  is defined%}
     listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_ports | default("443") }} ssl;
 {% else %}
     listen {{ item.https_ports | default("443") }} ssl;

@@ -1,5 +1,5 @@
 server	{
-    {% if nginx_bind_addr_ipv4 %}
+    {% if nginx_bind_addr_ipv4 is defined %}
     listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }} default_server;
     {% else %}
     listen {{ item.http_port | default("80") }} default_server;

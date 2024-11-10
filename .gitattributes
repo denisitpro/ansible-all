@@ -2,3 +2,4 @@ secret.example filter=git-crypt diff=git-crypt
 secrets-vars.yml filter=git-crypt diff=git-crypt
 roles/xray-install/files/*  filter=git-crypt diff=git-crypt
 secret.yml filter=git-crypt diff=git-crypt
+secrets.yml filter=git-crypt diff=git-crypt
