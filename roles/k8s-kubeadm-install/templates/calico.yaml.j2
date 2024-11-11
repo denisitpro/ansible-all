@@ -16,7 +16,8 @@ spec:
   calicoNetwork:
 {% if k8s_local_iface_autodetect is defined %}
     nodeAddressAutodetectionV4:
-       kubernetes: NodeInternalIP
+      interface: {{k8s_local_iface_autodetect}}
+    nodeAddressAutodetectionV6: {}
 {% endif %}
     ipPools:
     - blockSize: 26

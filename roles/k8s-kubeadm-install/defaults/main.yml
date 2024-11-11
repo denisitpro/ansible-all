@@ -14,8 +14,8 @@ container_runtime: containerd
 kubeadmin_config: /etc/kubernetes/admin.conf
 
 
-#calico_version: 3.27.2 # todo remove
-calico_operator_version: v3.28.2
+# https://github.com/projectcalico/calico
+calico_operator_version: v3.29.0
 cilium_cli_version: 0.16.0
 
 # support  CNI networks -  calico, cilium

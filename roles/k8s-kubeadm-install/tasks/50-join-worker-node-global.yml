@@ -1,10 +1,10 @@
 ---
-- name: Check if kubeadm has already run
+- name: Check if kubeadm has already run - global
   stat:
     path: "/etc/kubernetes/pki/ca.crt"
   register: kubeadm_ca
 
-- name: Check if Kubernetes cluster is up and running
+- name: Check if Kubernetes cluster is up and running - global
   command: kubectl --kubeconfig={{ kubeadmin_config | default(' /etc/kubernetes/kubelet.conf') }} cluster-info
   register: cluster_info
   failed_when: cluster_info.rc != 0 and kubeadm_ca.stat.exists
@@ -14,31 +14,31 @@
   tags:
     - k8s-check-cls
 
-- name: Debug cluster info status
+- name: Debug cluster info status - global
   ansible.builtin.debug:
     msg: "Cluster info - rc: {{ cluster_info.rc }}, CA exists: {{ kubeadm_ca.stat.exists }}"
   tags:
     - k8s-check-cls
 
-- name: reset if k8s_force_join defined
+- name: reset if k8s_force_join defined - global
   ansible.builtin.shell: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
   register: reset_cluster
   when: k8s_force_join is defined
 
 
-- name: fetch the join command
+- name: fetch the join command - global
   ansible.builtin.shell: kubeadm token create --print-join-command
   register: k8s_join_token
   delegate_to: "{{k8s_master_init_host}}"
 
-#- name: debug join info
+#- name: debug join info - global
 #  ansible.builtin.debug:
 #    msg: token info for debug -  {{ k8s_join_token.stdout }}
 
-- name: join worker node to cluster
+- name: join worker node to cluster - global
   ansible.builtin.shell: "{{ k8s_join_token.stdout }}"
   when: not kubeadm_ca.stat.exists or k8s_force_join is defined
 
-- name: Debug join condition
+- name: Debug join condition - global
   ansible.builtin.debug:
     msg: "Should join: {{ not kubeadm_ca.stat.exists }}"

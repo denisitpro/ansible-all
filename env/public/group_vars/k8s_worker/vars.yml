@@ -15,6 +15,9 @@ disable_hostname_management: true
 #k8s_ipv6: true # support ipv6 install
 #k8s_force_join: true
 
+k8s_cls_name: k8s-lb-local-01.beta-82.win
+k8s_local_network_force: true
+
 iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
