@@ -11,3 +11,5 @@ kubeadm token create --print-join-command
 
 # Todo
 * local iface - need support env, current state harcode - level task
+* calico bird support specific bind iface or address
+* calico typha support specific bind iface or address
