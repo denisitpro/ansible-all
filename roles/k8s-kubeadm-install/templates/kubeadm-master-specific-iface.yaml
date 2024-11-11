@@ -10,10 +10,7 @@ networking:
 apiServer:
   certSANs:
     - "{{ k8s_cls_name | default('k8s.example.com') }}"
-    - "10.15.1.1"
-    - "10.15.1.2"
-    - "10.15.1.3"
-    - "10.15.2.100"
+    - "{{k8s_cls_ip}}"
 #  extraArgs:
 #    bind-address: "{{ master_ip }}"
 ---

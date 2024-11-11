@@ -50,12 +50,17 @@
     - k8s-calico-ipv6
 
 
-- ansible.builtin.import_tasks: 50-join-worker-node.yml
-  when: k8s_master is not defined
+- ansible.builtin.import_tasks: 50-join-worker-node-global.yml
+  when: k8s_master is not defined and k8s_local_network_force is not defined
   tags:
     - k8s
     - k8s-worker-node
 
+- ansible.builtin.import_tasks: 55-join-worker-node-iface.yml
+  when: k8s_master is not defined and k8s_local_network_force is defined
+  tags:
+    - k8s
+    - k8s-worker-node
 
 - ansible.builtin.import_tasks:  95-reset-k8s-cls.yml
   tags: ['never', 'k8s-reset']
