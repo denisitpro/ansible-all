@@ -8,3 +8,6 @@
 export KUBECONFIG=/etc/kubernetes/admin.conf
 kubeadm token create --print-join-command
 ```
+
+# Todo
+* local iface - need support env, current state harcode - level task

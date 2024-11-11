@@ -5,24 +5,23 @@
 # local k8s address - todo remove
 k8s_cls_name: k8s-lb-local-01.beta-82.win
 k8s_cls_ip: 10.15.2.100
-dns_management: true
-k8s_local_network_force: true
+#k8s_local_network_force: true # test global
 
+# todo debug - not work
 # Set canReach address https://docs.tigera.io/calico/latest/networking/ipam/ip-autodetection#autodetection-methods
-k8s_local_iface_autodetect: "eth0" # need for bird
+#k8s_local_iface_autodetect: "eth0" # need for bird
 
 # todo debug  - not started calico pods
 #k8s_calico_typha_disable: true
 
-
 k8s_master: true
-#k8s_ipv6: true # support ipv6 install
-# test set specific port
-##k8s_cls_port: 443
-#k8s_calico_set_iface_autodetect: eth0
 
-# example set specific first master node
+## example set specific master and port
 #k8s_master_init_host: k8s-02.beta-82.win
+#k8s_cls_port: 443
+
+
+#k8s_ipv6: true # support ipv6 install
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
