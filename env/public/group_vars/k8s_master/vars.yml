@@ -1,20 +1,19 @@
 ---
-# todo enable
-#k8s_cls_name: k8s.beta-82.win
+k8s_master: true
 
+#k8s_cls_name: k8s.beta-82.win
 # local k8s address - todo remove
 k8s_cls_name: k8s-lb-local-01.beta-82.win
 k8s_cls_ip: 10.15.2.100
-#k8s_local_network_force: true # test global
+k8s_local_network_force: true # test global
 
 # todo debug - not work
 # Set canReach address https://docs.tigera.io/calico/latest/networking/ipam/ip-autodetection#autodetection-methods
 #k8s_local_iface_autodetect: "eth0" # need for bird
 
-# todo debug  - not started calico pods
+# todo debug  - not workr, not started calico pods
 #k8s_calico_typha_disable: true
 
-k8s_master: true
 
 ## example set specific master and port
 #k8s_master_init_host: k8s-02.beta-82.win
