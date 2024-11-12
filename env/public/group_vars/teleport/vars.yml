@@ -1,0 +1,10 @@
+---
+teleport_cluster_name: example-cls
+teleport_public_addr: "tp.beta-82.win:443"
+teleport_node_name: "{{ansible_hostname}}"
+teleport_restart: true
+
+teleport_github_sso: true
+teleport_acme_enabled: true
+teleprot_acme_email: w98h81@gmail.com
+#teleport_selfsign_enabled: true # need for ssl support, proxy for cloudflare
