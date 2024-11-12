@@ -15,3 +15,6 @@ w-02.beta-82.win
 
 [haproxy_lb]
 ha-01.beta-82.win
+
+[teleport]
+teleport-01.beta-82.win
