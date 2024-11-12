@@ -13,8 +13,10 @@
   tags:
     - teleport
     - teleport-config
+    - teleport-compose
 
 - import_tasks: 15-launch.yml
   tags:
     - teleport
     - teleport-config
+    - teleport-compose

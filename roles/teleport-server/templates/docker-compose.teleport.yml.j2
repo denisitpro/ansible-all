@@ -2,7 +2,7 @@ services:
   teleport:
     image: {{teleport_registry}}:{{teleport_version}}
     container_name: teleport
-    hostname: teleport-{{stand_type}}
+    hostname: teleport-{{stand_type| default('example')}}
     network_mode: host
     volumes:
       - {{teleport_data_path}}/data:/var/lib/teleport
