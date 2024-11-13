@@ -9,6 +9,20 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 kubeadm token create --print-join-command
 ```
 
+# Local ip address launch
+need set variable  for master node
+```commandline
+k8s_cls_name: k8s-lb-local-01.beta-82.win
+k8s_cls_ip: 10.15.2.100
+k8s_local_network_force: true 
+```
+
+For worker node
+```commandline
+k8s_cls_name: k8s-lb-local-01.beta-82.win
+k8s_local_network_force: true
+```
+
 # Todo
 * local iface - need support env, current state harcode - level task
 * calico bird support specific bind iface or address

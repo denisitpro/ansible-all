@@ -1,0 +1,23 @@
+# https://goteleport.com/docs/enroll-resources/kubernetes-access/manage-access/
+# example access to specific namespace
+kind: role
+metadata:
+  name: kube-access
+version: v7
+spec:
+  allow:
+    kubernetes_labels:
+      'region': '*'
+      'platform': 'minikube'
+    kubernetes_resources:
+      - kind: pod
+        namespace: "production"
+        name: "^webapp-[a-z0-9-]+$"
+      - kind: pod
+        namespace: "development"
+        name: "*"
+    kubernetes_groups:
+    - developers
+    kubernetes_users:
+    - minikube
+  deny: {}

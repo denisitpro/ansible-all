@@ -1,5 +1,5 @@
 ---
-teleport_cluster_name: example-cls
+teleport_cluster_name: beta82-cls
 teleport_public_addr: "tp.beta-82.win:443"
 teleport_node_name: "{{ansible_hostname}}"
 teleport_restart: true
