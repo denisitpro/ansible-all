@@ -1,5 +1,8 @@
 # https://goteleport.com/docs/enroll-resources/kubernetes-access/manage-access/
 # example access to specific namespace
+
+# verbs - need for read logs
+
 kind: role
 metadata:
   name: kube-access
@@ -13,9 +16,17 @@ spec:
       - kind: pod
         namespace: "production"
         name: "^webapp-[a-z0-9-]+$"
+        verbs:
+          - get
+          - list
+          - watch
       - kind: pod
         namespace: "development"
         name: "*"
+        verbs:
+          - get
+          - list
+          - watch
     kubernetes_groups:
     - developers
     kubernetes_users:
