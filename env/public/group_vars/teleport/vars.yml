@@ -8,3 +8,14 @@ teleport_github_sso: true
 teleport_acme_enabled: true
 teleprot_acme_email: w98h81@gmail.com
 #teleport_selfsign_enabled: true # need for ssl support, proxy for cloudflare
+
+
+iptables:
+  ipv4:
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "teleport", protocol: "tcp", port: "80"}
+    - { name: "teleport", protocol: "tcp", port: "443"}
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "teleport", protocol: "tcp", port: "80"}
+    - { name: "teleport", protocol: "tcp", port: "443"}

@@ -1,0 +1,5 @@
+---
+- hosts: local_management
+  connection: local
+  roles:
+    - teleport-management
