@@ -1,0 +1,20 @@
+---
+teleport_server: tp.beta-82.win
+teleport_github_org: happy42-org
+
+teleport_github_display_name: github-sso-happy42
+
+teleport_max_session_ttl: 10h0m0s
+
+teleport_roles:
+  - name: "github-sso-100"
+    logins: ["ubuntu"]
+    app_acl_level: [300]
+    max_session_ttl: "10h0m0s"
+  - name: "github-sso-300"
+    logins: ["ubuntu"]
+    app_acl_level: [300]
+    max_session_ttl: "10h0m0s"
+
+#teleport_vaul_app_name: vault-01
+
