@@ -7,16 +7,14 @@
 - name: Import dir
   ansible.builtin.import_tasks: 10-create-dir.yml
   when:
-    - selfsigned is defined and not file_check.stat.exists
-#    - ssl_domain == "selfsigned"
+    - not file_check.stat.exists
   tags:
     - cert
 
 - name: Import ssl
   ansible.builtin.import_tasks: 15-create-cert.yml
   when:
-    - selfsigned is defined and not file_check.stat.exists
-#    - ssl_domain == "selfsigned"
+    - not file_check.stat.exists
 #  notify:
 #    - "{{ ssl_notify }}"
   tags:
