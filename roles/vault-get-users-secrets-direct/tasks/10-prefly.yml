@@ -1,11 +1,13 @@
 ---
-- name: Include vars
-  ansible.builtin.include_vars:
-    file: vault.secret
-  register: env_file_result
-  tags:
-    - vault-debug
+- name: Check if Vault token is available
+  fail:
+    msg: "VAULT_ACCESS_TOKEN environment variable is not set"
+  when: lookup('env', 'VAULT_ACCESS_TOKEN') == ""
 
-#- debug: msg="vars {{vault_token}}"
-#  tags:
-#    - vault-debug
+- name: Set Vault token from environment variable
+  set_fact:
+    vault_token: "{{ lookup('env', 'VAULT_ACCESS_TOKEN') }}"
+
+#- name: Print the Vault token (for debugging, optional)
+#  debug:
+#    msg: "Using Vault token: {{ vault_token }}"

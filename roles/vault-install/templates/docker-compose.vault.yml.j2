@@ -1,12 +1,6 @@
-networks:
-  vault:
-    driver: bridge
-    name: vault
-    attachable: true
-
 services:
   vault:
-    image: {{vault_image}}
+    image: hashicorp/vault:{{vault_image_version}}
     container_name: vault
     networks:
        - vault
@@ -19,14 +13,16 @@ services:
     restart: always
 {% endif %}
     volumes:
-      - {{vault_conf_path}}:{{vault_conf_path}}
+      - {{vault_base_path}}:{{vault_base_path}}
     cap_add:
       - IPC_LOCK
     command: vault server -config={{vault_conf_path}}/config.hcl
 
-
-
-
+networks:
+  vault:
+    driver: bridge
+    name: vault
+    attachable: true
 
 
 

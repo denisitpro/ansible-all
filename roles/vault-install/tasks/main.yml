@@ -4,23 +4,13 @@
     - vault
     - vault-path
 
-- import_tasks: 08-config-single.yml
-  when: vault_cls_enabled is not defined
+- import_tasks: 10-config.yml
   tags:
     - vault
-    - vault-config
-
-
-- import_tasks: 10-config-cls.yml
-  when: vault_cls_enabled is defined
-  tags:
-    - vault
-    - vault-cls
     - vault-config
 
 - import_tasks: 15-copy-ssl.yml
-  when:
-    - vault_cls_enabled is defined
+  when: vault_domain is defined and vault_domain == "selfsign"
   tags:
     - vault
     - vault-ssl
@@ -35,11 +25,6 @@
     - vault
     - vault-compose
     - vault-config
-    
-- import_tasks: 60-create-backup-dir.yml
-  when: backup_vault is defined
-  tags:
-    - backup-dir
 
 - import_tasks: 80-vault-clean.yml
   tags: ['never','vault-clean']
