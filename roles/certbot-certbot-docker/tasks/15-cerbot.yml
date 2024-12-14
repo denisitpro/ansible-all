@@ -2,7 +2,7 @@
 - name: copy certbot
   template:
     src: "docker-compose.certbot.j2"
-    dest: "{{docker_compose_path | default('/opt/docker') }}/certbot/docker-compose.yml"
+    dest: "{{certbot_compose_path}}/docker-compose.yml"
     owner: root
     group: root
     mode: 0644

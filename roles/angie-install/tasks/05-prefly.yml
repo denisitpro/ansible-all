@@ -1,0 +1,26 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{angie_compose_path}}"
+
+- name: create folder angie
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0775'
+    owner: "{{angie_uid}}"
+    group: "{{angie_guid}}"
+  with_items:
+    - "{{angie_base_path}}"
+    - "{{angie_base_path}}/base/"
+    - "{{angie_base_path}}/logs"
+    - "{{angie_base_path}}/httpd.d/"
+    - "{{angie_base_path}}/upstream.d/"
+    - "{{angie_base_path}}/conf.d/"

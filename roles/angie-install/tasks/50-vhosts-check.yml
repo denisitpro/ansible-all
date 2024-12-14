@@ -1,0 +1,16 @@
+---
+- name: Validate Angie configuration inside the container
+  shell: "docker exec -t angie angie -t"
+  register: angie_docker_config_status
+  failed_when: angie_docker_config_status.rc != 0
+  changed_when: false
+
+- name: Display validation result
+  debug:
+    msg: >
+      Angie configuration validation result: 
+      {{ 'SUCCESS' if angie_docker_config_status.rc == 0 else 'FAILED' }}
+
+- name: Reload Angie configuration if validation succeeded
+  shell: "docker exec -t angie angie -s reload"
+  when: angie_docker_config_status.rc == 0

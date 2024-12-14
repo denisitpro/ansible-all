@@ -1,0 +1,11 @@
+---
+- name: restart angie
+  community.docker.docker_compose_v2:
+    project_src: "{{angie_compose_path}}"
+    services: "{{item}}"
+    state: restarted
+  with_items:
+    - "angie"
+
+- name: reload angie
+  shell: "docker exec -t angie angie -s reload"

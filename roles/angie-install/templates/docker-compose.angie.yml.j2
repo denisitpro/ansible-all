@@ -1,0 +1,60 @@
+services:
+  angie:
+    image: docker.angie.software/angie:{{angie_version}}
+    container_name: angie
+    network_mode: host
+{% if angie_userns_host is defined %}
+    userns_mode: host
+{% endif %}
+    volumes:
+      - {{angie_base_path}}/base/angie.conf:/etc/angie/angie.conf
+      - {{angie_base_path}}/httpd.d:/etc/angie/http.d
+      - {{angie_base_path}}/upstream.d:/etc/angie/upstream.d
+      - {{angie_base_path}}/conf.d:/etc/angie/conf.d
+      - {{angie_base_path}}/logs:/var/log/angie
+      - {{ssl_path | default('/opt/ssl/')}}:{{ssl_path | default('/opt/ssl/')}}
+{% if certbot_cert_usage is defined %}
+      - {{certbot_path | default('/opt/certbot') }}/www:{{angie_certbot_path | default('/var/www/certbot')}}
+      - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{angie_container_ssl_certbot_path| default('/opt/certbot/ssl')}}
+{% endif %}
+{% if angie_static_file is defined %}
+#      - {{angie_static_path}}:/var/www/html:ro
+{% endif %}
+{% if angie_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector_server_fluent_address is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{vector_server_fluent_address | default('127.0.0.1')}}:{{ vector_server_fluent_port | default('24224') }}
+        tag: angie
+        fluentd-async: "{{fluent_async}}"
+        fluentd-buffer-limit: "{{fluendt_buffer_limit}}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+{% if angie_docker_sysctls is defined and angie_docker_network_mode is defined and angie_docker_network_mode != "host" %}
+    sysctls:
+{% if angie_docker_sysctls.net_core_somaxconn is defined %}
+      net.core.somaxconn: {{ angie_docker_sysctls.net_core_somaxconn }}
+{% endif %}
+{% endif %}
+{% if angie_docker_ulimits is defined %}
+    ulimits:
+{% if angie_docker_ulimits.nproc is defined %}
+      nproc: {{ angie_docker_ulimits.nproc }}
+{% endif %}
+{% if angie_docker_ulimits.nofile is defined %}
+      nofile:
+{% if angie_docker_ulimits.nofile.soft is defined %}
+        soft: {{ angie_docker_ulimits.nofile.soft }}
+{% endif %}
+{% if angie_docker_ulimits.nofile.hard is defined %}
+        hard: {{ angie_docker_ulimits.nofile.hard }}
+{% endif %}
+{% endif %}
+{% endif %}

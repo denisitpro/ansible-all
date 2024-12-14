@@ -1,0 +1,11 @@
+---
+- name: Log in to Docker Registry
+  community.docker.docker_login:
+    registry_url: "{{ docker_registry_url }}"
+    username: "{{ docker_registry_username }}"
+    password: "{{ docker_registry_password }}"
+  register: docker_login_result
+
+- name: Ensure login was successful
+  debug:
+    msg: "Login successful: {{ docker_login_result }}"

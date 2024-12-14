@@ -1,0 +1,24 @@
+---
+- name: Copy angie config
+  ansible.builtin.template:
+    src: "{{angie_conf_name | default('angie-1-7-0.conf.j2')}}"
+    dest: "{{angie_base_path}}/base/angie.conf"
+    owner: "{{angie_uid}}"
+    group: "{{angie_guid}}"
+    mode: '0644'
+  notify:
+    - reload angie
+
+- name: Copy files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{angie_base_path}}/conf.d/{{ item }}"
+    owner: "{{angie_uid}}"
+    group: "{{angie_guid}}"
+    mode: '0644'
+  loop:
+    - log-format-g2.conf
+    - tls1_2-tls1_3.conf
+    - request-id.conf
+  tags:
+    - nginx_include
