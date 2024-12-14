@@ -1,3 +1,0 @@
----
-- debug: msg="{{ ansible_distribution }} - {{ vault_dict_users_secret.grafana_ldap_password }}"
-

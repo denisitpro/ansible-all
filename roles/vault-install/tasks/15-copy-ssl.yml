@@ -1,0 +1,27 @@
+---
+#- name: Import ssl role
+#  ansible.builtin.import_role:
+#    name: "ssl-copy-certs"
+#  vars:
+#    ssl_path: "{{ vault_conf_path }}/ssl"
+#    ssl_domain: "{{ vault_domain }}"
+#    ssl_cert_path: "{{ vault_conf_path }}/ssl/fullchain.pem"
+#    ssl_privkey_path: "{{ vault_conf_path }}/ssl/privkey.pem"
+#    ssl_notify: "restart vault"
+#    ssl_user: 100
+#    ssl_group: 1000
+#  when:
+#    - vault_domain != "selfsigned"
+
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "ssl-selfsigned-cert"
+  vars:
+    ssl_path: "{{ vault_conf_path }}/ssl"
+#    ssl_domain: "{{ vault_domain }}"
+    ssl_cert_path: "{{ vault_conf_path }}/ssl/fullchain.pem"
+    ssl_privkey_path: "{{ vault_conf_path }}/ssl/privkey.pem"
+#    ssl_notify: "restart vault"
+    ssl_user: 100
+    ssl_group: 1000
+

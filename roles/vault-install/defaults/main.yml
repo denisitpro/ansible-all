@@ -1,0 +1,21 @@
+---
+vault_compose_path: /opt/docker/vault
+
+vault_base_path: /opt/vault
+vault_conf_path: "{{vault_base_path}}/config"
+vault_data_path: "{{vault_base_path}}/data"
+
+#vault_bind_addr: "{{ansible_default_ipv4.address}}"
+vault_bind_addr: "127.0.0.1"
+
+vault_app_port: 8200
+vault_cls_port: 8201
+
+vault_image_version: 1.18.2
+#vault_domain: "selfsign"
+
+vault_listener_addr: "0.0.0.0:8200"
+vault_cluster_addr:  "0.0.0.0:8201"
+
+vault_cluster_name: "vault-{{stand_type | default('none')}}"
+#vault_cluster_name: vault-single
