@@ -1,7 +1,8 @@
 ---
-docker_compose_path: /opt/docker
+certbot_compose_path: /opt/docker/certbot
+
 certbot_image: certbot/certbot
-certbot_version: v2.11.0
+certbot_version: v3.0.1
 
 certbot_path: /opt/certbot
 

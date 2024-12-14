@@ -1,0 +1,12 @@
+---
+- import_tasks: 05-login.yml
+  when:
+    - docker_registry_username | length > 0
+    - docker_registry_password | length > 0
+  tags:
+    - docker-login
+
+- import_tasks: 10-logout.yml
+  tags:
+    - never
+    - docker-logout

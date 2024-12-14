@@ -1,0 +1,5 @@
+---
+- name: start compose angie
+  community.docker.docker_compose_v2:
+    project_src: "{{angie_compose_path}}"
+    state: present

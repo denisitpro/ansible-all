@@ -1,5 +1,8 @@
 ---
-- name: restart-docker vault
-  shell: "docker compose restart vault"
-  args:
-    chdir: "{{docker_compose_app_path}}/vault"
+- name: restart vault
+  community.docker.docker_compose_v2:
+    project_src: "{{vault_compose_path}}"
+    services: "{{item}}"
+    state: restarted
+  with_items:
+    - "vault"

@@ -1,0 +1,157 @@
+## {{ ansible_managed }} ##
+
+# package: angie-module-auth-jwt
+#load_module modules/ngx_http_auth_jwt_module.so;
+
+# package: angie-module-auth-ldap
+#load_module modules/ngx_http_auth_ldap_module.so;
+
+# package: angie-module-auth-spnego
+#load_module modules/ngx_http_auth_spnego_module.so;
+
+# package: angie-module-brotli
+#load_module modules/ngx_http_brotli_filter_module.so;
+#load_module modules/ngx_http_brotli_static_module.so;
+
+# package: angie-module-cache-purge
+#load_module modules/ngx_http_cache_purge_module.so;
+
+# package: angie-module-dav-ext
+#load_module modules/ngx_http_dav_ext_module.so;
+
+# package: angie-module-dynamic-limit-req
+#load_module modules/ngx_http_dynamic_limit_req_module.so;
+
+# package: angie-module-echo
+#load_module modules/ngx_http_echo_module.so;
+
+# package: angie-module-enhanced-memcached
+#load_module modules/ngx_http_enhanced_memcached_module.so;
+
+# package: angie-module-eval
+#load_module modules/ngx_http_eval_module.so;
+
+# package: angie-module-geoip2
+#load_module modules/ngx_http_geoip2_module.so;
+#load_module modules/ngx_stream_geoip2_module.so;
+
+# package: angie-module-headers-more
+#load_module modules/ngx_http_headers_more_filter_module.so;
+
+# package: angie-module-image-filter
+#load_module modules/ngx_http_image_filter_module.so;
+
+# package: angie-module-keyval
+#load_module modules/ngx_http_keyval_module.so;
+
+# package: angie-module-ndk
+#load_module modules/ndk_http_module.so;
+
+# package: angie-module-lua
+#load_module modules/ngx_http_lua_module.so;
+#load_module modules/ngx_stream_lua_module.so;
+
+# package: angie-module-modsecurity
+#load_module modules/ngx_http_modsecurity_module.so;
+
+# package: angie-module-njs
+#load_module modules/ngx_http_js_module.so;
+#load_module modules/ngx_stream_js_module.so;
+
+# package: angie-module-opentracing
+#load_module modules/ngx_http_opentracing_module.so;
+
+# package: angie-module-otel
+#load_module modules/ngx_otel_module.so;
+
+# package: angie-module-perl
+#load_module modules/ngx_http_perl_module.so;
+
+# package: angie-module-postgres
+#load_module modules/ngx_postgres_module.so;
+
+# package: angie-module-redis2
+#load_module modules/ngx_http_redis2_module.so;
+
+# package: angie-module-rtmp
+#load_module modules/ngx_rtmp_module.so;
+
+# package: angie-module-set-misc
+#load_module modules/ngx_http_set_misc_module.so;
+
+# package: angie-module-subs
+#load_module modules/ngx_http_subs_filter_module.so;
+
+# package: angie-module-testcookie
+#load_module modules/ngx_http_testcookie_access_module.so;
+
+# package: angie-module-upload
+#load_module modules/ngx_http_upload_module.so;
+
+# package: angie-module-vod
+#load_module modules/ngx_http_vod_module.so;
+
+# package: angie-module-vts
+#load_module modules/ngx_http_stream_server_traffic_status_module.so;
+#load_module modules/ngx_http_vhost_traffic_status_module.so;
+#load_module modules/ngx_stream_server_traffic_status_module.so;
+
+# package: angie-module-xslt
+#load_module modules/ngx_http_xslt_filter_module.so;
+
+# package: angie-module-zip
+#load_module modules/ngx_http_zip_module.so;
+
+# package: angie-module-zstd
+#load_module modules/ngx_http_zstd_filter_module.so;
+#load_module modules/ngx_http_zstd_static_module.so;
+
+user  angie;
+worker_processes  {{angie_worker_processes |default('auto')}};
+worker_rlimit_nofile 65536;
+
+pid        /run/angie/angie.pid;
+
+events {
+    worker_connections  {{events_worker_connections | default('65536')}};
+	use	epoll;
+	multi_accept	on;
+}
+
+
+http {
+    include       /etc/angie/mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+
+    keepalive_timeout  {{angie_keepalive_timeout |default('65')}};
+
+# optimizations
+	#Number of requests a client can make over the keep-alive connection.
+	keepalive_requests 1000;
+	#Allow the server to close the connection after a client stops responding.
+	reset_timedout_connection on;
+
+	tcp_nopush	on;
+	tcp_nodelay	on;
+    gzip  on;
+{% if angie_proxy_read_timeout is defined %}
+	proxy_read_timeout	{{ nginx_proxy_read_timeout }};
+{% endif %}
+{% if angie_client_max_body_size is defined %}
+	client_max_body_size	{{ nginx_client_max_body_size }};
+{% endif %}
+
+# extended configs - upstream
+    include /etc/angie/conf.d/*.conf;
+    include /etc/angie/upstream.d/*.conf;
+    include /etc/angie/http.d/*.conf;
+
+    access_log	/var/log/angie/access.log	main;
+    error_log	/var/log/angie/error.log	warn;
+
+}
+
+#stream {
+#    include /etc/angie/stream.d/*.conf;
+#}

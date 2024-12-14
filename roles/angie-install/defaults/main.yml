@@ -1,0 +1,33 @@
+---
+angie_compose_path: /opt/docker/angie
+
+angie_version: 1.7.0
+
+angie_base_path: /opt/angie
+
+angie_uid: 100
+angie_guid: 101
+
+#global_bind_addr: "{{ ansible_default_ipv4.address }}"
+##angie_bind_addr_ipv4: "{{ global_bind_addr }}"
+#angie_data_path: /opt/angie
+#docker_compose_path: /opt/docker
+#angie_static_path: /opt/angie/static
+#
+#
+#angie_version_docker: 1.27.1-alpine
+#
+#angie_http_port: 80
+#angie_https_port: 443
+#
+#angie_docker_sysctls:
+#  net_core_somaxconn: 4096
+#
+#angie_docker_ulimits:
+#  nproc: 65535
+#  nofile:
+#    soft: 65535
+#    hard: 65535
+#
+#fluent_async: "true"
+#fluendt_buffer_limit: 200000
