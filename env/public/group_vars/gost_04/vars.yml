@@ -9,6 +9,7 @@ xray_restart: true
 
 selfsigned: true
 nginx_static_file: true
+nginx_restart: true
 
 upstream_multi:
   upstream:
