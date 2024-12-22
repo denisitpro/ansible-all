@@ -1,0 +1,77 @@
+##### ANSIBLE generated config
+## {{ ansible_managed }} ##
+##### not change hands
+####  your changes will be lost
+
+server {
+{% if nginx_bind_addr_ipv4  is defined%}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }};
+{% else %}
+    listen {{ item.http_port | default("80") }};
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("80") }};
+{% endif %}
+        server_name {{item.servername}};
+
+        return 301 https://$host$request_uri;
+}
+
+server {
+{% if nginx_bind_addr_ipv4  is defined%}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_ports | default("443") }} ssl;
+{% else %}
+    listen {{ item.https_ports | default("443") }} ssl;
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("443") }} ssl;
+{% endif %}
+        http2  on;
+        server_name {{ item.servername }};
+
+# log project use  include
+{% if nginx_logs_stdout is not defined %}
+        access_log  {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_access_log_format | default ("extended") }};
+        error_log   {{ nginx_log_path | default('/var/log/angie')}}/{{ item.servername.split(' ')[0] }}-error.log {{nginx_error_log_format | default('')}};
+{% endif %}
+{% if nginx_logs_stdout is defined %}
+        access_log  /dev/stdout  {{nginx_access_log_format | default ("extended")}};
+        error_log   /dev/stdout {{nginx_error_log_format | default('')}};
+{% endif %}
+
+## include ssl certificate
+{% if nginx.vhosts %}
+{% if item.acme is defined %}
+    ssl_certificate     {{  item.ssl_path | default ("/opt/certbot/ssl/live") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path| default ("/opt/certbot/ssl/live")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% else %}
+    ssl_certificate     {{  item.ssl_path | default ("/opt/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path| default ("/opt/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% endif %}
+{% endif %}
+
+{% for included in  nginx.include | default([]) %}
+    include  {{ included }};
+{% endfor %}
+
+{% if nginx.size_upload_files  is defined %}
+{% for included in  nginx.size_upload_files %}
+# Ansible management max upload size
+    client_max_body_size  {{ included.client_max_body_size }};
+{% endfor %}
+{% endif %}
+### end ansible management
+
+
+     location / {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass {{item.upstream_protocol}}://{{item.upstream_name}};
+##        allow all;
+   }
+}
+
+### end generate config

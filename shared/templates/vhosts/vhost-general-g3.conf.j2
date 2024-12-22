@@ -35,12 +35,12 @@ server {
 
 # log project use  include
 {% if nginx_logs_stdout is not defined %}
-        access_log  {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_log_format | default ("extended") }};
-        error_log   {{ nginx_log_path | default('/var/log/angie')}}/{{ item.servername.split(' ')[0] }}-error.log;
+        access_log  {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_access_log_format | default ("extended") }};
+        error_log   {{ nginx_log_path | default('/var/log/angie')}}/{{ item.servername.split(' ')[0] }}-error.log {{nginx_error_log_format | default('')}};
 {% endif %}
 {% if nginx_logs_stdout is defined %}
-        access_log  /dev/stdout  {{nginx_log_format | default ("extend_json")}};
-        error_log   /dev/stdout;
+        access_log  /dev/stdout  {{nginx_access_log_format | default ("extended")}};
+        error_log   /dev/stdout {{nginx_error_log_format | default('')}};
 {% endif %}
 
 
