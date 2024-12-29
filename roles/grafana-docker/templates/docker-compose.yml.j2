@@ -1,9 +1,16 @@
 services:
   grafana:
     image: {{ grafana_image }}:{{ grafana_version }}
-    container_name: grafana
+    container_name: {{ grafana_docker_container_name | default('grafana') }}
+{% if  grafana_force_port443 is not defined %}
     network_mode: host
-    mem_limit: {{ grafana_mem_limit | default('512m') }}
+{% else %}
+    ports:
+      - "443:443"
+    cap_add:
+      - NET_BIND_SERVICE
+{% endif %}
+    mem_limit: {{ grafana_mem_limit | default('512M') }}
     volumes:
       - "{{ grafana_data_path }}/etc:/etc/grafana"
       - "{{ grafana_data_path }}/etc/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
@@ -11,32 +18,12 @@ services:
       - "{{ grafana_data_path }}/etc/provisioning/plugins:/etc/grafana/provisioning/plugins"
       - "{{ grafana_data_path }}/etc/provisioning/notifiers:/etc/grafana/provisioning/notifiers"
       - "{{ grafana_data_path }}/data:/var/lib/grafana"
-{% if grafana_ssl_enabled is defined %}
+{% if  grafana_domain | default('') == "selfsign" %}
       - "{{ grafana_ssl_path }}:{{ grafana_ssl_path }}"
 {% endif %}
-{% if gf_ldap_toml_servers_root_ca_cert is defined %}
-      - "{{ grafana_ipa_ca }}:{{ gf_ldap_toml_servers_root_ca_cert }}"
-{% endif %}
-{% if grafana_restart is defined %}
-    restart: always
-{% endif %}
-    environment:
-      {% if gf_auth_google_enabled is defined %}
-      GF_AUTH_GOOGLE_ENABLED: '{{ gf_auth_google_enabled }}'
-      GF_AUTH_GOOGLE_CLIENT_ID: '{{ gf_auth_google_client_id }}'
-      GF_AUTH_GOOGLE_CLIENT_SECRET: '{{ gf_auth_google_client_secret }}'
-      GF_AUTH_GOOGLE_SCOPES: '{{ gf_auth_google_scopes }}'
-      GF_AUTH_GOOGLE_AUTH_URL: '{{ gf_auth_google_auth_url }}'
-      GF_AUTH_GOOGLE_TOKEN_URL: '{{ gf_auth_google_token_url }}'
-      GF_AUTH_GOOGLE_ALLOWED_DOMAINS: '{{ gf_auth_google_allowed_domains }}'
-      GF_AUTH_GOOGLE_ALLOW_SIGN_UP: '{{ gf_auth_google_allow_sign_up }}'
-{% endif %}
-{% if gf_auth_ldap_enabled is defined %}
-      GF_AUTH_LDAP_ENABLED: '{{ gf_auth_ldap_enabled }}'
-      GF_AUTH_LDAP_CONFIG_FILE: '{{ gf_auth_ldap_config_file }}'
-      GF_AUTH_LDAP_ALLOW_SIGN_UP: '{{ gf_auth_ldap_allow_sign_up }}'
-{% endif %}
+    restart: {{ grafana_restart | default('unless-stopped') }}
 {% if grafana_plugins is defined %}
+    environment:
       GF_INSTALL_PLUGINS: '{{ grafana_plugins }}'
 {% endif %}
 {% if vector is defined %}
@@ -46,7 +33,7 @@ services:
         fluentd-address: {{ vector_server_fluent_address }}:{{ vector_server_fluent_port | default('24224') }}
         tag: {{ grafana_docker_container_name | default('grafana') }}
         fluentd-async: "{{ fluent_async | default('true') }}"
-        fluentd-buffer-limit: "{{ fluendt_buffer_limit | default('200000') }}"
+        fluentd-buffer-limit: "{{ fluentd_buffer_limit | default('200000') }}"
 {% else %}
     logging:
       driver: json-file

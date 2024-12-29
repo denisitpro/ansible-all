@@ -1,6 +1,7 @@
 auth_enabled: false
 
 server:
+  http_listen_address: {{loki_http_addr | default('') }}
   http_listen_port: {{loki_http_port | default('3100')}}
   grpc_listen_port: 9095
   grpc_listen_address: {{loki_grpc_addr | default('127.0.0.1')}}

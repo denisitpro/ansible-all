@@ -10,7 +10,7 @@ services:
   loki:
     image: grafana/loki:{{loki_version}}
     container_name: loki
-    hostname: loki-{{ stand_type }}
+    hostname: loki
 {% if loki_ssl is defined %}
     networks:
       - loki

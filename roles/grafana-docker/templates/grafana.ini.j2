@@ -9,9 +9,10 @@ domain = {{ gf_server_domain }}
 http_addr = {{grafana_bind_addr | default('127.0.0.1')}}
 http_port = {{grafana_srv_port | default('3000') }}
 enforce_domain = False
-cert_key = {{grafana_ssl_path}}/{{gen_key_name |default('self-signed-key.pem')}}
-cert_file = {{grafana_ssl_path}}/{{gen_cert_name | default('self-signed-cert.pem') }}
-protocol = {{grafana_protocol| default('http')}}
+cert_key = {{grafana_ssl_path}}/{{gen_key_name |default('privkey.pem')}}
+cert_file = {{grafana_ssl_path}}/{{gen_cert_name | default('fullchain.pem') }}
+protocol = {% if grafana_domain | default('') == "selfsign" %}https{% else %}{{ grafana_protocol | default('http') }}{% endif %}
+
 #socket =
 #enable_gzip = False
 
@@ -27,8 +28,8 @@ scopes = user:email,read:org
 auth_url = https://github.com/login/oauth/authorize
 token_url = https://github.com/login/oauth/access_token
 api_url = https://api.github.com/user
-allow_sign_up = {{gf_auth_github_allow_sign_up}}
-auto_login = {{gf_auth_github_auto_login}}
+allow_sign_up = {{gf_auth_github_allow_sign_up | default('true')}}
+auto_login = {{gf_auth_github_auto_login | default('false')}}
 allowed_organizations = ["{{gf_auth_github_allowed_organizations}}"]
 #oauth_skip_org_role_update_sync = true
 {% if gf_auth_github_allow_skip_allow_domain is not  defined %}
