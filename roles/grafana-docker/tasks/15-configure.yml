@@ -9,10 +9,6 @@
   loop:
     - "grafana.ini"
   notify: restart-docker grafana
-  tags:
-    - grafana-base-config
-    - grafana-config-base
-
 
 - name: copy config  ldap
   template:
@@ -24,16 +20,4 @@
   when: gf_auth_ldap_enabled is defined
   loop:
     - "ldap.toml"
-  notify: restart-docker grafana
-
-- name: Change file ownership, group and permissions
-  ansible.builtin.file:
-    path: "{{item}}"
-    owner: "{{grafana_user_uid | default('472')}}"
-    group: root
-    mode: '0640'
-  loop:
-    - "{{grafana_ssl_path}}/{{gen_key_name |default('self-signed-key.pem')}}"
-    - "{{grafana_ssl_path}}/{{gen_cert_name | default('self-signed-cert.pem') }}"
-  when: grafana_ssl_enabled is defined and grafana_self_sign_used is defined
   notify: restart-docker grafana

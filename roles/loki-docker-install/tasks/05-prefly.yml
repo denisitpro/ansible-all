@@ -1,5 +1,15 @@
 ---
-- import_tasks: shared/tasks/create-dir-docker-compose.yml
+#- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{loki_compose_path}}"
 
 - name: create path
   ansible.builtin.file:

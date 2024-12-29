@@ -1,0 +1,14 @@
+---
+#todo add copy ssl - example role vault
+
+# https://github.com/grafana/grafana/blob/main/Dockerfile UID and GID
+- name: Import ssl role
+  ansible.builtin.import_role:
+    name: "ssl-selfsigned-cert"
+  vars:
+    ssl_path: "{{ grafana_ssl_path }}"
+    ssl_cert_path: "{{grafana_ssl_path}}/fullchain.pem"
+    ssl_privkey_path: "{{ grafana_ssl_path }}/privkey.pem"
+#    ssl_notify: "restart grafana"
+    ssl_user: "{{grafana_user_uid}}"
+    ssl_group: 0

@@ -3,9 +3,8 @@
   tags:
     - grafana
 
-
-- import_tasks: shared/tasks/generate-ssl-selfsign.yml
-  when: grafana_ssl_enabled is defined and grafana_self_sign_used is defined
+- import_tasks: 10-copy-ssl.yml
+  when: grafana_domain | default('') == "selfsign"
   tags:
     - grafana
     - grafana-ssl

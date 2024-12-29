@@ -2,7 +2,7 @@
 - name: copy compose grafana
   template:
     src: "docker-compose.yml.j2"
-    dest: "{{ docker_compose_path | default('/opt/docker') }}/grafana/docker-compose.yml"
+    dest: "{{grafana_compose_path}}/docker-compose.yml"
     mode: 0600
   tags:
     - config

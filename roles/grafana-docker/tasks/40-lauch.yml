@@ -2,4 +2,4 @@
 - name: run restart compose
   shell: "docker compose down && docker compose up -d"
   args:
-    chdir: "{{docker_compose_path | default('/opt/docker')}}/grafana"
+    chdir: "{{grafana_compose_path}}"
