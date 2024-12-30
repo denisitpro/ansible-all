@@ -9,5 +9,5 @@ services:
     volumes:
       - {{swfs_snapshot_path}}:{{swfs_snapshot_path}}
       - {{swfs_data_path}}:/data
-    command: master -mdir={{swfs_snapshot_path}} -ip={{swfs_master_name|default(ansible_fqdn)}} -ip.bind={{sw_bind_addr | default('0.0.0.0')}} -port={{swfw_bind_port | default('9333')}} {% if swfs_master_metrics_enabled is defined %} -metricsPort={{sw_metric_port | default('9324')}}{% endif %}
+    command: master -defaultReplication={{swfs_default_replication |default('001')}} -mdir={{swfs_snapshot_path}} -ip={{swfs_master_name|default(ansible_fqdn)}} -ip.bind={{swfs_bind_addr | default('0.0.0.0')}} -port={{swfw_bind_port | default('9333')}} {% if swfs_master_metrics_enabled is defined %} -metricsPort={{sw_metric_port | default('9324')}}{% endif %}
 

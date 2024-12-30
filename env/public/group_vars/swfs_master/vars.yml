@@ -1,10 +1,13 @@
 ---
 swfs_restart: 'no'
-swfs_master_name: sw-master-01.beta-82.win
+swfs_master_name: swfs-master-01.beta-82.win
+swfs_bind_addr: "{{ansible_default_ipv4.address}}"
 
 iptables:
   ipv4:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "swsf_master_port", protocol: "tcp", port: "{{swfw_bind_port | default('9333')}}"}
+    - { name: "swsf_master_grpc", protocol: "tcp", port: "{{swfw_grpc_port | default('19333')}}"}
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "swsf_master_port", protocol: "tcp", port: "{{swfw_bind_port | default('9333')}}"}
