@@ -1,0 +1,10 @@
+---
+- hosts: swfs_volume
+  become: yes
+  roles:
+    - 0010-common-v4
+    - docker-install
+    - seaweedfs-install
+    - ufw-base-configure
+    - ufw-management
+

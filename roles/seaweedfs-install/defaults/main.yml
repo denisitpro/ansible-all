@@ -1,8 +1,16 @@
 ---
-swfs_master_compose_path: /opt/docker/swfs-master
+swfs_master_compose_path: /opt/docker/swfs
 
 swfs_version: '3.80'
 
 swfs_base_path: /opt/swfs
 swfs_data_path: "{{swfs_base_path}}/data"
 swfs_snapshot_path:  "{{swfs_base_path}}/snapshot"
+
+
+swfs_launch_mode: master # suport  volume
+
+# volume mode
+swfs_volume_bind_addr: "{{ansible_default_ipv4.address}}"
+swfs_volume_bind_port: 8080
+swfs_volume_mserver: swfs-master.example.com:9333

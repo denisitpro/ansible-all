@@ -25,7 +25,12 @@ teleport-01.beta-82.win
 [build_01]
 build-01.beta-82.win
 
-[seaweedfs_master]
+[swfs_master]
 sw-master-01.beta-82.win
+
+[swfs_volume]
+swfs-volume-20.beta-82.win
+swfs-volume-21.beta-82.win
+
 
 

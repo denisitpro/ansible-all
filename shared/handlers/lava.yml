@@ -1,0 +1,13 @@
+---
+- name: lava-proxy restart
+  community.docker.docker_compose_v2:
+    project_src: "{{lava_compose_path}}"
+    services: "{{item}}"
+    state: restarted
+  become: yes
+  become_user: "{{lava_os_user}}"
+  with_items:
+    - "lava-proxy-grpc"
+    - "lava-proxy-grpc-web"
+    - "lava-proxy-rest"
+    - "lava-proxy-rpc"

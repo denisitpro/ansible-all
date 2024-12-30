@@ -1,5 +1,29 @@
 ---
-- name: restart solana
-  systemd:
-    name: solana
+- name: solana restart
+  community.docker.docker_compose_v2:
+    project_src: "{{solana_compose_path}}"
+    services: "{{item}}"
     state: restarted
+  become: yes
+  become_user: "{{solana_os_user}}"
+  with_items:
+    - "solana"
+
+#- name: solana-proxy restart
+#  community.docker.docker_compose_v2:
+#    project_src: "{{solana_compose_path}}"
+#    services: "{{item}}"
+#    state: restarted
+#  become: yes
+#  become_user: "{{solana_os_user}}"
+#  with_items:
+#    - "solana-proxy-grpc"
+#    - "solana-proxy-rpc"
+#    - "solana-proxy-ws"
+
+- name: solana-proxy restart
+  shell: "docker compose down solana-proxy-grpc solana-proxy-rpc solana-proxy-ws && docker compose up -d solana-proxy-grpc solana-proxy-rpc solana-proxy-ws"
+  args:
+    chdir: "{{ solana_compose_path }}"
+  become: yes
+  become_user: "{{solana_os_user}}"

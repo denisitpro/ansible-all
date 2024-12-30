@@ -1,5 +1,5 @@
 ---
-- hosts: seaweedfs_master
+- hosts: swfs_master
   become: yes
   roles:
     - 0010-common-v4
