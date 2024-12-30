@@ -5,3 +5,4 @@ swfs_version: '3.80'
 
 swfs_base_path: /opt/swfs
 swfs_data_path: "{{swfs_base_path}}/data"
+swfs_snapshot_path:  "{{swfs_base_path}}/snapshot"

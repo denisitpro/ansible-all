@@ -17,3 +17,4 @@
   with_items:
     - "{{ swfs_base_path }}"
     - "{{ swfs_data_path }}"
+    - "{{swfs_snapshot_path}}"
