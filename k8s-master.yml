@@ -6,4 +6,4 @@
 #    - ufw-base-configure
 #    - ufw-management
     - k8s-kubeadm-install
-    - helm-install
+#    - helm-install
