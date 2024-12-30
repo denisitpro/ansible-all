@@ -1,0 +1,13 @@
+## {{ ansible_managed }} ##
+
+services:
+  swfs:
+    image: chrislusf/seaweedfs:{{swfs_version}}
+    container_name: swfs
+    network_mode: host
+    restart: {{ swfs_restart | default('unless-stopped') }}
+    volumes:
+      - {{swfs_data_path}}:{{swfs_data_path}}
+    command: master -mdir={{swfs_data_path}} -ip=master -ip.bind={{sw_bind_addr | default('0.0.0.0')}} -port={{sw_bind_port | default('9333')}} {% if swfs_master_metrics_enabled is defined %} -metricsPort={{sw_metric_port | default('9324')}}{% endif %}
+
+

@@ -1,0 +1,16 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - swfs
+    - swfw-prefly
+
+
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - swfs
+    - swfs-compose
+
+#- import_tasks: 50-launch.yml
+#  tags:
+#    - swfs
+#    - swfw-compose

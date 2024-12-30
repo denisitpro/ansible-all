@@ -1,0 +1,11 @@
+---
+swfs_restart: 'no'
+
+iptables:
+  ipv4:
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "swsf_master_port", protocol: "tcp", port: "{{sw_bind_port | default('9333')}}"}
+
+
