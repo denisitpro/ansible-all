@@ -1,0 +1,12 @@
+## {{ ansible_managed }} ##
+
+services:
+  swfs:
+    image: chrislusf/seaweedfs:{{swfs_version}}
+    container_name: swfs
+    network_mode: host
+    restart: {{ swfs_restart | default('unless-stopped') }}
+    volumes:
+      - {{swfs_data_path}}:/data
+    command:  volume -dir=/data -max={{swfs_volume_vol_size | default('20')}} -ip={{swfs_volume_bind_addr}} -port={{swfs_volume_bind_port}} -mserver={{swfs_volume_mserver}}
+

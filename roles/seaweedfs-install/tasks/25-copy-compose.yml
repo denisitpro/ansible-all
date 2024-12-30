@@ -1,6 +1,16 @@
 ---
-- name: copy compose file
+- name: copy compose file - master
   template:
-    src: "docker-compose.swfs.yml.j2"
+    src: "docker-compose.swfs-master.yml.j2"
     dest: "{{swfs_master_compose_path}}/docker-compose.yml"
     mode: 0600
+  when: "swfs_launch_mode == 'master'"
+
+
+- name: copy compose file - volume
+  template:
+    src: "docker-compose.swfs-volume.yml.j2"
+    dest: "{{swfs_master_compose_path}}/docker-compose.yml"
+    mode: 0600
+  notify: restart swfs
+  when: "swfs_launch_mode == 'volume'"

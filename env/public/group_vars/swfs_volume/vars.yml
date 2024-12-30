@@ -1,0 +1,16 @@
+---
+swfs_restart: 'no'
+#swfs_master_name:
+
+swfs_launch_mode: volume
+swfs_volume_mserver: "sw-master-01.beta-82.win:9333"
+
+iptables:
+  ipv4:
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "swfs_volume_bind_port", protocol: "tcp", port: "{{swfs_volume_bind_port | default('8080')}}"}
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "swfs_volume_bind_port", protocol: "tcp", port: "{{swfs_volume_bind_port | default('8080')}}"}
+
+

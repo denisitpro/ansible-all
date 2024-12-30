@@ -7,6 +7,7 @@ iptables:
     - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
-    - { name: "swsf_master_port", protocol: "tcp", port: "{{sw_bind_port | default('9333')}}"}
+    - { name: "swsf_master_port", protocol: "tcp", port: "{{swfw_bind_port | default('9333')}}"}
+    - { name: "swsf_master_grpc", protocol: "tcp", port: "{{swfw_grpc_port | default('19333')}}"}
 
 
