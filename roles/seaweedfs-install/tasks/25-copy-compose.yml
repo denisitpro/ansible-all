@@ -1,0 +1,6 @@
+---
+- name: copy compose file
+  template:
+    src: "docker-compose.swfs.yml.j2"
+    dest: "{{swfs_master_compose_path}}/docker-compose.yml"
+    mode: 0600
