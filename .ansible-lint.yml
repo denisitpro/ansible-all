@@ -1,0 +1,18 @@
+# enable all warnings
+warn_list:
+  - experimental  # experimental checks
+  - formatting    # formatting checks
+
+# disable some rules
+skip_list:
+  - no-changed-when
+  - meta-main
+
+# disable some directories
+exclude_paths:
+  - tests/
+  - roles/test_role/
+
+# enable custom rules if exists
+rulesdir:
+  - ./custom_rules/
