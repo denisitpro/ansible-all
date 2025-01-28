@@ -6,6 +6,10 @@
     mode: 0600
   when: "swfs_launch_mode == 'master'"
 
+- name: Print SeaweedFS volume bind address
+  debug:
+    msg: "SeaweedFS volume bind address is: {{ swfs_volume_server_addr }}"
+
 
 - name: copy compose file - volume
   template:

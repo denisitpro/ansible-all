@@ -1,7 +1,6 @@
 ---
 swfs_restart: 'no'
 swfs_master_name: swfs-master-01.beta-82.win
-swfs_bind_addr: "{{ansible_default_ipv4.address}}"
 
 iptables:
   ipv4:
