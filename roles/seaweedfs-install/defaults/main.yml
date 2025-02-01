@@ -1,5 +1,5 @@
 ---
-swfs_master_compose_path: /opt/docker/swfs
+swfs_compose_path: /opt/docker/swfs
 
 swfs_version: '3.80'
 
