@@ -3,6 +3,14 @@
   ansible.builtin.apt_key:
     url: "https://pkgs.k8s.io/core:/stable:/{{kubeadmin_version}}/deb/Release.key"
     keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  when: apt_keyring_force_file is not defined
+
+- name: Add k8s key from local file - Ubuntu
+  ansible.builtin.apt_key:
+    data: "{{ lookup('file', 'Release.1.31.key') }}"
+    keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    state: present  
+  when: apt_keyring_force_file is defined
 
 
 #  address repo https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
