@@ -1,6 +1,20 @@
 ---
 - name: restart swfs
   community.docker.docker_compose_v2:
-    project_src: "{{swfs_master_compose_path}}"
+    project_src: "{{swfs_compose_path}}"
     services: "swfs"
+    state: restarted
+
+
+- name: restart swfs-all
+  community.docker.docker_compose_v2:
+    project_src: "{{swfs_compose_path}}"
+    state: restarted
+
+
+
+- name: restart swfs-filer
+  community.docker.docker_compose_v2:
+    project_src: "{{swfs_compose_path}}"
+    services: "swfs-filer"
     state: restarted
