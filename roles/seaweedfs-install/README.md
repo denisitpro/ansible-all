@@ -21,3 +21,6 @@ SeaweedFS supports several levels of replication:
 - **100**: One copy within the same rack.
 - **110**: Two copies, one within the same rack and another on a different rack.
 - 
+
+# Todo
+see file todo.md
