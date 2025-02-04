@@ -7,4 +7,4 @@
 - name: Remove SeaweedFS data directory
   file:
     path: "{{ swfs_base_path }}"
-    state: absent 
+    state: absent     

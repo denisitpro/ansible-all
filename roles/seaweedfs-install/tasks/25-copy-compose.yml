@@ -16,5 +16,13 @@
     src: "docker-compose.swfs-volume.yml.j2"
     dest: "{{swfs_compose_path}}/docker-compose.yml"
     mode: 0600
-  notify: restart swfs
+  notify: restart swfs-all
   when: "swfs_launch_mode == 'volume'"
+
+# - name: copy compose file - filer
+#   template:
+#     src: "docker-compose.swfs-filer.yml.j2"
+#     dest: "{{swfs_compose_path}}/docker-compose.yml"
+#     mode: 0600
+#   notify: restart swfs-filer
+#   when: "swfs_launch_mode == 'filer'"
