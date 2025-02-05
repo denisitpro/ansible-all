@@ -1,0 +1,21 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{awx_compose_path}}"
+
+
+- name: "create path"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ swfs_base_path }}"
+    - "{{ swfs_data_path }}"
+    - "{{ awx_base_path }}"

@@ -1,0 +1,17 @@
+---
+awx_compose_path: /opt/docker/awx
+
+awx_version: '24.6.1'
+
+awx_base_path: /opt/awx
+awx_data_path: "{{awx_base_path}}/data"
+
+
+awx_launch_mode: master # suport  volume
+
+# volume mode
+#awx_volume_server_addr: "{{ansible_default_ipv4.address}}"
+#awx_volume_server_addr: "{{ ansible_fqdn }}"
+awx_volume_server_addr: "{{inventory_hostname}}"
+awx_volume_bind_port: 8080
+awx_volume_mserver: awx-master.example.com:9333
