@@ -1,0 +1,22 @@
+## {{ ansible_managed }} ##
+
+services:
+  awx:
+    image: quay.io/ansible/awx:{{awx_version}}
+    container_name: awx
+    network_mode: host
+    restart: {{ awx_restart | default('unless-stopped') }}
+    environment:
+      SECRET_KEY: "my_super_secret_key"
+      DATABASE_USER: "awx"
+      DATABASE_PASSWORD: "awxpass"
+      DATABASE_NAME: "awx"
+      DATABASE_HOST: "postgres"
+      REDIS_HOST: "redis"
+      AWX_ADMIN_USER: "admin"
+      AWX_ADMIN_PASSWORD: "SuperSecret"
+    logging:
+        driver: json-file
+        options:
+            max-size:   '100m'
+            max-file:   '2'
