@@ -11,12 +11,36 @@ services:
       DATABASE_USER: "awx"
       DATABASE_PASSWORD: "awxpass"
       DATABASE_NAME: "awx"
-      DATABASE_HOST: "postgres"
-      REDIS_HOST: "redis"
+      DATABASE_HOST: "127.0.0.1"
+      REDIS_HOST: "127.0.0.1"
       AWX_ADMIN_USER: "admin"
       AWX_ADMIN_PASSWORD: "SuperSecret"
+    command: >
+      sh -c "dumb-init /usr/bin/launch_awx_task.sh"
+    depends_on:
+      - postgres
+      - redis
     logging:
         driver: json-file
         options:
             max-size:   '100m'
             max-file:   '2'
+  redis:
+    image: redis:latest
+    container_name: awx_redis
+    restart: always
+    network_mode: host
+
+  postgres:
+    image: postgres:13
+    container_name: awx_postgres
+    restart: always
+    network_mode: host
+    environment:
+      POSTGRES_USER: awx
+      POSTGRES_PASSWORD: awxpass
+      POSTGRES_DB: awx
+    volumes:
+      - {{awx_base_path}}/psql:/var/lib/postgresql/data
+
+

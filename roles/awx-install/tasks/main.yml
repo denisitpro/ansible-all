@@ -1,19 +1,19 @@
 ---
 - import_tasks: 05-prefly.yml
   tags:
-    - swfs
-    - swfw-prefly
+    - awx
+    - awx-prefly
 
 
-# - import_tasks: 25-copy-compose.yml
-#   tags:
-#     - swfs
-#     - swfs-compose
+- import_tasks: 25-copy-compose.yml
+  tags:
+    - awx
+    - awx-compose
 
-# - import_tasks: 50-launch.yml
-#   tags:
-#     - swfs
-#     - swfw-compose
+- import_tasks: 50-launch.yml
+  tags:
+    - awx
+    - awx-compose
 
-# - import_tasks: 99-clean.yml
-#   tags: ['never', 'swfs-clean']
+- import_tasks: 99-clean.yml
+  tags: ['never', 'awx-clean']
