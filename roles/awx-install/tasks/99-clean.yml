@@ -1,10 +1,10 @@
 ---
 - name: Stop docker-compose
   community.docker.docker_compose_v2:
-    project_src: "{{ swfs_compose_path }}"
+    project_src: "{{ awx_compose_path }}"
     state: absent
 
-- name: Remove SeaweedFS data directory
+- name: Remove data directory
   file:
-    path: "{{ swfs_base_path }}"
+    path: "{{ awx_base_path }}"
     state: absent     

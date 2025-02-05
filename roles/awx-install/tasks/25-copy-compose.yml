@@ -1,28 +1,6 @@
 ---
-- name: copy compose file - master
+- name: copy compose file
   template:
-    src: "docker-compose.swfs-master.yml.j2"
-    dest: "{{swfs_compose_path}}/docker-compose.yml"
+    src: "docker-compose.awx.yml.j2"
+    dest: "{{awx_compose_path}}/docker-compose.yml"
     mode: 0600
-  when: "swfs_launch_mode == 'master'"
-
-- name: Print SeaweedFS volume bind address
-  debug:
-    msg: "SeaweedFS volume bind address is: {{ swfs_volume_server_addr }}"
-
-
-- name: copy compose file - volume
-  template:
-    src: "docker-compose.swfs-volume.yml.j2"
-    dest: "{{swfs_compose_path}}/docker-compose.yml"
-    mode: 0600
-  notify: restart swfs-all
-  when: "swfs_launch_mode == 'volume'"
-
-# - name: copy compose file - filer
-#   template:
-#     src: "docker-compose.swfs-filer.yml.j2"
-#     dest: "{{swfs_compose_path}}/docker-compose.yml"
-#     mode: 0600
-#   notify: restart swfs-filer
-#   when: "swfs_launch_mode == 'filer'"

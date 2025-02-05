@@ -1,5 +1,5 @@
 ---
 - name: start compose
   community.docker.docker_compose_v2:
-    project_src: "{{swfs_compose_path}}"
+    project_src: "{{awx_compose_path}}"
     state: present
