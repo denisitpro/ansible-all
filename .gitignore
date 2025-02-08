@@ -1,5 +1,6 @@
 .ssh/
 .bash_history
+.ansible
 *.retry
 *.idea
 .DS_Store

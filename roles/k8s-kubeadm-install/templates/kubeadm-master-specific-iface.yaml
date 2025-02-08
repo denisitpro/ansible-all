@@ -1,6 +1,7 @@
-apiVersion: kubeadm.k8s.io/v1beta3
+apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
 kubernetesVersion: v{{k8s_cls_version}}
+certificateValidityPeriod: "{{k8s_cert_component_valid_hour |default('43800h')}}" # 5 year default
 {% if k8s_cls_name is defined %}
 controlPlaneEndpoint: "{{ k8s_cls_name |default('k8s.example.com') }}:{{ k8s_cls_port |default('6443') }}"
 {% endif %}
