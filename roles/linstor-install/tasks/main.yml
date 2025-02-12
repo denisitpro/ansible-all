@@ -1,0 +1,47 @@
+---
+#- import_tasks: 05-prefly.yml
+#  tags:
+#    - linstor
+#    - linstor-prefly
+#
+
+- import_tasks: 20-install-controller.yml
+  tags:
+    - linstor
+    - linstor-config
+
+
+- import_tasks: 25-ssl-configure.yml
+  tags:
+    - linstor
+    - linstor-selfsign
+    - nginx-selfsign
+
+- import_tasks: 28-compose.yml
+  tags:
+    - linstor
+    - linstor-compose
+
+- import_tasks: 29-launch.yml
+  tags:
+    - linstor
+    - linstor-compose
+
+- import_tasks: 45-vhosts-configure.yml
+  tags:
+    - linstor
+    - linstor-vhosts
+    - vhosts
+
+- import_tasks: 50-vhosts-check.yml
+  tags:
+    - linstor
+    - linstor-vhosts
+    - linstor-check
+    - linstor-upstream
+    - vhosts
+
+
+
+- import_tasks: 99-clean.yml
+  tags: ['never', 'linstor-clean']

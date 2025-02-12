@@ -1,0 +1,20 @@
+---
+linstor_version: "2.0"
+drbd_version: "9.2"
+linstor_compose_path: /opt/docker/linstor
+#linstor_base_path: /opt/linstor
+#
+#linstor_uid: 100
+#linstor_guid: 101
+
+
+
+storage_pool_name: "pool01"
+linstor_controller_host: "192.168.1.10"
+linstor_satellites:
+  - "192.168.1.11"
+  - "192.168.1.12"
+storage_device: "/dev/sdb"
+
+linstor_repo_url: "https://pkg.linbit.com"
+drbd_repo_url: "https://packages.linbit.com"
