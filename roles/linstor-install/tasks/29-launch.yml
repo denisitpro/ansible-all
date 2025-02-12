@@ -1,5 +1,0 @@
----
-- name: start compose linstor
-  community.docker.docker_compose_v2:
-    project_src: "{{linstor_compose_path}}"
-    state: present

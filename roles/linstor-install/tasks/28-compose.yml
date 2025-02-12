@@ -1,8 +1,0 @@
----
-- name: copy compose linstor
-  template:
-    src: docker-compose.linstor.yml.j2
-    dest: "{{linstor_compose_path}}/docker-compose.yml"
-    owner: root
-    group: root
-    mode: 0644
