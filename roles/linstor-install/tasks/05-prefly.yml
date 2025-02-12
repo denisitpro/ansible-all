@@ -1,0 +1,26 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{linstor_compose_path}}"
+#
+#- name: create folder linstor
+#  ansible.builtin.file:
+#    path: "{{item}}"
+#    state: directory
+#    mode: '0775'
+#    owner: "{{linstor_uid}}"
+#    group: "{{linstor_guid}}"
+#  with_items:
+#    - "{{linstor_base_path}}"
+#    - "{{linstor_base_path}}/base/"
+#    - "{{linstor_base_path}}/logs"
+#    - "{{linstor_base_path}}/httpd.d/"
+#    - "{{linstor_base_path}}/upstream.d/"
+#    - "{{linstor_base_path}}/conf.d/"

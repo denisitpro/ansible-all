@@ -1,0 +1,60 @@
+services:
+  linstor:
+    image: docker.linstor.software/linstor:{{linstor_version}}
+    container_name: linstor
+    network_mode: host
+{% if linstor_userns_host is defined %}
+    userns_mode: host
+{% endif %}
+    volumes:
+      - {{linstor_base_path}}/base/linstor.conf:/etc/linstor/linstor.conf
+      - {{linstor_base_path}}/httpd.d:/etc/linstor/http.d
+      - {{linstor_base_path}}/upstream.d:/etc/linstor/upstream.d
+      - {{linstor_base_path}}/conf.d:/etc/linstor/conf.d
+      - {{linstor_base_path}}/logs:/var/log/linstor
+      - {{ssl_path | default('/opt/ssl/')}}:{{ssl_path | default('/opt/ssl/')}}
+{% if certbot_cert_usage is defined %}
+      - {{certbot_path | default('/opt/certbot') }}/www:{{linstor_certbot_path | default('/var/www/certbot')}}
+      - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{linstor_container_ssl_certbot_path| default('/opt/certbot/ssl')}}
+{% endif %}
+{% if linstor_static_file is defined %}
+#      - {{linstor_static_path}}:/var/www/html:ro
+{% endif %}
+{% if linstor_restart is defined %}
+    restart: always
+{% endif %}
+    logging:
+{% if vector_server_fluent_address is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{vector_server_fluent_address | default('127.0.0.1')}}:{{ vector_server_fluent_port | default('24224') }}
+        tag: linstor
+        fluentd-async: "{{fluent_async}}"
+        fluentd-buffer-limit: "{{fluendt_buffer_limit}}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+{% if linstor_docker_sysctls is defined and linstor_docker_network_mode is defined and linstor_docker_network_mode != "host" %}
+    sysctls:
+{% if linstor_docker_sysctls.net_core_somaxconn is defined %}
+      net.core.somaxconn: {{ linstor_docker_sysctls.net_core_somaxconn }}
+{% endif %}
+{% endif %}
+{% if linstor_docker_ulimits is defined %}
+    ulimits:
+{% if linstor_docker_ulimits.nproc is defined %}
+      nproc: {{ linstor_docker_ulimits.nproc }}
+{% endif %}
+{% if linstor_docker_ulimits.nofile is defined %}
+      nofile:
+{% if linstor_docker_ulimits.nofile.soft is defined %}
+        soft: {{ linstor_docker_ulimits.nofile.soft }}
+{% endif %}
+{% if linstor_docker_ulimits.nofile.hard is defined %}
+        hard: {{ linstor_docker_ulimits.nofile.hard }}
+{% endif %}
+{% endif %}
+{% endif %}
