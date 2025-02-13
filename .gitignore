@@ -5,5 +5,8 @@
 *.idea
 .DS_Store
 *.log
-.vscode
 vault.secret
+.vscode
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
