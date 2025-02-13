@@ -6,7 +6,7 @@
 .DS_Store
 *.log
 vault.secret
-.vscode
+.vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/tasks.json
