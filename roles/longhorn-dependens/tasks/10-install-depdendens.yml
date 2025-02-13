@@ -1,4 +1,9 @@
 ---
+- name: "Update apt cache"
+  apt:
+    update_cache: yes
+  changed_when: false
+
 - name: install longhorn depedndens
   ansible.builtin.apt:
     name: "{{ longhorn_packages }}"

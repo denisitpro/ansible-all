@@ -17,9 +17,21 @@
 
 - name: "Enable and start multipathd service"
   systemd:
-    name: multipathd
+    name: "{{ multipath_service }}"
     enabled: yes
     state: started
+
+- name: "Ensure dmsetup is available"
+  command: dmsetup version
+  register: dmsetup_status
+  changed_when: false
+  failed_when: dmsetup_status.rc != 0
+
+- name: "Ensure cryptsetup is installed"
+  command: cryptsetup --version
+  register: cryptsetup_status
+  changed_when: false
+  failed_when: cryptsetup_status.rc != 0
 
 - name: "Verify open-iscsi is active"
   command: systemctl is-active iscsid
@@ -42,4 +54,3 @@
 - name: "Debug iSCSI sessions"
   debug:
     msg: "{{ iscsi_sessions.stdout_lines }}"
-
