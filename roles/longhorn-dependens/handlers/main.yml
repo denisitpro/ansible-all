@@ -1,0 +1,10 @@
+---
+- name: Restart iSCSI service
+  systemd:
+    name: "{{ iscsi_service }}"
+    state: restarted
+
+- name: Restart multipathd
+  systemd:
+    name: multipathd
+    state: restarted

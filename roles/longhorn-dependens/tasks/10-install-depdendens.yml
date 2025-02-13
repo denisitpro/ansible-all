@@ -1,0 +1,7 @@
+---
+- name: install longhorn depedndens
+  ansible.builtin.apt:
+    name: "{{ longhorn_packages }}"
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600

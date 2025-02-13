@@ -1,0 +1,45 @@
+- name: "Ensure iscsi_tcp kernel module is loaded"
+  modprobe:
+    name: iscsi_tcp
+    state: present
+
+- name: "Persist iscsi_tcp module across reboots"
+  copy:
+    dest: "/etc/modules-load.d/longhorn.conf"
+    content: "iscsi_tcp\n"
+    mode: '0644'
+
+- name: "Enable and start iSCSI service"
+  systemd:
+    name: "{{ iscsi_service }}"
+    enabled: yes
+    state: started
+
+- name: "Enable and start multipathd service"
+  systemd:
+    name: multipathd
+    enabled: yes
+    state: started
+
+- name: "Verify open-iscsi is active"
+  command: systemctl is-active iscsid
+  register: iscsi_status
+  changed_when: false
+  failed_when: iscsi_status.stdout != "active"
+
+- name: "Verify nfs-common is installed"
+  command: dpkg-query -W nfs-common
+  register: nfs_status
+  changed_when: false
+  failed_when: nfs_status.rc != 0
+
+- name: "Check iscsiadm session"
+  command: iscsiadm -m session
+  register: iscsi_sessions
+  changed_when: false
+  failed_when: false
+
+- name: "Debug iSCSI sessions"
+  debug:
+    msg: "{{ iscsi_sessions.stdout_lines }}"
+
