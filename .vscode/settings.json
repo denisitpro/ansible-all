@@ -1,0 +1,10 @@
+{
+    "ansible.python.interpreterPath": "/opt/homebrew/bin/python3",
+    "ansible.languageServer.enabled": true,
+    "ansible.useFullyQualifiedCollectionNames": true,
+    "files.associations": {
+        "*.yml": "ansible",
+        "*.yaml": "ansible"
+    },
+    "yaml.schemaStore.enable": false    
+}
