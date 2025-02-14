@@ -1,7 +1,7 @@
 ---
-- name: Set prometheus external metrics path
+- name: Set vm external metrics path
   ansible.builtin.set_fact:
-    prometheus_metrics_path: "/{{ (prometheus_web_external_url + '/metrics') | regex_replace('^(.*://)?(.*?)/') }}"
+    vm_metrics_path: "/{{ (vm_web_external_url + '/metrics') | regex_replace('^(.*://)?(.*?)/') }}"
   tags:
     - prom-reconfigure
     - update-prom-config
@@ -9,45 +9,45 @@
 - name: Copy alerting rules file
   ansible.builtin.template:
     src: "alert.rules.j2"
-    dest: "{{ prometheus_config_path }}/rules/ansible_managed.rules"
-    owner: "{{ prometheus_user_uid }}"
-    group: "{{ prometheus_user_gid }}"
+    dest: "{{ vm_config_path }}/rules/ansible_managed.rules"
+    owner: "{{ vm_user_uid }}"
+    group: "{{ vm_user_gid }}"
     mode: '0640'
   when:
-    - prometheus_alert_rules != []
-  notify: reload docker prometheus
+    - vm_alert_rules != []
+  notify: reload docker vm
   tags:
     - alerts-rules
     - update-prom-config
 
-- name: Validate prometheus rules
+- name: Validate vm rules
   ansible.builtin.command:
-    cmd: "docker run --rm --entrypoint sh --name prometheus.check -v {{ prometheus_config_path }}:{{ prometheus_config_dir }} prom/prometheus:{{ prometheus_image }} -c '/bin/promtool check rules {{ prometheus_config_dir }}/rules/*'"
+    cmd: "docker run --rm --entrypoint sh --name vm.check -v {{ vm_config_path }}:{{ vm_config_dir }} prom/vm:{{ vm_image }} -c '/bin/promtool check rules {{ vm_config_dir }}/rules/*'"
   register: promtool_rules_output
   changed_when: false
   failed_when: promtool_rules_output.rc != 0
   when:
-    - prometheus_alert_rules != []
+    - vm_alert_rules != []
   tags:
     - alerts-rules
     - update-prom-config
 
-- name: Copy prometheus config file
+- name: Copy vm config file
   ansible.builtin.template:
-    src: "{{ prometheus_config_file }}"
-    dest: "{{ prometheus_config_path }}/prometheus.yml"
+    src: "{{ vm_config_file }}"
+    dest: "{{ vm_config_path }}/vm.yml"
     force: true
-    owner: "{{ prometheus_user_uid }}"
-    group: "{{ prometheus_user_gid }}"
+    owner: "{{ vm_user_uid }}"
+    group: "{{ vm_user_gid }}"
     mode: '0640'
-  notify: reload docker prometheus
+  notify: reload docker vm
   tags:
     - prom-reconfigure
     - update-prom-config
 
-- name: Validate prometheus config
+- name: Validate vm config
   ansible.builtin.command:
-    cmd: "docker run --rm --entrypoint sh --name prometheus.check -v {{ prometheus_config_path }}:{{ prometheus_config_dir }} prom/prometheus:{{ prometheus_image }} -c '/bin/promtool check config {{ prometheus_config_dir }}/prometheus.yml'"
+    cmd: "docker run --rm --entrypoint sh --name vm.check -v {{ vm_config_path }}:{{ vm_config_dir }} prom/vm:{{ vm_image }} -c '/bin/promtool check config {{ vm_config_dir }}/vm.yml'"
   register: promtool_config_output
   changed_when: false
   failed_when: promtool_config_output.rc != 0

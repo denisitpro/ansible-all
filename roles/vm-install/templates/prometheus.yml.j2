@@ -1,43 +1,43 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 {{ ansible_managed | comment }}
-# http://prometheus.io/docs/operating/configuration/
+# http://vm.io/docs/operating/configuration/
 
 global:
-  {{ prometheus_global | to_nice_yaml(indent=2) | indent(2, False) }}
+  {{ vm_global | to_nice_yaml(indent=2) | indent(2, False) }}
   external_labels:
-    {{ prometheus_external_labels | to_nice_yaml(indent=2) | indent(4, False) }}
+    {{ vm_external_labels | to_nice_yaml(indent=2) | indent(4, False) }}
 
-{% if prometheus_remote_write != [] %}
+{% if vm_remote_write != [] %}
 remote_write:
-  {{ prometheus_remote_write | to_nice_yaml(indent=2) | indent(2, False) }}
+  {{ vm_remote_write | to_nice_yaml(indent=2) | indent(2, False) }}
 {% endif %}
 
-{% if prometheus_remote_read != [] %}
+{% if vm_remote_read != [] %}
 remote_read:
-  {{ prometheus_remote_read | to_nice_yaml(indent=2) | indent(2, False) }}
+  {{ vm_remote_read | to_nice_yaml(indent=2) | indent(2, False) }}
 {% endif %}
 
 rule_files:
-  - {{ prometheus_config_dir }}/rules/*.rules
+  - {{ vm_config_dir }}/rules/*.rules
 
-{% if prometheus_alertmanager_config | length > 0 %}
+{% if vm_alertmanager_config | length > 0 %}
 alerting:
   alertmanagers:
-  {{ prometheus_alertmanager_config | to_nice_yaml(indent=2) | indent(2,False) }}
-  {% if prometheus_alert_relabel_configs | length > 0 %}
+  {{ vm_alertmanager_config | to_nice_yaml(indent=2) | indent(2,False) }}
+  {% if vm_alert_relabel_configs | length > 0 %}
   alert_relabel_configs:
-  {{ prometheus_alert_relabel_configs | to_nice_yaml(indent=2) | indent(2,False) }}
+  {{ vm_alert_relabel_configs | to_nice_yaml(indent=2) | indent(2,False) }}
   {% endif %}
 {% endif %}
 
 scrape_configs:
-  {{ prometheus_scrape_configs | to_nice_yaml(indent=2) | indent(2,False) }}
+  {{ vm_scrape_configs | to_nice_yaml(indent=2) | indent(2,False) }}
 {% if scrape_discovery is defined %}
 {% for target in scrape_discovery.target %}
   - consul_sd_configs:
     - server: {{ consul_sd_server }}
 {% if consul_agent_disabled is not defined %}
-      token: {{ consul_prometheus_access_token }}
+      token: {{ consul_vm_access_token }}
 {% endif %}
       datacenter: {{ consul_dc_name | default('dc_set_me') }}
 {% if target.services is defined %}
@@ -57,7 +57,7 @@ scrape_configs:
     metrics_path: "{{ target.metrics_path | default ('/metrics') }}"
 {% if target.job_name != 'consul_clickhouse_metrics' %}
     params:
-      format: ['{{ target.format | default ('prometheus') }}']
+      format: ['{{ target.format | default ('vm') }}']
 {% endif %}
 {% if target.scheme is defined %}
     scheme: {{ target.scheme }}
@@ -66,7 +66,7 @@ scrape_configs:
 {% endif %}
     relabel_configs:
     - action: keep
-      regex: .*,prometheus,.*
+      regex: .*,vm,.*
       source_labels:
       - __meta_consul_tags
     - source_labels:
