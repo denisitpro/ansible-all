@@ -7,7 +7,8 @@ services:
     hostname: {{ansible_hostname}}
     network_mode: host
     volumes:
-      - {{ vm_base_path }}:{{ vm_base_path }}:rw
+      - {{ vm_db_dir }}:{{ vm_db_dir }}:rw
+      - {{ vm_config_path }}:{{ vm_config_path }}:ro
     command:
       - "--storageDataPath={{ vm_db_dir }}"
       - "--enableTCP6"
@@ -16,6 +17,7 @@ services:
       - "--dedup.minScrapeInterval=15s"
       - "--search.maxUniqueTimeseries={{vm_search_max_unique_timeseries}}"
       - "--search.maxQueryDuration=30s"
+      - "--promscrape.config={{ vm_config_path }}/scrape.yaml"
 {% for flag in vm_extra_args %}
       - "{{ flag }}"
 {% endfor %}

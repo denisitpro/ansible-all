@@ -1,2 +1,2 @@
 ---
-# - import_tasks: shared/handlers/victoria-metrics.yml
+- import_tasks: shared/handlers/victoria-metrics.yml

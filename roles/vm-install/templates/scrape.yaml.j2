@@ -1,8 +1,8 @@
-
 #jinja2: trim_blocks: True, lstrip_blocks: True
 {{ ansible_managed | comment }}
-# # http://prometheus.io/docs/operating/configuration/
----
+# Great examples of alerts - https://awesome-prometheus-alerts.grep.to/rules.html
+# http://vm.io/docs/operating/configuration/
+
 global:
   {{ vm_global | to_nice_yaml(indent=2) | indent(2, False) }}
   external_labels:
@@ -17,9 +17,6 @@ remote_write:
 remote_read:
   {{ vm_remote_read | to_nice_yaml(indent=2) | indent(2, False) }}
 {% endif %}
-
-rule_files:
-  - {{ vm_config_path }}/rules/*.rules
 
 {% if vm_alertmanager_config | length > 0 %}
 alerting:
