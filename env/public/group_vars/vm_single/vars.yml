@@ -1,0 +1,11 @@
+---
+vm_restart: 'none'
+
+
+iptables:
+  ipv4:
+    - { name: "ssh any-access-ipv4", protocol: "tcp", port: "22"}
+    - { name: "vm ui port", protocol: "tcp", port: "8428"}
+  ipv6:
+    - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
+    - { name: "vm ui port", protocol: "tcp", port: "8428"}

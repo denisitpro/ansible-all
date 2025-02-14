@@ -1,0 +1,25 @@
+## {{ ansible_managed }} ##
+
+services:
+  vm:
+    image: "victoriametrics/victoria-metrics:{{ vm_image }}"
+    container_name: vm
+    hostname: {{ansible_hostname}}
+    network_mode: host
+    volumes:
+      - {{ vm_config_path }}:{{ vm_config_dir }}:ro
+      - {{ vm_db_dir }}:{{ vm_db_dir }}:rw
+    command:
+      - "--storageDataPath={{ vm_db_dir }}"
+      - "--enableTCP6"
+      - "--httpListenAddr=:8428"
+      - "--retentionPeriod={{vm_metrics_retention}}"
+      - "--dedup.minScrapeInterval=15s"
+      - "--search.maxUniqueTimeseries=1000000"
+      - "--search.maxQueryDuration=30s"
+    restart: {{ vm_restart | default('unless-stopped') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

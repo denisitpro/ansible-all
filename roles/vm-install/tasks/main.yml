@@ -1,22 +1,22 @@
 ---
-- import_tasks: 00-prefly.yml
+- import_tasks: 05-prefly.yml
   tags:
-    - prom
-    - prom-docker
+    - vm
+    - vm-docker
 
-- import_tasks: 02-configure.yml
-  tags:
-    - prom
-    - prom-config
-    - prom-docker
+# - import_tasks: 02-configure.yml
+#   tags:
+#     - vm
+#     - vm-config
+#     - vm-docker
 
-- import_tasks: 10-compose.yml
+- import_tasks: 50-compose.yml
   tags:
-    - prom
-    - prom-docker
-    - prom-compose
+    - vm
+    - vm-docker
+    - vm-compose
 
-- import_tasks: 99-reload.yml
-  tags:
-    - never
-    - prom-reload
+# - import_tasks: 99-reload.yml
+#   tags:
+#     - never
+#     - vm-reload

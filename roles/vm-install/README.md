@@ -1,4 +1,4 @@
-Job for monitoring other prometheus to endpoint federate
+Job for monitoring other vm to endpoint federate
 
 scrape_configs:
   - job_name: 'federate'
@@ -14,7 +14,7 @@ scrape_configs:
 # Enable alert manager
 Example 
 ```yaml
-prometheus_alertmanager_config:
+vm_alertmanager_config:
    - static_configs:
        - targets: ["127.0.0.1:9093"]
 ```
@@ -22,7 +22,7 @@ prometheus_alertmanager_config:
 # Example alert rules
 
 ```yaml
-prometheus_alert_rules:
+vm_alert_rules:
   - alert: Watchdog
     expr: vector(1)
     for: 10m
