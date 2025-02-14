@@ -2,21 +2,11 @@
 vm_image: "v1.111.0"
 vm_compose_path: "/opt/docker/vm"
 
-
 vm_base_path: "/opt/vm-data"
-
-# todo remove
-vm_config_path: "{{vm_base_path}}/config"
 vm_db_dir:  "{{vm_base_path}}/db"
-vm_config_dir: /etc/vm
-
-
-# vm_user: "vm"
-# vm_group: "vm"
-
-# vm_web_listen_address: "0.0.0.0:8428"
+vm_search_max_unique_timeseries: "900000"
 vm_metrics_retention: "30d"
-# vm_extra_flags: []
+vm_extra_args: []
 
 
 

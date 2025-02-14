@@ -7,16 +7,18 @@ services:
     hostname: {{ansible_hostname}}
     network_mode: host
     volumes:
-      - {{ vm_config_path }}:{{ vm_config_dir }}:ro
-      - {{ vm_db_dir }}:{{ vm_db_dir }}:rw
+      - {{ vm_base_path }}:{{ vm_base_path }}:rw
     command:
       - "--storageDataPath={{ vm_db_dir }}"
       - "--enableTCP6"
       - "--httpListenAddr=:8428"
       - "--retentionPeriod={{vm_metrics_retention}}"
       - "--dedup.minScrapeInterval=15s"
-      - "--search.maxUniqueTimeseries=1000000"
+      - "--search.maxUniqueTimeseries={{vm_search_max_unique_timeseries}}"
       - "--search.maxQueryDuration=30s"
+{% for flag in vm_extra_args %}
+      - "{{ flag }}"
+{% endfor %}
     restart: {{ vm_restart | default('unless-stopped') }}
     logging:
       driver: json-file
