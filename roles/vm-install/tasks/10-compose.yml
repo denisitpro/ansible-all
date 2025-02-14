@@ -1,0 +1,17 @@
+---
+# todo rewrite use notify
+- name: Copy docker-compose file
+  ansible.builtin.template:
+    src: "docker-compose.prometheus.yml.j2"
+    dest: "{{ prometheus_docker_compose_path }}/docker-compose.yml"
+    mode: '0600'
+    owner: root
+    group: root
+  register: __prometheus_docker_compose_file
+
+- name: Restart docker
+  ansible.builtin.shell:
+    cmd: "docker compose pull; docker compose down --remove-orphans; docker compose up -d"
+  args:
+    chdir: "{{ prometheus_docker_compose_path }}"
+  when: __prometheus_docker_compose_file.changed
