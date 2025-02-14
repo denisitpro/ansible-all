@@ -1,4 +1,7 @@
-Job for monitoring other vm to endpoint federate
+# Docs
+todo need refactoring and update, after config legacy
+
+<!-- Job for monitoring other vm to endpoint federate
 
 scrape_configs:
   - job_name: 'federate'
@@ -47,4 +50,4 @@ vm_alert_rules:
     annotations:
       description: "{% raw %}Clock skew detected on {{ $labels.instance }}. Ensure NTP is configured correctly on this host.{% endraw %}"
       summary: "{% raw %}Instance {{ $labels.instance }} - Clock skew detected{% endraw %}"
-```
+``` -->

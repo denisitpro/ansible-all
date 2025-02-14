@@ -4,27 +4,17 @@ vm_compose_path: "/opt/docker/vm"
 
 vm_base_path: "/opt/vm-data"
 vm_db_dir:  "{{vm_base_path}}/db"
+vm_config_path: "{{vm_base_path}}/config"
 vm_search_max_unique_timeseries: "900000"
 vm_metrics_retention: "30d"
 vm_extra_args: []
 
 
 
-
-# ## base directory config
-# vm_user: vm
-# vm_group: vm
-# vm_docker_compose_path: "{{ docker_compose_path | default('/opt/docker') }}/vm"
-# vm_data_path: "/opt/vm"
-# vm_config_path: /opt/vm/config
-# vm_db_dir: "{{ vm_data_path }}/data"
-# vm_user_uid: "65534"
-# vm_user_gid: "65534"
-
-# vm_web_listen_address: "{{ vm_bind_address }}:9090"
-# vm_bind_address: ""
-# vm_reload_address: "[::1]"
-# vm_web_external_url: ''
+vm_web_listen_address: "{{ vm_bind_address }}:9090"
+vm_bind_address: ""
+vm_reload_address: "[::1]"
+vm_web_external_url: ''
 # vm_ext_name: "prom.example.com"
 # prom_addr: "{{ vm_ext_name }}"
 # ### consul
@@ -34,7 +24,7 @@ vm_extra_args: []
 
 # #command to run
 # vm_command_run:
-#   - "config.file={{ vm_config_dir }}/vm.yml"
+#   - "config.file={{ vm_config_path }}/vm.yml"
 #   - "storage.tsdb.path={{ vm_db_dir }}"
 #   - "storage.tsdb.retention.time={{ vm_storage_retention }}"
 #   - "storage.tsdb.retention.size={{ vm_storage_retention_size }}"
@@ -49,17 +39,16 @@ vm_extra_args: []
 # # supported: KB, MB, GB, TB, PB.
 # vm_storage_retention_size: "0"
 
-# vm_global:
-#   scrape_interval: 15s
-#   scrape_timeout: 10s
-#   evaluation_interval: 15s
+vm_global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
 
 # vm_config_flags_extra: {}
 # # vm_config_flags_extra:
 # #   storage.tsdb.retention: 15d
 # #   alertmanager.timeout: 10s
 
-# vm_alertmanager_config: []
+vm_alertmanager_config: []
 # # vm_alertmanager_config:
 # #   - scheme: https
 # #     path_prefix: alertmanager/
@@ -70,28 +59,27 @@ vm_extra_args: []
 # #       - targets: ["{{prom_addr}}:9093"]
 # #   - proxy_url: "127.0.0.2"
 
-
 # vm_alert_rules: []
 # vm_alert_relabel_configs: []
 # # vm_alert_relabel_configs:
 # #   - action: labeldrop
 # #     regex: replica
 
-# vm_remote_write: []
+vm_remote_write: []
 # #vm_remote_write:
 # #   - url: http://{{victoriametrics_web_listen_address}}/api/v1/write
 # #     basic_auth:
 # #       password: FOO
 
-# vm_remote_read: []
+vm_remote_read: []
 # # vm_remote_read:
 # #   - url: https://demo.cloudalchemy.org:9201/read
 # #     basic_auth:
 # #       password: FOO
 
-# vm_external_labels:
-#   environment: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
-#   monitoring: monitoring
+vm_external_labels:
+  environment: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
+  monitoring: monitoring
 
 # vm_targets: {}
 # #  node:
@@ -100,12 +88,12 @@ vm_extra_args: []
 # #      labels:
 # #        env: test
 
-# vm_scrape_configs:
-#   - job_name: "vm"
-#     metrics_path: "{{ vm_metrics_path }}"
-#     static_configs:
-#       - targets:
-#           - "{{ vm_bind_address }}:9090"
+vm_scrape_configs:
+  - job_name: "victoria-metrics-local"
+    metrics_path: "{{ vm_metrics_path }}"
+    static_configs:
+      - targets:
+          - "{{ vm_bind_address }}:8428"
 # # Alternative config file name, searched in ansible templates path.
 # vm_config_file: 'vm.yml.j2'
 

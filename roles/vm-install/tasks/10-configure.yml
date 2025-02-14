@@ -1,0 +1,55 @@
+---
+- name: Set vm external metrics path
+  ansible.builtin.set_fact:
+    vm_metrics_path: "/{{ (vm_web_external_url + '/metrics') | regex_replace('^(.*://)?(.*?)/') }}"
+  tags:
+    - vm-reconfigure
+    - update-vm-config
+
+# - name: Copy alerting rules file
+#   ansible.builtin.template:
+#     src: "alert.rules.j2"
+#     dest: "{{ vm_config_path }}/rules/ansible_managed.rules"
+#     owner: "{{ vm_user_uid }}"
+#     group: "{{ vm_user_gid }}"
+#     mode: '0640'
+#   when:
+#     - vm_alert_rules != []
+#   notify: reload docker vm
+#   tags:
+#     - alerts-rules
+#     - update-vm-config
+
+# - name: Validate vm rules
+#   ansible.builtin.command:
+#     cmd: "docker run --rm --entrypoint sh --name vm.check -v {{ vm_config_path }}:{{ vm_config_path }} vm/vm:{{ vm_image }} -c '/bin/vmtool check rules {{ vm_config_path }}/rules/*'"
+#   register: vmtool_rules_output
+#   changed_when: false
+#   failed_when: vmtool_rules_output.rc != 0
+#   when:
+#     - vm_alert_rules != []
+#   tags:
+#     - alerts-rules
+#     - update-vm-config
+
+- name: Copy VictoriaMetrics config file
+  ansible.builtin.template:
+    src: "scrape.yaml.j2"
+    dest: "{{ vm_config_path }}/scrape.yaml"
+    # owner: "{{ vm_user_uid }}"
+    # group: "{{ vm_user_gid }}"
+    mode: '0640'
+  notify: restart docker vm
+  tags:
+    - vm-config
+    - update-vm-config
+
+# - name: Validate vm config
+#   ansible.builtin.command:
+#     cmd: "docker run --rm --entrypoint sh --name vm.check -v {{ vm_config_path }}:{{ vm_config_path }} vm/vm:{{ vm_image }} -c '/bin/vmtool check config {{ vm_config_path }}/vm.yml'"
+#   register: vmtool_config_output
+#   changed_when: false
+#   failed_when: vmtool_config_output.rc != 0
+#   tags:
+#     - vm-reconfigure
+#     - update-vm-config

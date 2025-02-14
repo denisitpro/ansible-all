@@ -19,3 +19,5 @@
     # group: "{{angie_guid}}"
   with_items:
     - "{{vm_base_path}}"
+    - "{{vm_config_path}}"
+    - "{{vm_config_path}}/rules"
