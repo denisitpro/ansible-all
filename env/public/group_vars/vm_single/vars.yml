@@ -1,6 +1,34 @@
 ---
 vm_restart: 'none'
 
+vm_scrape_configs:
+  - job_name: "victoria-metrics-local"
+    metrics_path: "{{ vm_metrics_path }}"
+    static_configs:
+      - targets:
+          - "{{ vm_bind_address }}:8428"
+  - job_name: node-exporter-100
+    scrape_interval: 60s
+    scrape_timeout:  10s
+    metrics_path: "/metrics"
+    static_configs:
+      - targets:
+          - devel-01.example.com:9100
+    relabel_configs:
+      - target_label: "stand"
+        replacement: "c1-qa"
+  - job_name: node-exporter-200
+    scrape_interval: 60s
+    scrape_timeout:  10s
+    metrics_path: "/metrics"
+    static_configs:
+      - targets:
+          - psql-01.example.com:9100
+          - app-02.example.com:9100
+    relabel_configs:
+      - target_label: "stand"
+        replacement: "c1-devel"
+
 
 iptables:
   ipv4:
@@ -9,3 +37,4 @@ iptables:
   ipv6:
     - { name: "ssh any-access-ipv6", protocol: "tcp", port: "22"}
     - { name: "vm ui port", protocol: "tcp", port: "8428"}
+

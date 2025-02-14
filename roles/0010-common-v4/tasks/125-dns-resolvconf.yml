@@ -1,7 +1,7 @@
 ---
 - name: enable write resolv.conf
   shell: /usr/bin/chattr -f -i /etc/resolv.conf
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Remove file /etc/resolv.conf
   file:
