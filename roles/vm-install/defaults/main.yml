@@ -1,0 +1,119 @@
+---
+prometheus_image: "v2.53.1"
+
+
+## base directory config
+prometheus_user: prometheus
+prometheus_group: prometheus
+prometheus_docker_compose_path: "{{ docker_compose_path | default('/opt/docker') }}/prometheus"
+prometheus_data_path: "/opt/prometheus"
+prometheus_config_path: /opt/prometheus/config
+prometheus_config_dir: /etc/prometheus
+prometheus_db_dir: "{{ prometheus_data_path }}/data"
+prometheus_user_uid: "65534"
+prometheus_user_gid: "65534"
+
+prometheus_web_listen_address: "{{ prometheus_bind_address }}:9090"
+prometheus_bind_address: ""
+prometheus_reload_address: "[::1]"
+prometheus_web_external_url: ''
+prometheus_ext_name: "prom.example.com"
+prom_addr: "{{ prometheus_ext_name }}"
+### consul
+stands_regexp: ".*,(c1-infra|c1-devel),.*"
+consul_sd_server: ":8500"
+consul_prometheus_access_token: "{{ vault_dict_users_secret.consul_prometheus_access_token }}"
+
+#command to run
+prometheus_command_run:
+  - "config.file={{ prometheus_config_dir }}/prometheus.yml"
+  - "storage.tsdb.path={{ prometheus_db_dir }}"
+  - "storage.tsdb.retention.time={{ prometheus_storage_retention }}"
+  - "storage.tsdb.retention.size={{ prometheus_storage_retention_size }}"
+  - "web.listen-address={{ prometheus_web_listen_address }}"
+  - "web.enable-lifecycle"
+#  - "web.external-url="
+
+### Prom config section
+prometheus_storage_retention: "30d"
+# Available since Prometheus 2.7.0
+# [EXPERIMENTAL] Maximum number of bytes that can be stored for blocks. Units
+# supported: KB, MB, GB, TB, PB.
+prometheus_storage_retention_size: "0"
+
+prometheus_global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+prometheus_config_flags_extra: {}
+# prometheus_config_flags_extra:
+#   storage.tsdb.retention: 15d
+#   alertmanager.timeout: 10s
+
+prometheus_alertmanager_config: []
+# prometheus_alertmanager_config:
+#   - scheme: https
+#     path_prefix: alertmanager/
+#     basic_auth:
+#       username: user
+#       password: pass
+#   - static_configs:
+#       - targets: ["{{prom_addr}}:9093"]
+#   - proxy_url: "127.0.0.2"
+
+
+prometheus_alert_rules: []
+prometheus_alert_relabel_configs: []
+# prometheus_alert_relabel_configs:
+#   - action: labeldrop
+#     regex: replica
+
+prometheus_remote_write: []
+#prometheus_remote_write:
+#   - url: http://{{victoriametrics_web_listen_address}}/api/v1/write
+#     basic_auth:
+#       password: FOO
+
+prometheus_remote_read: []
+# prometheus_remote_read:
+#   - url: https://demo.cloudalchemy.org:9201/read
+#     basic_auth:
+#       password: FOO
+
+prometheus_external_labels:
+  environment: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
+  monitoring: monitoring
+
+prometheus_targets: {}
+#  node:
+#    - targets:
+#        - localhost:9100
+#      labels:
+#        env: test
+
+prometheus_scrape_configs:
+  - job_name: "prometheus"
+    metrics_path: "{{ prometheus_metrics_path }}"
+    static_configs:
+      - targets:
+          - "{{ prometheus_bind_address }}:9090"
+# Alternative config file name, searched in ansible templates path.
+prometheus_config_file: 'prometheus.yml.j2'
+
+prometheus_alert_rules_files:
+  - prometheus/rules/*.rules
+
+prometheus_static_targets_files:
+  - prometheus/targets/*.yml
+  - prometheus/targets/*.json
+
+
+#alert rules default
+http_200_fail: []
+http_400_fail: []
+http_404_fail: []
+coins_http_200_fail: []
+coins_http_400_fail: []
+coins_http_404_fail: []
+coins_http_405_fail: []
