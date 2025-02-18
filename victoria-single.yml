@@ -2,8 +2,8 @@
 - hosts: vm_single
   become: yes
   roles:
-    # - 0010-common-v4
+    - 0010-common-v4
     - docker-install
     - vm-install
-    # - ufw-base-configure
-    # - ufw-management
+    - ufw-base-configure
+    - ufw-management
