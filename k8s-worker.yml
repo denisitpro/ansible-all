@@ -6,4 +6,4 @@
 #    - ufw-base-configure
 #    - ufw-management
     - k8s-kubeadm-install
-    # - longhorn-dependens
+    - longhorn-dependens
