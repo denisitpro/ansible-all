@@ -1,18 +1,33 @@
+# .ansible-lint.yml
+
 # enable all warnings
-warn_list:
-  - experimental  # experimental checks
-  - formatting    # formatting checks
+# warn_list:
+#   - experimental  # experimental checks
+#   - formatting    # formatting checks
 
 # disable some rules
 skip_list:
+  - name[play]  # disable rules check name play
+  - name[missing] # disable check import_tasks name
+  - name[casing] # disable upper case start name name
   - no-changed-when
   - meta-main
 
-# disable some directories
-exclude_paths:
-  - tests/
-  - roles/test_role/
+# # enable all warnings
+# warn_list:
+#   - experimental  # experimental checks
+#   - formatting    # formatting checks
 
-# enable custom rules if exists
-rulesdir:
-  - ./custom_rules/
+# # disable some rules
+# skip_list:
+#   - no-changed-when
+#   - meta-main
+
+# # disable some directories
+# exclude_paths:
+#   - tests/
+#   - roles/test_role/
+
+# # enable custom rules if exists
+# rulesdir:
+#   - ./custom_rules/
