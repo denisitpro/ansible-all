@@ -4,53 +4,53 @@
     state: present
 
 - name: "Persist iscsi_tcp module across reboots"
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/modules-load.d/longhorn.conf"
     content: "iscsi_tcp\n"
     mode: '0644'
 
 - name: "Enable and start iSCSI service"
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ iscsi_service }}"
-    enabled: yes
+    enabled: true
     state: started
 
-- name: "Enable and start multipathd service"
-  systemd:
-    name: "{{ multipath_service }}"
-    enabled: yes
-    state: started
+# - name: "Enable and start multipathd service"
+#   systemd:
+#     name: "{{ multipath_service }}"
+#     enabled: true
+#     state: started
 
 - name: "Ensure dmsetup is available"
-  command: dmsetup version
+  ansible.builtin.command: dmsetup version
   register: dmsetup_status
   changed_when: false
   failed_when: dmsetup_status.rc != 0
 
 - name: "Ensure cryptsetup is installed"
-  command: cryptsetup --version
+  ansible.builtin.command: cryptsetup --version
   register: cryptsetup_status
   changed_when: false
   failed_when: cryptsetup_status.rc != 0
 
 - name: "Verify open-iscsi is active"
-  command: systemctl is-active iscsid
+  ansible.builtin.command: systemctl is-active iscsid
   register: iscsi_status
   changed_when: false
   failed_when: iscsi_status.stdout != "active"
 
 - name: "Verify nfs-common is installed"
-  command: dpkg-query -W nfs-common
+  ansible.builtin.command: dpkg-query -W nfs-common
   register: nfs_status
   changed_when: false
   failed_when: nfs_status.rc != 0
 
 - name: "Check iscsiadm session"
-  command: iscsiadm -m session
+  ansible.builtin.command: iscsiadm -m session
   register: iscsi_sessions
   changed_when: false
   failed_when: false
 
 - name: "Debug iSCSI sessions"
-  debug:
+  ansible.builtin.debug:
     msg: "{{ iscsi_sessions.stdout_lines }}"

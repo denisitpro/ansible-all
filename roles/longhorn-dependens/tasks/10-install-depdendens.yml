@@ -1,12 +1,12 @@
 ---
 - name: "Update apt cache"
-  apt:
-    update_cache: yes
+  ansible.builtin.apt:
+    update_cache: true
   changed_when: false
 
 - name: install longhorn depedndens
   ansible.builtin.apt:
     name: "{{ longhorn_packages }}"
     state: latest
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 3600
