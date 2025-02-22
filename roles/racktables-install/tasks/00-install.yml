@@ -23,11 +23,11 @@
 
 - name: download racktables
   shell: "wget -P /tmp/ https://downloads.sourceforge.net/project/racktables/{{racktables_version}}.tar.gz"
-  become: yes
+  become: true
 
 - name: extract racktables
   shell: "tar -xopf /tmp/{{racktables_version}}.tar.gz -C /tmp/"
-  become: yes
+  become: true
 
 - name: Give insecure permissions to an existing file
   file:
@@ -38,7 +38,7 @@
 
 - name: install racktables
   shell: "cp -fr /tmp/{{racktables_version}}/wwwroot/. {{ racktables_path }}"
-  become: yes
+  become: true
 
 - name: Remove download file
   file:

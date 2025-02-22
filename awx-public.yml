@@ -1,6 +1,6 @@
 ---
 - hosts: awx_public
-  become: yes
+  become: true
   roles:
     # - 0010-common-v4
     - docker-install

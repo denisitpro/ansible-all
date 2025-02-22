@@ -12,6 +12,7 @@ skip_list:
   - name[casing] # disable upper case start name name
   - no-changed-when
   - meta-main
+  - package-latest
 
 # # enable all warnings
 # warn_list:

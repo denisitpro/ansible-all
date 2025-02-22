@@ -1,0 +1,20 @@
+---
+- name: copy sysctl file
+  template:
+    src: 051-docker-tune.conf.j2
+    dest: "/etc/sysctl.d/051-docker-tune.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+
+- name: apply tune config - Ubuntu
+  shell: /sbin/sysctl -p /etc/sysctl.d/051-docker-tune.conf
+
+- name: create /etc/docker
+  file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: 0644

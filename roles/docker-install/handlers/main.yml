@@ -1,2 +1,2 @@
 ---
-- import_tasks: shared/handlers/docker.yml
+ansible.builtin.import: shared/handlers/docker.yml

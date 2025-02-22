@@ -15,7 +15,8 @@
       - containerd.io
       - docker-buildx-plugin
     update_cache: yes
-
+  tags:
+    - docker-install
 
 - name: Install Docker -  Ubuntu latest version
   apt:
@@ -23,7 +24,8 @@
       - docker-ce
       - docker-ce-cli
     update_cache: yes
-
+  tags:
+    - docker-install
 
 
 - name: Enable docker to startup

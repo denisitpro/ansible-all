@@ -12,11 +12,11 @@
 
 - name: download pip
   shell: "wget -P /tmp/ https://bootstrap.pypa.io/pip/2.7/get-pip.py"
-  become: yes
+  become: true
 
 - name: install pip
   shell: "python /tmp/get-pip.py"
-  become: yes
+  become: true
 
 - name: install the package python-ldap
   pip:

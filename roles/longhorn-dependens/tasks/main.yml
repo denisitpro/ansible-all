@@ -1,11 +1,9 @@
 ---
-- import_tasks: 10-install-depdendens.yml
+- ansible.builtin.import_tasks: 10-install-depdendens.yml
   tags:
     - longhorn
 
-
-- import_tasks: 15-configure.yml    
+- ansible.builtin.import_tasks: 15-configure.yml
   tags:
     - longhorn
     - longhorn-configure
-    

@@ -4,7 +4,7 @@
     project_src: "{{lava_compose_path}}"
     services: "{{item}}"
     state: restarted
-  become: yes
+  become: true
   become_user: "{{lava_os_user}}"
   with_items:
     - "lava-proxy-grpc"

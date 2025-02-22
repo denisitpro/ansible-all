@@ -35,7 +35,7 @@ After the first launch and initialization, remove the `freeipa_admin_password` a
 # Example playbook
 ```commandline
 - hosts: ipa_server
-  become: yes
+  become: true
   roles:
     - 0005-net-interface-check
     - 0010-common-v4

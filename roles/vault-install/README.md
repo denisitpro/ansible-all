@@ -25,7 +25,7 @@ No specific requirements are needed for this role.
 
 ```yaml
 - hosts: vault_example
-  become: yes
+  become: true
   roles:
     - vault-install
 ```
