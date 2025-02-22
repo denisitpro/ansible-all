@@ -1,10 +1,10 @@
 ---
 - name: Restart iSCSI service
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ iscsi_service }}"
     state: restarted
 
 - name: Restart multipathd
-  systemd:
+  ansible.builtin.systemd:
     name: multipathd
     state: restarted

@@ -1,25 +1,24 @@
-- name: "Ensure iscsi_tcp kernel module is loaded"
+- name: "Ensure kernel modules is loaded"
   modprobe:
-    name: iscsi_tcp
+    name: "{{ item }}"
     state: present
+  with_items:
+    - "iscsi_tcp"
+    - "dm_crypt"
 
-- name: "Persist iscsi_tcp module across reboots"
+- name: "Persist kernel modules across reboots"
   ansible.builtin.copy:
     dest: "/etc/modules-load.d/longhorn.conf"
-    content: "iscsi_tcp\n"
+    content: |
+      iscsi_tcp
+      dm_crypt
     mode: '0644'
 
 - name: "Enable and start iSCSI service"
   ansible.builtin.systemd:
-    name: "{{ iscsi_service }}"
+    name: "iscsid"
     enabled: true
     state: started
-
-# - name: "Enable and start multipathd service"
-#   systemd:
-#     name: "{{ multipath_service }}"
-#     enabled: true
-#     state: started
 
 - name: "Ensure dmsetup is available"
   ansible.builtin.command: dmsetup version
@@ -34,10 +33,10 @@
   failed_when: cryptsetup_status.rc != 0
 
 - name: "Verify open-iscsi is active"
-  ansible.builtin.command: systemctl is-active iscsid
-  register: iscsi_status
-  changed_when: false
-  failed_when: iscsi_status.stdout != "active"
+  ansible.builtin.systemd:
+    name: iscsid
+    state: started
+    enabled: true
 
 - name: "Verify nfs-common is installed"
   ansible.builtin.command: dpkg-query -W nfs-common
@@ -54,3 +53,11 @@
 - name: "Debug iSCSI sessions"
   ansible.builtin.debug:
     msg: "{{ iscsi_sessions.stdout_lines }}"
+
+
+- name: "Disable and mask multipathd service"
+  ansible.builtin.systemd:
+    name: "multipathd"
+    enabled: false
+    state: stopped
+    masked: true

@@ -5,6 +5,3 @@ longhorn_packages:
   - multipath-tools
   - dmsetup
   - cryptsetup
-
-iscsi_service: iscsid
-# multipath_service: multipathd
