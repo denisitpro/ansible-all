@@ -1,5 +1,5 @@
 ---
-vm_image: "v1.111.0"
+vm_image: "v1.112.0"
 vm_compose_path: "/opt/docker/vm"
 
 vm_base_path: "/opt/vm-data"
