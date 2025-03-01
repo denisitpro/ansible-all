@@ -1,10 +1,10 @@
 ---
 - name: copy noproc file
-  template:
+  ansible.builtin.template:
     src: "20-nofiles.conf.j2"
     dest: "/etc/security/limits.d/20-nofiles.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   tags:
     - limits

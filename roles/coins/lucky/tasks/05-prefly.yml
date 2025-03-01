@@ -1,0 +1,21 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ coins_lucky_compose_path }}"
+
+- name: create folder application
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+  with_items:
+    - "{{ coins_lucky_base_path }}"
+    - "{{ coins_lucky_config_path }}"
+    - "{{ coins_lucky_data_path }}"

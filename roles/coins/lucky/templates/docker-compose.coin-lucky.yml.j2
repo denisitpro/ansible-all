@@ -1,0 +1,19 @@
+## {{ ansible_managed }} ##
+
+services:
+  lucky:
+    image: "{{ coins_lucky_registry }}:{{ coins_lucky_image }}"
+    container_name: lucky
+    hostname: lucky-container
+    network_mode: host
+    volumes:
+      - "{{ coins_lucky_base_path }}:{{ coins_lucky_base_path }}:rw"
+    command: "luckycoind -conf={{ coins_lucky_config_path }}/luckycoin.conf"
+    restart: "{{ coins_lucky_restart | default('unless-stopped') }}"
+    init: true
+    stop_grace_period: "30s"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

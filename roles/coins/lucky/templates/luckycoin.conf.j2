@@ -1,0 +1,18 @@
+datadir={{coins_lucky_data_path}}
+bind={{coins_lucky_bind | default('0.0.0.0:2312')}}
+rpcport={{ coins_lucky_rpc_port | default(2310) }}
+rpcuser={{ coins_lucky_rpc_user | default('lky') }}
+rpcpassword={{ coins_lucky_rpc_password | default('lky') }}
+{% for node in coins_lucky_addnode_list %}
+addnode={{ node }}
+{% endfor %}
+externalip={{ coins_lucky_external_ip | default('5.188.78.247') }}
+txindex=1
+debug=0
+printtoconsole=1
+server=1
+rpcbind={{ coins_lucky_rpc_bind | default('0.0.0.0') }}
+rpcallowip={{ coins_lucky_rpc_allowip | default('0.0.0.0/0') }}
+rpcthreads={{ coins_lucky_rpcthreads | default(64) }}
+deprecatedrpc=accounts
+onlynet={{ coins_lucky_onlynet | default('ipv4') }}

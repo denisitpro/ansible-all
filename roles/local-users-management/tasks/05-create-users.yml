@@ -1,17 +1,17 @@
 ---
 - name: Ensure group create
   ansible.builtin.group:
-    name: "{{item.group | default(item.name) }}"
+    name: "{{ item.group | default(item.name) }}"
     state: present
-  loop: "{{local_users}}"
+  loop: "{{ local_users }}"
 
 
 - name: create users
   ansible.builtin.user:
-    name: "{{item.name}}"
+    name: "{{ item.name }}"
     shell: /usr/bin/bash
-    groups: "{{item.group| default(item.name) }}"
-  loop: "{{local_users}}"
+    groups: "{{ item.group | default(item.name) }}"
+  loop: "{{ local_users }}"
 
 
 - name: Set authorized keys for users
@@ -23,7 +23,7 @@
 
 - name: Copy sudoers file
   ansible.builtin.copy:
-    dest: "/etc/sudoers.d/{{item.name}}"
+    dest: "/etc/sudoers.d/{{ item.name }}"
     content: |
       {{ item.name }} ALL=(ALL) NOPASSWD:ALL
     mode: '0440'
@@ -31,5 +31,6 @@
 
 - name: Validate sudoers file
   ansible.builtin.command: visudo -cf /etc/sudoers
-  ignore_errors: true
+  register: sudoers_check
+  failed_when: sudoers_check.rc != 0 and sudoers_check.rc != 1
   changed_when: false
