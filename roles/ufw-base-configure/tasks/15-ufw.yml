@@ -27,6 +27,8 @@
   systemd:
     name: ufw
     enabled: yes
+  when: ansible_distribution == 'Centos'
+
 
 - name: Pause 5 seconds for ufw running
   pause:

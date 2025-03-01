@@ -1,22 +1,22 @@
 ---
-- import_tasks: 05-prefly.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - vm
     - vm-docker
 
-- import_tasks: 10-configure.yml
+- ansible.builtin.import_tasks: 10-configure.yml
   tags:
     - vm
     - vm-config
     - vm-docker
 
-- import_tasks: 50-compose.yml
+- ansible.builtin.import_tasks: 50-compose.yml
   tags:
     - vm
     - vm-docker
     - vm-compose
 
-# - import_tasks: 99-reload.yml
+# - ansible.builtin.import_tasks: 99-reload.yml
 #   tags:
 #     - never
 #     - vm-reload

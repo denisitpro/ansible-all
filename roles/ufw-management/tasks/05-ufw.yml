@@ -6,15 +6,15 @@
     src: "0.0.0.0/0"
     port: "22"
     comment: "temporary ssh access"
-    delete: yes
+    delete: true
 
 - name: ipv4 ufw management rules not specific interface
   community.general.ufw:
-    rule: "{{ item.rule| default('allow') }}"
-    proto: "{{item.protocol}}"
+    rule: "{{ item.rule | default ('allow') }}"
+    proto: "{{ item.protocol }}"
     src: "{{ item.source | default('0.0.0.0/0') }}"
-    port: "{{item.port| default('')}}"
-    comment: "{{item.name}}"
+    port: "{{ item.port | default('') }}"
+    comment: "{{ item.name }}"
     insert_relative_to: first-ipv4
   with_items:
     - "{{ iptables.ipv4 }}"
@@ -24,13 +24,13 @@
 
 - name: ipv4 ufw management rules with interface
   community.general.ufw:
-    rule: "{{ item.rule| default('allow') }}"
+    rule: "{{ item.rule | default('allow') }}"
     interface: "{{item.iface}}"
     direction: "{{item.direction|default('in')}}"
     proto: "{{item.protocol}}"
     src: "{{ item.source | default('0.0.0.0/0') }}"
-    port: "{{item.port}}"
-    comment: "{{item.name}}"
+    port: "{{ item.port }}"
+    comment: "{{ item.name }}"
     insert_relative_to: first-ipv4
   with_items:
     - "{{ iptables.ipv4 }}"
@@ -41,7 +41,7 @@
 
 - name: ipv6 ufw management rules  not specific interface
   community.general.ufw:
-    rule: "{{ item.rule| default('allow') }}"
+    rule: "{{ item.rule | default('allow') }}"
     proto: "{{item.protocol}}"
     port: "{{item.port}}"
     direction: "{{item.direction | default('in')}}"
@@ -54,5 +54,3 @@
     - item.iface is not defined and iptables.ipv6 is defined
   tags:
     - ufw-ipv6
-    
-

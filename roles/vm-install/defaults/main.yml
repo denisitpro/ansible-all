@@ -3,13 +3,11 @@ vm_image: "v1.112.0"
 vm_compose_path: "/opt/docker/vm"
 
 vm_base_path: "/opt/vm-data"
-vm_db_dir:  "{{vm_base_path}}/db"
-vm_config_path: "{{vm_base_path}}/config"
+vm_db_dir: "{{ vm_base_path }}/db"
+vm_config_path: "{{ vm_base_path }}/config"
 vm_search_max_unique_timeseries: "900000"
 vm_metrics_retention: "30d"
 vm_extra_args: []
-
-
 
 vm_web_listen_address: "{{ vm_bind_address }}:9090"
 vm_bind_address: ""

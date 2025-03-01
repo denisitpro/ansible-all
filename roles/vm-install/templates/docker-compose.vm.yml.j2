@@ -12,7 +12,7 @@ services:
     command:
       - "--storageDataPath={{ vm_db_dir }}"
       - "--enableTCP6"
-      - "--httpListenAddr=:8428"
+      - "--httpListenAddr={{ vm_http_listern_addr |default('') }}:8428"
       - "--retentionPeriod={{vm_metrics_retention}}"
       - "--dedup.minScrapeInterval=15s"
       - "--search.maxUniqueTimeseries={{vm_search_max_unique_timeseries}}"
