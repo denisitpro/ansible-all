@@ -1,0 +1,48 @@
+---
+- name: restart postgresql
+  become: true
+  ansible.builtin.systemd_service:
+    name: postgresql
+    state: restarted
+
+- name: restart postgresql-12
+  become: true
+  ansible.builtin.systemd_service:
+    name: postgresql-12
+    state: restarted
+
+- name: reload postgresql-12
+  become: true
+  ansible.builtin.systemd_service:
+    name: postgresql-12
+    state: reloaded
+
+- name: reload postgresql
+  ansible.builtin.systemd_service:
+    name: postgresql
+    state: reloaded
+
+- name: recreate-docker postgres
+  community.docker.docker_compose_v2:
+    project_src: "{{ psql_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+
+- name: restart-docker postgres
+  community.docker.docker_compose_v2:
+    project_src: "{{ psql_compose_path }}"
+    state: restarted
+
+- name: Reload postgres-ssl
+  ansible.builtin.command:
+    cmd: "docker compose exec -t {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -c 'select pg_reload_conf();'"
+  args:
+    chdir: "{{ psql_compose_path }}"
+
+- name: Restart postgres-exporter
+  ansible.builtin.shell:
+    cmd: "docker compose pull; docker compose down && docker compose up -d"
+  args:
+    chdir: "{{ postgres_exporter_docker_compose_path }}"

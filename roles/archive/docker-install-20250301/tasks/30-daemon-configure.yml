@@ -1,26 +1,26 @@
 - name: Create the file daemon.json
-  ansible.builtin.template:
+  template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
     owner: root
     group: root
-    mode: "0644"
+    mode: 644
   notify: restart docker
 
 
 - name: Create the file daemon.json
-  ansible.builtin.template:
+  template:
     src: docker.service.j2
     dest: /lib/systemd/system/docker.service
     owner: root
     group: root
-    mode: "0644"
+    mode: 644
   when: docker_api_enable is defined
 
 - name: reload and start docker daemon
-  ansible.builtin.systemd:
+  systemd:
     name: "docker"
     state: restarted
-    enabled: true
-    daemon_reload: true
+    enabled: yes
+    daemon_reload: yes
   when: docker_api_enable is defined

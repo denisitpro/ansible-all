@@ -1,0 +1,6 @@
+---
+- name: quemu - ubuntu
+  ansible.builtin.apt:
+    name:
+      - qemu-guest-agent
+  when: ansible_distribution == 'Ubuntu'

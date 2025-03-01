@@ -1,15 +1,15 @@
 ---
 - name: restart-unit teleport
-  systemd:
+  ansible.builtin.systemd_service:
     name: teleport
     state: restarted
 
 - name: reload-unit teleport
-  systemd:
+  ansible.builtin.systemd_service:
     name: teleport
     state: reloaded
 
 - name: restart-docker teleport
-  shell: "docker compose restart teleport"
-  args:
-    chdir: "{{docker_compose_path | default('/opt/docker')}}/teleport"
+  community.docker.docker_compose_v2:
+    project_src: "{{ teleport_compose_path }}"
+    state: restarted

@@ -1,0 +1,9 @@
+---
+- name: Copy keeper config file
+  ansible.builtin.template:
+    src: "keeper_config.xml.j2"
+    dest: "{{ keeper_config_path }}/keeper_config.xml"
+    owner: "{{ keeper_uid }}"
+    group: "{{ keeper_gid }}"
+    mode: '0640'
+  notify: restart-docker keeper

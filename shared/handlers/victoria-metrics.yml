@@ -1,8 +1,8 @@
 ---
 - name: restart docker vm
   community.docker.docker_compose_v2:
-    project_src: "{{vm_compose_path}}"
-    services: "{{item}}"
+    project_src: "{{ vm_compose_path }}"
+    services: "{{ item }}"
     state: restarted
   with_items:
     - "vm"

@@ -1,0 +1,35 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - keeper
+    - keeper-prefly
+
+- ansible.builtin.import_tasks: 10-ssl.yml
+  when: keeper_enable_ssl is defined
+  tags:
+    - keeper
+    - keeper-ssl
+
+- ansible.builtin.import_tasks: 20-set-facts.yml
+  tags:
+    - keeper
+    - keeper-facts
+    - keeper-config
+    - always
+
+- ansible.builtin.import_tasks: 30-configure.yml
+  tags:
+    - keeper
+    - keeper-config
+    - keeper-docker
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - keeper
+    - keeper-docker
+    - keeper-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - keeper-clean

@@ -1,0 +1,86 @@
+<!-- {{ ansible_managed }}
+Config reference
+https://github.com/ClickHouse/ClickHouse/blob/master/programs/keeper/keeper_config.xml -->
+
+<clickhouse>
+    <logger>
+        <level>{{keeper_logger_level }}</level>
+        <log>/var/log/clickhouse-keeper/clickhouse-keeper.log</log>
+        <errorlog>/var/log/clickhouse-keeper/clickhouse-keeper.err.log</errorlog>
+        <size>{{ keeper_logger_size }}</size>
+        <count>{{keeper_logger_count }}</count>
+        {% if clickhouse_keeper_logger.console is defined and clickhouse_keeper_logger.console != 'autodetection' -%}
+        <console>{{ keeper_logger_consolee }}</console>
+        {% else -%}
+        <!-- <console>1</console> -->
+        {% endif -%}
+        <!-- Default behavior is autodetection (log to console if not daemon mode and is tty) -->
+    </logger>
+
+    <max_connections>{{ keeper_max_connections | default('4096') }}</max_connections>
+{% if keeper_metrics_disable is not defined %}
+    <prometheus>
+       <endpoint>/metrics</endpoint>
+       <port>{{ keeper_metrics_port | default('9363') }}</port>
+       <metrics>true</metrics>
+       <events>true</events>
+       <asynchronous_metrics>true</asynchronous_metrics>
+    </prometheus>   
+{% endif %}
+{% for host in keeper_listen_hosts | default([]) %}
+    <listen_host>{{ host }}</listen_host>
+{% endfor %}
+    <keeper_server>
+            <http_control>
+                <port>9182</port>
+                <readiness>
+                    <endpoint>/ready</endpoint>
+                </readiness>
+            </http_control>
+      <!-- Clients use this port to connect (should match zookeeper port) -->
+            <tcp_port>{{ keeper_tcp_port | default('9181') }}</tcp_port>
+            <!-- Must be unique among all keeper serves -->
+            <!-- see task 07-set-facts - calculated keeper id -->
+            <server_id>{{ keeper_id }}</server_id>
+
+            <log_storage_path>{{ keeper_log_storage_path | default('/var/lib/clickhouse/coordination/logs') }}</log_storage_path>
+            <snapshot_storage_path>{{ keeper_snapshot_storage_path | default('/var/lib/clickhouse/coordination/snapshots') }}</snapshot_storage_path>
+
+            <coordination_settings>
+                <operation_timeout_ms>{{ keeper_operation_timeout_ms | default('10000') }}</operation_timeout_ms>
+                <min_session_timeout_ms>{{ keeper_min_session_timeout_ms | default('10000') }}</min_session_timeout_ms>
+                <session_timeout_ms>{{ keeper_session_timeout_ms | default('100000') }}</session_timeout_ms>
+                <raft_logs_level>{{ keeper_raft_logs_level | default('information') }}</raft_logs_level>
+            </coordination_settings>
+
+            <!-- enable sanity hostname checks for cluster configuration (e.g. if localhost is used with remote endpoints) -->
+            <hostname_checks_enabled>{{ keeper_hostname_checks_enabled | default('true') }}</hostname_checks_enabled>
+            <raft_configuration>
+{% for host in raft_servers %}
+                <server>
+                    <id>{{ hostvars[host]['keeper_id'] }}</id>
+                    <hostname>{{ host | default('localhost') }}</hostname>
+                    <port>{{ keeper_raft_server_port | default('9234') }}</port>
+                </server>
+{% endfor %}
+            </raft_configuration>
+    </keeper_server>
+
+{% if keeper_enable_ssl  is defined %}
+    <openSSL>
+      <server>
+            <!-- Used for secure tcp port -->
+            <certificateFile>{{ keeper_ssl_path }}/fullchain.pem</certificateFile>
+            <privateKeyFile>{{ keeper_ssl_path }}/privkey.pem</privateKeyFile>
+{% if keeper_openssl_dhparam is defined %}
+            <dhParamsFile>{{ keeper_ssl_path }}/dhparam.pem</dhParamsFile>
+{% endif %}
+            <verificationMode>none</verificationMode>
+            <loadDefaultCAFile>true</loadDefaultCAFile>
+            <cacheSessions>true</cacheSessions>
+            <disableProtocols>sslv2,sslv3</disableProtocols>
+            <preferServerCiphers>true</preferServerCiphers>
+        </server>
+    </openSSL>
+{% endif %}
+</clickhouse>

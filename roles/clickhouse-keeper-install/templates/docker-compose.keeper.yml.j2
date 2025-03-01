@@ -1,0 +1,19 @@
+## {{ ansible_managed }} ##
+
+services:
+  keeper:
+    image: clickhouse/clickhouse-keeper:{{ keeper_image }}
+    container_name: keeper
+    hostname: keeper-{{ansible_hostname}}
+    network_mode: host
+    volumes:
+      - {{keeper_config_path}}:/etc/clickhouse-keeper/
+      - {{keeper_data_path}}:/var/lib/clickhouse
+      - {{keeper_logs_path}}:/var/log/clickhouse-keeper
+      - {{keeper_ssl_path}}:{{keeper_ssl_path}}
+    restart: {{ keeper_restart | default('unless-stopped') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

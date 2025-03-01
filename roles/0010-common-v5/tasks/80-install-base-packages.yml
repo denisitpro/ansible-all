@@ -1,0 +1,39 @@
+---
+- name: Distribution major version
+  ansible.builtin.debug:
+    msg: "{{ ansible_distribution_version }}"
+
+- name: install base software - ubuntu all
+  ansible.builtin.apt:
+    name:
+      - nano
+      - net-tools
+      - lsof
+      - wget
+      - telnet
+      - git
+      - vim
+      - htop
+      - iotop
+      - tcpdump
+      - dnsutils
+      - unzip
+      - jq
+      - plocate
+    state: latest
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: install base software - ubuntu 22.04
+  ansible.builtin.apt:
+    name:
+      - netcat
+    state: latest
+  when: ansible_distribution_version == '22.04'
+
+- name: install base software - ubuntu 24.04
+  ansible.builtin.apt:
+    name:
+      - netcat-traditional
+    state: latest
+  when: ansible_distribution_version == '24.04'
