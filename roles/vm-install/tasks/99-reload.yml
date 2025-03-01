@@ -1,4 +1,3 @@
 ---
 - name: Reload vm is docker
-  ansible.builtin.shell:
-    cmd: "docker kill --signal=HUP vm"
+  ansible.builtin.command: docker kill --signal=HUP vm

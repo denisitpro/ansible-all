@@ -1,2 +1,2 @@
 ---
-- import_tasks: shared/handlers/victoria-metrics.yml
+- ansible.builtin.import_tasks: shared/handlers/victoria-metrics.yml

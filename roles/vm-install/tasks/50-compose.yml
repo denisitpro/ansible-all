@@ -1,25 +1,14 @@
 ---
 - name: copy compose file
-  template:
+  ansible.builtin.template:
     src: "docker-compose.vm.yml.j2"
-    dest: "{{vm_compose_path}}/docker-compose.yml"
-    mode: 0600
-  register: __vm_docker_compose_file
+    dest: "{{ vm_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: restart docker vm
 
-
-# # todo rewrite use notify
-# - name: Copy docker-compose file
-#   ansible.builtin.template:
-#     src: "docker-compose.vm.yml.j2"
-#     dest: "{{ vm_docker_compose_path }}/docker-compose.yml"
-#     mode: '0600'
-#     owner: root
-#     group: root
-#   register: __vm_docker_compose_file
-
-- name: Restart docker
-  ansible.builtin.shell:
-    cmd: "docker compose pull; docker compose down --remove-orphans; docker compose up -d"
-  args:
-    chdir: "{{ vm_compose_path }}"
-  when: __vm_docker_compose_file.changed
+- name: Ensure docker-compose is applied and containers are recreated if needed
+  community.docker.docker_compose_v2:
+    project_src: "{{ vm_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
