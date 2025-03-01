@@ -5,7 +5,7 @@
     dest: "{{ psql_node_data_conf }}/{{ item }}"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   with_items:
     - postgresql.conf
     - pg_hba.conf

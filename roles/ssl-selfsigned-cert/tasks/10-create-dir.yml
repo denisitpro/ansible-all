@@ -8,4 +8,4 @@
     group: root
   with_items:
     - "/opt/ssl"
-    - "{{ssl_path}}"
+    - "{{ ssl_path }}"

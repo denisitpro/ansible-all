@@ -6,9 +6,8 @@
 
 - name: Teleport add repo
   ansible.builtin.apt_repository:
-    repo: deb https://apt.releases.teleport.dev/ubuntu {{ansible_distribution_release}} {{teleport_version}}
+    repo: deb https://apt.releases.teleport.dev/ubuntu {{ ansible_distribution_release }} {{ teleport_version }}
     state: present
-
 
 - name: Teleport install
   ansible.builtin.apt:

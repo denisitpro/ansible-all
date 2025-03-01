@@ -11,8 +11,13 @@ spec:
   redirect_url: https://{{ teleport_server }}/v1/webapi/github/callback
   teams_to_roles:
 {% for role in teleport_roles %}
-  - organization: {{ teleport_github_org }}
-    roles:
-      - {{ role.name }}
-    team: {{ role.name }}
+    - organization: {{ teleport_github_org }}
+      team: {{ role.name }}
+      roles:
+        - {{ role.name }}
+{% if role.k8s_access_role is defined and role.k8s_access_role %}
+{% for k8s_role in role.k8s_access_role %}
+        - {{ k8s_role }}
+{% endfor %}
+{% endif %}
 {% endfor %}

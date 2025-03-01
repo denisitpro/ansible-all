@@ -1,14 +1,21 @@
 ---
 - name: Copy templates
   ansible.builtin.template:
-    src: "{{item}}.j2"
-    dest: "/tmp/{{item}}"
+    src: "{{ item }}.j2"
+    dest: "/tmp/{{ item }}"
     mode: '0644'
   with_items:
     - "connector.yaml"
 
 
 - name: create connector
-  ansible.builtin.shell: "tctl create -f /tmp/{{item}}"
+  ansible.builtin.command: "tctl create -f /tmp/{{ item }}"
+  with_items:
+    - connector.yaml
+
+- name: clean connector
+  ansible.builtin.file:
+    path: "/tmp/{{ item }}"
+    state: absent
   with_items:
     - connector.yaml

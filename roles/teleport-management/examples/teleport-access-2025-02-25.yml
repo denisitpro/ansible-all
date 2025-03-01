@@ -1,32 +1,25 @@
-# https://goteleport.com/docs/enroll-resources/kubernetes-access/manage-access/
-# example access to specific namespace
-
-# verbs - need for read logs
 
 kind: role
 metadata:
-  name: kube-access
+  name: 300_k8s
 version: v7
 spec:
   allow:
     kubernetes_labels:
       'region': '*'
-      'platform': 'minikube'
+      'platform': 'kubadmin'
     kubernetes_resources:
       - kind: pod
         namespace: "production"
         name: "^webapp-[a-z0-9-]+$"
-        verbs:
-          - get
-          - list
-          - watch
       - kind: pod
         namespace: "development"
         name: "*"
+      - kind: "*"
+        namespace: "go"
+        name: "*"
         verbs:
-          - get
-          - list
-          - watch
+          - "*" 
     kubernetes_groups:
     - developers
     kubernetes_users:

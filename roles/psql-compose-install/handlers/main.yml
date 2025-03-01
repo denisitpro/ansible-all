@@ -3,4 +3,4 @@
   ansible.builtin.import_tasks: shared/handlers/consul.yml
 
 - name: Import postgres
-  ansible.builtin.import_tasks: shared/handlers/postgres.yml
+  ansible.builtin.import_tasks: shared/handlers/psql.yml

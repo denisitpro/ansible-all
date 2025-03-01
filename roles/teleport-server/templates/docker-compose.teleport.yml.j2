@@ -2,7 +2,7 @@ services:
   teleport:
     image: {{teleport_registry}}:{{teleport_version}}
     container_name: teleport
-    hostname: teleport-{{stand_type| default('example')}}
+    hostname: teleport
     network_mode: host
     volumes:
       - {{teleport_data_path}}/data:/var/lib/teleport
@@ -10,9 +10,7 @@ services:
 {% if teleport_backup is defined %}
       - {{teleport_data_path}}/backup:/opt/teleport/backups
 {% endif %}
-{% if teleport_restart is defined %}
-    restart: always
-{% endif %}
+    restart: "{{ teleport_restart | default('unless-stopped') }}"
     logging:
       driver: json-file
       options:
