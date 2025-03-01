@@ -1,3 +1,5 @@
+## {{ ansible_managed }} ##
+
 services:
   psql:
     image: {{ psql_image }}:{{ psql_version }}
@@ -18,7 +20,7 @@ services:
       - PGPASSWORD={{ psql_pgpassword }}
     command: pg_basebackup -h {{ pg_master_host }} -D {{ psql_docker_data_path }} -U replication -w -P -v  -R -X stream -C -S {{ pg_replica_slot_name }}
 {% else %}
-    restart: always
+    restart: {{ vm_restart | default('always') }}
     command: -c config_file={{ psql_docker_conf_dir }}/postgresql.conf -c hba_file={{ psql_docker_conf_dir }}/pg_hba.conf
 {% endif %}
     logging:

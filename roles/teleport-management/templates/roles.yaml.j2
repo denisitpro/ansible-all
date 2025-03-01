@@ -10,8 +10,10 @@ spec:
     # List of node labels that users can SSH into
 {% if role.ssh_acl_level is defined %}
     node_labels:
-      'ssh_acl_level': '{{ role.ssh_acl_level }}'
-    {% endif %}
+{% for level in role.ssh_acl_level %}
+      'ssh_acl_level{{ level }}': '{{ level }}'
+{% endfor %}
+{% endif %}
     # List of application labels users can access
     app_labels:
 {% for level in role.app_acl_level %}

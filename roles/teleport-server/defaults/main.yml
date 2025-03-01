@@ -1,15 +1,12 @@
 ---
 teleport_registry: public.ecr.aws/gravitational/teleport-distroless
-teleport_version: 16.4.7
+teleport_version: 17.2.8
+
+teleport_compose_path: "/opt/docker/teleport"
 teleport_data_path: /opt/teleport
 
 teleport_cluster_name: cls1
 teleport_public_addr: "teleport.example.com:443"
 
 teleprot_acme_email: user@example.com
-teleport_node_name: "{{inventory_hostname_short}}"
-
-folder_apps:
-  - teleport
-
-
+teleport_node_name: "{{ inventory_hostname_short }}"

@@ -1,8 +1,8 @@
 ---
-- name: Copy compose-file - psql
+- name: copy compose file
   ansible.builtin.template:
     src: "docker-compose.psql.yml.j2"
-    dest: "{{ psql_docker_compose_path }}/docker-compose.yml"
-    mode: 0600
-  notify:
-    - Recreate-docker postgres
+    dest: "{{ psql_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  # notify: restart-docker postgres
+  notify: recreate-docker postgres

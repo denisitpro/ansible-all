@@ -1,24 +1,22 @@
 ---
-- import_tasks: 05-create-roles.yml
+- ansible.builtin.import_tasks: 05-create-roles.yml
   delegate_to: localhost
   run_once: true
-  become: no
+  become: false
   tags:
     - teleport-create
     - teleport-role
 
-- import_tasks: 10-create-connector.yml
+- ansible.builtin.import_tasks: 10-create-connector.yml
   delegate_to: localhost
   run_once: true
-  become: no
+  become: false
   tags:
     - teleport-create
     - teleport-connector
 
-
-
-- import_tasks: 99-reset.yaml
+- ansible.builtin.import_tasks: 99-reset.yaml
   delegate_to: localhost
   run_once: true
-  become: no
-  tags: [ 'never', 'teleport-reset-password' ]
+  become: false
+  tags: ['never', 'teleport-reset-password']

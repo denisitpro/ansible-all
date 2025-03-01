@@ -7,4 +7,3 @@
     ssl_domain: "selfsigned"
     ssl_cert_path: "{{ teleport_data_path }}/data/fullchain.pem"
     ssl_privkey_path: "{{ teleport_data_path }}/data/privkey.pem"
-

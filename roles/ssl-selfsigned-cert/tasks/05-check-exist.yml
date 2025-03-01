@@ -1,10 +1,10 @@
 ---
 - name: check exist file
-  stat:
-    path: "{{ssl_privkey_path}}"
+  ansible.builtin.stat:
+    path: "{{ ssl_privkey_path }}"
   register: file_check
 
 - name: print result check exist cert
-  debug:
+  ansible.builtin.debug:
     msg: "current self-sign cert found"
   when: file_check.stat.exists

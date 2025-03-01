@@ -1,5 +1,14 @@
 ---
-- name: run restart compose
-  shell: "docker compose down && docker compose up -d"
-  args:
-    chdir: "{{docker_compose_path |default('/opt/docker') }}/teleport"
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.teleport.yml.j2"
+    dest: "{{ teleport_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: restart-docker teleport
+
+- name: Ensure docker-compose is applied and containers are recreated if needed
+  community.docker.docker_compose_v2:
+    project_src: "{{ teleport_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
