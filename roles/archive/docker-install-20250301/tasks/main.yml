@@ -1,0 +1,20 @@
+---
+ansible.builtin.import: 05-add-repo.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - docker
+
+ansible.builtin.import: 10-install-docker.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - docker
+
+ansible.builtin.import: 20-configure-docker.yml
+  tags:
+    - docker
+
+ansible.builtin.import: 30-daemon-configure.yml
+  when: docker_daemon_conf is defined
+  tags:
+    - docker
+    - docker-daemon

@@ -1,15 +1,14 @@
 - name: restart consul
-  systemd:
+  ansible.builtin.systemd_service:
     name: consul
     state: restarted
 
 - name: reload consul
-  systemd:
+  ansible.builtin.systemd_service:
     name: consul
     state: reloaded
 
-
-- name: restart-docker consul
-  shell: "docker compose restart consul"
-  args:
-    chdir: "{{docker_compose_path}}/consul"
+- name: rrestart-docker consul
+  community.docker.docker_compose_v2:
+    project_src: "{{ consul_compose_path }}"
+    state: restarted

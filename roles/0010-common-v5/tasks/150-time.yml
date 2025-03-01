@@ -1,0 +1,52 @@
+---
+- name: copy adjtime
+  ansible.builtin.copy:
+    src: adjtime
+    dest: /etc/adjtime
+    force: true
+    mode: "0644"
+  notify: restart systemd-timesyncd
+
+- name: Set timezone
+  notify:
+    - restart systemd-timesyncd
+  community.general.timezone:
+    name: "{{ default_timezone }}"
+
+- name: Disable other NTP daemons
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  loop:
+    - chrony.service
+    - ntp.service
+  failed_when: false
+  notify: restart systemd-timesyncd
+
+- name: Remove chrony and ntpd
+  register: remove_ntp_daemons
+  ansible.builtin.apt:
+    name:
+      - chrony
+      - ntp
+      - ntpdate
+    state: absent
+    autoremove: true
+    purge: true
+
+- name: install systemd-timesyncd
+  ansible.builtin.apt:
+    name:
+      - systemd-timesyncd
+    state: latest
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Configure timesyncd
+  ansible.builtin.template:
+    dest: /etc/systemd/timesyncd.conf
+    src: "timesyncd.conf.j2"
+    mode: "0644"
+  notify: restart systemd-timesyncd

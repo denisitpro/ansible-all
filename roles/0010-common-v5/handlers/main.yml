@@ -1,0 +1,5 @@
+---
+- ansible.builtin.import_tasks: shared/handlers/systemd-resolved.yml
+- ansible.builtin.import_tasks: shared/handlers/rsyslog.yml
+- ansible.builtin.import_tasks: shared/handlers/sshd.yml
+- ansible.builtin.import_tasks: shared/handlers/systemd-timesyncd.yml

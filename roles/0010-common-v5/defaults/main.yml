@@ -1,0 +1,21 @@
+---
+dns_resolved_domains:
+  - 'example.com'
+
+aws_fqdn_domain: example.com
+
+dns1: 1.1.1.1
+dns2: 8.8.8.8
+
+default_timezone: UTC
+
+ntp_servers:
+  - time.cloudflare.com
+  - time.google.com
+
+# list of fallback NTP-servers
+ntp_fallback_servers:
+  - de.pool.ntp.org
+  - ntp.ubuntu.com
+
+server_hostname: "{{ inventory_hostname }}"

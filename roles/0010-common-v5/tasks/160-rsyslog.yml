@@ -1,0 +1,13 @@
+---
+- name: copy file log-format.conf
+  ansible.builtin.copy:
+    src: log-format.conf
+    dest: /etc/rsyslog.d/30-log-format.conf
+    force: true
+    mode: "0644"
+
+
+- name: restart rsyslog
+  ansible.builtin.systemd_service:
+    name: rsyslog
+    state: restarted

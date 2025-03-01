@@ -1,0 +1,49 @@
+---
+- name: Fail if both keeper_id and raft_servers are defined
+  any_errors_fatal: true
+  ansible.builtin.fail:
+    msg: "Configuration error: Both host vars keeper_id and raft_servers are defined."
+  when: keeper_id is defined and raft_servers is defined
+
+# If keeper_id is explicitly set in host vars and raft_servers is not defined, use the provided keeper_id.
+- name: Set keeper_id from host vars if raft_servers is not defined
+  ansible.builtin.set_fact:
+    keeper_id: "{{ hostvars[inventory_hostname].keeper_id }}"
+  when: keeper_id is defined and raft_servers is not defined
+
+- name: Assign sequential IDs to hosts in a group
+  ansible.builtin.set_fact:
+    keeper_id: "{{ keeper_id | default(groups[keeper_id_group_calculate].index(inventory_hostname) + 1) }}"
+  when: keeper_id is not defined  and raft_servers is not defined
+
+# Ensures that all servers listed in raft_servers are part of keeper_id_group_calculate.
+- name: Validate that all raft_servers are in keeper_id_group_calculate
+  ansible.builtin.fail:
+    msg: "Configuration error: Some hosts in raft_servers are missing from the group {{ keeper_id_group_calculate }}."
+  when: raft_servers is defined and not
+        (raft_servers | map(attribute='hostname') | list | difference(groups[keeper_id_group_calculate]) | length == 0)
+
+- name: Assign keeper_id based on raft_servers list
+  ansible.builtin.set_fact:
+    keeper_id: "{{ item.id }}"
+  when: raft_servers is defined and inventory_hostname == item.hostname
+  loop: "{{ raft_servers }}"
+  loop_control:
+    label: "{{ item.hostname }}"
+  # If raft_servers is defined, assign keeper_id based on the corresponding hostname.
+
+# Outputs the assigned keeper_id for debugging purposes.
+- name: Debug - Display keeper_id assignment
+  ansible.builtin.debug:
+    msg: "Server {{ inventory_hostname }} has keeper_id {{ keeper_id }}"
+
+# Generates the ordered list of servers for the Raft configuration based on keeper_id_group_calculate.
+- name: Set the list of servers for Raft configuration
+  ansible.builtin.set_fact:
+    raft_servers: >-
+      {{ groups[keeper_id_group_calculate]
+      | map('extract', hostvars, 'keeper_id')
+      | zip(groups[keeper_id_group_calculate])
+      | sort(attribute=0)
+      | map(attribute=1)
+      | list }}

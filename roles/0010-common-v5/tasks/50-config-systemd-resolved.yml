@@ -1,0 +1,21 @@
+---
+- name: create path
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    state: directory
+    mode: "0644"
+  with_items:
+    - "/usr/lib/systemd/resolved.conf.d"
+
+- name: copy ansible-management.conf
+  ansible.builtin.template:
+    src: systemd_resolved_resolv.conf.j2
+    dest: "/usr/lib/systemd/resolved.conf.d/ansible-managed.conf"
+    mode: "0644"
+
+- name: restart systemd-resolved
+  ansible.builtin.systemd:
+    state: restarted
+    name: systemd-resolved

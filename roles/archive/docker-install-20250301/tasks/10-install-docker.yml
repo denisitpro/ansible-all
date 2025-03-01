@@ -1,16 +1,11 @@
 ---
 - name: Install prerequisites - Ubuntu
-  ansible.builtin.apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg2
-      - software-properties-common
-    update_cache: true
+  apt:
+    name: ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg2' ,'software-properties-common']
+    update_cache: yes
 
 - name: Install Docker - components Ubuntu
-  ansible.builtin.apt:
+  apt:
     name:
       - apt-transport-https
       - ca-certificates
@@ -19,31 +14,34 @@
       - software-properties-common
       - containerd.io
       - docker-buildx-plugin
-    update_cache: true
+    update_cache: yes
 
 
 - name: Install Docker -  Ubuntu latest version
-  ansible.builtin.apt:
+  apt:
     name:
       - docker-ce
       - docker-ce-cli
-    update_cache: true
+    update_cache: yes
+
+
 
 - name: Enable docker to startup
-  ansible.builtin.systemd:
+  systemd:
     name: docker
-    enabled: true
+    enabled: yes
 
 - name: create path
-  ansible.builtin.file:
+  file:
     path: "/etc/bash_completion.d"
     owner: root
     group: root
-    mode: "0644"
+    mode: 0644
     state: directory
 
 - name: add autocompleate docker-ce
-  ansible.builtin.get_url:
+  get_url:
     url: https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker
     dest: /etc/bash_completion.d/docker.sh
-    mode: "0644"
+    mode: 0644
+

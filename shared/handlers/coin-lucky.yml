@@ -1,0 +1,5 @@
+---
+- name: restart docker lucky
+  community.docker.docker_compose_v2:
+    project_src: "{{ coins_lucky_compose_path }}"
+    state: restarted

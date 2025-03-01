@@ -1,0 +1,6 @@
+---
+- name: force set hostname
+  ansible.builtin.hostname:
+    name: "{{ server_hostname }}"
+  when: set_hostname_management is  defined
+  notify: restart systemd-resolved

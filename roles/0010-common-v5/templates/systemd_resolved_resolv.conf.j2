@@ -1,0 +1,8 @@
+[Resolve]
+{% if cloud_provider is defined and cloud_provider != 'aws' %}
+DNS={{dns1}} {{dns2}}
+{% endif %}
+Domains={% for dom in  dns_resolved_domains %}{% if ansible_distribution == 'CentOS' %}~{% endif %}{{dom}} {% endfor %}
+
+Cache=no-negative
+LLMNR=false

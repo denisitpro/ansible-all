@@ -1,0 +1,27 @@
+---
+# keeper_image: "23.8.11.28-alpine" # current role version
+# https://clickhouse.com/docs/whats-new/changelog/2024#a-id248a-clickhouse-release-248-lts-2024-08-20
+keeper_image: "24.8.14.39-alpine" # LTS
+keeper_compose_path: "/opt/docker/keeper"
+
+keeper_base_path: "/opt/keeper"
+keeper_data_path: "{{ keeper_base_path }}/data"
+keeper_config_path: "{{ keeper_base_path }}/config"
+keeper_logs_path: "{{ keeper_base_path }}/logs"
+keeper_ssl_path: "{{ keeper_base_path }}/ssl"
+
+#  Docs https://github.com/ClickHouse/ClickHouse/blob/master/docker/keeper/Dockerfile
+keeper_uid: 101
+keeper_gid: 101
+
+keeper_id_group_calculate: keeper_example_group
+
+# migrate old role variables
+
+keeper_logger_level: error
+keeper_logger_size: 1000M
+keeper_logger_count: 10
+keeper_logger_console: autodetection
+
+keeper_listen_hosts:
+  - "0.0.0.0"

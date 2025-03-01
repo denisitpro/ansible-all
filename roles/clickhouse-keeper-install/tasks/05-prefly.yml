@@ -1,0 +1,25 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ keeper_compose_path }}"
+
+- name: create folder application
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ keeper_uid }}"
+    group: "{{ keeper_gid }}"
+  with_items:
+    - "{{ keeper_base_path }}"
+    - "{{ keeper_config_path }}"
+    - "{{ keeper_data_path }}"
+    - "{{ keeper_logs_path }}"
+    - "{{ keeper_ssl_path }}"

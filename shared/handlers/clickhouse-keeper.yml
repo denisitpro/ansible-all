@@ -1,13 +1,13 @@
 ---
-- name: recreate-docker clickhouse
+- name: recreate-docker keeper
   community.docker.docker_compose_v2:
-    project_src: "{{ click_compose_path }}"
+    project_src: "{{ keeper_compose_path }}"
     state: present
     recreate: always
     pull: always
 
 
-- name: restart-docker clickhouse
+- name: restart-docker keeper
   community.docker.docker_compose_v2:
-    project_src: "{{ click_compose_path }}"
+    project_src: "{{ keeper_compose_path }}"
     state: restarted
