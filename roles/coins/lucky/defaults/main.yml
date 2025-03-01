@@ -1,0 +1,14 @@
+---
+coins_lucky_image: "v4.0.2"
+coins_lucky_registry: https://hub.docker.com/r/denisitpro/coin-luckycoinv4
+coins_lucky_compose_path: "/opt/docker/lucky"
+
+coins_lucky_base_path: "/opt/lucky"
+coins_lucky_config_path: "{{ coins_lucky_base_path }}/config"
+coins_lucky_data_path: "{{ coins_lucky_base_path }}/data"
+
+
+coins_lucky_addnode_list:
+  - "127.0.0.1:2352"
+  - "1.2.3.4:9917"
+

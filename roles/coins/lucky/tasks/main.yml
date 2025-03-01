@@ -1,0 +1,17 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - lucky
+    - lucky-docker
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - lucky
+    - lucky-config
+    - lucky-docker
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - lucky
+    - lucky-docker
+    - lucky-compose

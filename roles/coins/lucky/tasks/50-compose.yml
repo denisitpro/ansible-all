@@ -1,0 +1,14 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.coin-lucky.yml.j2"
+    dest: "{{ coins_lucky_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: restart docker lucky
+
+- name: Ensure docker-compose is applied and containers are recreated if needed
+  community.docker.docker_compose_v2:
+    project_src: "{{ coins_lucky_compose_path }}"
+    state: present
+    recreate: always
+    pull: always

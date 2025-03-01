@@ -1,11 +1,11 @@
 ---
 - name: copy sysctl file inotify
-  template:
+  ansible.builtin.template:
     src: 35-inotify.conf.j2
     dest: "/etc/sysctl.d/35-inotify.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - name: apply tune config - Ubuntu
-  shell: /sbin/sysctl -p /etc/sysctl.d/35-inotify.conf
+  ansible.builtin.command: /sbin/sysctl -p /etc/sysctl.d/35-inotify.conf

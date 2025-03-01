@@ -1,0 +1,6 @@
+---
+- name: copy config file
+  ansible.builtin.template:
+    src: "luckycoin.conf.j2"
+    dest: "{{ coins_lucky_config_path }}/luckycoin.conf"
+    mode: "0600"
