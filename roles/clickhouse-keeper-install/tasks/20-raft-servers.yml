@@ -1,0 +1,9 @@
+---
+- name: Assign keeper_id based on keeper_raft_servers list
+  any_errors_fatal: true
+  ansible.builtin.set_fact:
+    keeper_id: "{{ (keeper_raft_servers | selectattr('hostname', 'equalto', inventory_hostname) | map(attribute='id') | first) | default(omit) }}"
+
+- name: Debug - Show keeper_id for this host
+  ansible.builtin.debug:
+    msg: "keeper_id: {{ keeper_id }}"

@@ -1,0 +1,20 @@
+---
+- name: stop compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ click_compose_path }}"
+    state: stopped
+  register: compose_result
+  failed_when:
+    - compose_result is failed
+    - "'No such container' not in compose_result.msg"
+  tags:
+    - never
+    - click-stop
+
+- name: start compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ click_compose_path }}"
+    state: present
+  tags:
+    - never
+    - click-start

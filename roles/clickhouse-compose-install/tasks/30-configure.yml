@@ -1,0 +1,112 @@
+---
+#### STEP ONLY FOR STAGE, NOT ENABLE FOR PROD ####
+- name: Find all files in clickhouse config.d
+  ansible.builtin.find:
+    paths: "{{ click_config_path }}/config.d"
+    file_type: file
+  register: click_config_d_files
+  when: config_d_clean_force is defined
+
+- name: Remove found files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ click_config_d_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when: config_d_clean_force is defined
+
+#### END STEP ONLY FOR STAGE, NOT ENABLE FOR PROD ####
+
+- name: Copy click config file
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/config.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  notify: reload-docker clickhouse
+  with_items:
+    - "сlick-logger.xml"
+    - "base-configre.xml"
+    - "prometheus.xml"
+    - "logs.xml"
+
+- name: Copy click ssl file
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/config.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  when: click_enable_ssl is defined
+  notify: reload-docker clickhouse
+  with_items:
+    - "ssl.xml"
+
+- name: Copy click storage config file
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/config.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  when: click_storage_disk_cold_data_path is defined
+  notify: reload-docker clickhouse
+  with_items:
+    - "storage-configuration.xml"
+
+- name: Copy click remote server config file
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/config.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  when: click_remote_servers is defined
+  notify: reload-docker clickhouse
+  with_items:
+    - "remote-server.xml"
+  tags:
+    - click-remote-server
+
+- name: Copy click zookeepr config file
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/config.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  when: click_zookeeper_servers | default([]) | length > 0
+  notify: reload-docker clickhouse
+  with_items:
+    - "zookeeper.xml"
+  tags:
+    - click-zoo-servers
+
+- name: Copy click macros config file
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/config.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  when: click_macros is defined
+  notify: reload-docker clickhouse
+  with_items:
+    - "macros.xml"
+  tags:
+    - click-macros
+
+
+- name: Copy click access-control-improvements config file
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/config.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  when: click_access_control_improvements is defined
+  notify: reload-docker clickhouse
+  with_items:
+    - "access-control-improvements.xml"

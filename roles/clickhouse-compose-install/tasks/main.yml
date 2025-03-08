@@ -1,0 +1,57 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - click
+    - click-prefly
+
+- ansible.builtin.import_tasks: 10-ssl.yml
+  when: click_enable_ssl is defined
+  tags:
+    - click
+    - click-ssl
+    - click-config
+
+- ansible.builtin.import_tasks: 20-set-facts.yml
+  tags:
+    - click
+    - click-facts
+    - click-config
+    - always
+
+- ansible.builtin.import_tasks: 15-sysctl.yml
+  tags:
+    - click
+    - click-sysctl
+
+- ansible.builtin.import_tasks: 30-configure.yml
+  tags:
+    - click
+    - click-config
+
+- ansible.builtin.import_tasks: 35-users.yml
+  tags:
+    - click
+    - click-config
+    - click-users
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - click
+    - click-docker
+    - click-compose
+
+- ansible.builtin.import_tasks: 60-check-state.yml
+  tags:
+    - click
+    - click-config
+    - click-users
+    - click-zoo-servers
+    - click-remote-server
+    - click-macros
+
+- ansible.builtin.import_tasks: 90-stop-start.yml
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - click-clean

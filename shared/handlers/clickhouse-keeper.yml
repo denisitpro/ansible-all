@@ -6,8 +6,8 @@
     recreate: always
     pull: always
 
-
 - name: restart-docker keeper
   community.docker.docker_compose_v2:
     project_src: "{{ keeper_compose_path }}"
     state: restarted
+  when: keeper_container_exists.stdout != ""

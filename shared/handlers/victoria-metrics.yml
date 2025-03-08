@@ -9,3 +9,9 @@
 
 # - name: reload vm
 #   shell: "docker exec -t vm vm -s reload"
+
+- name: reload docker vm
+  ansible.builtin.uri:
+    url: "http://{{ vm_reload_address }}:8428/-/reload"
+    method: "POST"
+    status_code: "200"

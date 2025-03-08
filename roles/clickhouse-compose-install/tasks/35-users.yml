@@ -1,0 +1,13 @@
+---
+- name: Copy users config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ click_config_path }}/users.d/{{ item }}"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+    mode: '0640'
+  notify: reload-docker clickhouse
+  with_items:
+    - "profiles.xml"
+    - "users.xml"
+    - "quotas.xml"

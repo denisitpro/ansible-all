@@ -1,0 +1,12 @@
+---
+- name: Import ssl role SSL
+  ansible.builtin.import_role:
+    name: "ssl-selfsigned-cert"
+  vars:
+    ssl_path: "{{ click_ssl_path }}"
+    ssl_domain: "selfsigned"
+    ssl_cert_path: "{{ click_ssl_path }}/fullchain.pem"
+    ssl_privkey_path: "{{ click_ssl_path }}/privkey.pem"
+    ssl_notify: "restart-docker click"
+    ssl_user: "{{ click_uid }}"
+    ssl_group: "{{ click_gid }}"

@@ -31,6 +31,7 @@ https://github.com/ClickHouse/ClickHouse/blob/master/programs/keeper/keeper_conf
     <listen_host>{{ host }}</listen_host>
 {% endfor %}
     <keeper_server>
+        <enable_reconfiguration>true</enable_reconfiguration>
             <http_control>
                 <port>9182</port>
                 <readiness>
@@ -56,17 +57,27 @@ https://github.com/ClickHouse/ClickHouse/blob/master/programs/keeper/keeper_conf
             <!-- enable sanity hostname checks for cluster configuration (e.g. if localhost is used with remote endpoints) -->
             <hostname_checks_enabled>{{ keeper_hostname_checks_enabled | default('true') }}</hostname_checks_enabled>
             <raft_configuration>
-{% for host in raft_servers %}
+{% if keeper_raft_servers is defined %}
+{% for host in keeper_raft_servers %}
+                <server>
+                    <id>{{ host.id }}</id>
+                    <hostname>{{ host.hostname }}</hostname>
+                    <port>{{host.port  | default('9234') }}</port>
+                </server>
+{% endfor %}
+{% else %}
+{% for host in raft_calculate_servers %}
                 <server>
                     <id>{{ hostvars[host]['keeper_id'] }}</id>
                     <hostname>{{ host | default('localhost') }}</hostname>
-                    <port>{{ keeper_raft_server_port | default('9234') }}</port>
+                    <port>{{host.port  | default('9234') }}</port>
                 </server>
 {% endfor %}
+{% endif %}
             </raft_configuration>
     </keeper_server>
 
-{% if keeper_enable_ssl  is defined %}
+{% if keeper_enable_ssl is defined %}
     <openSSL>
       <server>
             <!-- Used for secure tcp port -->

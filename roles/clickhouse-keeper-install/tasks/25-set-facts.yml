@@ -1,0 +1,26 @@
+---
+- name: Set keeper_id from host vars if keeper_raft_servers is not defined
+  ansible.builtin.set_fact:
+    keeper_id: "{{ hostvars[inventory_hostname].keeper_id }}"
+  when: keeper_id is defined
+
+- name: Assign sequential IDs to hosts in a group
+  ansible.builtin.set_fact:
+    keeper_id: "{{ keeper_id | default(groups[keeper_id_group_calculate].index(inventory_hostname) + 1) }}"
+  when: keeper_id is not defined
+
+
+- name: Debug - Display keeper_id assignment
+  ansible.builtin.debug:
+    msg: "Server {{ inventory_hostname }} has keeper_id {{ keeper_id }}"
+
+# Generates the ordered list of servers for the Raft configuration based on keeper_id_group_calculate.
+- name: Set the list of servers for Raft configuration
+  ansible.builtin.set_fact:
+    raft_calculate_servers: >-
+      {{ groups[keeper_id_group_calculate]
+      | map('extract', hostvars, 'keeper_id')
+      | zip(groups[keeper_id_group_calculate])
+      | sort(attribute=0)
+      | map(attribute=1)
+      | list }}

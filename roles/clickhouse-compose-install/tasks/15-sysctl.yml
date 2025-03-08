@@ -1,0 +1,11 @@
+---
+- name: copy sysctl clickhouse tune
+  ansible.builtin.template:
+    src: 40-sysctl-click.conf.j2
+    dest: "/etc/sysctl.d/40-sysctl-click.conf"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: apply tune config - Ubuntu
+  ansible.builtin.command: /sbin/sysctl -p /etc/sysctl.d/40-sysctl-click.conf

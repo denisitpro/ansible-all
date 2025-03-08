@@ -1,0 +1,16 @@
+<clickhouse>
+    <quotas>
+{% for quota in clickhouse_quotas %}
+        <{{ quota.name }}>
+            <interval>
+                <duration>{{ quota.duration | default(3600) }}</duration>
+                <queries>{{ quota.queries | default(0) }}</queries>
+                <errors>{{ quota.errors | default(0) }}</errors>
+                <result_rows>{{ quota.result_rows | default(0) }}</result_rows>
+                <read_rows>{{ quota.read_rows | default(0) }}</read_rows>
+                <execution_time>{{ quota.execution_time | default(0) }}</execution_time>
+            </interval>
+        </{{ quota.name }}>
+{% endfor %}
+    </quotas>
+</clickhouse>

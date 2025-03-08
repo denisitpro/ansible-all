@@ -1,0 +1,11 @@
+<clickhouse>
+    <profiles>
+{% for profile, params in click_profiles.items() %}
+        <{{ profile }}>
+{% for param, value in params.items() if value is not none %}
+            <{{ param }}>{{ value }}</{{ param }}>
+{% endfor %}
+        </{{ profile }}>
+{% endfor %}
+    </profiles>
+</clickhouse>

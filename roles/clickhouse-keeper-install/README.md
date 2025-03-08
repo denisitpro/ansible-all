@@ -6,23 +6,23 @@
 # Ansible Role: Keeper ID Configuration
 
 ## Overview
-This Ansible role is responsible for calculating and assigning the `keeper_id` for servers based on predefined logic. It ensures that each server in the cluster is uniquely identified, whether the configuration is provided via `host_vars` or dynamically computed based on `raft_servers` or a designated inventory group.
+This Ansible role is responsible for calculating and assigning the `keeper_id` for servers based on predefined logic. It ensures that each server in the cluster is uniquely identified, whether the configuration is provided via `host_vars` or dynamically computed based on `keeper_raft_servers` or a designated inventory group.
 
 ## How It Works
 The `keeper_id` is assigned using the following logic:
 
-1. If both `keeper_id` and `raft_servers` are defined in `host_vars`, the role **fails** with an error to prevent misconfiguration.
-2. If `keeper_id` is explicitly set in `host_vars` and `raft_servers` is **not** defined, this value is used.
-3. If neither `keeper_id` nor `raft_servers` are defined:
+1. If both `keeper_id` and `keeper_raft_servers` are defined in `host_vars`, the role **fails** with an error to prevent misconfiguration.
+2. If `keeper_id` is explicitly set in `host_vars` and `keeper_raft_servers` is **not** defined, this value is used.
+3. If neither `keeper_id` nor `keeper_raft_servers` are defined:
    - The role dynamically assigns a `keeper_id` based on the index of the host within the `keeper_id_group_calculate` group.
-4. If `raft_servers` is defined:
-   - The role verifies that all hosts listed in `raft_servers` exist in `keeper_id_group_calculate`.
-   - Each host is assigned the corresponding `id` from `raft_servers`.
+4. If `keeper_raft_servers` is defined:
+   - The role verifies that all hosts listed in `keeper_raft_servers` exist in `keeper_id_group_calculate`.
+   - Each host is assigned the corresponding `id` from `keeper_raft_servers`.
 
 ## Requirements
 - Ansible 2.9+
 - A defined `keeper_id_group_calculate` variable referencing a valid inventory group
-- If using `raft_servers`, it must contain all expected hosts and match `keeper_id_group_calculate`
+- If using `keeper_raft_servers`, it must contain all expected hosts and match `keeper_id_group_calculate`
 
 ## Role Variables
 
@@ -30,7 +30,7 @@ The `keeper_id` is assigned using the following logic:
 |--------------------------|------------------------------------------------------------|--------------|
 | `keeper_id`              | Explicitly set `keeper_id` at the host level (highest priority) | `undefined`  |
 | `keeper_id_group_calculate` | Group used for dynamic `keeper_id` calculation            | `undefined`  |
-| `raft_servers`           | List of servers with manually assigned IDs for Raft       | `undefined`  |
+| `keeper_raft_servers`           | List of servers with manually assigned IDs for Raft       | `undefined`  |
 
 ## SSL Support
 
@@ -71,13 +71,13 @@ This takes priority over dynamic calculation.
 
 ---
 
-### **3. Using `raft_servers` for Explicit Mapping**
-If you want to control `keeper_id` using a predefined list (`raft_servers`), define it as follows:
+### **3. Using `keeper_raft_servers` for Explicit Mapping**
+If you want to control `keeper_id` using a predefined list (`keeper_raft_servers`), define it as follows:
 
 ```yaml
 # group_vars/keeper_servers/vars.yml
 keeper_id_group_calculate: "keeper_servers"
-raft_servers:
+keeper_raft_servers:
   - id: 12
     hostname: zoo-01.example.com
   - id: 22
@@ -87,8 +87,8 @@ raft_servers:
 ```
 
 In this case:
-- The role checks that all hosts in `raft_servers` exist in `keeper_id_group_calculate`.
-- Each server is assigned the corresponding `id` from `raft_servers`.
+- The role checks that all hosts in `keeper_raft_servers` exist in `keeper_id_group_calculate`.
+- Each server is assigned the corresponding `id` from `keeper_raft_servers`.
 ---
 
 ## Debugging
@@ -102,8 +102,8 @@ In this case:
 
 ## Notes
 - **`keeper_raft_array` has been completely removed**. The role only relies on `keeper_id_group_calculate` for dynamic assignments.
-- **Fail-fast mechanism**: If `keeper_id` and `raft_servers` are both defined, execution stops to avoid misconfiguration.
-- The role ensures that `raft_servers` is valid and contains only hosts from `keeper_id_group_calculate`.
+- **Fail-fast mechanism**: If `keeper_id` and `keeper_raft_servers` are both defined, execution stops to avoid misconfiguration.
+- The role ensures that `keeper_raft_servers` is valid and contains only hosts from `keeper_id_group_calculate`.
 
 ---
 
