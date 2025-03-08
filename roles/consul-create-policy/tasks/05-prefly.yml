@@ -1,38 +1,40 @@
 ---
 - name: clear consul policy directory
   ansible.builtin.file:
-    path: "{{consul_policy_path}}"
+    path: "{{ consul_policy_path }}"
     state: absent
 
 - name: create path consul policy
   file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
-    mode: 0755
+    mode: "0755"
   with_items:
-    - "{{consul_policy_path}}"
+    - "{{ consul_policy_path }}"
   tags:
     - consul-dir
 
 - name: copy policy files
   register: policy_keys
   ansible.builtin.copy:
-    src: "{{item.name}}.hcl"
-    dest: "{{consul_policy_path}}/{{item.name}}.hcl"
+    src: "{{ item.name }}.hcl"
+    dest: "{{ consul_policy_path }}/{{ item.name }}.hcl"
+    mode: "0644"
   when: "consul.policy  is defined"
   with_items:
-    - "{{consul.policy}}"
+    - "{{ consul.policy }}"
 
 - name: copy policy templates
   register: policy_keys
   ansible.builtin.template:
     src: "exporter-tmpl.hcl.j2"
-    dest: "{{consul_policy_path}}/{{item.name}}.hcl"
+    dest: "{{ consul_policy_path }}/{{ item.name }}.hcl"
+    mode: "0644"
   when: "consul.generate  is defined"
   with_items:
-    - "{{consul.generate}}"
+    - "{{ consul.generate }}"
 
-#- debug: msg="path - {{consul_policy_path}}/{{item.name}}.hcl"
+# - debug: msg="path - {{consul_policy_path}}/{{item.name}}.hcl"
 #  with_items:
 #    - "{{consul.policy}}"
 #  tags:

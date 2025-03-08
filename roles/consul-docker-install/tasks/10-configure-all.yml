@@ -1,31 +1,29 @@
 ---
 # todo refactore set mode consul for name config
 - name: copy configs agent
-  template:
-    src: "{{item}}.j2"
-    dest: "{{consul_config_dir}}/{{item}}"
-    mode: 0644
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ consul_config_dir }}/{{ item }}"
+    mode: "0644"
   with_items:
     - agent.hcl
   notify: restart-docker consul
 
 - name: copy clients
-  template:
-    src: "{{item}}.j2"
-    dest: "{{consul_config_dir}}/{{item}}"
-    mode: 0644
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ consul_config_dir }}/{{ item }}"
+    mode: "0644"
   with_items:
     - consul-agent.hcl
   when: consul_mode is not defined
   notify: restart-docker consul
 
-
-
 - name: Copy telemetry config
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "{{ consul_config_dir }}/{{ item }}"
-    mode: 0644
+    mode: "0644"
   loop:
     - "telemetry.hcl"
   when: consul_telemetry is defined
@@ -38,21 +36,13 @@
     - "telemetry.hcl"
   when: consul_telemetry is not defined
 
-#- name: Create a directoris for docker compose consul
-#  ansible.builtin.file:
-#    path: "{{ item }}"
-#    state: directory
-#    mode: '0755'
-#  loop:
-#    - "{{ docker_compose_path | default('/opt/docker') }}"
-#    - "{{ docker_compose_path | default('/opt/docker') }}/consul"
-
 - name: copy compose consul
-  template:
+  ansible.builtin.template:
     src: docker-compose.consul.yml.j2
-    dest: "{{docker_compose_path | default('/opt/docker')}}/consul/docker-compose.yml"
+    dest: "{{ consul_compose_path }}/docker-compose.yml"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
+  notify: recreate-docker consul-compose
   tags:
     - consul-copy

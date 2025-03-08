@@ -1,7 +1,7 @@
-Вот пример оформления для файла `README.md` на GitHub:
-
-```markdown
 # Description
+
+# generate key
+`consul keygen`
 
 To launch a Consul server, you need to set the following options:
 

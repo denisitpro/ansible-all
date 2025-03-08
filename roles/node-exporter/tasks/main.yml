@@ -1,24 +1,25 @@
 ---
-- import_tasks: 05-install.yml
+- ansible.builtin.import_tasks: 05-install.yml
   tags:
     - node-exporter
     - node-exporter-update
 
 
-- import_tasks: 15-configure.yml
+- ansible.builtin.import_tasks: 15-configure.yml
   tags:
     - node-exporter
     - node-exporter-conf
 
-- import_tasks: 20-scripts.yml
-  when: node_exporter_textfile_scripts is defined
-  tags:
-    - node-exporter
-    - node-exporter-conf
-    - node-exporter-script
+# todo refactore
+# - ansible.builtin.import_tasks: 20-scripts.yml
+#   when: node_exporter_textfile_scripts is defined
+#   tags:
+#     - node-exporter
+#     - node-exporter-conf
+#     - node-exporter-script
 
 
-- import_tasks: 25-consul-service.yml
+- ansible.builtin.import_tasks: 25-consul-service.yml
   when: consul_monitoring_disable is not defined
   tags:
     - node-exporter
@@ -26,5 +27,5 @@
     - consul-reg
     - consul-owner
 
-- import_tasks: 90-restart.yml
+- ansible.builtin.import_tasks: 90-restart.yml
   tags: ['never', 'node-exporter-restart']

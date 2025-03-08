@@ -1,5 +1,5 @@
 ---
-node_exporter_version_binary: "1.8.2"
+node_exporter_version_binary: "1.9.0"
 node_exporter_bind_port: '9100'
 
 
@@ -11,11 +11,6 @@ go_arch_map:
   armv6l: 'armv6'
 
 go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
-
-#docker_compose_path: "/opt/docker"
-
-#node_exporter_web_listen_address: "{{ node_exporter_bind_addr | default(ansible_default_ipv4.address) }}:{{ node_exporter_bind_port }}"
-#node_exporter_bind_addr: "{{ global_bind_addr | default(ansible_default_ipv4.address) }}"
 
 node_exporter_system_user: "node-exporter"
 node_exporter_system_group: "{{ node_exporter_system_user }}"
@@ -32,11 +27,10 @@ node_exporter_enabled_collectors:
 #      ignored-fs-types: "^(sys|proc|auto)fs$"
 
 node_exporter_disabled_collectors: []
-
 node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version_binary }}/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
 
 consul_node_exporter_token: "{{ vault_dict_users_secret.consul_node_exporter_token | default('0000000000000000000000000000000') }}"
 
-# not set sh file. its add to task
-#node_exporter_textfile_scripts:
+# # not set sh file. its add to task
+# node_exporter_textfile_scripts:
 #  - ping-ipv4.sh

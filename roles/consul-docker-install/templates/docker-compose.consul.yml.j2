@@ -1,3 +1,5 @@
+## {{ ansible_managed }} ##
+
 services:
   consul:
     image: hashicorp/consul:{{ consul_server_version }}
@@ -7,9 +9,14 @@ services:
     network_mode: host
     volumes:
       - /etc/consul.d/:/consul/config
-      - {{ consul_data_path }}/data:/consul/data
-    restart: always
-    command: ["agent", "-client", "[::]", "-bind", "[::]"]
+      - {{ consul_base_path }}/data:/consul/data
+    command: [
+      "agent", 
+      "-client", "{{ consul_bind_addr | default('[::]') }}", 
+      "-bind", "{{ consul_bind_addr | default('[::]') }}"
+      {% if consul_privateip_perfer is defined %}, "-advertise", "{% raw %}{{ GetPrivateIP }}{% endraw %}"{% endif %}
+    ]
+    restart: {{ consul_restart | default('unless-stopped') }}
     logging:
       driver: json-file
       options:

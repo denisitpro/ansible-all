@@ -10,7 +10,7 @@
     dest: "/etc/consul.d/node_exporter.hcl"
     owner: "{{ consul_user | default('consul') }}"
     group: "{{ consul_group | default('consul') }}"
-    mode: 0644
+    mode: "0644"
   notify: restart consul
   when:
     - consul_config_dir_exists.stat.exists
@@ -20,7 +20,7 @@
   ansible.builtin.template:
     src: "node_exporter.hcl.j2"
     dest: "/etc/consul.d/node_exporter.hcl"
-    mode: 0644
+    mode: "0644"
   notify: restart-docker consul
   when:
     - consul_config_dir_exists.stat.exists

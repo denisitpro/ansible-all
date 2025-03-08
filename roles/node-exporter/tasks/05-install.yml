@@ -17,12 +17,12 @@
     create_home: false
     home: "/nonexistent"
 
-- name: Download node_exporter binary - {{node_exporter_download_url}}
+- name: Download node_exporter binary - {{ node_exporter_download_url }}
   become: false
   ansible.builtin.get_url:
     url: "{{ node_exporter_download_url }}"
     dest: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
-    mode: 0644
+    mode: "0644"
   register: node_exporter_download_binary
   until: node_exporter_download_binary is succeeded
   retries: 5
@@ -42,7 +42,7 @@
   ansible.builtin.copy:
     src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}/node_exporter"
     dest: "{{ node_epxorter_binary_path }}"
-    mode: 0755
+    mode: "0755"
     owner: root
     group: root
     remote_src: true

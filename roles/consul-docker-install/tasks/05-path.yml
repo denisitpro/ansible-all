@@ -1,16 +1,21 @@
 ---
-- ansible.builtin.import_tasks: shared/tasks/create-dir-docker-compose.yml
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ consul_compose_path }}"
 
 - name: create path
-  file:
-    path: "{{item}}"
+  ansible.builtin.file:
+    path: "{{ item }}"
     state: directory
-    mode: 0755
+    mode: "0755"
   with_items:
-    - "{{consul_data_path }}"
-    - "{{consul_config_dir}}"
-    - "{{consul_tmpl_dir}}"
-  tags:
-    - consul-dir
-
-
+    - "{{ consul_base_path }}"
+    - "{{ consul_config_dir }}"
+    - "{{ consul_tmpl_dir }}"

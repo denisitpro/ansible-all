@@ -5,7 +5,7 @@
     dest: "/etc/systemd/system/node-exporter.service"
     owner: "root"
     group: "root"
-    mode: 0644
+    mode: "0644"
   notify: restart node-exporter
   tags:
     node-exporter-unit
@@ -16,7 +16,7 @@
     state: directory
     owner: "{{ node_exporter_system_user }}"
     group: "{{ node_exporter_system_group }}"
-    mode: 0775
+    mode: "0775"
   when:
     - node_exporter_textfile_dir is defined
     - node_exporter_textfile_dir | length > 0

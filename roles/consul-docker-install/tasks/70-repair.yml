@@ -1,0 +1,27 @@
+# todo refactore
+# ---
+# - name: Consul remove data dir
+#   ansible.builtin.file:
+#     path: "{{ consul_base_path }}"
+#     state: absent
+#   tags:
+#     - consul-remove
+#     - never
+
+# - name: Consul stop
+#   ansible.builtin.command:
+#     cmd: "docker compose stop consul"
+#   args:
+#     chdir: "{{ consul_compose_path }}"
+#   tags:
+#     - consul-stop
+#     - never
+
+# - name: Consul restart
+#   ansible.builtin.command:
+#     cmd: "docker compose stop consul && docker compose start consul"
+#   args:
+#     chdir: "{{ docker_compose_path | default('/opt/docker') }}/consul"
+#   tags:
+#     - consul-restart
+#     - never
