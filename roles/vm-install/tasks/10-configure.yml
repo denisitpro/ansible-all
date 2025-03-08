@@ -39,7 +39,7 @@
     # owner: "{{ vm_user_uid }}"
     # group: "{{ vm_user_gid }}"
     mode: '0640'
-  notify: restart docker vm
+  notify: reload docker vm
   tags:
     - vm-config
     - update-vm-config

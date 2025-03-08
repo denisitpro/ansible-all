@@ -33,7 +33,7 @@ scrape_configs:
 {% if scrape_discovery is defined %}
 {% for target in scrape_discovery.target %}
   - consul_sd_configs:
-    - server: {{ consul_sd_server }}
+    - server: {{ consul_sd_server | default ('127.0.0.1:8500') }}
 {% if consul_agent_disabled is not defined %}
       token: {{ consul_vm_access_token }}
 {% endif %}
@@ -64,7 +64,7 @@ scrape_configs:
 {% endif %}
     relabel_configs:
     - action: keep
-      regex: .*,vm,.*
+      regex: .*,prometheus,.*
       source_labels:
       - __meta_consul_tags
     - source_labels:
@@ -84,7 +84,7 @@ scrape_configs:
       - __meta_consul_node
       - __meta_consul_service_port
       target_label: __address__
-    - regex:  "{{ stands_regexp }}"
+    - regex:  "{{ stands_regexp | default('example-stand') }}"
       replacement: $1
       source_labels:
       - __meta_consul_tags

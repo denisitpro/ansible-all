@@ -19,6 +19,7 @@ vm_web_external_url: ''
 # stands_regexp: ".*,(c1-infra|c1-devel),.*"
 # consul_sd_server: ":8500"
 # consul_vm_access_token: "{{ vault_dict_users_secret.consul_vm_access_token }}"
+consul_vm_access_token: "{{ vault_dict_users_secret.consul_prometheus_access_token | default('set_me')}}"
 
 # #command to run
 # vm_command_run:

@@ -67,7 +67,7 @@ scrape_configs:
 {% endif %}
     relabel_configs:
     - action: keep
-      regex: .*,vm,.*
+      regex: .*,prometheus,.*
       source_labels:
       - __meta_consul_tags
     - source_labels:
