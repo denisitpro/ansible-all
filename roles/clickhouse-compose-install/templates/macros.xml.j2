@@ -1,0 +1,6 @@
+<clickhouse>
+    <macros>
+        <shard>{{ click_macros.shard | default('01') }}</shard>
+        <replica>{{ click_macros.replica | default('example01-01-1') }}</replica>
+    </macros>
+</clickhouse>

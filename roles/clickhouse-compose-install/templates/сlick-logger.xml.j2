@@ -1,0 +1,15 @@
+<clickhouse>
+    <logger>
+        <level>{{click_logger_level | default('error')}}</level>
+        <log>/var/log/clickhouse-server/clickhouse-server.log</log>
+        <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
+        <size>{{ click_logger_size | default('1000M')}}</size>
+        <count>{{click_logger_count | default('10')}}</count>
+{% if click_logger_console is defined %}
+        <console>{{ click_logger_console }}</console>
+{% else %}
+        <!-- <console>1</console> -->
+{% endif %}
+        <!-- Default behavior is autodetection (log to console if not daemon mode and is tty) -->
+    </logger>
+</clickhouse>

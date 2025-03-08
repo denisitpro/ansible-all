@@ -1,0 +1,30 @@
+<clickhouse>
+    <storage_configuration>
+        <disks>
+            <default>
+            </default>
+            <disk_cold_data>
+                <path>{{ click_storage_disk_cold_data_path }}</path>
+            </disk_cold_data>
+        </disks>
+        <policies>
+            <default>
+                <volumes>
+                    <hot>
+                        <disk>default</disk>
+                    </hot>
+                </volumes>
+            </default>
+            <hot_to_cold>
+                <volumes>
+                    <hot>
+                        <disk>default</disk>
+                    </hot>
+                    <cold>
+                        <disk>disk_cold_data</disk>
+                    </cold>
+                </volumes>
+            </hot_to_cold>
+        </policies>
+    </storage_configuration>
+</clickhouse>    

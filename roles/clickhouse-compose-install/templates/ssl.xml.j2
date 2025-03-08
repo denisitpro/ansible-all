@@ -1,0 +1,34 @@
+<clickhouse>
+    <openSSL>
+        <server> <!-- Used for https server AND secure tcp port -->
+            <certificateFile>{{ click_ssl_path }}/fullchain.pem</certificateFile>
+            <privateKeyFile>{{ click_ssl_path }}/privkey.pem</privateKeyFile>
+{% if click_openssl_dhparam is defined %}
+            <dhParamsFile>{{ click_ssl_path }}/dhparam.pem</dhParamsFile>
+{% endif %}
+            <verificationMode>none</verificationMode>
+            <loadDefaultCAFile>true</loadDefaultCAFile>
+            <cacheSessions>true</cacheSessions>
+            <disableProtocols>sslv2,sslv3</disableProtocols>
+            <preferServerCiphers>true</preferServerCiphers>
+            <invalidCertificateHandler>
+                <!-- The server, in contrast to the client, cannot ask about the certificate interactively.
+                     The only reasonable option is to reject.
+                -->
+                <name>RejectCertificateHandler</name>
+            </invalidCertificateHandler>
+        </server>
+
+        <client> <!-- Used for connecting to https dictionary source and secured Zooclick communication -->
+            <loadDefaultCAFile>true</loadDefaultCAFile>
+            <cacheSessions>true</cacheSessions>
+            <disableProtocols>sslv2,sslv3</disableProtocols>
+            <preferServerCiphers>true</preferServerCiphers>
+            <!-- Use for self-signed: <verificationMode>none</verificationMode> -->
+            <invalidCertificateHandler>
+                <!-- Use for self-signed: <name>AcceptCertificateHandler</name> -->
+                <name>RejectCertificateHandler</name>
+            </invalidCertificateHandler>
+        </client>
+    </openSSL>
+</clickhouse>    

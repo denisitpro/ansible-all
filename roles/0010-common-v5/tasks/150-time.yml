@@ -11,7 +11,8 @@
   notify:
     - restart systemd-timesyncd
   community.general.timezone:
-    name: "{{ default_timezone }}"
+    name: "{{ default_timezone | default('UTC') }}"
+  # noqa: unknown-module
 
 - name: Disable other NTP daemons
   ansible.builtin.systemd:

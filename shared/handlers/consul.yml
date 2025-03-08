@@ -8,7 +8,14 @@
     name: consul
     state: reloaded
 
-- name: rrestart-docker consul
+- name: restart-docker consul
   community.docker.docker_compose_v2:
     project_src: "{{ consul_compose_path }}"
     state: restarted
+
+- name: recreate-docker consul-compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ consul_compose_path }}"
+    state: present
+    recreate: always
+    pull: always

@@ -1,0 +1,35 @@
+<clickhouse>
+{% if click_interserver_http_host is defined %}
+    <interserver_http_host>{{click_interserver_http_host}}</interserver_http_host>
+{% endif %}
+{% for host in (click_listen_hosts | default(['::'])) %}
+    <listen_host>{{ host }}</listen_host>
+{% endfor %}
+    <http_port>{{ click_http_port | default('8123') }}</http_port>
+{% if click_https_port is defined or click_enable_ssl is defined %}
+    <https_port>{{ click_https_port | default('8443') }}</https_port>
+{% endif %}
+    <tcp_port>{{ click_tcp_port | default('9000')}}</tcp_port>
+{% if click_tcp_port_secure is defined or click_enable_ssl is defined %}
+    <tcp_port_secure>{{ click_tcp_port_secure | default('9440') }}</tcp_port_secure>
+{% endif %}
+    <mysql_port>9004</mysql_port>
+    <postgresql_port>9005</postgresql_port>
+    <interserver_http_port>9009</interserver_http_port>
+    <max_connections>{{ click_max_connections | default('4096') }}</max_connections>
+    <keep_alive_timeout>{{ click_keep_alive_timeout| default('10') }}</keep_alive_timeout>
+    <timezone>{{ click_timezone | default('UTC') }}</timezone>
+    <default_session_timeout>{{ click_default_session_timeout | default('60') }}</default_session_timeout>
+    <max_concurrent_queries>{{ click_max_concurrent_queries | default('4096') }}</max_concurrent_queries>
+    <max_server_memory_usage>{{ click_max_server_memory_usage | default('0') }}</max_server_memory_usage>
+    <max_thread_pool_size>{{ click_max_thread_pool_size | default('10000') }}</max_thread_pool_size>
+    <max_server_memory_usage_to_ram_ratio>{{ click_max_server_memory_usage_to_ram_ratio | default('0.9') }}</max_server_memory_usage_to_ram_ratio>
+{% if click_merge_tree_max_suspicious_broken_parts is defined %}
+    <merge_tree>
+        <max_suspicious_broken_parts>{{ click_merge_tree_max_suspicious_broken_parts | default('5')}}</max_suspicious_broken_parts>
+    </merge_tree>
+{% endif %}
+{% if click_default_replica_path is defined %}
+    <default_replica_path>/clickhouse/tables/{database}/{table}</default_replica_path>
+{% endif %}
+</clickhouse>

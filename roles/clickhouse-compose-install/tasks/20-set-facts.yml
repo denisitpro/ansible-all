@@ -1,0 +1,24 @@
+---
+- name: Ensure click_zookeeper_servers is defined
+  ansible.builtin.set_fact:
+    click_zookeeper_servers: []
+  when: click_zookeeper_servers is not defined
+
+- name: Convert zookeeper group to list (if needed)
+  ansible.builtin.set_fact:
+    click_zookeeper_list: >-
+      {{ groups[click_zookeeper_servers] | default([])
+          | map('regex_replace', '^(.*)$', '{"hostname": "\1"}')
+          | map('from_json')
+          | list }}
+  when: click_zookeeper_servers is string and click_zookeeper_servers in groups
+
+- name: Use click_zookeeper_servers directly (if it's already a list)
+  ansible.builtin.set_fact:
+    click_zookeeper_list: "{{ click_zookeeper_servers }}"
+  when: click_zookeeper_servers is iterable and click_zookeeper_servers is not string
+
+- name: Ensure click_zookeeper_list is always defined
+  ansible.builtin.set_fact:
+    click_zookeeper_list: []
+  when: click_zookeeper_list is not defined

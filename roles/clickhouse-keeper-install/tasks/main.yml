@@ -10,12 +10,19 @@
     - keeper
     - keeper-ssl
 
-- ansible.builtin.import_tasks: 20-set-facts.yml
+- ansible.builtin.import_tasks: 20-raft-servers.yml
+  when: keeper_raft_servers is defined
   tags:
     - keeper
     - keeper-facts
     - keeper-config
-    - always
+
+- ansible.builtin.import_tasks: 25-set-facts.yml
+  when: keeper_raft_servers is not defined
+  tags:
+    - keeper
+    - keeper-facts
+    - keeper-config
 
 - ansible.builtin.import_tasks: 30-configure.yml
   tags:
@@ -28,6 +35,12 @@
     - keeper
     - keeper-docker
     - keeper-compose
+
+- ansible.builtin.import_tasks: 60-status.yml
+  tags:
+    - keeper
+    - keeper-config
+    - keeper-status
 
 - ansible.builtin.import_tasks: 99-clean.yml
   tags:

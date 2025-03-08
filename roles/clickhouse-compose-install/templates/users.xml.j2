@@ -1,0 +1,19 @@
+<clickhouse>
+    <users>
+{% for user in clickhouse_default_users %}
+        <{{ user.name }}>
+{% if user.password is defined %}
+            <password>{{ user.password }}</password>
+{% endif %}
+            <networks>
+{% for ip in user.networks | default(['127.0.0.1', '::1']) %}
+                <ip>{{ ip }}</ip>
+{% endfor %}
+            </networks>
+{% for param, value in user.items() if param not in ["name", "password", "networks"] and value is not none %}
+            <{{ param }}>{{ value }}</{{ param }}>
+{% endfor %}
+        </{{ user.name }}>
+{% endfor %}
+    </users>
+</clickhouse>

@@ -1,0 +1,10 @@
+<clickhouse>
+    <zookeeper>
+{% for click_zoo_var in click_zookeeper_list %}
+        <node>
+            <host>{{click_zoo_var.hostname}}</host>
+            <port>{{click_zoo_var.port | default('9181') }}</port>
+        </node>
+{% endfor %}
+    </zookeeper>
+</clickhouse>

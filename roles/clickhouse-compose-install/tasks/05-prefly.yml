@@ -1,0 +1,40 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ click_compose_path }}"
+
+- name: create folder application
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+  with_items:
+    - "{{ click_base_path }}"
+    - "{{ click_data_path }}"
+    - "{{ click_logs_path }}"
+    - "{{ click_ssl_path }}"
+    - "{{ click_config_path }}"
+    - "{{ click_config_path }}/config.d"
+    - "{{ click_config_path }}/users.d"
+    - "{{ click_config_path }}/users-db"
+
+
+- name: create folder disk cold data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ click_uid }}"
+    group: "{{ click_gid }}"
+  when: click_storage_disk_cold_data_path is defined
+  with_items:
+    - "{{ click_storage_disk_cold_data_path }}"

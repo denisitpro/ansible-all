@@ -1,0 +1,59 @@
+---
+# click_image: "23.8.11.28" # current role version
+# https://clickhouse.com/docs/whats-new/changelog/2024#a-id248a-clickhouse-release-248-lts-2024-08-20
+click_image: "24.8.14.39" # LTS
+click_compose_path: "/opt/docker/click"
+
+click_base_path: "/opt/click"
+click_data_path: "{{ click_base_path }}/data"
+click_config_path: "{{ click_base_path }}/config"
+click_logs_path: "{{ click_base_path }}/logs"
+click_ssl_path: "{{ click_base_path }}/ssl"
+
+#  Docs https://github.com/ClickHouse/ClickHouse/blob/master/docker/click/Dockerfile
+click_uid: 101
+click_gid: 101
+
+#
+#
+#
+# companty specific settings
+click_keep_alive_timeout: 3
+click_max_concurrent_queries: 0
+click_max_thread_pool_size: 50000
+# click_storage_disk_cold_data_path: "{{ click_base_path }}/cold/"
+
+click_users_without_row_policies_can_read_rows: 'false'
+click_on_cluster_queries_require_cluster_grant: 'false'
+click_select_from_system_db_requires_grant: 'false'
+click_select_from_information_schema_requires_grant: 'false'
+
+click_default_session_timeout: 600
+
+click_query_log_ttl: "event_date + INTERVAL 7 DAY DELETE"
+click_merge_tree_max_suspicious_broken_parts: 100
+
+# https://clickhouse.com/docs/operations/server-configuration-parameters/settings#default_replica_path
+click_default_replica_path: "/clickhouse/tables/{database}/{table}"
+
+click_profiles:
+  default:
+    max_memory_usage: "{{ 40000 * 1024 * 1024 }}"  # 4 GB MB
+  readonly:
+    readonly: 1
+
+clickhouse_default_users:
+  - name: default
+  - name: readonly
+    password: readonly
+    profile: readonly
+    networks:
+      - 127.0.0.1
+      - ::1
+
+clickhouse_quotas:
+  - name: default
+
+# click_macros:
+#   shard: "01"
+#   replica: "nodes-zookeeper-example"
