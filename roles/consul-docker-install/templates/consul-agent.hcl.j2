@@ -1,5 +1,5 @@
 datacenter = "{{consul_dc_name}}"
-data_dir = "{{consul_data_path}}"
+data_dir = "{{consul_base_path}}"
 encrypt = "{{consul_encrypt_key}}"
 retry_join = ["{{consul_cls_pub_name | default('consul.example.com') }}"]
 

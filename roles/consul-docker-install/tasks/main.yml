@@ -1,33 +1,29 @@
 ---
-- import_tasks: 04-consul-delete.yml
-  tags: [ 'never', 'consul-clean']
+- ansible.builtin.import_tasks: 04-consul-delete.yml
+  tags: ['never', 'consul-clean']
 
-- import_tasks: 05-path.yml
+- ansible.builtin.import_tasks: 05-path.yml
   tags:
     - consul
 
-- import_tasks: 08-configure-srv.yml
+- ansible.builtin.import_tasks: 08-configure-srv.yml
   when: consul_mode is defined and consul_mode == "server"
   tags:
     - consul
     - consul-config
     - consul-compose
 
-- import_tasks: 10-configure-all.yml
+- ansible.builtin.import_tasks: 10-configure-all.yml
   tags:
     - consul
     - consul-config
     - consul-compose
 
-- import_tasks: 15-launch.yml
-  tags:
-    - consul
-    - consul-start
-    - consul-compose
+# - ansible.builtin.import_tasks: 70-repair.yml
+#   tags: ['never', 'consul-repair']
 
-- import_tasks: 20-repair.yml
-  tags: ['never','consul-repair' ]
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'consul-clean']
 
-- import_tasks: 99-debug.yml
-  tags: [ 'never', 'debug' ]
-
+- ansible.builtin.import_tasks: 99-debug.yml
+  tags: ['never', 'debug']

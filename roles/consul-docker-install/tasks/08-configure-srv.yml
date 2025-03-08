@@ -2,32 +2,26 @@
 - name: Assert consul servers
   ansible.builtin.assert:
     that:
-      - "'{{ consul_cls_group }}' in groups.keys()"
-    fail_msg: "Consul  needs consul group in ansible inventory"
+      - consul_cls_group in groups.keys()
+    fail_msg: "Consul needs consul group in ansible inventory"
 
 - name: Get consul servers
   ansible.builtin.set_fact:
     consul_cls_servers: "{{ groups[consul_cls_group] | list }}"
-- debug: msg="{{ consul_cls_group }} - {{consul_cls_master}}"
 
+- name: Debug - show consul group
+  ansible.builtin.debug:
+    msg: "{{ consul_cls_group }} - {{ consul_cls_master | default('UNDEFINED') }}"
 
-- name: copy server configs
-  template:
-    src:  "{{item}}.j2"
-    dest: "{{consul_config_dir}}/{{item}}"
-    mode: 0644
-  when: consul_mode is defined and consul_mode == "server"
-  with_items:
+- name: Copy server configs
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ consul_config_dir }}/{{ item }}"
+    mode: "0644"
+  when: consul_mode | default('') | string == "server"
+  notify: restart-docker consul
+  loop:
     - "server.hcl"
     - "consul-server.hcl"
   tags:
     - consul-config
-#
-#- name: copy configs - consul-server.hcl
-#  template:
-#    src: "{{item}}.j2"
-#    dest: "{{consul_config_dir}}/{{item}}"
-#    mode: 0644
-#  with_items:
-#    - consul.hcl.server.j2
-#  notify: restart-docker consul
