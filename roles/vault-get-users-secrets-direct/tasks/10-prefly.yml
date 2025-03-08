@@ -1,13 +1,17 @@
 ---
+# - name: Print the Vault token (for debugging, optional)
+#   ansible.builtin.debug:
+#     msg: "VAULT_ACCESS_TOKEN: {{ lookup('ansible.builtin.env', 'VAULT_ACCESS_TOKEN') }}"
+
 - name: Check if Vault token is available
-  fail:
+  ansible.builtin.fail:
     msg: "VAULT_ACCESS_TOKEN environment variable is not set"
-  when: lookup('env', 'VAULT_ACCESS_TOKEN') == ""
+  when: lookup('ansible.builtin.env', 'VAULT_ACCESS_TOKEN') == ""
 
 - name: Set Vault token from environment variable
-  set_fact:
+  ansible.builtin.set_fact:
     vault_token: "{{ lookup('env', 'VAULT_ACCESS_TOKEN') }}"
 
-#- name: Print the Vault token (for debugging, optional)
-#  debug:
-#    msg: "Using Vault token: {{ vault_token }}"
+# - name: Print the Vault token (for debugging, optional)
+#   ansible.builtin.debug:
+#     msg: "Using Vault token: {{ vault_token }}"

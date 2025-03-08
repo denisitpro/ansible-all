@@ -1,17 +1,14 @@
 ---
-- import_tasks: 10-prefly.yml
+- ansible.builtin.import_tasks: 10-prefly.yml
   delegate_to: localhost
   run_once: true
-  become: no
+  become: false
   connection: local
-  tags: [ 'always', 'vault-get' ]
+  tags: ['always', 'vault-get']
 
-- import_tasks: 20-get-users-secrets.yml
+- ansible.builtin.import_tasks: 20-get-users-secrets.yml
   delegate_to: localhost
   run_once: true
-  become: no
+  become: false
   connection: local
-  tags: [ 'always', 'vault-get' ]
-
-#- import_tasks: 99-debug.yml
-#  tags: [ 'always', 'vault' ]
+  tags: ['always', 'vault-get']
