@@ -3,23 +3,21 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0775'
+    mode: "0775"
     owner: root
     group: root
   with_items:
     - "/opt/docker"
-    - "{{ vm_compose_path }}"
+    - "{{ vmalert_compose_path }}"
 
 - name: create folder application
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0775'
-    # owner: "{{angie_uid}}"
-    # group: "{{angie_guid}}"
+    mode: "0775"
+    # owner: "{{ vmalert_uid }}"
+    # group: "{{ vmalert_gid }}"
   with_items:
-    - "{{ vm_base_path }}"
-    - "{{ vm_config_path }}"
-    - "{{ vm_config_path }}/rules"
-    # - "{{ vmagent_base_path }}"
-    # - "{{ vmagent_config_path }}"
+    - "{{ vmalert_base_path }}"
+    - "{{ vmalert_rules_path }}"
+    # - "{{ vmalert_config_path }}"

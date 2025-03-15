@@ -43,7 +43,7 @@
 
 - ansible.builtin.import_tasks: 42-cni-calico.yml
   when: k8s_master is defined
-  delegate_to: "{{k8s_master_init_host}}"
+  delegate_to: "{{ k8s_master_init_host }}"
   tags:
     - k8s
     - k8s-calico
@@ -62,5 +62,5 @@
     - k8s
     - k8s-worker-node
 
-- ansible.builtin.import_tasks:  95-reset-k8s-cls.yml
-  tags: ['never', 'k8s-reset']
+- ansible.builtin.import_tasks: 95-reset-k8s-cls.yml
+  tags: ['never', 'k8s-reset', 'k8s-clean']

@@ -1,0 +1,26 @@
+## {{ ansible_managed }} ##
+
+services:
+  vmalert:
+    image: victoriametrics/vmalert:{{ vmalert_image | quote }}
+    container_name: vmalert
+    hostname: vmalert-{{ ansible_hostname | quote }}
+    network_mode: host
+    volumes:
+      - "{{ vmalert_rules_path | quote }}:{{ vmalert_rules_path | quote }}"
+    command:
+      - "--datasource.url={{ vmalert_datasource_url | quote }}"
+{% if vmalert_remote_read_url is defined and vmalert_remote_read_url | length > 0 %}
+      - "--remoteRead.url={{ vmalert_remote_read_url | quote }}"
+{% endif %}
+      - "--notifier.url={{ vmalert_notifier_url | quote }}"
+      - "--rule={{ vmalert_rules_path }}/*.yml"
+      - "--external.url={{ vmalert_grafana_url | quote }}"
+      - "--external.alert.source=explore?orgId=1&left={\"datasource\":\"VictoriaMetrics\",\"queries\":[{\"expr\":{{ '.Expr|jsonEscape|queryEscape' | quote }},\"refId\":\"A\"}],\"range\":{\"from\":\"{{ '.ActiveAt.UnixMilli' | quote }}\",\"to\":\"now\"}}"
+      - "--httpListenAddr={{ vmalert_http_listen_addr }}"
+    restart: {{ vmalert_restart | default('unless-stopped') | quote }}
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "2"

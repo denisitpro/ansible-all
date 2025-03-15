@@ -44,6 +44,18 @@
     - vm-config
     - update-vm-config
 
+# - name: Copy vmagent config file
+#   ansible.builtin.template:
+#     src: "vmagent-scrape.yml.j2"
+#     dest: "{{ vmagent_config_path }}/scrape.yaml"
+#     mode: '0644'
+#   notify: restart docker vmagent
+#   when: vm_remote_write_v2 is defined
+#   tags:
+#     - vm-config
+#     - vmagent-config
+#     - update-vm-config
+
 # - name: Validate vm config
 #   ansible.builtin.command:
 #     cmd: "docker run --rm --entrypoint sh --name vm.check -v {{ vm_config_path }}:{{ vm_config_path }} vm/vm:{{ vm_image }} -c '/bin/vmtool check config {{ vm_config_path }}/vm.yml'"

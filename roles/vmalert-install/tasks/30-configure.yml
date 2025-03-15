@@ -1,0 +1,10 @@
+---
+- name: Copy alert rules files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ vmalert_rules_path }}/{{ item }}"
+    mode: "0644"
+  notify: vmalert reload
+  with_items:
+    - alerts-vmalert.yml
+    - ansible-generate-v1.yml
