@@ -23,6 +23,7 @@
   when: consul_monitoring_disable is not defined
   tags:
     - node-exporter
+    - node-exporter-config
     - consul
     - consul-reg
     - consul-owner

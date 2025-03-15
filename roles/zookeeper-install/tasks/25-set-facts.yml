@@ -1,0 +1,25 @@
+---
+- name: Set zookeeper_id from host vars if zookeeper_servers is not defined
+  ansible.builtin.set_fact:
+    zookeeper_id: "{{ hostvars[inventory_hostname].zookeeper_id }}"
+  when: zookeeper_id is defined
+
+- name: Assign sequential IDs to hosts in a group
+  ansible.builtin.set_fact:
+    zookeeper_id: "{{ zookeeper_id | default(groups[zookeeper_id_group_calculate].index(inventory_hostname) + 1) }}"
+  when: zookeeper_id is not defined
+
+- name: Debug - Display zookeeper_id assignment
+  ansible.builtin.debug:
+    msg: "Server {{ inventory_hostname }} has zookeeper_id {{ zookeeper_id }}"
+
+# Generates the ordered list of servers for the Raft configuration based on zookeeper_id_group_calculate.
+- name: Set the list of servers for zoo configuration
+  ansible.builtin.set_fact:
+    raft_calculate_servers: >-
+      {{ groups[zookeeper_id_group_calculate]
+      | map('extract', hostvars, 'zookeeper_id')
+      | zip(groups[zookeeper_id_group_calculate])
+      | sort(attribute=0)
+      | map(attribute=1)
+      | list }}

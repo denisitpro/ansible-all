@@ -17,7 +17,7 @@ teleport:
 auth_service:
   enabled: "no"
 ssh_service:
-  enabled: "{{teleport_ssh_service_enabled | default('yes')}}"
+  enabled: "{% if teleport.ssh_acl_level is defined %}{{teleport_ssh_service_enabled | default('yes')}}{% else %}no{% endif %}"
   labels:
     stand: {{stand_type| default('not_set')}}
     cluster: {{teleport_cluster_name | default('cls1')}}
@@ -49,11 +49,14 @@ app_service:
       uri: "{{app.uri}}"
       public_addr: "{{app.public_addr}}"
       insecure_skip_verify: {{app.insecure_skip_verify |default('false')}}
-{% if teleport_grafana is defined %}
+{% if app.grafana_config is defined %}
       rewrite:
         headers:
-        - "Host: localhost"
-        - "Origin: {{app.uri}}"
+        - "Host: {{ app.public_addr }}"
+        - "Origin: https://{{ app.public_addr }}"
+        - "Access-Control-Allow-Origin: *"
+        - "Access-Control-Allow-Methods: GET, OPTIONS, POST"
+        - "Access-Control-Allow-Headers: Authorization, Content-Type"
 {% endif %}
       labels:
         stand: "{{stand_type| default ('not_set') }}"
