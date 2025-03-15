@@ -5,6 +5,7 @@ vm_compose_path: "/opt/docker/vm"
 vm_base_path: "/opt/vm-data"
 vm_db_dir: "{{ vm_base_path }}/db"
 vm_config_path: "{{ vm_base_path }}/config"
+
 vm_search_max_unique_timeseries: "900000"
 vm_metrics_retention: "30d"
 vm_extra_args: []
@@ -13,13 +14,21 @@ vm_web_listen_address: "{{ vm_bind_address }}:9090"
 vm_bind_address: ""
 vm_reload_address: "[::1]"
 vm_web_external_url: ''
+vm_proxy_url: "http://{{ vmalert_http_listen_addr | default('127.0.0.1:8880') }}"
+
+# vmagent_base_path: "/opt/vmagent"
+# vmagent_config_path: "{{ vmagent_base_path }}/config"
+# vmagent_push_user: "{{ vault_dict_users_secret.vmagent_push_user | default('set_me') }}"
+# vmagent_push_pass: "{{ vault_dict_users_secret.vmagent_push_pass | default('set_me') }}"
+
+
 # vm_ext_name: "prom.example.com"
 # prom_addr: "{{ vm_ext_name }}"
 # ### consul
 # stands_regexp: ".*,(c1-infra|c1-devel),.*"
 # consul_sd_server: ":8500"
 # consul_vm_access_token: "{{ vault_dict_users_secret.consul_vm_access_token }}"
-consul_vm_access_token: "{{ vault_dict_users_secret.consul_prometheus_access_token | default('set_me')}}"
+consul_vm_access_token: "{{ vault_dict_users_secret.consul_prometheus_access_token | default('set_me') }}"
 
 # #command to run
 # vm_command_run:

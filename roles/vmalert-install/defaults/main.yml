@@ -1,0 +1,14 @@
+---
+vmalert_image: "v1.113.0"
+vmalert_compose_path: "/opt/docker/vmalert"
+
+vmalert_base_path: "/opt/vmalert"
+vmalert_rules_path: "{{ vmalert_base_path }}/rules"
+
+vmalert_grafana_url: "https://127.0.0.1:3000"
+vmalert_datasource_url: "http://127.0.0.1:8428/"
+vmalert_notifier_url: "http://127.0.0.1:9093/"
+
+vmalert_http_listen_addr: "127.0.0.1:8880"
+# vmalert_uid: 1001
+# vmalert_gid: 1001

@@ -1,0 +1,23 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - vmalert
+    - vmalert-prefly
+
+- ansible.builtin.import_tasks: 30-configure.yml
+  tags:
+    - vmalert
+    - vmalert-config
+    - vmalert-alerts
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - vmalert
+    - vmalert-docker
+    - vmalert-compose
+
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - vmalert-clean

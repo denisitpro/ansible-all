@@ -8,16 +8,6 @@ global:
   external_labels:
     {{ vm_external_labels | to_nice_yaml(indent=2) | indent(4, False) }}
 
-{% if vm_remote_write != [] %}
-remote_write:
-  {{ vm_remote_write | to_nice_yaml(indent=2) | indent(2, False) }}
-{% endif %}
-
-{% if vm_remote_read != [] %}
-remote_read:
-  {{ vm_remote_read | to_nice_yaml(indent=2) | indent(2, False) }}
-{% endif %}
-
 {% if vm_alertmanager_config | length > 0 %}
 alerting:
   alertmanagers:
@@ -55,7 +45,7 @@ scrape_configs:
     metrics_path: "{{ target.metrics_path | default ('/metrics') }}"
 {% if target.job_name != 'consul_clickhouse_metrics' %}
     params:
-      format: ['{{ target.format | default ('vm') }}']
+      format: ['{{ target.format | default ('prometheus') }}']
 {% endif %}
 {% if target.scheme is defined %}
     scheme: {{ target.scheme }}
