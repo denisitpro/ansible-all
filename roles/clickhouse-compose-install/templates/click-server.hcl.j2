@@ -1,0 +1,24 @@
+service {
+  name  = "{{ click_srv_metrics_name | default('clickhouse-server-metrics') }}"
+  port  = {{ click_srv_metrics_bind_port | default('9363') }}
+  tags  = [
+    "prometheus",
+    {% if click_srv_tags is defined %}
+      {% for tag in click_srv_tags %}
+        "{{ tag }}",
+      {% endfor %}
+    {% endif %}
+  ]
+
+  {% if consul_agent_disabled is not defined %}
+    token = "{{ consul_click_srv_metrics_token }}"
+  {% endif %}
+
+  check = {
+    id       = "clickhouse-server-metrics"
+    name     = "clickhouse-server-metrics healthcheck"
+    tcp      = "{{ click_srv_metrics_bind_addr | default('') }}:{{ click_srv_metrics_bind_port | default('9363') }}"
+    interval = "30s"
+    timeout  = "2s"
+  }
+}

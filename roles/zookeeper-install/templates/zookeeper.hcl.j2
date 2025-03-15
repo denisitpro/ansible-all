@@ -1,0 +1,24 @@
+service {
+  name  = "{{ zookeeper_metrics_name | default('zookeeper-metrics') }}"
+  port  = {{ zookeeper_metrics_bind_port | default('7000') }}
+  tags  = [
+    "prometheus",
+    {% if zookeeper_tags is defined %}
+      {% for tag in zookeeper_tags %}
+        "{{ tag }}",
+      {% endfor %}
+    {% endif %}
+  ]
+
+  {% if consul_agent_disabled is not defined %}
+    token = "{{ consul_zookeeper_metrics_token }}"
+  {% endif %}
+
+  check = {
+    id       = "clickhouse-zookeeper-metrics"
+    name     = "clickhouse-zookeeper-metrics healthcheck"
+    tcp      = "{{ zookeeper_metrics_bind_addr | default('') }}:{{ zookeeper_metrics_bind_port | default('9363') }}"
+    interval = "30s"
+    timeout  = "2s"
+  }
+}

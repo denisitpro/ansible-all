@@ -1,0 +1,21 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ zookeeper_compose_path }}"
+
+- name: create folder application
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ zookeeper_uid }}"
+    group: "{{ zookeeper_gid }}"
+  with_items:
+    - "{{ zookeeper_base_path }}"

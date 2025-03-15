@@ -1,7 +1,39 @@
 ---
-- include: 00-create-user.yml
-- include: 01-install.yml
-- include: 02-base-config.yml
-- include: 03-configure.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
-    - reconfigure
+    - zookeeper
+    - zookeeper-prefly
+
+- ansible.builtin.import_tasks: 20-zoo-servers.yml
+  when: zookeeper_servers is defined and zookeeper_standalone is not defined
+  tags:
+    - zookeeper
+    - zookeeper-facts
+    - zookeeper-config
+    - zookeeper-compose
+
+- ansible.builtin.import_tasks: 25-set-facts.yml
+  when: zookeeper_servers is not defined and zookeeper_standalone is not defined
+  tags:
+    - zookeeper
+    - zookeeper-facts
+    - zookeeper-config
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - zookeeper
+    - zookeeper-docker
+    - zookeeper-compose
+
+# - ansible.builtin.import_tasks: 65-consul-reg.yml
+#   when: consul_monitoring_disable is not defined
+#   tags:
+#     - zookeeper
+#     - consul
+#     - consul-reg
+#     - consul-owner
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - zookeeper-clean

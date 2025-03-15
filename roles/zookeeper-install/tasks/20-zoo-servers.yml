@@ -1,0 +1,9 @@
+---
+- name: Assign zookeeper_id based on zookeeper_servers list
+  any_errors_fatal: true
+  ansible.builtin.set_fact:
+    zookeeper_id: "{{ (zookeeper_servers | selectattr('hostname', 'equalto', inventory_hostname) | map(attribute='id') | first) | default(omit) }}"
+
+- name: Debug - Show zookeeper_id for this host
+  ansible.builtin.debug:
+    msg: "zookeeper_id: {{ zookeeper_id }}"

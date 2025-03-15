@@ -1,0 +1,24 @@
+service {
+  name  = "{{ click_keeper_metrics_name | default('clickhouse-keeper-metrics') }}"
+  port  = {{ click_keeper_metrics_bind_port | default('9363') }}
+  tags  = [
+    "prometheus",
+    {% if click_keeper_tags is defined %}
+      {% for tag in click_keeper_tags %}
+        "{{ tag }}",
+      {% endfor %}
+    {% endif %}
+  ]
+
+  {% if consul_agent_disabled is not defined %}
+    token = "{{ consul_click_keeper_metrics_token }}"
+  {% endif %}
+
+  check = {
+    id       = "clickhouse-keeper-metrics"
+    name     = "clickhouse-keeper-metrics healthcheck"
+    tcp      = "{{ click_keeper_metrics_bind_addr | default('') }}:{{ click_keeper_metrics_bind_port | default('9363') }}"
+    interval = "30s"
+    timeout  = "2s"
+  }
+}

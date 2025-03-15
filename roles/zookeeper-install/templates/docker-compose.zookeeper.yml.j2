@@ -1,0 +1,31 @@
+## {{ ansible_managed }} ##
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:{{ zookeeper_image }}
+    container_name: zookeeper
+    hostname: {{ansible_hostname}}
+    network_mode: host
+    volumes:
+      - {{zookeeper_base_path}}:/bitnami/zookeeper
+    environment:
+       - ALLOW_ANONYMOUS_LOGIN={{ zookeeper_allow_anonymous_login | default('yes') }}
+       - ZOO_SERVER_ID={{ zookeeper_id| default ('1')}}
+       - ZOO_PORT_NUMBER={{ zookeeper_zoo_port_number| default ('2181')}}
+       - ZOO_LISTEN_ALLIPS_ENABLED=true
+{% if zookeeper_metric is defined %}
+       - ZOO_ENABLE_PROMETHEUS_METRICS=yes
+{% endif %}
+{% if zookeeper_standalone is not defined %}
+{% if zookeeper_servers is defined %}
+       - ZOO_SERVERS={% for host in zookeeper_servers %}{{ host.hostname }}:{{host.port1 | default('2888')}}:{{host.port2 | default('3888')}}::{% if loop.last %}{{ host.id }}{% else %}{{ host.id }},{% endif %}{% endfor %}
+{% else %}
+       - ZOO_SERVERS={% for host in raft_calculate_servers %}{{ host | default('localhost') }}:{{host.port1 | default('2888')}}:{{host.port2 | default('3888')}}::{% if loop.last %}{{ hostvars[host]['zookeeper_id'] }}{% else %}{{ hostvars[host]['zookeeper_id'] }},{% endif %}{% endfor %}
+{% endif %}      
+{% endif %}
+    restart: {{ zookeeper_restart | default('unless-stopped') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

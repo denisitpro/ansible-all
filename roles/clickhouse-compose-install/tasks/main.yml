@@ -49,6 +49,14 @@
     - click-remote-server
     - click-macros
 
+- ansible.builtin.import_tasks: 65-consul-reg.yml
+  when: consul_monitoring_disable is not defined
+  tags:
+    - click
+    - consul
+    - consul-reg
+    - consul-owner
+
 - ansible.builtin.import_tasks: 90-stop-start.yml
 
 - ansible.builtin.import_tasks: 99-clean.yml

@@ -2,7 +2,12 @@ service {
   name  = "{{ node_exporter_name | default('node-exporter') }}"
   port  = {{ node_exporter_bind_port }}
   tags  = [
-    "{{ node_exporter_name | default('node-exporter') }}","prometheus","{{ stand_type }}"
+    "prometheus",
+{% if node_exporter_tags is defined %}
+{% for tag in node_exporter_tags %}
+        "{{ tag }}",
+{% endfor %}
+{% endif %}
   ]
 
   {% if consul_agent_disabled is not defined %}

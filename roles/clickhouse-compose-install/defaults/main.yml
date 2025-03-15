@@ -14,6 +14,13 @@ click_ssl_path: "{{ click_base_path }}/ssl"
 click_uid: 101
 click_gid: 101
 
+# exporter sections
+# set general consul_all_exporters_token for all exporters
+consul_click_srv_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+click_srv_tags:
+  - "clickhouse"
+  - "{{ stand_type }}"
+  - "{{ click__server_metrics_name | default('clickhouse-server-metrics') }}"
 #
 #
 #
