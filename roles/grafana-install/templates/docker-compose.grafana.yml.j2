@@ -13,14 +13,13 @@ services:
     mem_limit: {{ grafana_mem_limit | default('512M') }}
     volumes:
       - "{{ grafana_data_path }}/etc:/etc/grafana"
+      - "{{ grafana_data_path }}/data:/var/lib/grafana"
+      - "{{ grafana_ssl_path }}:{{ grafana_ssl_path }}"
       - "{{ grafana_data_path }}/etc/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
       - "{{ grafana_data_path }}/etc/provisioning/datasources:/etc/grafana/provisioning/datasources"
       - "{{ grafana_data_path }}/etc/provisioning/plugins:/etc/grafana/provisioning/plugins"
       - "{{ grafana_data_path }}/etc/provisioning/notifiers:/etc/grafana/provisioning/notifiers"
-      - "{{ grafana_data_path }}/data:/var/lib/grafana"
-{% if  grafana_domain | default('') == "selfsign" %}
-      - "{{ grafana_ssl_path }}:{{ grafana_ssl_path }}"
-{% endif %}
+
     restart: {{ grafana_restart | default('unless-stopped') }}
 {% if grafana_plugins is defined %}
     environment:

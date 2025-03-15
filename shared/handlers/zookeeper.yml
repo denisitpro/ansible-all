@@ -1,4 +1,12 @@
-- name: restart zookeeper
-  systemd:
-    name: zookeeper
+---
+- name: recreate-docker zookeeper
+  community.docker.docker_compose_v2:
+    project_src: "{{ zookeeper_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker zookeeper
+  community.docker.docker_compose_v2:
+    project_src: "{{ zookeeper_compose_path }}"
     state: restarted

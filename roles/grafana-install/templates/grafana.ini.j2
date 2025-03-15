@@ -17,7 +17,10 @@ protocol = {% if grafana_domain | default('') == "selfsign" %}https{% else %}{{ 
 #enable_gzip = False
 
 [live]
-allowed_origins = "{{grafana_allowed_origins}}"
+allowed_origins = "{{grafana_allowed_origins | default('*')}}"
+
+[feature_toggles]
+ssoSettingsApi = true
 
 {% if grafana_oidc_github is defined %}
 [auth.github]
@@ -35,7 +38,11 @@ allowed_organizations = ["{{gf_auth_github_allowed_organizations}}"]
 {% if gf_auth_github_allow_skip_allow_domain is not  defined %}
 allowed_domains = {{gf_auth_github_allowed_domains}}
 {% endif %}
+{% if gf_auth_github_all_admins is not defined %}
 role_attribute_path = contains(groups[*], '@{{gf_auth_github_role_attribute_path}}') && 'Editor' || 'Viewer'
+{% else %}
+role_attribute_path = contains(groups[*], '@{{gf_auth_github_role_attribute_path}}') && 'Admin' || 'Editor'
+{% endif %}
 team_ids = {{gf_auth_github_team_ids}} # see README.md role
 {% endif %}
 

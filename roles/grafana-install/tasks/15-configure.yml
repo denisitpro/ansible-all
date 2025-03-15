@@ -1,0 +1,23 @@
+---
+- name: copy config files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ grafana_data_path }}/etc/{{ item }}"
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
+    mode: "0644"
+  loop:
+    - "grafana.ini"
+  notify: reload-docker grafana
+
+- name: copy config  ldap
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ grafana_data_path }}/etc/{{ item }}"
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
+    mode: "0644"
+  when: gf_auth_ldap_enabled is defined
+  loop:
+    - "ldap.toml"
+  notify: reload-docker grafana

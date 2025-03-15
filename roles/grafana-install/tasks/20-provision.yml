@@ -1,21 +1,20 @@
 ---
 - name: Create/Update datasources file (provisioning)
-  become: true
-  copy:
+  ansible.builtin.copy:
     dest: "/opt/grafana/etc/provisioning/datasources/ansible-generate.yml"
     content: |
       apiVersion: 1
       deleteDatasources: {% if grafana_delete_datasources is not defined %}[]
       {% else %}
-      
+
       {{ grafana_delete_datasources | to_nice_yaml }}{% endif %}
       datasources:
       {{ grafana_datasources | to_nice_yaml }}
     backup: false
-    owner: "{{grafana_user_uid | default('472')}}"
-    group: root
-    mode: 0640
-  notify: restart-docker grafana
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
+    mode: "0640"
+  notify: reload-docker grafana
   tags:
     - grafana-datasource
 
@@ -31,8 +30,8 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
-    owner: "{{ item.owner | default('root') }}"
-    group: "{{ item.group | default('root') }}"
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
     mode: "{{ item.mode | default('0755') }}"
   with_items:
     - { path: "{{ grafana_data_path }}/etc/provisioning/dashboards" }
@@ -45,8 +44,8 @@
   ansible.builtin.file:
     path: "{{ grafana_data_path }}/etc/provisioning/dashboards/{{ item }}"
     state: directory
-    owner: "{{ item.owner | default('root') }}"
-    group: "{{ item.group | default('root') }}"
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
     mode: "{{ item.mode | default('0755') }}"
   loop: "{{ grafana_dashboards_provision.folders }}"
   tags:
@@ -55,24 +54,24 @@
 
 
 - name: copy dashobard provider
-  template:
+  ansible.builtin.template:
     src: dashboard-provider.yml.j2
     dest: /opt/grafana/etc/provisioning/dashboards/ansible-generate.yml
-    owner: "{{grafana_user_uid | default('472')}}"
-    group: root
-    mode: 0640
-  notify: restart-docker grafana
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
+    mode: "0644"
+  notify: reload-docker grafana
   tags:
     - grafana-dashboards
 
 - name: copy dashboards
   ansible.builtin.copy:
-    src: "{{item.folder | default('general')}}/{{item.file}}"
-    dest: "/opt/grafana/etc/provisioning/dashboards/{{item.folder | default('general')}}/{{item.file}}"
-    owner: "{{grafana_user_uid | default('472')}}"
-    group: root
-    mode: 0640
-  notify: restart-docker grafana
+    src: "{{ item.folder |default( 'general' )}}/{{ item.file }}"
+    dest: "/opt/grafana/etc/provisioning/dashboards/{{ item.folder | default('general')}}/{{ item.file }}"
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
+    mode: "0644"
+  notify: reload-docker grafana
   when: grafana_dashboards_provision is defined
   loop: "{{ grafana_dashboards_provision.dashboards }}"
   tags:

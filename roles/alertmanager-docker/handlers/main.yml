@@ -1,2 +1,2 @@
 ---
-- import_tasks: shared/handlers/alertmanager.yml
+- ansible.builtin.import_tasks: shared/handlers/alertmanager.yml

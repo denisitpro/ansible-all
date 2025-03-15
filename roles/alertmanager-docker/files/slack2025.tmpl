@@ -1,0 +1,113 @@
+{{ define "slack.default_notify.message" }}
+{
+  "attachments": [
+    {
+      "color": "{{ template "slack.color" . }}",
+      "title": "{{ template "slack.title" . }}",
+      "text": "{{ template "slack.text" . }}",
+      "fields": [
+        {{ if .CommonLabels.severity }}
+        {
+          "title": "Severity",
+          "value": "{{ template "__alert_severity" . }}",
+          "short": true
+        },
+        {{ end }}
+        {{ if .Status }}
+        {
+          "title": "Status",
+          "value": "{{ .Status | toUpper }}",
+          "short": true
+        },
+        {{ end }}
+        {{ if .CommonLabels.instance }}
+        {
+          "title": "Instance",
+          "value": "<{{ .CommonLabels.instance }}|{{ .CommonLabels.instance }}>",
+          "short": true
+        },
+        {{ end }}
+        {{ if .CommonLabels.job }}
+        {
+          "title": "Job",
+          "value": "{{ .CommonLabels.job }}",
+          "short": true
+        },
+        {{ end }}
+        {{ if .CommonLabels.environment }}
+        {
+          "title": "Environment",
+          "value": "{{ .CommonLabels.environment }}",
+          "short": true
+        },
+        {{ end }}
+        {{ if .CommonLabels.stand }}
+        {
+          "title": "Stand",
+          "value": "{{ .CommonLabels.stand }}",
+          "short": true
+        },
+        {{ end }}
+        {
+          "title": "Time",
+          "value": "{{ (index .Alerts 0).StartsAt.Format "2006-01-02 15:04:05" }}",
+          "short": false
+        }
+      ]
+    }
+  ]
+}
+{{ end }}
+{{ define "slack.title" -}}
+  [{{ .Status | toUpper -}}
+  {{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{- end -}}
+  ] {{ .CommonLabels.alertname }}
+{{- end }}
+{{ define "slack.text" -}}
+    {{- if (index .Alerts 0).Annotations.summary }}
+    {{- "\n" -}}
+    *Summary:* {{ (index .Alerts 0).Annotations.summary }}
+    {{- end }}
+    {{ range .Alerts }}
+        {{- if .Annotations.description }}
+        {{- "\n" -}}
+        📖 *Description:* {{ .Annotations.description }}
+        {{- end }}
+        {{- if .Annotations.message }}
+        {{- "\n" -}}
+        📨 *Message:* {{ .Annotations.message }}
+        {{- "\n" -}}
+        {{- end }}
+        {{- if .Labels.instance }}
+        {{- "\n" -}}
+        🖥 *Instance:* `{{ .Labels.instance }}`
+        {{- end }}
+        {{- if .Labels.job }}
+        {{- "\n" -}}
+        💼 *Job:* `{{ .Labels.job }}`
+        {{- end }}
+        {{- if .Labels.environment }}
+        {{- "\n" -}}
+        🌎 *Environment:* `{{ .Labels.environment }}`
+        {{- end }}
+        {{- if .Labels.stand }}
+        {{- "\n" -}}
+        🏢 *Stand:* `{{ .Labels.stand }}`
+        {{- end }}
+        {{- "\n" -}}
+        ⏰ *Time:* `{{ .StartsAt }}`
+    {{- end }}
+{{- end }}
+{{ define "slack.color" -}}
+    {{ if eq .Status "firing" -}}
+        {{ if eq .CommonLabels.severity "warning" -}}
+            warning
+        {{- else if eq .CommonLabels.severity "critical" -}}
+            danger
+        {{- else -}}
+            #439FE0
+        {{- end -}}
+    {{ else -}}
+    good
+    {{- end }}
+{{- end }}

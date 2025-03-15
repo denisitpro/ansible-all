@@ -1,16 +1,17 @@
 ---
-- name: restart alertmanager
-  systemd:
-    name: alertmanager
-    state: restarted
-
-- name: reload alertmanager
-  systemd:
-    name: alertmanager
-    state: reloaded
+- name: recreate-docker alertmanager
+  community.docker.docker_compose_v2:
+    project_src: "{{ am_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
 
 - name: reload docker alertmanager
   ansible.builtin.uri:
     url: "http://{{ alertmanager_web_listen_address }}{{ alertmanager_http_location }}-/reload"
     method: "POST"
     status_code: "200"
+
+# - name: Reload alertmanager is docker
+#   ansible.builtin.command:
+#     cmd: "docker kill --signal=HUP alertmanager"
