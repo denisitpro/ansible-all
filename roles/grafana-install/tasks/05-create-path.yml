@@ -1,25 +1,22 @@
 ---
-#- import_tasks: shared/tasks/copy-security-limits.yml
-#- import_tasks: shared/tasks/create-backup-directory.yml
-
 - name: create docker folder
   ansible.builtin.file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
     mode: '0775'
     owner: root
     group: root
   with_items:
     - "/opt/docker"
-    - "{{grafana_compose_path}}"
+    - "{{ grafana_compose_path }}"
 
 
 - name: "create directories for grafana"
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
-    owner: "{{ item.owner | default('root') }}"
-    group: "{{ item.group | default('root') }}"
+    owner: "{{ grafana_uid }}"
+    group: "{{ grafana_gid }}"
     mode: "{{ item.mode | default('0755') }}"
   with_items:
     - { path: "{{ grafana_data_path }}" }
@@ -29,5 +26,5 @@
     - { path: "{{ grafana_data_path }}/etc/provisioning/datasources" }
     - { path: "{{ grafana_data_path }}/etc/provisioning/notifiers" }
     - { path: "{{ grafana_data_path }}/etc/provisioning/plugins" }
-    - { path: "{{ grafana_data_path }}/data", owner: "{{ grafana_user_uid }}" }
-#    - { path: "{{ grafana_ssl_path }}", owner: "{{ grafana_user_uid }}" }
+    - { path: "{{ grafana_data_path }}/data" }
+    - { path: "{{ grafana_ssl_path }}" }

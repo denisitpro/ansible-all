@@ -1,5 +1,12 @@
 ---
-- name: restart-docker grafana
-  shell: "docker compose restart grafana"
+- name: recreate-docker grafana
+  community.docker.docker_compose_v2:
+    project_src: "{{ grafana_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: reload-docker grafana
+  ansible.builtin.command: "docker exec grafana kill -HUP 1"
   args:
-    chdir: "{{docker_compose_path |default('/opt/docker') }}/grafana"
+    chdir: "{{ grafana_compose_path }}"

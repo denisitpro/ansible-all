@@ -1,19 +1,20 @@
 ---
-grafana_version: "11.4.0"
+grafana_version: "11.5.2"
+# backup_path: /mnt/backup
 
-backup_path: /mnt/backup
 grafana_compose_path: /opt/docker/grafana
-
-gf_server_root_url: https://grafana.example.com
-gf_server_domain: example.com
 grafana_data_path: /opt/grafana
 grafana_ssl_path: "{{ grafana_data_path }}/ssl"
+
 grafana_image: 'grafana/grafana'
+gf_server_root_url: https://grafana.example.com
+gf_server_domain: example.com
 
 grafana_bind_port: '3000'
-grafana_user_uid: '472'
 
-grafana_allowed_origins: "http://localhost:3000"
+# https://github.com/grafana/grafana/blob/main/Dockerfile
+grafana_uid: '472'
+grafana_gid: '0'
 
 grafana_admin_pass: change_me
 
@@ -34,10 +35,8 @@ gf_auth_github_role_attribute_path: example-com/grafana-team
 
 gf_auth_github_team_ids: 123445677 # set id github team - see readme
 
-gf_auth_github_client_id: "{{ vault_dict_users_secret.gf_auth_github_client_id  | default('set_me') }}"
-gf_auth_github_client_secret: "{{ vault_dict_users_secret.gf_auth_github_client_secret  | default('set_me') }}"
-
-
+gf_auth_github_client_id: "{{ vault_dict_users_secret.gf_auth_github_client_id | default('set_me') }}"
+gf_auth_github_client_secret: "{{ vault_dict_users_secret.gf_auth_github_client_secret | default('set_me') }}"
 
 gf_auth_ldap_allow_sign_up: true
 gf_auth_ldap_config_file: '/etc/grafana/ldap.toml'
@@ -48,7 +47,7 @@ gf_ldap_toml_servers_port: '636'
 gf_ldap_toml_servers_use_ssl: 'true'
 gf_ldap_toml_servers_start_tls: 'false'
 gf_ldap_toml_servers_ssl_skip_verify: 'false'
-#gf_ldap_toml_servers_root_ca_cert: '/etc/ca.crt'
+# gf_ldap_toml_servers_root_ca_cert: '/etc/ca.crt'
 
 gf_ldap_toml_servers_group_mappings:
   - role: 'Admin'

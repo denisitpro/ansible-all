@@ -1,4 +1,4 @@
 ---
 - name: Reload alertmanager is docker
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "docker kill --signal=HUP alertmanager"

@@ -1,0 +1,6 @@
+---
+- name: restart docker vmagent
+  community.docker.docker_compose_v2:
+    project_src: "{{ vm_compose_path }}"
+    services: "vmagent"
+    state: restarted

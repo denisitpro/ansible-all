@@ -1,11 +1,13 @@
 ## {{ ansible_managed }} ##
 
-{% if ssh_ipv4 is not defined %}
+{% if ssh_address_family is not defined or ssh_address_family == 'any' %}
 AddressFamily any
-{% else %}
+{% elif ssh_address_family == 'ipv4' %}
 AddressFamily inet
+{% elif ssh_address_family == 'ipv6' %}
+AddressFamily inet6
+ListenAddress ::
 {% endif %}
-Protocol 2
 
 HostKey /etc/ssh/ssh_host_rsa_key
 HostKey /etc/ssh/ssh_host_ed25519_key
@@ -14,8 +16,7 @@ HostKey /etc/ssh/ssh_host_ed25519_key
 RekeyLimit 1G 1H
 KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512,diffie-hellman-group14-sha256
 Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr
-MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com
-
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
 SyslogFacility AUTHPRIV
 
 # user sessions

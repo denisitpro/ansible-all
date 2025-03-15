@@ -1,7 +1,16 @@
 ---
-- import_tasks: shared/tasks/create-dir-docker-compose.yml
-- import_tasks: shared/tasks/copy-security-limits.yml
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ am_compose_path }}"
 
+# todo refactore
 - name: create directory alertmanager
   ansible.builtin.file:
     path: "{{ item.path }}"
@@ -10,7 +19,6 @@
     owner: "{{ item.owner | default('root') }}"
     group: "{{ item.group | default('65534') }}"
   with_items:
-    - { path: "{{ alertmanager_docker_compose_path }}" }
     - { path: "{{ alertmanager_data_path }}", owner: "{{ alertmanager_user_uid }}", group: "{{ alertmanager_user_gid }}" }
     - { path: "{{ alertmanager_db_dir }}", owner: "{{ alertmanager_user_uid }}", group: "{{ alertmanager_user_gid }}" }
     - { path: "{{ alertmanager_config_path }}", owner: "{{ alertmanager_user_uid }}", group: "{{ alertmanager_user_gid }}" }

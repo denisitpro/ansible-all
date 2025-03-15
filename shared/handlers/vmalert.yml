@@ -1,0 +1,19 @@
+---
+- name: recreate-docker vmalert
+  community.docker.docker_compose_v2:
+    project_src: "{{ vmalert_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker vmalert
+  community.docker.docker_compose_v2:
+    project_src: "{{ vmalert_compose_path }}"
+    state: restarted
+
+
+- name: vmalert reload
+  ansible.builtin.uri:
+    url: "http://{{ vmalert_http_listen_addr }}/-/reload"
+    method: "POST"
+    status_code: "200"

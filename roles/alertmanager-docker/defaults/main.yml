@@ -1,20 +1,25 @@
 ---
+alertmanager_image: "v0.28.1"
+
+
 # base directory config
-alertmanager_docker_compose_path: "{{ docker_compose_path | default('/opt/docker') }}/alertmanager"
+alertmanager_telegram_bot_token: "{{ vault_dict_users_secret.alertmanager_telegram_bot_token | default('set_me') }}"
+alertmanager_slack_webhook_url: "{{ vault_dict_users_secret.alertmanager_slack_webhook_url | default('set_me') }}"
+
+am_compose_path: "/opt/docker/alertmanager"
 alertmanager_data_path: /opt/alertmanager
 alertmanager_db_dir: "{{ alertmanager_data_path }}/data"
 alertmanager_config_path: "{{ alertmanager_data_path }}/config"
 alertmanager_config_dir: /etc/alertmanager
 alertmanager_user_uid: "65534"
 alertmanager_user_gid: "65534"
-#version and bind
-alertmanager_image: "v0.27.0"
-alertmanager_bind_address: "{{ global_bind_addr | default ('[::]')}}"
+# version and bind
+alertmanager_bind_address: '[::]'
 alertmanager_http_location: "/"
 alertmanager_web_listen_address: "{{ alertmanager_bind_address }}:9093"
 alertmanager_web_external_url: "http://{{ alertmanager_bind_address }}:9093{{ alertmanager_http_location }}"
 
-#command to run
+# command to run
 alertmanager_command_run:
   - "config.file={{ alertmanager_config_dir }}/alertmanager.yml"
   - "storage.path={{ alertmanager_db_dir }}"
@@ -24,10 +29,10 @@ alertmanager_command_run:
 
 # config section
 alertmanager_template_files:
-  - general.tmpl
-  - my.tmpl
-  - slack.tmpl
   - telegram.tmpl
+  - slack2025.tmpl
+  # - slack.tmpl
+  # - slack-c1.tmpl
 
 alertmanager_config_file: 'alertmanager.yml.j2'
 alertmanager_http_config: {}
@@ -46,7 +51,7 @@ alertmanager_wechat_corp_id: ''
 # First read: https://github.com/prometheus/alertmanager#high-availability
 alertmanager_cluster:
   listen-address: ""
-#alertmanager_receivers: []
+# alertmanager_receivers: []
 # alertmanager_receivers:
 #   - name: slack
 #     slack_configs:
@@ -54,7 +59,7 @@ alertmanager_cluster:
 #         channel: '#alerts'
 alertmanager_inhibit_rules: []
 alertmanager_child_routes: []
-#alertmanager_route: {}
+# alertmanager_route: {}
 # this config use only test launch, need redefine variable in group_vars
 alertmanager_slack_api_url: "https://example.webhook.com"
 alertmanager_route:
