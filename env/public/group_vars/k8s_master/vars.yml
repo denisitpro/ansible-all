@@ -1,26 +1,31 @@
 ---
+ssh_address_family: "ipv6"
+
 k8s_master: true
 k8s_cls_name: k8s.beta-82.win
 
+k8s_master_group_name: k8s_master
+dns_management: true
+
 # local k8s address - todo remove
-#k8s_cls_name: k8s-lb-local-01.beta-82.win
-#k8s_cls_ip: 10.15.2.100
-#k8s_local_network_force: true # test global
+# k8s_cls_name: k8s-lb-local-01.beta-82.win
+# k8s_cls_ip: 10.15.2.100
+# k8s_local_network_force: true # test global
 
 # todo debug - not work
 # Set canReach address https://docs.tigera.io/calico/latest/networking/ipam/ip-autodetection#autodetection-methods
-#k8s_local_iface_autodetect: "eth0" # need for bird
+# k8s_local_iface_autodetect: "eth0" # need for bird
 
 # todo debug  - not workr, not started calico pods
-#k8s_calico_typha_disable: true
+# k8s_calico_typha_disable: true
 
 
 ## example set specific master and port
-#k8s_master_init_host: k8s-02.beta-82.win
-#k8s_cls_port: 443
+# k8s_master_init_host: k8s-02.beta-82.win
+# k8s_cls_port: 443
 
 
-#k8s_ipv6: true # support ipv6 install
+# k8s_ipv6: true # support ipv6 install
 
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements

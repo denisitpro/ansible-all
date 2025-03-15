@@ -12,11 +12,8 @@ k8s-03.beta-82.win
 [k8s_worker]
 w-01.beta-82.win
 w-02.beta-82.win
-; w-03.beta-82.win
+w-03.beta-82.win
 ; w-04.beta-82.win
-
-; [haproxy_lb]
-; ha-01.beta-82.win
 
 ; [teleport]
 ; teleport-01.beta-82.win
@@ -24,14 +21,6 @@ w-02.beta-82.win
 ; [build_01]
 ; build-01.beta-82.win
 
-; [swfs_master]
-; swfs-master-01.beta-82.win
-
-; [swfs_volume]
-; swfs-volume-20.beta-82.win
-; swfs-volume-21.beta-82.win
-; swfs-volume-22.beta-82.win
-; swfs-volume-23.beta-82.win
 
 [vm_single]
 vm-01.beta-82.win

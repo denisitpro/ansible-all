@@ -1,5 +1,6 @@
 ---
 k8s_cls_name: k8s.beta-82.win
+k8s_master_group_name: k8s_master
 
 apt_keyring_force_file: true
 
@@ -7,11 +8,11 @@ apt_keyring_force_file: true
 # k8s_local_network_force: true
 
 # only for debug
-#k8s_reset_cls_force: true
+# k8s_reset_cls_force: true
 
 # test ipv6
-#k8s_ipv6: true # support ipv6 install
-#k8s_force_join: true
+# k8s_ipv6: true # support ipv6 install
+# k8s_force_join: true
 # k8s ports https://kubernetes.io/docs/reference/networking/ports-and-protocols/
 # calico https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
 iptables:
