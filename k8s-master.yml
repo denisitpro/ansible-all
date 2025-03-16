@@ -2,7 +2,7 @@
 - hosts: k8s_master
   become: true
   roles:
-    - 0010-common-v5
+    # - 0010-common-v5
     - k8s-kubeadm-install
     # - helm-install
     # - ufw-base-configure
