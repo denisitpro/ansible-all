@@ -1,0 +1,13 @@
+kafka:
+  clusters:
+{% for cluster in kafka_ui_clusters %}
+    - name: {{ cluster.name }}
+      bootstrapServers: {{ cluster.bootstrapServers }}
+      zookeeper: {{ cluster.zookeeper }}
+      properties:
+        security.protocol: {{ cluster.security_protocol | default('PLAINTEXT') }}
+        sasl.mechanism: {{ cluster.sasl_mechanism | default('PLAIN') }}
+      metrics:
+        type: {{ cluster.metrics_type | default('PROMETHEUS') }}
+        port: {{ cluster.metrics_port | default(9308) }}
+{% endfor %}

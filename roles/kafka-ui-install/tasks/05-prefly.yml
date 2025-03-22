@@ -1,0 +1,22 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ kafka_ui_compose_path }}"
+
+- name: create folder application
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    # owner: "{{ kafka_ui_uid }}"
+    # group: "{{ kafka_ui_gid }}"
+  with_items:
+    - "{{ kafka_ui_base_path }}"
+    - "{{ kafka_ui_config_path }}"

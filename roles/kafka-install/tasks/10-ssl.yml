@@ -1,0 +1,75 @@
+---
+# - name: Import ssl role SSL
+#   ansible.builtin.import_role:
+#     name: "ssl-selfsigned-cert"
+#   vars:
+#     ssl_path: "{{ kafka_ssl_path }}"
+#     ssl_domain: "selfsigned"
+#     ssl_cert_path: "{{ kafka_ssl_path }}/kafka.keystore.pem"
+#     ssl_privkey_path: "{{ kafka_ssl_path }}/kafka.keystore-pks1.key"
+#     ssl_notify: "restart-docker kafka"
+#     ssl_user: "{{ kafka_uid }}"
+#     ssl_group: "{{ kafka_gid }}"
+
+# - name: Convert private key to PKCS#8 format (needed for Kafka)
+#   ansible.builtin.command: >
+#     openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt
+#     -in {{ kafka_ssl_path }}/kafka.keystore-pks1.key -out {{ kafka_ssl_path }}/kafka.keystore.key
+#   args:
+#     creates: "{{ kafka_ssl_path }}/kafka.keystore.key"
+
+# - name: Change file ownership, group and permissions
+#   ansible.builtin.file:
+#     path: "{{ kafka_ssl_path }}/kafka.keystore.key"
+#     owner: "{{ kafka_uid }}"
+#     group: "{{ kafka_gid }}"
+#     mode: '0600'
+
+# - name: Copy selfsigned certificate to truststore
+#   ansible.builtin.copy:
+#     src: "{{ kafka_ssl_path }}/kafka.keystore.key"
+#     dest: "{{ kafka_ssl_path }}/kafka.truststore.pem"
+#     remote_src: true
+#     owner: "{{ kafka_uid }}"
+#     group: "{{ kafka_uid }}"
+#     mode: "0644"
+
+# kolhoz mode
+- name: Generate private key (PKCS#1)
+  ansible.builtin.command:
+    cmd: openssl genrsa -out {{ kafka_ssl_path }}/kafka.keystore.pkcs1.key 4096
+    creates: "{{ kafka_ssl_path }}/kafka.keystore.pkcs1.key"
+
+- name: Convert private key to PKCS#8 (needed for Kafka)
+  ansible.builtin.command:
+    cmd: openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in {{ kafka_ssl_path }}/kafka.keystore.pkcs1.key -out {{ kafka_ssl_path }}/kafka.keystore.key
+    creates: "{{ kafka_ssl_path }}/kafka.keystore.key"
+
+- name: Generate certificate signing request (CSR)
+  ansible.builtin.command:
+    cmd: openssl req -new -key {{ kafka_ssl_path }}/kafka.keystore.key -out {{ kafka_ssl_path }}/kafka.csr -subj "/C=AA/ST=TestState/L=TestCity/O=TestOrg/OU=TestUnit/CN=selfsigned"
+    creates: "{{ kafka_ssl_path }}/kafka.csr"
+
+- name: Generate self-signed certificate
+  ansible.builtin.command:
+    cmd: openssl x509 -req -in {{ kafka_ssl_path }}/kafka.csr -signkey {{ kafka_ssl_path }}/kafka.keystore.key -out {{ kafka_ssl_path }}/kafka.keystore.pem -days 365
+    creates: "{{ kafka_ssl_path }}/kafka.keystore.pem"
+
+- name: Copy self-signed certificate to truststore (if no external CA)
+  ansible.builtin.copy:
+    src: "{{ kafka_ssl_path }}/kafka.keystore.pem"
+    dest: "{{ kafka_ssl_path }}/kafka.truststore.pem"
+    remote_src: true
+    mode: "0644"
+
+- name: Change file ownership, group and permissions
+  ansible.builtin.file:
+    path: "{{ kafka_ssl_path }}/{{ item }}"
+    owner: "{{ kafka_uid }}"
+    group: "{{ kafka_gid }}"
+  with_items:
+    - "kafka.keystore.key"
+    - "kafka.keystore.pem"
+    - "kafka.truststore.pem"
+    - "kafka.csr"
+    - "kafka.keystore.pkcs1.key"

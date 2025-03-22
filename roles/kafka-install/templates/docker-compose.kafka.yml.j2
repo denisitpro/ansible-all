@@ -1,0 +1,47 @@
+## {{ ansible_managed }} ##
+
+services:
+  kafka:
+    image: bitnami/kafka:{{ kafka_image_version }}
+    container_name: kafka
+    hostname: {{ ansible_hostname }}
+    network_mode: host
+    volumes:
+      - {{ kafka_base_path }}:/bitnami/kafka
+    environment:
+      - KAFKA_CFG_NODE_ID={{ kafka_broker_id | default('0') }}
+{% if kafka_enable_ssl | default(false) %}
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,SSL://:9094,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://{{ ansible_fqdn }}:9092,SSL://{{ ansible_fqdn }}:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL
+      - KAFKA_TLS_TYPE=PEM
+{% else %}
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://{{ ansible_fqdn }}:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+{% endif %}
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_KRAFT_CLUSTER_ID={{ kafka_kraft_cluster_id  | default('local-set-me')}}
+      - KAFKA_CFG_LOG_RETENTION_HOURS=36
+      - KAFKA_CFG_LOG_RETENTION_CHECK_INTERVAL_MS=60000
+      - KAFKA_CFG_COMPRESSION_TYPE=gzip
+{% if kafka_cluster_servers is defined and kafka_cluster_servers | length > 0 %}
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS={% for server in kafka_cluster_servers %}{{ server.id }}@{{ server.hostname }}:{{ server.port | default(9093) }}{% if not loop.last %},{% endif %}
+{% endfor %}
+{% elif kafka_broker_id_group_calculate is defined and kafka_broker_id_group_calculate in groups %}
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS={% for host in groups[kafka_broker_id_group_calculate] %}{{ hostvars[host]['kafka_broker_id'] }}@{{ host }}:9093{% if not loop.last %},{% endif %}{% endfor %}
+
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR={{kafka_default_replication_factor | default('2')}}
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR={{kafka_offsets_topic_replication_factor | default('2')}}
+{% else %}
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@127.0.0.1:9093
+{% endif %}
+
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    restart: {{ kafka_restart | default('unless-stopped') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

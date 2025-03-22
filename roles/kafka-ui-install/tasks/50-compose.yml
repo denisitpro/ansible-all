@@ -1,0 +1,7 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.kafka-ui.yml.j2"
+    dest: "{{ kafka_ui_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker kafka-ui

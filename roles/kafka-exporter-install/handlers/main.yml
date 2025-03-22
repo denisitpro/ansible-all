@@ -1,0 +1,3 @@
+---
+- ansible.builtin.import_tasks: shared/handlers/kafka-exporter.yml
+- ansible.builtin.import_tasks: shared/handlers/consul.yml

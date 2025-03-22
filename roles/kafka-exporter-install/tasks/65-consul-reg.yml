@@ -1,0 +1,18 @@
+---
+- name: Check consul directory is exists
+  ansible.builtin.stat:
+    path: "{{ consul_config_dir | default('/etc/consul.d') }}"
+  register: consul_config_dir_exists
+
+
+- name: Copy node_exporter consul config - notify docker
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/consul.d/{{ item }}.hcl"
+    mode: "0644"
+  notify: restart-docker consul
+  with_items:
+    - kafka-exporter.hcl
+  when:
+    - consul_config_dir_exists.stat.exists
+    - consul_unit is not  defined

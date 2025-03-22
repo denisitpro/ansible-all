@@ -1,0 +1,23 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - kafka-ui
+    - kafka-ui-prefly
+
+
+- ansible.builtin.import_tasks: 30-config.yml
+  tags:
+    - kafka-ui
+    - kafka-ui-config
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - kafka-ui
+    - kafka-ui-docker
+    - kafka-ui-compose
+    - kafka-ui-config
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - kafka-ui-clean

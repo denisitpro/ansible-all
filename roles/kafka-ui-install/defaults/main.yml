@@ -1,0 +1,13 @@
+---
+kafka_ui_image_version: "v0.7.2"
+kafka_ui_compose_path: "/opt/docker/kafka-ui"
+
+# kafka_ui_uid: 1001
+# kafka_ui_gid: 0
+
+
+kafka_ui_base_path: "/opt/kafka-ui"
+# kafka_ui_data_path: "{{ kafka_ui_base_path }}/data"
+kafka_ui_config_path: "{{ kafka_ui_base_path }}/config"
+# kafka_ui_logs_path: "{{ kafka_ui_base_path }}/logs"
+# kafka_ui_ssl_path: "{{ kafka_ui_base_path }}/config/certs"

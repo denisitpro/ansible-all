@@ -1,0 +1,9 @@
+---
+- name: Assign kafka_broker_id based on kafka_cluster_servers list
+  any_errors_fatal: true
+  ansible.builtin.set_fact:
+    kafka_broker_id: "{{ (kafka_cluster_servers | selectattr('hostname', 'equalto', inventory_hostname) | map(attribute='id') | first) | default(omit) }}"
+
+- name: Debug - Show kafka_broker_id for this host
+  ansible.builtin.debug:
+    msg: "kafka_broker_id: {{ kafka_broker_id }}"

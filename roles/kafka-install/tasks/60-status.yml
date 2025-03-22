@@ -1,0 +1,6 @@
+---
+- name: Check if container exists
+  ansible.builtin.command: docker compose -f "{{ kafka_compose_path }}/docker-compose.yml" ps -q
+  register: kafka_container_exists
+  changed_when: false
+  failed_when: false

@@ -1,16 +1,22 @@
 ---
-kafka_version: 2.3.0
-kafka_skala_version: 2.12
-kafka_dwnl_url: https://www-eu.apache.org/dist/kafka/{{kafka_version}}/kafka_{{kafka_skala_version}}-{{kafka_version}}.tgz
-kafka_tmp_path: "/tmp"
+kafka_image_version: "3.9.0"
+kafka_compose_path: "/opt/docker/kafka"
 
-kafka_user: kafka
-kafka_group: kafka
-kafka_local_zoo: False
-kafka_app_path: "/opt/kafka"
-kafka_log_path: "{{kafka_app_path}}/log"
+kafka_uid: 1001
+kafka_gid: 0
 
-java_version: 11
 
-#disable clear kafka 1 year
-log_retention_hours: "8760"
+kafka_base_path: "/opt/kafka"
+# kafka_data_path: "{{ kafka_base_path }}/data"
+# kafka_config_path: "{{ kafka_base_path }}/config"
+# kafka_logs_path: "{{ kafka_base_path }}/logs"
+kafka_ssl_path: "{{ kafka_base_path }}/config/certs"
+
+# ---------------------------------------
+#
+#
+# detailed read README.md role
+# Kafka cluster ID when using Kafka Raft mode (KRaft).
+# example use uuidgen
+# kafka_kraft_cluster_id: 6859C50A-A5DF-449B-9725-3687219650A0
+# kafka_broker_id_group_calculate: kafka_example_group
