@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: clickhouse alert rules - ansible managed a
+  rules:
+  {{ clickhouse_alert_rules | to_nice_yaml(indent=2) | indent(2,False) }}

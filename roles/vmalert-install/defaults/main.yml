@@ -12,3 +12,53 @@ vmalert_notifier_url: "http://127.0.0.1:9093/"
 vmalert_http_listen_addr: "127.0.0.1:8880"
 # vmalert_uid: 1001
 # vmalert_gid: 1001
+
+vmalert_alert_files:
+  - clickhouse-alerts.yml
+  - alerts-vmalert.yml
+  - ansible-generate-v1.yml
+
+
+
+clickhouse_connections_count: 100
+click_below_1_excluded_instances: []
+
+clickhouse_alert_rules:
+  - alert: HighClickHouseTCPConnections - {{ clickhouse_connections_count }}
+    annotations:
+      summary: "High number of TCP connections in ClickHouse"
+      description: >-
+        {% raw %}TCP connections at {{ $labels.instance }} have been above {% endraw %}{{clickhouse_connections_count}}{% raw %}
+        for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
+    expr: sum by (instance) (ClickHouseMetrics_TCPConnection) > {{ clickhouse_connections_count }}
+    for: 10m
+    labels:
+      severity: warning
+      service: clickhouse
+      team: devops
+  - alert: HighClickHouseHTTPConnections - {{ clickhouse_connections_count }}
+    annotations:
+      summary: "High number of HTTP connections in ClickHouse"
+      description: >-
+        {% raw %}HTTP connections at {{ $labels.instance }} have been above {% endraw %}{{clickhouse_connections_count}}{% raw %}
+        for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
+    expr: sum by (instance) (ClickHouseMetrics_HTTPConnection) > {{ clickhouse_connections_count }}
+    for: 10m
+    labels:
+      severity: warning
+      service: clickhouse
+      team: devops
+  - alert: ClickHouseTCPConnectionsBelow1
+    annotations:
+      summary: "Number of TCP connections in ClickHouse is below 1"
+      description: >-
+        {% raw %}TCP connections at {{ $labels.instance }} have been below 1
+        for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
+    expr: >-
+      sum by (instance) (ClickHouseMetrics_TCPConnection
+      {%- if click_below_1_excluded_instances | length > 0 %}{instance!~"{{ click_below_1_excluded_instances | join('|') }}"}{%- endif %}) < 1
+    for: 10m
+    labels:
+      severity: warning
+      service: clickhouse
+      team: devops

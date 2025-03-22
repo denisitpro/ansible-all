@@ -15,9 +15,9 @@ service {
   {% endif %}
 
   check = {
-    id       = "clickhouse-zookeeper-metrics"
-    name     = "clickhouse-zookeeper-metrics healthcheck"
-    tcp      = "{{ zookeeper_metrics_bind_addr | default('') }}:{{ zookeeper_metrics_bind_port | default('9363') }}"
+    id       = "zookeeper-metrics"
+    name     = "zookeeper-metrics healthcheck"
+    tcp      = "{{ zookeeper_metrics_bind_addr | default('') }}:{{ zookeeper_metrics_bind_port | default('7000') }}"
     interval = "30s"
     timeout  = "2s"
   }

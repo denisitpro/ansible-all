@@ -32,7 +32,7 @@
 
 - name: Create selfsigned crt
   community.crypto.x509_certificate:
-    path: "{{ ssl_path }}/fullchain.pem"
+    path: "{{ ssl_cert_path }}"
     privatekey_path: "{{ ssl_privkey_path }}"
     csr_path: "{{ ssl_path }}/service.csr"
     provider: selfsigned
