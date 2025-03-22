@@ -8,11 +8,11 @@
 
 ```ini
 [keeper_devel]
-click-01.example.com
-click-02.example.com
-click-03.example.com
-# click-04.example.com
-# click-05.example.com
+keeper-01.example.com
+keeper-02.example.com
+keeper-03.example.com
+# keeper-04.example.com
+# keeper-05.example.com
 ```
 
 Запускаем плейбук для применения конфигурации:
@@ -35,15 +35,15 @@ cat /opt/click/config/config.d/zookeeper.xml
 <clickhouse>
     <zookeeper>
         <node>
-            <host>click-01.example.com</host>
+            <host>keeper-01.example.com</host>
             <port>9181</port>
         </node>
         <node>
-            <host>click-02.example.com</host>
+            <host>keeper-02.example.com</host>
             <port>9181</port>
         </node>
         <node>
-            <host>click-03.example.com</host>
+            <host>keeper-03.example.com</host>
             <port>9181</port>
         </node>
     </zookeeper>
@@ -52,17 +52,17 @@ cat /opt/click/config/config.d/zookeeper.xml
 
 ## Обновление конфигурации ClickHouse Keeper
 
-На нодах, которые остаются в кластере, обновляем конфигурацию, удаляя `click-04` и `click-05` из списка.
+На нодах, которые остаются в кластере, обновляем конфигурацию, удаляя `keeper-04` и `keeper-05` из списка.
 
 Файл хостов:
 
 ```ini
 [keeper_devel]
-click-01.example.com
-click-02.example.com
-click-03.example.com
-# click-04.example.com
-# click-05.example.com
+keeper-01.example.com
+keeper-02.example.com
+keeper-03.example.com
+# keeper-04.example.com
+# keeper-05.example.com
 ```
 
 Запускаем плейбук:
@@ -71,7 +71,7 @@ click-03.example.com
 ansible-playbook -i env/devel keeper-devel.yml -t keeper-config
 ```
 
-## Остановка и удаление серверов `click-04` и `click-05`
+## Остановка и удаление серверов `keeper-04` и `keeper-05`
 
 ```sh
  docker compose -f /opt/docker/keeper/docker-compose.yml down
@@ -101,14 +101,14 @@ get "/keeper/config"
 Ожидаемый результат перед удалением узлов:
 
 ```
-server.1=click-01.example.com:9234;participant;1
-server.2=click-02.example.com:9234;participant;1
-server.3=click-03.example.com:9234;participant;1
-server.4=click-04.example.com:9234;participant;1
-server.5=click-05.example.com:9234;participant;1
+server.1=keeper-01.example.com:9234;participant;1
+server.2=keeper-02.example.com:9234;participant;1
+server.3=keeper-03.example.com:9234;participant;1
+server.4=keeper-04.example.com:9234;participant;1
+server.5=keeper-05.example.com:9234;participant;1
 ```
 
-Удаляем серверы `click-04` и `click-05` из кластера:
+Удаляем серверы `keeper-04` и `keeper-05` из кластера:
 
 ```sh
 reconfig remove "4,5"
@@ -117,9 +117,9 @@ reconfig remove "4,5"
 После удаления ожидаем такой результат:
 
 ```
-server.1=click-01.example.com:9234;participant;1
-server.2=click-02.example.com:9234;participant;1
-server.3=click-03.example.com:9234;participant;1
+server.1=keeper-01.example.com:9234;participant;1
+server.2=keeper-02.example.com:9234;participant;1
+server.3=keeper-03.example.com:9234;participant;1
 ```
 
 Дополнительно можно проверить конфигурацию через команду:
