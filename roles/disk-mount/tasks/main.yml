@@ -1,2 +1,4 @@
 ---
 - ansible.builtin.import_tasks: 05-mount.yml
+  tags:
+    - disk-mount

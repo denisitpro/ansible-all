@@ -1,5 +1,6 @@
 ---
 ssl_path: /opt/ssl/selfsign
 ssl_privkey_path: "{{ ssl_path }}/privkey.pem"
+ssl_cert_path: "{{ ssl_path }}/fullchain.pem"
 ssl_user: root
 ssl_group: root

@@ -7,10 +7,12 @@
 
 - name: Copy node_exporter consul config - notify docker
   ansible.builtin.template:
-    src: "click-zookeeper.hcl.j2"
-    dest: "/etc/consul.d/click-zookeeper.hcl"
+    src: "{{ item }}.j2"
+    dest: "/etc/consul.d/{{ item }}.hcl"
     mode: "0644"
   notify: restart-docker consul
+  with_items:
+    - zookeeper.hcl
   when:
     - consul_config_dir_exists.stat.exists
     - consul_unit is not  defined

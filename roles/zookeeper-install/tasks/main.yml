@@ -25,13 +25,13 @@
     - zookeeper-docker
     - zookeeper-compose
 
-# - ansible.builtin.import_tasks: 65-consul-reg.yml
-#   when: consul_monitoring_disable is not defined
-#   tags:
-#     - zookeeper
-#     - consul
-#     - consul-reg
-#     - consul-owner
+- ansible.builtin.import_tasks: 65-consul-reg.yml
+  when: consul_monitoring_disable is not defined
+  tags:
+    - zookeeper
+    - consul
+    - consul-reg
+    - consul-owner
 
 - ansible.builtin.import_tasks: 99-clean.yml
   tags:
