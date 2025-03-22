@@ -1,7 +1,38 @@
 ---
-- include: 00-create-user.yml
-- include: 01-install-reqirements.yml
-- include: 02-create-units.yml
-- include: 03-set-server-properties.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
-   - reconfigure
+    - kafka
+    - kafka-prefly
+
+- ansible.builtin.import_tasks: 10-ssl.yml
+  when: kafka_enable_ssl is defined
+  tags:
+    - kafka
+    - kafka-ssl
+
+- ansible.builtin.import_tasks: 20-raft-servers.yml
+  when: kafka_cluster_servers is defined
+  tags:
+    - kafka
+    - kafka-facts
+    - kafka-config
+
+- ansible.builtin.import_tasks: 25-set-facts.yml
+  when: kafka_cluster_servers is not defined and kafka_broker_id_group_calculate is defined
+  tags:
+    - kafka
+    - kafka-facts
+    - kafka-config
+
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - kafka
+    - kafka-docker
+    - kafka-compose
+    - kafka-config
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - kafka-clean

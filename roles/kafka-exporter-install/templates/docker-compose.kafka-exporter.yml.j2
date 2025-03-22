@@ -1,0 +1,16 @@
+## {{ ansible_managed }} ##
+
+services:
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:{{ kafka_exporter_image }}
+    container_name: kafka-exporter
+    hostname: kafka-exporter-{{ansible_hostname}}
+    network_mode: host
+    command:
+      - '--kafka.server={{ kafka_scrape_addr |default('[::1]:9092') }}'
+    restart: {{ kafka_exporter_restart | default('unless-stopped') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

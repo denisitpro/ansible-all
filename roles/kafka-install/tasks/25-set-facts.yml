@@ -1,0 +1,26 @@
+---
+- name: Set kafka_broker_id from host vars if kafka_raft_servers is not defined
+  ansible.builtin.set_fact:
+    kafka_broker_id: "{{ hostvars[inventory_hostname].kafka_broker_id }}"
+  when: kafka_broker_id is defined
+
+- name: Assign sequential IDs to hosts in a group
+  ansible.builtin.set_fact:
+    kafka_broker_id: "{{ kafka_broker_id | default(groups[kafka_broker_id_group_calculate].index(inventory_hostname) + 1) }}"
+  when: kafka_broker_id is not defined
+
+
+- name: Debug - Display kafka_broker_id assignment
+  ansible.builtin.debug:
+    msg: "Server {{ inventory_hostname }} has kafka_broker_id {{ kafka_broker_id }}"
+
+# Generates the ordered list of servers for the Raft configuration based on kafka_broker_id_group_calculate.
+- name: Set the list of servers for Raft configuration
+  ansible.builtin.set_fact:
+    raft_calculate_servers: >-
+      {{ groups[kafka_broker_id_group_calculate]
+      | map('extract', hostvars, 'kafka_broker_id')
+      | zip(groups[kafka_broker_id_group_calculate])
+      | sort(attribute=0)
+      | map(attribute=1)
+      | list }}

@@ -1,0 +1,35 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ kafka_compose_path }}"
+
+- name: create folder application
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ kafka_uid }}"
+    group: "{{ kafka_gid }}"
+  with_items:
+    - "{{ kafka_base_path }}"
+    # - "{{ kafka_ssl_path }}"
+
+
+- name: create folder application
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ kafka_uid }}"
+    group: "{{ kafka_gid }}"
+  when: kafka_enable_ssl is defined
+  with_items:
+    - "{{ kafka_base_path }}/config/"
+    - "{{ kafka_ssl_path }}"
