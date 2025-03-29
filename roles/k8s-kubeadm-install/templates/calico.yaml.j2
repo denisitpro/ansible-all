@@ -22,13 +22,13 @@ spec:
     ipPools:
     - blockSize: 26
       cidr: 10.48.0.0/21
-      encapsulation: IPIP
+      encapsulation: {{ k8s_calico_ipv4_encapsulation | default("IPIP") }}
       natOutgoing: Enabled
       nodeSelector: all()
 {% if k8s_ipv6 is defined %}
     - blockSize: 122
       cidr: fd00:10:48::/64
-      encapsulation: VXLAN
+      encapsulation: {{ k8s_calico_ipv6_encapsulation | default("VXLAN") }}
       natOutgoing: Enabled
       nodeSelector: all()
 {% endif %}
@@ -46,8 +46,8 @@ spec:
   natOutgoing: true
   blockSize: 26
   nodeSelector: all()
-  ipipMode: Always
-  vxlanMode: Never
+  ipipMode: {{ k8s_calico_ipv4_ipip_mode | default("Always") }}
+  vxlanMode: {{ k8s_calico_ipv4_vxlan_mode | default("Never") }}
 {% if k8s_ipv6 is defined %}
 ---
 apiVersion: crd.projectcalico.org/v1
@@ -59,6 +59,6 @@ spec:
   natOutgoing: true #need for support ping6 to internet
   blockSize: 122
   nodeSelector: all()
-  ipipMode: Never
-  vxlanMode: Always # support VXLAN for IPv6
+  ipipMode: {{ k8s_calico_ipv6_ipip_mode | default("Never") }}
+  vxlanMode: {{ k8s_calico_ipv6_vxlan_mode | default("Always") }} # support VXLAN for IPv6
 {% endif %}
