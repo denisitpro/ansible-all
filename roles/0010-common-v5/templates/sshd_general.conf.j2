@@ -6,7 +6,6 @@ AddressFamily any
 AddressFamily inet
 {% elif ssh_address_family == 'ipv6' %}
 AddressFamily inet6
-ListenAddress ::
 {% endif %}
 
 HostKey /etc/ssh/ssh_host_rsa_key
@@ -63,12 +62,12 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 {% endif %}
 
 # Enable AllowAgentForwarding if you need to jump through this host
-{% if mgmt_jump is sameas true %}
-AllowAgentForwarding yes
-AllowTcpForwarding yes
+{% if ssh_forward_disable is sameas true %}
+AllowAgentForwarding no
+AllowTcpForwarding no
 {% else %}
 AllowAgentForwarding yes
-AllowTcpForwarding no
+AllowTcpForwarding yes
 {% endif %}
 X11Forwarding no
 PrintMotd no

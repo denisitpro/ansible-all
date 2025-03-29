@@ -37,3 +37,15 @@
       - netcat-traditional
     state: latest
   when: ansible_distribution_version == '24.04'
+
+
+- name: install base software - ubuntu addition debug
+  ansible.builtin.apt:
+    name:
+      - rsync
+      - mc
+      - screen
+      - ncdu
+  when: ubuntu_additional_package_install is defined
+  tags:
+    - ubuntu-additional-package

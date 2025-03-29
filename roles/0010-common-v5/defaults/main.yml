@@ -7,6 +7,10 @@ aws_fqdn_domain: example.com
 dns1: 1.1.1.1
 dns2: 8.8.8.8
 
+# dns1: "2606:4700:4700::1001" # cloudflare
+# dns2: "2001:4860:4860::8888" # google
+
+
 default_timezone: UTC
 
 ntp_servers:

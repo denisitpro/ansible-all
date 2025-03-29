@@ -2,6 +2,7 @@
 {% if click_interserver_http_host is defined %}
     <interserver_http_host>{{click_interserver_http_host}}</interserver_http_host>
 {% endif %}
+    #default IPv6 brokes IPv4 ACL
 {% for host in (click_listen_hosts | default(['::'])) %}
     <listen_host>{{ host }}</listen_host>
 {% endfor %}

@@ -1,6 +1,6 @@
 ---
 - ansible.builtin.import_tasks: 50-config-systemd-resolved.yml
-  when: dns_management is defined
+  when: dns_management is defined and dns_management == "apply"
   tags: [dns]
 
 

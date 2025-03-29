@@ -1,6 +1,6 @@
 <clickhouse>
     <logger>
-        <level>{{click_logger_level | default('error')}}</level>
+        <level>{{click_logger_level | default('warning')}}</level>
         <log>/var/log/clickhouse-server/clickhouse-server.log</log>
         <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
         <size>{{ click_logger_size | default('1000M')}}</size>
