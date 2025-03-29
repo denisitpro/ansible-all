@@ -18,3 +18,9 @@
   tags:
     - docker
     - docker-daemon
+
+- ansible.builtin.import_tasks: 40-alias.yml
+  when: docker_alias is defined
+  tags:
+    - docker
+    - docker-alias

@@ -1,0 +1,40 @@
+---
+- name: Add alias 'dr' for docker command
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    regexp: '^alias dr='
+    line: "alias dr='docker compose up -d --force-recreate'"
+    mode: "0644"
+    state: present
+    create: true
+    backup: true
+
+- name: Add alias 'dp' for docker command
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    regexp: '^alias dp='
+    line: "alias dp='docker compose pull'"
+    mode: "0644"
+    state: present
+    create: true
+    backup: true
+
+- name: Add alias 'dl' for docker command
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    regexp: '^alias dl='
+    line: "alias dl='docker logs'"
+    mode: "0644"
+    state: present
+    create: true
+    backup: true
+
+- name: Add alias 'de' for docker command
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    regexp: '^alias de='
+    line: "alias de='docker exec -it'"
+    mode: "0644"
+    state: present
+    create: true
+    backup: true

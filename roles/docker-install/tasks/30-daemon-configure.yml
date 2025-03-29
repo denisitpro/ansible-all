@@ -1,14 +1,27 @@
-- name: Create the file daemon.json
+# - name: Create the file daemon.json - general
+#   ansible.builtin.template:
+#     src: daemon.json.j2
+#     dest: /etc/docker/daemon.json
+#     owner: root
+#     group: root
+#     mode: "0644"
+#   notify: restart docker
+#   when: docker_daemon_conf is not defined
+
+- name: Create the file daemon.json - specific
   ansible.builtin.template:
-    src: daemon.json.j2
+    src: "{{ item }}.j2"
     dest: /etc/docker/daemon.json
     owner: root
     group: root
     mode: "0644"
   notify: restart docker
+  when: docker_daemon_conf is  defined
+  with_items:
+    "{{ docker_daemon_conf }}"
 
 
-- name: Create the file daemon.json
+- name: rewrite docker service file
   ansible.builtin.template:
     src: docker.service.j2
     dest: /lib/systemd/system/docker.service
