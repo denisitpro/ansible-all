@@ -1,6 +1,18 @@
 ---
 - name: quemu - ubuntu
   ansible.builtin.apt:
-    name:
-      - qemu-guest-agent
-  when: ansible_distribution == 'Ubuntu'
+    name: qemu-guest-agent
+    state: present
+    update_cache: true
+  when:
+    - ansible_distribution | lower == 'ubuntu'
+
+# QEMU Guest Agent should be enabled in PVE
+- name: Enable and start qemu-guest-agent service
+  ansible.builtin.systemd:
+    name: qemu-guest-agent
+    enabled: true
+    state: started
+  when:
+    - ansible_distribution | lower == 'ubuntu'
+  ignore_errors: true

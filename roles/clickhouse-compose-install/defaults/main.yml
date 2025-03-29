@@ -45,9 +45,10 @@ click_default_replica_path: "/clickhouse/tables/{database}/{table}"
 
 click_profiles:
   default:
-    max_memory_usage: "{{ 40000 * 1024 * 1024 }}"  # 4 GB MB
+    max_memory_usage: "{{ 40000 * 1024 * 1024 }}"  # 40 GB MB
+    distributed_ddl_task_timeout: 900
   readonly:
-    readonly: 1
+    readonly: 2
 
 clickhouse_default_users:
   - name: default

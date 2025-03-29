@@ -2,7 +2,7 @@
 
 services:
   click:
-    image: clickhouse:{{ click_image }}
+    image: {{ click_registry | default('clickhouse') }}:{{ click_image }}
     container_name: click
     hostname: {{ansible_hostname}}
     network_mode: host

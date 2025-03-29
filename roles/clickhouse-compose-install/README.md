@@ -2,7 +2,9 @@
 
 * Dockerfile - https://github.com/ClickHouse/ClickHouse/blob/master/docker/server/Dockerfile.ubuntu
 * Reference config file - https://github.com/ClickHouse/ClickHouse/blob/master/programs/server/config.xml
+* Users.xml https://github.com/ClickHouse/ClickHouse/blob/master/programs/server/users.xml
 * file config-default-example.xml - only for example and fast check parametrs
+
 
 # C1 company cluster example config
 ```yaml
