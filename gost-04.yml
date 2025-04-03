@@ -11,5 +11,6 @@
     - nginx-docker-install
     - nginx-vhosts-configure
     - xray-install
+    - certbot-certbot-docker
     - ufw-base-configure
     - ufw-management
