@@ -32,6 +32,9 @@ Generate a new private and public key pair for x25519 with the following command
 docker run --rm ghcr.io/xtls/xray-core:latest x25519
 ```
 
+# check public address
+docker run --rm ghcr.io/xtls/xray-core:latest x25519 -i privatekey
+
 The output will look like this:
 
 ```plaintext
