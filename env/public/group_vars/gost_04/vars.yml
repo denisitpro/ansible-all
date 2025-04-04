@@ -6,6 +6,7 @@ mtproxy_restart: true
 
 xray_conf_name: cdn.json
 xray_restart: true
+xray_loglevel: warning
 
 selfsigned: true
 nginx_static_file: true

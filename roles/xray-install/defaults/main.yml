@@ -1,6 +1,6 @@
 ---
 xray_date_path: /opt/xray
-xray_image_version: 24.10.31
+xray_image_version: 25.3.6
 
 xray_host_cert_path: /opt/certbot/data
 

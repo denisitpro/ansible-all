@@ -2,9 +2,8 @@
 - hosts: gost_04
   become: true
   roles:
-#    - 0010-common-v4
-#    - docker-install
-#    - mtproxy-install
+    - 0010-common-v5
+    - docker-install
 #    - gost-docker
     - ssl-selfsigned-cert
     - nginx-base-config
