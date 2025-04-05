@@ -1,0 +1,26 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ prometheus_compose_path }}"
+
+- name: create folder prometheus
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ prometheus_user_uid }}"
+    group: "{{ prometheus_user_gid }}"
+    mode: '0755'
+  with_items:
+    - "{{ prometheus_base_path }}"
+    - "{{ prometheus_db_dir }}"
+    - "{{ prometheus_config_path }}"
+    - "{{ prometheus_config_path }}/rules"
+  tags:
+    - prom-dir

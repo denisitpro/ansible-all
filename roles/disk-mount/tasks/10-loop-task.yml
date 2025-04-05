@@ -1,0 +1,35 @@
+---
+- name: Check if filesystem exists on disk
+  ansible.builtin.command: blkid {{ item.device | default('/dev/sdx') }}
+  register: blkid_output
+  ignore_errors: true
+  changed_when: false
+  failed_when: false
+
+- name: Create filesystem on the new disk
+  filesystem:
+    fstype: "{{ item.fs | default('ext4') }}"
+    dev: "{{ item.device | default('/dev/sdx') }}"
+  when: blkid_output.rc != 0
+
+- name: Create mount point
+  ansible.builtin.file:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    state: directory
+    mode: "0755"
+
+- name: Mount the disk
+  ansible.posix.mount:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    src: "{{ item.device | default('/dev/sdx') }}"
+    fstype: "{{ item.fs | default('xfs') }}"
+    opts: "{{ item.opts | default('defaults') }}"
+    state: mounted
+
+- name: Ensure the mount is present in fstab
+  ansible.posix.mount:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    src: "{{ item.device | default('/dev/sdx') }}"
+    fstype: "{{ item.fs | default('xfs') }}"
+    opts: "{{ item.opts | default('defaults') }}"
+    state: present

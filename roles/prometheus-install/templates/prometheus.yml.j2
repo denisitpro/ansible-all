@@ -55,7 +55,7 @@ scrape_configs:
     scrape_interval: {{ target.scrape_interval }}
 {% endif %}
     metrics_path: "{{ target.metrics_path | default ('/metrics') }}"
-{% if target.job_name != 'consul_clickhouse_metrics' %}
+{% if target.skip_params is not defined %}
     params:
       format: ['{{ target.format | default ('prometheus') }}']
 {% endif %}
