@@ -1,7 +1,7 @@
 ---
 - name: Set prometheus external metrics path
   ansible.builtin.set_fact:
-    prometheus_metrics_path: "/{{ (prometheus_web_external_url |default('') + '/metrics') | regex_replace('^(.*://)?(.*?)/') }}"
+    prometheus_metrics_path: "/{{ (prometheus_web_external_url | default('') + '/metrics') | regex_replace('^(.*://)?(.*?)/') }}"
   tags:
     - reconfigure
     - prom-reconfigure

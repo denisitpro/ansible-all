@@ -1,26 +1,18 @@
 ---
-- name: restart prometheus
-  systemd:
-    daemon_reload: true
-    name: prometheus
+- name: recreate-docker prometheus
+  community.docker.docker_compose_v2:
+    project_src: "{{ prometheus_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart docker prometheus
+  community.docker.docker_compose_v2:
+    project_src: "{{ prometheus_compose_path }}"
     state: restarted
 
-- name: reload prometheus
-  systemd:
-    name: prometheus
-    state: reloaded
-
-- name: restart-docker prometheus
-  shell: "docker compose restart prometheus"
-  args:
-    chdir: "{{docker_compose_path | default('/opt/docker')}}/prometheus"
-
-- name: Reload-docker prometheus
-  ansible.builtin.shell:
-    cmd: "docker kill --signal=HUP prometheus"
-
 - name: reload docker prometheus
-  uri:
-    url: "http://{{prometheus_reload_address}}:9090/-/reload"
+  ansible.builtin.uri:
+    url: "http://{{ prometheus_reload_address }}:9090/-/reload"
     method: "POST"
     status_code: "200"

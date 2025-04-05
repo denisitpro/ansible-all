@@ -1,0 +1,9 @@
+---
+- name: copy sysctl
+  ansible.builtin.template:
+    src: ipv6-only.conf.j2
+    dest: /etc/sysctl.d/ipv6-only.conf
+    mode: "0644"
+
+- name: apply sysctl ipv6-only
+  ansible.builtin.command: /usr/sbin/sysctl -p /etc/sysctl.d/ipv6-only.conf

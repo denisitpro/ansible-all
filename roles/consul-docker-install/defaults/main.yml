@@ -1,6 +1,6 @@
 ---
-consul_server_version: 1.20.4
-reconnect_timeout: 24h
+consul_server_version: 1.20.5
+consul_reconnect_timeout: 24h
 
 consul_compose_path: /opt/docker/consul
 consul_base_path: /opt/consul

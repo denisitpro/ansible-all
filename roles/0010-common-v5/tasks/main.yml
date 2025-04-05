@@ -1,41 +1,65 @@
 ---
 - ansible.builtin.import_tasks: 50-config-systemd-resolved.yml
   when: dns_management is defined and dns_management == "apply"
-  tags: [dns]
+  tags:
+    - base
+    - dns
+    - common-base
 
 
 - ansible.builtin.import_tasks: 70-update-installed-packages.yml
   tags:
+    - base
+    - common-base
     - os-update
     - update-os
 
 - ansible.builtin.import_tasks: 80-install-base-packages.yml
   when: ansible_distribution == 'Ubuntu'
   tags:
+    - base
+    - common-base
     - base-packages
 
 - ansible.builtin.import_tasks: 90-qemu.yml
   when: cloud_provider == "pmx"
   tags:
+    - base
+    - common-base
     - qemu-packages
 
 - ansible.builtin.import_tasks: 150-time.yml
   tags:
+    - common-base
     - ntp
     - time
 
 - ansible.builtin.import_tasks: 160-rsyslog.yml
-  tags: [rsyslog]
+  tags:
+    - base
+    - common-base
+    - rsyslog
 
 - ansible.builtin.import_tasks: 170-hosts-and-hostname-notag.yml
   when: cloud_provider is defined and  cloud_provider != "aws"
   tags:
+    - base
+    - common-base
     - hostname
     - hosts
 
 - ansible.builtin.import_tasks: 301-security.yml
   tags:
+    - base
+    - common-base
     - sshd
+
+- ansible.builtin.import_tasks: 305-ipv6-bind-only.yml
+  when: bind_ipv6_only_force is defined
+  tags:
+    - base
+    - common-base
+    - ipv6-only
 
 - ansible.builtin.import_tasks: 900-reboot.yml
   tags: ['never', 'reboot']
