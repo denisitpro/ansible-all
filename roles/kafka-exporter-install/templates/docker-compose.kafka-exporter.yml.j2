@@ -7,7 +7,13 @@ services:
     hostname: kafka-exporter-{{ansible_hostname}}
     network_mode: host
     command:
-      - '--kafka.server={{ kafka_scrape_addr |default('[::1]:9092') }}'
+      - '--kafka.server={{ kafka_scrape_addr | default("[::1]:9092") }}'
+{% if kafka_exporter_auth_enable is defined %}
+      - '--sasl.enabled'
+      - '--sasl.username={{ kafka_exporter_sasl_username | default('set_me_username') }}'
+      - '--sasl.password={{ kafka_exporter_sasl_password | default('set_me_passwordl') }}'
+      - '--sasl.mechanism={{ kafka_exporter_sasl_mechanism | default("PLAIN") }}'
+{% endif %}      
     restart: {{ kafka_exporter_restart | default('unless-stopped') }}
     logging:
       driver: json-file

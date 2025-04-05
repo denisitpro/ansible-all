@@ -1,15 +1,16 @@
 ---
-prometheus_image: "v2.53.1"
+prometheus_image: "v3.2.1"
+
+prometheus_compose_path: /opt/docker/prometheus
 
 
 ## base directory config
-prometheus_user: prometheus
-prometheus_group: prometheus
-prometheus_docker_compose_path: "{{ docker_compose_path | default('/opt/docker') }}/prometheus"
-prometheus_data_path: "/opt/prometheus"
-prometheus_config_path: /opt/prometheus/config
+# prometheus_user: prometheus
+# prometheus_group: prometheus
+prometheus_base_path: "/opt/prometheus"
+prometheus_config_path: "{{ prometheus_base_path }}/config"
 prometheus_config_dir: /etc/prometheus
-prometheus_db_dir: "{{ prometheus_data_path }}/data"
+prometheus_db_dir: "{{ prometheus_base_path }}/data"
 prometheus_user_uid: "65534"
 prometheus_user_gid: "65534"
 
@@ -20,11 +21,11 @@ prometheus_web_external_url: ''
 prometheus_ext_name: "prom.example.com"
 prom_addr: "{{ prometheus_ext_name }}"
 ### consul
-stands_regexp: ".*,(c1-infra|c1-devel),.*"
+stands_regexp: ".*,(c1-infra|c1-dev | c1-prod ),.*"
 consul_sd_server: ":8500"
-consul_prometheus_access_token: "{{ vault_dict_users_secret.consul_prometheus_access_token }}"
+consul_prometheus_access_token: "{{ vault_dict_users_secret.consul_prometheus_access_token | default('set_me') }}"
 
-#command to run
+# command to run
 prometheus_command_run:
   - "config.file={{ prometheus_config_dir }}/prometheus.yml"
   - "storage.tsdb.path={{ prometheus_db_dir }}"
@@ -70,7 +71,7 @@ prometheus_alert_relabel_configs: []
 #     regex: replica
 
 prometheus_remote_write: []
-#prometheus_remote_write:
+# prometheus_remote_write:
 #   - url: http://{{victoriametrics_web_listen_address}}/api/v1/write
 #     basic_auth:
 #       password: FOO
@@ -109,7 +110,7 @@ prometheus_static_targets_files:
   - prometheus/targets/*.json
 
 
-#alert rules default
+# alert rules default
 http_200_fail: []
 http_400_fail: []
 http_404_fail: []

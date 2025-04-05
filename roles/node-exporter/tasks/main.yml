@@ -9,6 +9,7 @@
   tags:
     - node-exporter
     - node-exporter-conf
+    - node-exporter-config
 
 # todo refactore
 # - ansible.builtin.import_tasks: 20-scripts.yml

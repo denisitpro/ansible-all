@@ -10,6 +10,9 @@ Type=simple
 User={{ node_exporter_system_user }}
 Group={{ node_exporter_system_group }}
 ExecStart={{ node_epxorter_binary_path }} \
+{% if node_exporter_bind_addr is  defined  %}
+    --web.listen-address={{ node_exporter_bind_addr }}:{{ node_exporter_bind_port }}
+{% endif -%}
 {% for collector in node_exporter_enabled_collectors -%}
 {% if not collector is mapping %}
     --collector.{{ collector }} \
@@ -21,9 +24,6 @@ ExecStart={{ node_epxorter_binary_path }} \
 {% endfor -%}
 {% endif -%}
 {% endfor -%}
-{% if node_exporter_bind_addr is  defined  %}
-    --web.listen-address={{ node_exporter_bind_addr }}:{{ node_exporter_bind_port }} \
-{% endif -%}
 {% for collector in node_exporter_disabled_collectors %}
     --no-collector.{{ collector }}
 {% endfor %}

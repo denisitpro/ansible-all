@@ -1,0 +1,25 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - prom
+    - prom-prefly
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - prom
+    - prom-config
+
+- ansible.builtin.import_tasks: 15-compose.yml
+  tags:
+    - prom
+    - prom-compose
+
+- ansible.builtin.import_tasks: 90-reload.yml
+  tags:
+    - never
+    - prom-reload
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - prom-clean

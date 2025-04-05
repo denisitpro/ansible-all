@@ -12,13 +12,22 @@
     dest: "{{ prometheus_config_path }}/rules/ansible_managed.rules"
     owner: "{{ prometheus_user_uid }}"
     group: "{{ prometheus_user_gid }}"
-    mode: '0640'
+    mode: '0644'
   when:
     - prometheus_alert_rules != []
   notify: reload docker prometheus
   tags:
     - alerts-rules
     - update-prom-config
+
+- name: remove old alert rules
+  ansible.builtin.file:
+    path: "{{ prometheus_config_path }}/rules/ansible_managed.rules"
+    state: absent
+  when: prometheus_alert_rules == []
+  notify: reload docker prometheus
+  tags:
+    - alerts-rules
 
 - name: Validate prometheus rules
   ansible.builtin.command:
@@ -39,7 +48,7 @@
     force: true
     owner: "{{ prometheus_user_uid }}"
     group: "{{ prometheus_user_gid }}"
-    mode: '0640'
+    mode: '0644'
   notify: reload docker prometheus
   tags:
     - prom-reconfigure
