@@ -1,4 +1,10 @@
 ---
+- name: force stop teleport
+  ansible.builtin.systemd:
+    name: teleport
+    state: stopped
+
+
 - name: remove telepor data
   ansible.builtin.file:
     path: "/var/lib/teleport"

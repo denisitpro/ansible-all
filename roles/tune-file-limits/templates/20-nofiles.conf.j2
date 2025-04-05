@@ -1,7 +1,6 @@
-## Example hard limit for max opened files
-*   hard nofile {{hard_nofile | default (1000000) }}
-*   hard nproc {{hard_nproc| default (1000000) }}
+# Increase file descriptor and process limits for Kubernetes nodes
+* soft nofile {{soft_nproc | default (1048576) }}
+* hard nofile {{hard_nproc | default (1048576) }}
 
-## Example soft limit for max opened files
-*   soft nofile {{soft_nofile | default (1000000) }}
-*   soft nproc {{soft_nproc| default (1000000) }}
+* soft nproc  {{soft_nofile | default (65536) }}
+* hard nproc  {{hard_nofile | default (65536) }}
