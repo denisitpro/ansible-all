@@ -58,6 +58,11 @@ app_service:
         - "Access-Control-Allow-Methods: GET, OPTIONS, POST"
         - "Access-Control-Allow-Headers: Authorization, Content-Type"
 {% endif %}
+{% if app.gitlab_config is defined %}
+      rewrite:
+        redirect:
+        - "{{ app.public_addr }}"
+{% endif %}
       labels:
         stand: "{{stand_type| default ('not_set') }}"
         cluster: "{{teleport_cluster_name | default('cls1')}}"

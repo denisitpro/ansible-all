@@ -18,8 +18,6 @@ vmalert_alert_files:
   - alerts-vmalert.yml
   - ansible-generate-v1.yml
 
-
-
 clickhouse_connections_count: 100
 click_below_1_excluded_instances: []
 

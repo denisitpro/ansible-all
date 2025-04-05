@@ -1,6 +1,6 @@
 ---
 teleport_registry: public.ecr.aws/gravitational/teleport-distroless
-teleport_version: 17.3.2
+teleport_version: 17.4.0
 
 teleport_compose_path: "/opt/docker/teleport"
 teleport_data_path: /opt/teleport
