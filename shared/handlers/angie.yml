@@ -1,11 +1,18 @@
 ---
+- name: recreate-docker angie
+  community.docker.docker_compose_v2:
+    project_src: "{{ angie_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
 - name: restart angie
   community.docker.docker_compose_v2:
-    project_src: "{{angie_compose_path}}"
-    services: "{{item}}"
+    project_src: "{{ angie_compose_path }}"
+    services: "{{ item }}"
     state: restarted
   with_items:
     - "angie"
 
 - name: reload angie
-  shell: "docker exec -t angie angie -s reload"
+  ansible.builtin.command: "docker exec -t angie angie -s reload"

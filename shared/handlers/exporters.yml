@@ -1,0 +1,20 @@
+---
+- name: recreate-docker blackbox-exporter
+  community.docker.docker_compose_v2:
+    project_src: "{{ blackbox_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker blackbox-exporter
+  community.docker.docker_compose_v2:
+    project_src: "{{ blackbox_compose_path }}"
+    state: restarted
+
+
+- name: recreate-docker domain-expire-exporter
+  community.docker.docker_compose_v2:
+    project_src: "{{ domain_exporter_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
