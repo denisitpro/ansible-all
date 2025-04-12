@@ -1,0 +1,5 @@
+---
+domain_exporter_version: v1.24.1
+domain_exporter_compose_path: /opt/docker/domain-exporter
+# domain_exporter_base_path: /opt/domain-exporter
+# domain_exporter_config_path: "{{ domain_exporter_base_path }}/config"

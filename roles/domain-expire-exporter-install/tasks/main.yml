@@ -1,0 +1,8 @@
+---
+- ansible.builtin.import_tasks: 05-create-path.yml
+  tags:
+    - domain-exporter
+
+- ansible.builtin.import_tasks: 20-copy-compose.yml
+  tags:
+    - domain-exporter

@@ -1,0 +1,16 @@
+services:
+  blackbox:
+    image: prom/blackbox-exporter:{{blackbox_exporter_version}}
+    container_name: blackbox
+    network_mode: host
+    restart: {{ blackbox_exporter_restart | default('unless-stopped') }}
+    volumes:
+      - {{ blackbox_config_path }}/blackbox.yml:{{ blackbox_config_path }}/blackbox.yml
+    command:
+      --config.file={{ blackbox_config_path }}/blackbox.yml
+      --web.listen-address={{blackbox_exporter_bind_addr | default('[::]')}}:{{ blackbox_exporter_bind_port | default('9115')}}
+    logging:
+        driver: json-file
+        options:
+            max-size: '100m'
+            max-file: '2'

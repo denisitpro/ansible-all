@@ -1,17 +1,17 @@
 ---
-blackbox_exporter_bind_addr: "{{global_bind_addr | default(ansible_default_ipv4.address) }}"
-blackbox_exporter_port: 9115
-blackbox_exporter_config_data_path: "/opt/blackbox_exporter"
-blackbox_exporter_version: v0.25.0
+blackbox_compose_path: /opt/docker/blackbox-exporter
+blackbox_base_path: /opt/blackbox-exporter
+blackbox_config_path: "{{ blackbox_base_path }}/config"
+
+blackbox_exporter_version: v0.26.0
 blackbox_api_key: blackbox
-blackbox_docker_compose_path: "{{ docker_compose_path |default('/opt/docker') }}/blackbox"
 
 blackbox_config:
   modules:
     icmp:
       prober: icmp
       timeout: 5s
-    http_200_module:
+    http_200_without_auth:
       prober: http
       timeout: 5s
       http:
@@ -26,8 +26,8 @@ blackbox_config:
 #        tls_config:
 #          insecure_skip_verify: true
         basic_auth:
-          username: "{{blackbox_http_200_auth_login | default('set_me_login')}}"
-          password: "{{blackbox_http_200_auth_pass | default('set_me_pass')}}"
+          username: "{{ blackbox_http_200_auth_login | default('set_me_login') }}"
+          password: "{{ blackbox_http_200_auth_pass | default('set_me_pass') }}"
     http_403_module:
       prober: http
       timeout: 5s
@@ -49,5 +49,5 @@ blackbox_config:
 #        tls_config:
 #          insecure_skip_verify: true
         basic_auth:
-          username: "{{blackbox_http_404_auth_login | default('set_me_login')}}"
-          password: "{{blackbox_http_404_auth_pass | default('set_me_pass')}}"
+          username: "{{ blackbox_http_404_auth_login | default('set_me_login') }}"
+          password: "{{ blackbox_http_404_auth_pass | default('set_me_pass') }}"

@@ -1,0 +1,11 @@
+services:
+  domain-exporter:
+    image: caarlos0/domain_exporter:{{domain_exporter_version}}
+    container_name: domain-exporter
+    network_mode: host
+    restart: {{ domain_exporter_restart | default('unless-stopped') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
