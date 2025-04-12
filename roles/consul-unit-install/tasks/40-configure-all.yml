@@ -1,0 +1,10 @@
+---
+- name: copy configs agent configs
+  ansible.builtin.template:
+    src: "roles/consul-docker-install/templates/{{ item }}.j2"
+    dest: "{{ consul_config_dir }}/{{ item }}"
+    mode: "0644"
+  with_items:
+    - agent.hcl
+    - consul-agent.hcl
+  notify: restart consul

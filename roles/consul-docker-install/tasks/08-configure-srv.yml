@@ -25,3 +25,11 @@
     - "consul-server.hcl"
   tags:
     - consul-config
+
+- name: Copy telemetry config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ consul_config_dir }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - "telemetry.hcl"

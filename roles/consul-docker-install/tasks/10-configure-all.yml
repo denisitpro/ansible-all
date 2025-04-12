@@ -1,4 +1,19 @@
 ---
+# NEED FOR WORK innclude role function for consul-unit
+#   tags:
+#     - consul-import
+#     - consul-config
+#     - consul
+
+
+- name: DEBUG – consul-docker-install/10-configure-all.yml is being included
+  ansible.builtin.debug:
+    msg: "INCLUDED 10-configure-all.yml"
+  tags:
+    - consul-import
+    - consul-config
+    - consul
+
 # todo refactore set mode consul for name config
 - name: copy configs agent
   ansible.builtin.template:
@@ -8,6 +23,10 @@
   with_items:
     - agent.hcl
   notify: restart-docker consul
+  tags:
+    - consul-import
+    - consul-config
+    - consul
 
 - name: copy clients
   ansible.builtin.template:
@@ -18,23 +37,18 @@
     - consul-agent.hcl
   when: consul_mode is not defined
   notify: restart-docker consul
+  tags:
+    - consul-import
+    - consul-config
+    - consul
 
-- name: Copy telemetry config
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ consul_config_dir }}/{{ item }}"
-    mode: "0644"
-  loop:
-    - "telemetry.hcl"
-  when: consul_telemetry is defined
-
-- name: Delete telemetry if not used
-  ansible.builtin.file:
-    path: "{{ consul_config_dir }}/{{ item }}"
-    state: absent
-  loop:
-    - "telemetry.hcl"
-  when: consul_telemetry is not defined
+# - name: Delete telemetry if not used
+#   ansible.builtin.file:
+#     path: "{{ consul_config_dir }}/{{ item }}"
+#     state: absent
+#   loop:
+#     - "telemetry.hcl"
+#   when: consul_telemetry is not defined
 
 - name: copy compose consul
   ansible.builtin.template:

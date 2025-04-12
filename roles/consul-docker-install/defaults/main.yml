@@ -1,6 +1,6 @@
 ---
 consul_server_version: 1.20.5
-consul_reconnect_timeout: 24h
+# consul_reconnect_timeout: 24h
 
 consul_compose_path: /opt/docker/consul
 consul_base_path: /opt/consul
@@ -17,3 +17,9 @@ consul_cls_master: "{{ consul_cls_servers }}"
 consul_bootstrap_expect: 3
 consul_encrypt_key: "{{ vault_dict_users_secret.consul_encrypt_key | default('set_me') }}"
 consul_agent_token: "{{ vault_dict_users_secret.consul_agent_token | default('set_me') }}"
+
+
+consul_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+consul_metrics_tags:
+  - "{{ stand_type }}"
+  - "{{ consul_metrics_name | default('consul-metrics') }}"

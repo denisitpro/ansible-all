@@ -19,6 +19,12 @@
     - consul-config
     - consul-compose
 
+- ansible.builtin.import_tasks: 65-consul-reg.yml
+  when: consul_monitoring_disable is not defined
+  tags:
+    - consul
+    - consul-reg
+
 # - ansible.builtin.import_tasks: 70-repair.yml
 #   tags: ['never', 'consul-repair']
 
