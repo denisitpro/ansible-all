@@ -12,9 +12,9 @@ prometheus_scrape_configs:
        - icmp
     static_configs:
     - targets:
-        - https://tonstakers.com
-        - https://tp.ton-tech.org/
-#        - https://api.tonstakers.com
+        - https://example.com
+        - https://tp.example.com
+#        - https://api.example.com
     relabel_configs:
      - source_labels: [__address__]
        target_label: __param_target
@@ -30,7 +30,7 @@ prometheus_scrape_configs:
        - icmp
     static_configs:
     - targets:
-        - https://api.tonstakers.com
+        - https://api.example.com
     relabel_configs:
      - source_labels: [__address__]
        target_label: __param_target

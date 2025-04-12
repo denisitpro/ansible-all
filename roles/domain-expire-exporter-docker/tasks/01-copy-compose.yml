@@ -1,9 +1,0 @@
----
-- name: copy compose-file - domain-exporter
-  template:
-    src: "docker-compose.domain.exporter.yml.j2"
-    dest: "{{ domain_docker_compose_path }}/docker-compose.yml"
-    mode: 0600
-  tags:
-    - config
-    - reconfigure

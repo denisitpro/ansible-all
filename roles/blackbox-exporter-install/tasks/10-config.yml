@@ -1,0 +1,11 @@
+---
+- name: copy block-exporter config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ blackbox_config_path }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "blackbox.yml"
+  notify: restart-docker blackbox-exporter
