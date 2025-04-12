@@ -145,7 +145,7 @@ http {
 # extended configs - upstream
     include /etc/angie/conf.d/*.conf;
     include /etc/angie/upstream.d/*.conf;
-    include /etc/angie/http.d/*.conf;
+    include /etc/angie/site.d/*.conf;
 
     access_log	/var/log/angie/access.log	main;
     error_log	/var/log/angie/error.log	warn;

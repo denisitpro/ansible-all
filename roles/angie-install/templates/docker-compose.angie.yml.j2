@@ -7,21 +7,16 @@ services:
     userns_mode: host
 {% endif %}
     volumes:
-      - {{angie_base_path}}/base/angie.conf:/etc/angie/angie.conf
-      - {{angie_base_path}}/httpd.d:/etc/angie/http.d
-      - {{angie_base_path}}/upstream.d:/etc/angie/upstream.d
-      - {{angie_base_path}}/conf.d:/etc/angie/conf.d
-      - {{angie_base_path}}/logs:/var/log/angie
+      - {{ angie_base_path }}:/etc/angie
+      - {{ angie_base_path }}/logs:/var/log/angie
       - {{ssl_path | default('/opt/ssl/')}}:{{ssl_path | default('/opt/ssl/')}}
 {% if certbot_cert_usage is defined %}
       - {{certbot_path | default('/opt/certbot') }}/www:{{angie_certbot_path | default('/var/www/certbot')}}
       - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{angie_container_ssl_certbot_path| default('/opt/certbot/ssl')}}
 {% endif %}
+    restart: {{ angie_restart | default('always') }}
 {% if angie_static_file is defined %}
 #      - {{angie_static_path}}:/var/www/html:ro
-{% endif %}
-{% if angie_restart is defined %}
-    restart: always
 {% endif %}
     logging:
 {% if vector_server_fluent_address is defined %}

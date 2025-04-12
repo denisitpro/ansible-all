@@ -1,4 +1,2 @@
 ---
-- import_tasks: shared/handlers/angie.yml
-
-
+- ansible.builtin.import_tasks: shared/handlers/angie.yml

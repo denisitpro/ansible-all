@@ -1,9 +1,9 @@
 ---
-#- name: Debug nginx.vhosts
+# - name: Debug nginx.vhosts
 #  ansible.builtin.debug:
 #    var: nginx.vhosts
-#
-#- name: Debug filtered vhosts
+
+# - name: Debug filtered vhosts
 #  ansible.builtin.debug:
 #    msg: "{{ nginx.vhosts | selectattr('domain', '==', 'selfsign') | list }}"
 
