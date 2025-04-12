@@ -1,36 +1,39 @@
 ---
-- import_tasks: 05-clean.yml
-  tags: [ 'never', 'consul-clean']
+- ansible.builtin.import_tasks: 05-clean.yml
+  tags: ['never', 'consul-clean']
 
-- import_tasks: 10-create-user.yml
+- ansible.builtin.import_tasks: 10-create-user.yml
   tags:
     - consul
 
-- import_tasks: 15-pre-required.yml
+- ansible.builtin.import_tasks: 15-pre-required.yml
   tags:
     - consul
     - consul-update
 
-- import_tasks: 20-path.yml
+- ansible.builtin.import_tasks: 20-path.yml
   tags:
     - consul
     - consul-config
 
-- import_tasks: 40-configure.yml
+- ansible.builtin.import_tasks: 40-configure-all.yml
   tags:
-    - consul-reconfigure
+    - consul
     - consul-config
-    - consul-acl
-    - consul
 
-- import_tasks: 50-consul-unit.yml
+# - ansible.builtin.include_role:
+#     name: consul-docker-install
+#     tasks_from: 10-configure-all
+#   tags:
+#     - consul-config
+#     - consul
+#     - consul-import
+
+- ansible.builtin.import_tasks: 50-consul-unit.yml
   tags:
     - consul-reconfigure
     - consul-acl
     - consul
 
-
-- import_tasks: 90-consul-restart.yml
-  tags: [ 'never']
-
-
+- ansible.builtin.import_tasks: 90-consul-restart.yml
+  tags: ['never', 'consul-unit-restart']

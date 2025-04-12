@@ -4,7 +4,7 @@ encrypt = "{{consul_encrypt_key}}"
 retry_join = ["{{consul_cls_pub_name | default('consul.example.com') }}"]
 
 bind_addr = "{{consul_bind_addr}}"
-reconnect_timeout = "{{consul_reconnect_timeout}}"
+reconnect_timeout = "{{consul_reconnect_timeout | default('24h') }}"
 
 performance {
   raft_multiplier = 1

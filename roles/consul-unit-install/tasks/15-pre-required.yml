@@ -1,53 +1,53 @@
 ---
 - name: Check for existing binary
-  stat:
-    path: "{{ binary_dir }}/{{consul_binary_name}}"
+  ansible.builtin.stat:
+    path: "{{ consul_binary_dir }}/{{ consul_binary_name }}"
   register: binary_stat_result
 
-- debug:
+- ansible.builtin.debug:
     msg: binary_stat_result -  {{ binary_stat_result }}
 
 - name: Download
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ consul_download_url }}"
     dest: "{{ consul_download_dir }}"
-    mode: 0644
-  when: consul_always_update_binary or not binary_stat_result.stat.exists
+    mode: "0644"
+  when: not binary_stat_result.stat.exists
 
 - name: Unarchive a file that is already on the remote machine
-  unarchive:
-    src: "{{ consul_download_dir }}/consul_{{consul_version}}_linux_amd64.zip"
+  ansible.builtin.unarchive:
+    src: "{{ consul_download_dir }}/consul_{{ consul_version }}_linux_amd64.zip"
     dest: "/tmp/"
     owner: root
     group: root
-    remote_src: yes
+    remote_src: true
+  when: not binary_stat_result.stat.exists
 
 - name: Install  binary
-  copy:
-    src: "{{ consul_download_dir }}/{{consul_binary_name}}"
-    dest: "{{ binary_dir }}/{{consul_binary_name}}-{{consul_version}}"
+  ansible.builtin.copy:
+    src: "{{ consul_download_dir }}/{{ consul_binary_name }}"
+    dest: "{{ consul_binary_dir }}/{{ consul_binary_name }}-{{ consul_version }}"
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
     remote_src: true
-    force: "{{ consul_always_update_binary }}"
-  when: consul_always_update_binary or not binary_stat_result.stat.exists
+  when: not binary_stat_result.stat.exists
   notify: restart consul
 
 - name: Create a symbolic consul
-  file:
-    src: "{{ binary_dir }}/{{consul_binary_name}}-{{consul_version}}"
-    dest: "{{ binary_dir }}/{{consul_binary_name}}"
+  ansible.builtin.file:
+    src: "{{ consul_binary_dir }}/{{ consul_binary_name }}-{{ consul_version }}"
+    dest: "{{ consul_binary_dir }}/{{ consul_binary_name }}"
     owner: root
     group: root
     state: link
-
+  when: not binary_stat_result.stat.exists
 
 - name: remove download files
-  file:
-    path: "{{item}}"
+  ansible.builtin.file:
+    path: "{{ item }}"
     state: absent
   with_items:
-    - "{{ consul_download_dir }}/consul_{{consul_version}}_linux_amd64.zip"
+    - "{{ consul_download_dir }}/consul_{{ consul_version }}_linux_amd64.zip"
     - "{{ consul_download_dir }}/consul"
   tags: [clean]

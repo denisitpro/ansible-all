@@ -1,5 +1,12 @@
 ---
-- name: Remove files consul
+- name: consul-stop
+  ansible.builtin.systemd:
+    state: stopped
+    name: consul
+  tags:
+    - consul-stop
+
+- name: consul remove data dir
   ansible.builtin.file:
-    path: "{{consul_data_path}}"
+    path: "{{ consul_base_path }}"
     state: absent
