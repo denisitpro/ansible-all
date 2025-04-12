@@ -5,7 +5,7 @@ services:
     hostname: {{ansible_hostname}}
     network_mode: host
     volumes:
-      - {{ prometheus_config_path }}:{{ prometheus_config_dir }}
+      - {{ prometheus_config_path }}:{{ prometheus_config_path }}
       - {{ prometheus_db_dir }}:{{prometheus_db_dir}}
     restart: {{ prometheus_restart | default('unless-stopped') }}
     command: >

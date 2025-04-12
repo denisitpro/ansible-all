@@ -1,0 +1,13 @@
+{{ ansible_managed | comment }}
+
+groups:
+  - name: elasticsearch exporter alert rules
+    rules:
+      - alert: ShardCountES
+        expr: 'elasticsearch_cluster_health_active_shards > 100'
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          description: "{% raw %}Elasticsearch active shard moor 100\n VALUE = {{ $value }}\n  LABELS: {{ $labels }}{% endraw %}"
+          summary: "{% raw %}lasticsearch active shard moore 100 (instance {{ $labels.instance }}){% endraw %}"

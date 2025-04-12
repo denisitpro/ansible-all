@@ -21,7 +21,7 @@
 
 - name: get teleport cert path
   ansible.builtin.shell:
-    cmd: tsh app config --format=json | jq .cert | tr -d '"'
+    cmd: tsh app config {{ teleport_vault_app_name }} --format=json | jq .cert | tr -d '"'
     executable: /bin/bash
   register: teleport_cert_result
 
@@ -31,7 +31,7 @@
 
 - name: get teleport key path
   ansible.builtin.shell:
-    cmd: tsh app config --format=json | jq .key | tr -d '"'
+    cmd: tsh app config {{ teleport_vault_app_name }} --format=json | jq .key | tr -d '"'
     executable: /bin/bash
   register: teleport_key_result
 

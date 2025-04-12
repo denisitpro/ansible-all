@@ -1,0 +1,46 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: clickhouse alert rules
+  rules:
+  - alert: HighClickHouseTCPConnections - {{ alert_click_connections_count }}
+    annotations:
+      summary: "High number of TCP connections in ClickHouse"
+      description: >-
+        {% raw %}TCP connections at {{ $labels.instance }} have been above {% endraw %}{{alert_click_connections_count}}{% raw %}
+        for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
+
+    expr: sum by (instance) (ClickHouseMetrics_TCPConnection) > {{ alert_click_connections_count }}
+    for: 10m
+    labels:
+      severity: warning
+      service: clickhouse
+      team: devops
+  - alert: HighClickHouseHTTPConnections - {{ alert_click_connections_count }}
+    annotations:
+      summary: "High number of HTTP connections in ClickHouse"
+      description: >-
+        {% raw %}HTTP connections at {{ $labels.instance }} have been above {% endraw %}{{alert_click_connections_count}}{% raw %}
+        for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
+
+    expr: sum by (instance) (ClickHouseMetrics_HTTPConnection) > {{ alert_click_connections_count }}
+    for: 10m
+    labels:
+      severity: warning
+      service: clickhouse
+      team: devops
+  - alert: ClickHouseTCPConnectionsBelow1
+    annotations:
+      summary: "Number of TCP connections in ClickHouse is below 1"
+      description: >-
+        {% raw %}TCP connections at {{ $labels.instance }} have been below 1
+        for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
+
+    expr: >-
+      sum by (instance) (ClickHouseMetrics_TCPConnection
+      {% if excld_click_below_1_inst | length > 0 %}{instance!~"{{ excld_click_below_1_inst | join('|') }}"}{% endif %}) < 1
+    for: 10m
+    labels:
+      severity: warning
+      service: clickhouse
+      team: devops

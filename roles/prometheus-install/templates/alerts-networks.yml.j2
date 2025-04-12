@@ -1,0 +1,22 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: networks alert rules
+  rules:
+  - alert: HostUnusualNetworkThroughputIn - 30m
+    expr: (sum by (instance) (rate(node_network_receive_bytes_total{instance!~"{{ excld_inst_unusual_net_in | join('|') }}", tags!~"{{ excld_tags_unusual_net_in | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[5m])) / 1024 / 1024 > 10) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Host unusual network throughput in (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Host network interfaces are probably receiving too much data (> 10 MB/s)\n  VALUE = {{ printf \"%.2f\" $value }} MB/s\n  LABELS = {{ $labels }}{% endraw %}"
+
+  - alert: HostUnusualNetworkThroughputOut - 30m
+    expr: (sum by (instance) (rate(node_network_transmit_bytes_total{instance!~"{{ excld_inst_unusual_net_out | join('|') }}", tags!~"{{ excld_tags_unusual_net_out | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[5m])) / 1024 / 1024 > 10) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Host unusual network throughput out (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Host network interfaces are probably sending too much data (> 10 MB/s)\n  VALUE = {{ printf \"%.2f\" $value }} MB/s\n  LABELS = {{ $labels }}{% endraw %}"

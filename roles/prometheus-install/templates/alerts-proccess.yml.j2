@@ -1,0 +1,23 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: process exporters alert rules
+  rules:
+  - alert: Vector proccess down
+    expr: (namedprocess_namegroup_num_procs{groupname="vector"} == 0)
+    for: 5m
+    labels:
+      notify_channel_call: true # enable call
+      notify_channel_critical: true #critical channel notify
+      severity: warning
+    annotations:
+      summary: "{% raw %} Vector proccess down (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Vector proccess down more 5 minutes.\n  VALUE = {{ printf \"%.2f\" $value }}%\n  LABELS = {{ $labels }}{% endraw %}"
+  - alert: process-exporter proccess down
+    expr: (namedprocess_namegroup_num_procs{groupname="process-exporter"} == 0)
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %} process-exporter proccess down (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}process-exporter proccess down more 5 minutes.\n  VALUE = {{ printf \"%.2f\" $value }}%\n  LABELS = {{ $labels }}{% endraw %}"

@@ -1,0 +1,58 @@
+{{ ansible_managed | comment }}
+
+groups:
+  - name: mysql alert rules
+    rules:
+      - alert: MySqlSlaveStatus
+        expr: '(mysql_slave_status_slave_io_running + mysql_slave_status_slave_sql_running) < 2'
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} Slave not runnig for more than 2 minutes.{% endraw %}"
+          summary: "{% raw %}Instance {{ $labels.instance }} - Slave down{% endraw %}"
+
+      - alert: MySqlBehindMaster
+        expr: 'mysql_slave_status_seconds_behind_master > 200'
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} Slave behind master more.{% endraw %}"
+          summary: "{% raw %}Instance {{ $labels.instance }} - Slave behind {{ humanize $value }}{% endraw %}"
+
+      - alert: MySqlSlaveError
+        expr: 'mysql_slave_status_last_sql_errno != 0'
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} Slave replication error.{% endraw %}"
+          summary: "{% raw %}Instance {{ $labels.instance }} - Error slave replication {{ humanize $value }}{% endraw %}"
+
+      - alert: MySqlUserConnection
+        expr: 'mysql_info_schema_processes_by_user{stand="c1-infra"} > 80'
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} To many user connection{% endraw %}"
+          summary: "{% raw %}Instance {{ $labels.instance }} - To many active user {{ $labels.mysql_user }} connection - {{ humanize $value }}{% endraw %}"
+
+      - alert: MySqlProcessState
+        expr: 'sum(mysql_info_schema_threads{instance="mysql-18.example.com:9104"}) > 300'
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          description: "{% raw %}mysql-18.example.com to active process moore 220{% endraw %}"
+          summary: "{% raw %}mysql-18.example.com - To many active process state - {{ humanize $value }}{% endraw %}"
+
+      - alert: MySql Critical prepared stmt
+        expr: 'mysql_global_status_prepared_stmt_count > 10000'
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} prepared stmt more 10000.{% endraw %}"
+          summary: "{% raw %}Instance {{ $labels.instance }} - prepared stmt {{ humanize $value }}{% endraw %}"

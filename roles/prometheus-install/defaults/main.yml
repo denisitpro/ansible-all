@@ -9,8 +9,15 @@ prometheus_compose_path: /opt/docker/prometheus
 # prometheus_group: prometheus
 prometheus_base_path: "/opt/prometheus"
 prometheus_config_path: "{{ prometheus_base_path }}/config"
-prometheus_config_dir: /etc/prometheus
+# prometheus_config_dir: /etc/prometheus
+
+# todo update template remove prometheus_config_dir
+prometheus_config_dir: "{{ prometheus_config_path }}"
+
 prometheus_db_dir: "{{ prometheus_base_path }}/data"
+prometheus_rules_path: "{{ prometheus_config_path }}/rules"
+
+
 prometheus_user_uid: "65534"
 prometheus_user_gid: "65534"
 
@@ -20,6 +27,7 @@ prometheus_reload_address: "[::1]"
 prometheus_web_external_url: ''
 prometheus_ext_name: "prom.example.com"
 prom_addr: "{{ prometheus_ext_name }}"
+
 ### consul
 stands_regexp: ".*,(c1-infra|c1-dev | c1-prod ),.*"
 consul_sd_server: ":8500"
@@ -33,6 +41,7 @@ prometheus_command_run:
   - "storage.tsdb.retention.size={{ prometheus_storage_retention_size }}"
   - "web.listen-address={{ prometheus_web_listen_address }}"
   - "web.enable-lifecycle"
+  - "web.enable-remote-write-receiver"
 #  - "web.external-url="
 
 ### Prom config section
@@ -102,9 +111,6 @@ prometheus_scrape_configs:
 # Alternative config file name, searched in ansible templates path.
 prometheus_config_file: 'prometheus.yml.j2'
 
-prometheus_alert_rules_files:
-  - prometheus/rules/*.rules
-
 prometheus_static_targets_files:
   - prometheus/targets/*.yml
   - prometheus/targets/*.json
@@ -118,3 +124,52 @@ coins_http_200_fail: []
 coins_http_400_fail: []
 coins_http_404_fail: []
 coins_http_405_fail: []
+
+# ALERTS section gen 2
+prometheus_alert_files:
+  - ansible-generate-v1.yml
+  - alerts-base-v1.yml
+  - alerts-disks-v1.yml
+  - alerts-domain-expire-v1.yml
+  - alerts-clickhouse-alerts.yml
+  - alerts-blackbox-v1.yml
+  - alerts-elk.yml
+  - alerts-http-code.yml
+  - alerts-consul-v1.yml
+  - alerts-prom-metrics-v1.yml
+  - alerts-vault-v1.yml
+  - alerts-redis.yml
+  - alerts-k8s-pods.yml
+  - alerts-networks.yml
+  - alerts-proccess.yml
+  # - alerts-mysql.yml
+  # - alerts-ipsec-exporter-v1.yml
+  # - alerts-text-collection-v1.yml
+  # - alerts-nomad-v1.yml
+  # - alerts-nats.yml
+
+
+alert_click_connections_count: 100
+alert_domain_expire_days: 14
+
+
+excld_click_below_1_inst: []
+excld_inst_out_of_disk_space_20: []
+excld_inst_out_of_disk_space_30: []
+
+excld_tags_out_of_disk_space_20: []
+excld_tags_out_of_disk_space_30: []
+
+excld_inst_high_disk_iops_1h: []
+excld_inst_high_disk_iops_15m: []
+
+incl_http_200_devel_instance: []
+incl_http_200_critical_channel_instance: []
+incl_http_404_devel_instance: []
+incl_http_404_critical_channel_instance: []
+# clickhouse_alert_rules:
+
+excld_inst_unusual_net_in: []
+excld_inst_unusual_net_out: []
+
+excld_node_too_many_pods: []

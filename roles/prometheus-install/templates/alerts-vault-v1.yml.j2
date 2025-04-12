@@ -1,0 +1,99 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: vault metrics alert rules
+  rules:
+    - alert: VaultSealed
+      expr: vault_core_unsealed == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Vault is sealed"
+        description: "Vault is not unsealed and is therefore unusable."
+
+    - alert: VaultNoActiveNode
+      expr: |
+        (
+          count(vault_core_unsealed == 1)
+          -
+          count(vault_core_active == 0 and vault_core_unsealed == 1)
+        ) != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "No active Vault node"
+        description: "Unexpected number of active Vault nodes among unsealed ones. Expected exactly 1."
+
+    - alert: VaultAutopilotUnhealthy
+      expr: vault_autopilot_healthy == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Vault Autopilot reports unhealthy"
+        description: "Vault Raft Autopilot mechanism is not healthy, which may lead to cluster split or failover issues."
+
+    - alert: VaultRaftLeaderCommunicationDelay
+      expr: vault_raft_leader_lastContact{quantile="0.99"} > 200
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Vault Raft leader communication delay"
+        description: "High lastContact time between Raft followers and leader. Risk of leader instability."
+
+    - alert: VaultFSMBacklog
+      expr: vault_raft_storage_stats_fsm_pending > 50
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Vault FSM backlog"
+        description: "Vault FSM is lagging behind, indicating possible I/O bottlenecks or Raft pressure."
+
+    - alert: VaultUnusualLeaseCount
+      expr: vault_expire_num_leases > 1000
+      for: 5m
+      labels:
+        severity: info
+      annotations:
+        summary: "High number of leases"
+        description: "Vault has a high number of active leases. May indicate high churn or improper TTL tuning."
+
+    - alert: VaultTokenCountByTTLInf
+      expr: vault_token_count_by_ttl{creation_ttl="+Inf"} > 50
+      for: 5m
+      labels:
+        severity: info
+      annotations:
+        summary: "Too many infinite TTL tokens"
+        description: "Vault has many tokens with +Inf TTL. This can be a security risk or misconfiguration."
+
+    - alert: VaultPerformanceStandbyUnexpected
+      expr: vault_core_performance_standby != 0
+      for: 3m
+      labels:
+        severity: info
+      annotations:
+        summary: "Vault in performance standby mode"
+        description: "Vault is in performance standby mode unexpectedly. Check load balancer or HA setup."
+
+    - alert: VaultLeaderFSMWriteLatencyHigh
+      expr: rate(vault_core_activity_segment_write_sum[5m]) / rate(vault_core_activity_segment_write_count[5m]) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High FSM write latency"
+        description: "FSM segment write latency is high. Could indicate storage or disk IO bottlenecks."
+
+    - alert: VaultBarrierGetLatencyHigh
+      expr: vault_barrier_get{quantile="0.99"} > 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Vault barrier access slow"
+        description: "Barrier GET operations are taking over 1 second (99th percentile). Potential storage latency."
