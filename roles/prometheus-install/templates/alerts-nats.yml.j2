@@ -1,0 +1,29 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: nats alert rules
+  rules:
+    - alert: Nats too many connections to server
+      expr: "gnatsd_connz_num_connections > 120"
+      for: '1m'
+      labels:
+        severity: warning
+      annotations:
+        description: "{% raw %}{{ $labels.instance }} too many connections to NATS{% endraw %}"
+        summary: "{% raw %}Instance {{ $labels.instance }} - too many connections to NATS ({{ humanize $value}}){% endraw %}"
+    - alert: Nats too many subscriptions to server
+      expr: "gnatsd_varz_subscriptions > 320"
+      for: '1m'
+      labels:
+        severity: warning
+      annotations:
+        description: "{% raw %}{{ $labels.instance }} too many subscriptions to NATS{% endraw %}"
+        summary: "{% raw %}Instance {{ $labels.instance }} - too many subscriptions to NATS ({{ humanize $value}}){% endraw %}"
+    - alert: Nats too many consumers to server
+      expr: "gnatsd_varz_slow_consumers > 3"
+      for: '1m'
+      labels:
+        severity: warning
+      annotations:
+        description: "{% raw %}{{ $labels.instance }} too many consumers to NATS{% endraw %}"
+        summary: "{% raw %}Instance {{ $labels.instance }} - too many consumers to NATS ({{ humanize $value}}){% endraw %}"

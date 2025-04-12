@@ -1,0 +1,13 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: blackbox alert rules
+  rules:
+  - alert: SslCertificateWillExpireSoon
+    expr: 'probe_ssl_earliest_cert_expiry - time() < 86400 * 7'
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+     description: "{% raw %}SSL certificate expires in 7 days\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}{% endraw %}"
+     summary: "{% raw %}SSL certificate will expire soon (instance {{ $labels.instance }}){% endraw %}"

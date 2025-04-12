@@ -4,12 +4,26 @@
     - prom
     - prom-prefly
 
-- ansible.builtin.import_tasks: 10-configure.yml
+- ansible.builtin.import_tasks: 18-clean-alerts.yml
+  when: prometheus_alert_files | length > 0
+  tags: ['never', 'alerts-rules-clean']
+
+
+- ansible.builtin.import_tasks: 20-alerts.yml
+  when: prometheus_alert_files | length > 0
+  tags:
+    - prom
+    - prom-alerts
+    - alerts-rules
+    - alert-rules
+    - prom-config
+
+- ansible.builtin.import_tasks: 30-configure.yml
   tags:
     - prom
     - prom-config
 
-- ansible.builtin.import_tasks: 15-compose.yml
+- ansible.builtin.import_tasks: 40-compose.yml
   tags:
     - prom
     - prom-compose

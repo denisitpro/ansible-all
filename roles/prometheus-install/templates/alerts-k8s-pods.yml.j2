@@ -1,0 +1,23 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: kube pods per node alert rules
+  rules:
+    - alert: TooManyPodsPerNode
+      expr: |
+        count by (node) (
+          max by(pod, namespace) (
+            kube_pod_container_status_running{container!="POD"} == 1
+          )
+          * on(pod, namespace) group_left(node)
+          kube_pod_info{node!=""} 
+        )
+        > {{ max_pods_per_node | default('100') }}
+        and on(node)
+        kube_node_info{node!~"{{ excld_node_too_many_pods | join('|') }}"}
+      for: '10m'
+      labels:
+        severity: warning
+      annotations:
+        description: "{% raw %}Node {{ $labels.node }} has more than {{ $value }} pods scheduled{% endraw %}"
+        summary: "{% raw %}Too many pods on node {{ $labels.node }} ({{ humanize $value }}){% endraw %}"

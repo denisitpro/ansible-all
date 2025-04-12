@@ -25,8 +25,6 @@ To enable this role to work correctly, create a file named `vault.secret` in the
 
 2. For security reasons, all `*.secret` files are excluded from the repository via `.gitignore`, ensuring that sensitive data remains local.
 
-
-
 ## Getting Started
 
 To interact with Vault, follow these steps:
@@ -39,13 +37,27 @@ To interact with Vault, follow these steps:
 
 2. Export the necessary environment variables for Vault:
 
-    ```bash
-    export VAULT_CLIENT_CERT="$(tsh app config --format=cert example-vault)"
-    export VAULT_CLIENT_KEY="$(tsh app config --format=key example-vault)"
-    export VAULT_ADDR="https://example-vault.teleport.example.com"
-    ```
+     You can either:
 
-3. Log in to Vault using OIDC:
+     - Set the `teleport_vault_app_name` variable to the name of the Vault application in Teleport (e.g., `vault-example-app`). To list available applications, use:
+
+       ```bash
+       teleport app ls
+       ```
+
+     **OR**
+
+     - Manually export the required environment variables:
+
+       ```bash
+       tsh login --proxy=tp.example.com --auth=github
+       tsh app login vault-example-app
+       export VAULT_CLIENT_CERT="$(tsh app config --format=cert vault-example-app)"
+       export VAULT_CLIENT_KEY="$(tsh app config --format=key vault-example-app)"
+       export VAULT_ADDR="https://vault-example-app.teleport.example.com"
+       ```
+
+3. **OR** Log in to Vault using OIDC:
 
     ```bash
     vault login -method=oidc role=example-vault-mgmt-rw

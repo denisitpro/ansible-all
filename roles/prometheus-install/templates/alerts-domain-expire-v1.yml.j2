@@ -1,0 +1,39 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: domain expire alert rules
+  rules:
+  # - alert: Domain_expire
+  #   expr: 'domain_expiry_days{job="domain_expire"} < {{alert_domain_expire_days}}'
+  #   for: 0m
+  #   labels:
+  #     severity: warning
+  #   annotations:
+  #    description: "{% raw %}Domain expire {% endraw %}{{alert_domain_expire_days}}{% raw %} days\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}{% endraw %}"
+  #    summary: "{% raw %}Domain expire will expire soon (domain {{ $labels.domain }}){% endraw %}"
+  - alert: DomainExpiringLessThen30Days
+    expr: domain_expiry_days != -1 AND domain_expiry_days < 30 AND domain_expiry_days > 5
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Domain {{ $labels.domain }} will expire in less than 30 days{% endraw %}"
+      summary: "{% raw %}{{ $labels.domain }}: domain is expiring{% endraw %}"
+
+  - alert: DomainExpiringLessThen5Days
+    expr: domain_expiry_days != -1 AND domain_expiry_days <= 5
+    for: 1h
+    labels:
+      severity: page
+    annotations:
+      description: "{% raw %}Domain {{ $labels.domain }} will expire in less than 5 days{% endraw %}"
+      summary: "{% raw %}{{ $labels.domain }}: domain is expiring{% endraw %}"
+
+  - alert: DomainProbeFailure
+    expr: domain_probe_success == 0
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Domain {{ $labels.domain }} is not valid. Cannot probe{% endraw %}"
+      summary: "{% raw %}{{ $labels.domain }}: cannot probe{% endraw %}"

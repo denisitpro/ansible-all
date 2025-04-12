@@ -1,0 +1,49 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: consul alert rules
+  rules:
+  - alert: Consul_service_status
+    expr: 'consul_state_service_instances{datacenter=~".+"} == 0'
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Catalog service consul healthckeck failed{% endraw %}"
+      description: "{% raw %}Service: {{ $labels.service_name }} to {{ $labels.node }}{% endraw %}"
+  - alert: Consul_missing_master_node
+    expr: 'consul_members_servers{datacenter=~".+"} < 3'
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{% raw %}Numbers of consul raft peers should be 5, in order to preserve quorum{% endraw %}"
+      description: "{% raw %}Consul raft peers {{ $value }} - {{ $labels.instance }}{% endraw %}"
+  - alert: Consul_autopilot_unhealthy
+    expr: 'consul_autopilot_healthy == 0'
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{% raw %}Consul autopilot reports unhealthy cluster{% endraw %}"
+      description: "{% raw %}Consul autopilot health check failed on instance {{ $labels.instance }}{% endraw %}"
+  - alert: Consul_agent_inhealthy
+    expr: |
+      (
+        sum(consul_raft_state_leader) -
+        sum(consul_server_isLeader == 1 and consul_raft_state_leader == 1)
+      ) != 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{% raw %}Inconsistent Consul leader state{% endraw %}"
+      description: "{% raw %}There is a mismatch between servers reporting raft leader state and actual leader identity. Potential split-brain or telemetry issue.{{ $value }}{% endraw %}"
+  - alert: Consul_leader_inconsistency
+    expr: sum(consul_raft_state_leader) != 1 or sum(consul_server_isLeader) != 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{% raw %}Consul cluster leader inconsistency{% endraw %}"
+      description: "{% raw %}There is no leader or multiple nodes report themselves as leaders in the Consul cluster.{% endraw %}"      
