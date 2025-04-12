@@ -1,39 +1,32 @@
 ---
-- import_tasks: 05-prefly.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - angie
     - angie-prefly
 
-
-- import_tasks: 20-base-configure.yml
+- ansible.builtin.import_tasks: 20-base-configure.yml
   tags:
     - angie
     - angie-config
 
-
-- import_tasks: 25-ssl-configure.yml
+- ansible.builtin.import_tasks: 25-ssl-configure.yml
   tags:
     - angie
     - angie-selfsign
     - nginx-selfsign
 
-- import_tasks: 28-compose.yml
+- ansible.builtin.import_tasks: 28-compose.yml
   tags:
     - angie
     - angie-compose
 
-- import_tasks: 29-launch.yml
-  tags:
-    - angie
-    - angie-compose
-
-- import_tasks: 45-vhosts-configure.yml
+- ansible.builtin.import_tasks: 45-vhosts-configure.yml
   tags:
     - angie
     - angie-vhosts
     - vhosts
 
-- import_tasks: 50-vhosts-check.yml
+- ansible.builtin.import_tasks: 50-vhosts-check.yml
   tags:
     - angie
     - angie-vhosts
@@ -41,7 +34,5 @@
     - angie-upstream
     - vhosts
 
-
-
-- import_tasks: 99-clean.yml
+- ansible.builtin.import_tasks: 99-clean.yml
   tags: ['never', 'angie-clean']

@@ -1,8 +1,7 @@
 ---
-- name: copy compose angie
-  template:
-    src: docker-compose.angie.yml.j2
-    dest: "{{angie_compose_path}}/docker-compose.yml"
-    owner: root
-    group: root
-    mode: 0644
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.angie.yml.j2"
+    dest: "{{ angie_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker angie

@@ -16,7 +16,10 @@
     - vm-docker
     - vm-compose
 
-# - ansible.builtin.import_tasks: 99-reload.yml
-#   tags:
-#     - never
-#     - vm-reload
+- ansible.builtin.import_tasks: 90-reload.yml
+  tags:
+    - never
+    - vm-reload
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'vm-clean']

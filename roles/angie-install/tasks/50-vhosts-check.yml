@@ -1,16 +1,34 @@
----
-- name: Validate Angie configuration inside the container
-  shell: "docker exec -t angie angie -t"
-  register: angie_docker_config_status
-  failed_when: angie_docker_config_status.rc != 0
+- name: Validate Angie configuration via docker_compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ angie_compose_path }}"
+    pull: "{{ angie_pull_policy | default('never') }}"
+    services:
+      - angie
+    state: present
+  register: angie_compose_status
+
+- name: Check if Angie container is running
+  ansible.builtin.command: "docker compose -f {{ angie_compose_path }}/docker-compose.yml ps --services --filter 'status=running'"
+  register: angie_running_services
   changed_when: false
+  failed_when: false
+
+- name: Validate Angie configuration inside the container
+  ansible.builtin.command: "docker exec -t angie angie -t"
+  register: angie_docker_config_status
+  changed_when: false
+  failed_when: angie_docker_config_status.rc != 0
+  when: "'angie' in angie_running_services.stdout_lines"
 
 - name: Display validation result
-  debug:
+  ansible.builtin.debug:
     msg: >
-      Angie configuration validation result: 
+      Angie configuration validation result:
       {{ 'SUCCESS' if angie_docker_config_status.rc == 0 else 'FAILED' }}
+  when: "'angie' in angie_running_services.stdout_lines"
 
 - name: Reload Angie configuration if validation succeeded
-  shell: "docker exec -t angie angie -s reload"
-  when: angie_docker_config_status.rc == 0
+  ansible.builtin.command: "docker exec -t angie angie -s reload"
+  when:
+    - "'angie' in angie_running_services.stdout_lines"
+    - angie_docker_config_status.rc == 0

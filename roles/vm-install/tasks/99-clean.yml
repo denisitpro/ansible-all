@@ -1,0 +1,18 @@
+---
+- name: stop compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ vm_compose_path }}"
+    state: absent
+  register: compose_result
+  failed_when:
+    - compose_result is failed
+    - "'No such container' not in compose_result.msg"
+
+
+- name: Remove directory data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ vm_base_path }}"
+    - "{{ vm_compose_path }}/docker-compose.yml"

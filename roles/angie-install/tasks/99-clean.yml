@@ -11,5 +11,5 @@
     path: "{{item}}"
     state: absent
   with_items:
-    - "{{angie_base_path}}"
+    - "{{ angie_base_path }}"
     - "{{angie_compose_path}}/docker-compose.yml"
