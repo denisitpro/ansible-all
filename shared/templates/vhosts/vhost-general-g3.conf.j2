@@ -59,11 +59,8 @@ server {
     include  {{ included }};
 {% endfor %}
 
-{% if nginx.size_upload_files  is defined %}
-{% for included in  nginx.size_upload_files %}
-# Ansible management max upload size
-    client_max_body_size  {{ included.client_max_body_size }};
-{% endfor %}
+{% if item.client_max_body_size is defined %}
+    client_max_body_size  {{ item.client_max_body_size }};
 {% endif %}
 
 {% if vhosts_metrics is defined %}
