@@ -1,0 +1,12 @@
+---
+- name: recreate-docker caddy
+  community.docker.docker_compose_v2:
+    project_src: "{{ caddy_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker caddy
+  community.docker.docker_compose_v2:
+    project_src: "{{ caddy_compose_path }}"
+    state: restarted

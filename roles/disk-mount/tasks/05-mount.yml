@@ -2,4 +2,11 @@
 - ansible.builtin.include_tasks: 10-loop-task.yml
   loop: "{{ disk_mounts }}"
   loop_control:
-    label: "{{ item.device }}"
+    label: "{{ item.device | default('/dev/sdX') }}"
+  when: item.uuid is not defined or item.uuid | length == 0
+
+- ansible.builtin.include_tasks: 10-loop-task-uuid.yml
+  loop: "{{ disk_mounts }}"
+  loop_control:
+    label: "{{ item.uuid }}"
+  when: item.uuid is defined and item.uuid | length > 0
