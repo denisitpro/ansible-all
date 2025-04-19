@@ -1,0 +1,33 @@
+datacenter = "{{ consul_dc_name }}"
+data_dir = "{{ consul_base_path }}"
+
+bind_addr = "{{ consul_bind_addr | default('[::]') }}"
+reconnect_timeout = "{{consul_reconnect_timeout | default('24h') }}"
+
+
+encrypt = "{{ consul_encrypt_key }}"
+encrypt_verify_outgoing = true
+encrypt_verify_incoming = true
+
+{% if consul_agent_disabled is not defined %}
+acl = {
+  enabled = true
+  default_policy = "deny"
+  enable_token_persistence = true
+{% if consul_token_provision is not defined %}
+  tokens {
+    agent  = "{{consul_agent_token}}"
+  }
+{% endif %}
+}
+{% endif %}
+
+{% if consul_dns_suffix_disable is not  defined %}
+node_name = "{{ ansible_hostname }}.{{ consul_internal_domain | default('example.com')}}"
+{% endif %}
+
+performance {
+  raft_multiplier = 1
+}
+
+retry_join = [{{ consul_retry_join | map('to_json') | join(', ') }}]

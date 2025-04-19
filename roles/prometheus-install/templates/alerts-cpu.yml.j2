@@ -1,0 +1,44 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: CPU alert rules
+  rules:
+  - alert: NodeCPUHighUsage - 90
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 90%, VALUE = {{ printf \"%.2f\" $value }} for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+        job="node-exporter",
+        mode!="idle",
+        instance!~"{{ excld_inst_cpu_usage_90 | default([]) | join('|') }}"
+      }[15m]))) * 100 > 90
+    for: 15m
+    labels:
+      severity: info
+  - alert: NodeCPUHighUsage - 80
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 80%, VALUE = {{ printf \"%.2f\" $value }}for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+        job="node-exporter",
+        mode!="idle",
+        instance!~"{{ excld_inst_cpu_usage_80 | default([]) | join('|') }}"
+      }[15m]))) * 100 > 80
+    for: 15m
+    labels:
+      severity: info
+  - alert: NodeCPUHighUsage - 70
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 70%, VALUE = {{ printf \"%.2f\" $value }}for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+        job="node-exporter",
+        mode!="idle",
+        instance!~"{{ excld_inst_cpu_usage_70 | default([]) | join('|') }}"
+      }[15m]))) * 100 > 70
+    for: 15m
+    labels:
+      severity: info

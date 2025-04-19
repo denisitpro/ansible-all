@@ -1,0 +1,59 @@
+---
+- name: Slurp Consul CA cert from CA host
+  ansible.builtin.slurp:
+    src: "{{ consul_generate_ca_path }}/consul-agent-ca.pem"
+  register: slurped_ca_cert
+  delegate_to: "{{ consul_ca_init_host }}"
+  run_once: true
+
+- name: Write Consul CA cert to each server
+  ansible.builtin.copy:
+    dest: "{{ consul_mtls_cert_path }}/consul-agent-ca.pem"
+    content: "{{ slurped_ca_cert.content | b64decode }}"
+    owner: "{{ consul_uid }}"
+    group: "{{ consul_gid }}"
+    mode: '0644'
+  notify: restart-docker consul
+
+- name: Remove existing server cert and key if forced
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ consul_mtls_cert_path }}/server-cert.pem"
+    - "{{ consul_mtls_cert_path }}/server-key.pem"
+  when: consul_server_recreate | default(false) | bool
+
+- name: Slurp Consul server cert from CA host
+  ansible.builtin.slurp:
+    src: "{{ consul_generate_ca_path }}/{{ consul_dc_name }}-server-consul-0.pem"
+  register: slurped_server_cert
+  delegate_to: "{{ consul_ca_init_host }}"
+  run_once: true
+
+- name: Write Consul server cert to each server
+  ansible.builtin.copy:
+    dest: "{{ consul_mtls_cert_path }}/server-cert.pem"
+    content: "{{ slurped_server_cert.content | b64decode }}"
+    owner: "{{ consul_uid }}"
+    group: "{{ consul_gid }}"
+    mode: '0644'
+    force: true
+  notify: restart-docker consul
+
+- name: Slurp Consul server key from CA host
+  ansible.builtin.slurp:
+    src: "{{ consul_generate_ca_path }}/{{ consul_dc_name }}-server-consul-0-key.pem"
+  register: slurped_server_key
+  delegate_to: "{{ consul_ca_init_host }}"
+  run_once: true
+
+- name: Write Consul server key to each server
+  ansible.builtin.copy:
+    dest: "{{ consul_mtls_cert_path }}/server-key.pem"
+    content: "{{ slurped_server_key.content | b64decode }}"
+    owner: "{{ consul_uid }}"
+    group: "{{ consul_gid }}"
+    mode: '0640'
+    force: true
+  notify: restart-docker consul

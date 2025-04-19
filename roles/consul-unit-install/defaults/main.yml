@@ -1,5 +1,9 @@
 consul_version: 1.20.5
+consul_mode: "agent" # support agent and server
+
 consul_base_path: /opt/consul
+consul_mtls_cert_path: "{{ consul_base_path }}/mtls-certs"
+
 
 consul_run_user: consul
 consul_binary_name: consul

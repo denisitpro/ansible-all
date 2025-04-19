@@ -127,9 +127,9 @@ coins_http_405_fail: []
 
 # ALERTS section gen 2
 prometheus_alert_files:
-  - ansible-generate-v1.yml
-  - alerts-base-v1.yml
   - alerts-disks-v1.yml
+  - alerts-base-v1.yml
+  - alerts-time.yml
   - alerts-domain-expire-v1.yml
   - alerts-clickhouse-alerts.yml
   - alerts-blackbox-v1.yml
@@ -142,6 +142,11 @@ prometheus_alert_files:
   - alerts-k8s-pods.yml
   - alerts-networks.yml
   - alerts-proccess.yml
+  - alerts-cpu.yml
+  - alerts-text-scrape.yml
+  - alerts-inotify.yml # importal for k8s
+
+  # - ansible-generate-v1.yml
   # - alerts-mysql.yml
   # - alerts-ipsec-exporter-v1.yml
   # - alerts-text-collection-v1.yml
@@ -173,3 +178,4 @@ excld_inst_unusual_net_in: []
 excld_inst_unusual_net_out: []
 
 excld_node_too_many_pods: []
+excld_cluster_instance_down: []

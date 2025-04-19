@@ -1,0 +1,57 @@
+---
+- ansible.builtin.import_tasks: 05-consul-delete.yml
+  tags: ['never', 'consul-clean']
+
+- ansible.builtin.import_tasks: 10-path.yml
+  tags:
+    - consul
+
+- ansible.builtin.import_tasks: 30-ca-certs.yml
+  when: consul_mode == "server"
+  delegate_to: "{{ consul_ca_init_host }}"
+  run_once: true
+  tags:
+    - consul
+    - consul-mtls
+    - consul-ca
+
+- ansible.builtin.import_tasks: 35-copy-mtls-certs.yml
+  when: consul_mode == "server"
+  tags:
+    - consul
+    - consul-mtls
+    - consul-mtls-copy
+
+- ansible.builtin.import_tasks: 37-copy-agents-certs.yml
+  tags:
+    - consul
+    - consul-mtls
+    - consul-agett-cert
+
+- ansible.builtin.import_tasks: 40-configure-srv.yml
+  when: consul_mode == "server"
+  tags:
+    - consul
+    - consul-config
+    - consul-compose
+
+- ansible.builtin.import_tasks: 50-configure-all.yml
+  tags:
+    - consul
+    - consul-config
+    - consul-compose
+
+- ansible.builtin.import_tasks: 65-consul-reg.yml
+  when: consul_monitoring_disable is not defined and consul_mode == 'server'
+  tags:
+    - consul
+    - consul-reg
+
+# - ansible.builtin.import_tasks: 70-repair.yml
+#   tags: ['never', 'consul-repair']
+
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'consul-clean']
+
+- ansible.builtin.import_tasks: 99-debug.yml
+  tags: ['never', 'debug']

@@ -13,7 +13,8 @@ groups:
       summary: 'Ensure entire alerting pipeline is functional'
 
   - alert: InstanceDown
-    expr: up == 0
+    expr: |
+      up{clusterId!~"{{ excld_cluster_instance_down | default([]) | join('|') }}"} == 0
     for: 5m
     labels:
       severity: critical
@@ -23,8 +24,8 @@ groups:
 
   - alert: Memory usage over 80%
     expr: |
-      (1 - ((node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes) / node_memory_MemTotal_bytes)) * 100 > 80
-      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over80 | default(['server.example.com']) | join('|') }}"}
+      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 80
+      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over80 |  default([]) | join('|') }}"}
     for: 5m
     labels:
       severity: critical
@@ -34,7 +35,8 @@ groups:
 
   - alert: Memory usage over 90%
     expr: |
-      (1 - ((node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes) / node_memory_MemTotal_bytes)) * 100 > 90
+      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 90
+      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over90 |  default([]) | join('|') }}"}
     for: 5m
     labels:
       severity: critical
@@ -44,40 +46,11 @@ groups:
 
   - alert: Memory usage over 95%
     expr: |
-      (1 - ((node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes) / node_memory_MemTotal_bytes)) * 100 > 95
+      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 95
+      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over95 |  default([]) | join('|') }}"}
     for: 5m
     labels:
       severity: critical
     annotations:
       description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 5 minutes.{% endraw %}"
       summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
-
-  # - alert: Critical node time seconds
-  #   expr: abs(time() - node_time_seconds) > 60
-  #   for: 1m
-  #   labels:
-  #     severity: warning
-  #   annotations:
-  #     description: "{% raw %}{{ $labels.instance }} node time seconds alert to more 60 {% endraw %}"
-  #     summary: "{% raw %}Instance {{ $labels.instance }} - node time seconds alert to more ({{ humanize $value}}){% endraw %}"
-
-  - alert: ClockSkewDetected g2
-    expr: abs(node_timex_estimated_error_seconds) * 1000 > 5
-    for: 2m
-    labels:
-      severity: warning
-    annotations:
-      description: "{% raw %}Clock skew detected on {{ $labels.instance }}. Ensure NTP is configured correctly on this host.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} - Clock skew detected{% endraw %}"
-
-  - alert: ClockSkewDetectedStable
-    expr: |
-      (abs(node_timex_offset_seconds offset 2m) > 0.05)
-      and ignoring(instance)
-      (changes(node_timex_offset_seconds[2m]) < 5)
-    for: 2m
-    labels:
-      severity: warning
-    annotations:
-      description: "{% raw %}Stable clock skew detected on {{ $labels.instance }}. Offset > 50ms over 2m.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} - clock offset is stable and too high: {{ humanize $value }}{% endraw %}"
