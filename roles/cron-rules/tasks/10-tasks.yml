@@ -1,0 +1,9 @@
+---
+- name: add task to cron
+  ansible.builtin.cron:
+    name: "{{ item.name }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    job: "{{ item.job }}"
+  with_items:
+    - "{{ cron.jobs }}"

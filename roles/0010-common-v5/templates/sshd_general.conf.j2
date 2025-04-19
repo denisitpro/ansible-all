@@ -19,10 +19,10 @@ MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@op
 SyslogFacility AUTHPRIV
 
 # user sessions
-{% if wg_ext is not defined %}
+{% if ssh_root_login_allow is not defined %}
 PermitRootLogin no
 {% endif %}
-{% if wg_ext is defined %}
+{% if ssh_root_login_allow is defined %}
 PermitRootLogin yes
 {% endif %}
 MaxAuthTries 3
