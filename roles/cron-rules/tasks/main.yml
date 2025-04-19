@@ -1,6 +1,5 @@
 ---
-- include: 00-tasks.yml
-  when: cron is defined
+- ansible.builtin.import_tasks: 10-tasks.yml
+  when: cron  is defined
   tags:
     - cron
-

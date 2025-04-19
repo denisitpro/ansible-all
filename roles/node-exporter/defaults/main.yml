@@ -35,6 +35,10 @@ node_exporter_tags:
   - "{{ stand_type }}"
   - "{{ node_exporter_name | default('node-exporter') }}"
 
+
+scripts_path: /opt/scripts
+
 # # not set sh file. its add to task
 # node_exporter_textfile_scripts:
+#   - inotify-metrics.sh
 #  - ping-ipv4.sh

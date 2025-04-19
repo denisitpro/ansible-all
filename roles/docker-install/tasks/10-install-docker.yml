@@ -9,6 +9,7 @@
       - software-properties-common
     update_cache: true
 
+
 - name: Install Docker - components Ubuntu
   ansible.builtin.apt:
     name:
@@ -19,8 +20,8 @@
       - software-properties-common
       - containerd.io
       - docker-buildx-plugin
+      - docker-compose-plugin
     update_cache: true
-
 
 - name: Install Docker -  Ubuntu latest version
   ansible.builtin.apt:

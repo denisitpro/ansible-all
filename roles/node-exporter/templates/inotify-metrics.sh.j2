@@ -1,0 +1,24 @@
+#!/bin/bash
+
+OUT="{{ node_exporter_textfile_dir }}/inotify.prom"
+
+INSTANCES=$(cat /proc/sys/fs/inotify/max_user_instances)
+WATCHES=$(cat /proc/sys/fs/inotify/max_user_watches)
+EVENTS=$(cat /proc/sys/fs/inotify/max_queued_events)
+COUNT=$(find /proc/*/fd -lname '*anon_inode:inotify*' 2>/dev/null | wc -l)
+
+echo "# HELP node_inotify_max_user_instances Max user inotify instances" > "$OUT"
+echo "# TYPE node_inotify_max_user_instances gauge" >> "$OUT"
+echo "node_inotify_max_user_instances $INSTANCES" >> "$OUT"
+
+echo "# HELP node_inotify_max_user_watches Max user inotify watches" >> "$OUT"
+echo "# TYPE node_inotify_max_user_watches gauge" >> "$OUT"
+echo "node_inotify_max_user_watches $WATCHES" >> "$OUT"
+
+echo "# HELP node_inotify_max_queued_events Max inotify queued events" >> "$OUT"
+echo "# TYPE node_inotify_max_queued_events gauge" >> "$OUT"
+echo "node_inotify_max_queued_events $EVENTS" >> "$OUT"
+
+echo "# HELP node_inotify_instances Current number of inotify instances" >> "$OUT"
+echo "# TYPE node_inotify_instances gauge" >> "$OUT"
+echo "node_inotify_instances $COUNT" >> "$OUT"
