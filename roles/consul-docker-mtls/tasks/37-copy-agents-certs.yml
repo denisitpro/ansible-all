@@ -1,0 +1,7 @@
+- name: Write Consul agent CA certificate from variable
+  ansible.builtin.copy:
+    content: "{{ consul_agent_ca }}"
+    dest: "{{ consul_mtls_cert_path }}/consul-agent-ca.pem"
+    # owner: "{{ consul_uid }}"
+    # group: "{{ consul_gid }}"
+    mode: '0644'

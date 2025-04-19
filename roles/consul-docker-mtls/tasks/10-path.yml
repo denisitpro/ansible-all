@@ -1,0 +1,21 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ consul_compose_path }}"
+
+- name: create path
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  with_items:
+    - "{{ consul_base_path }}"
+    - "{{ consul_config_dir }}"
+    - "{{ consul_mtls_cert_path }}"

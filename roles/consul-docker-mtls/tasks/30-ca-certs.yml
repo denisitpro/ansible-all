@@ -1,0 +1,60 @@
+- name: Ensure certs-ca  directory exists
+  ansible.builtin.file:
+    path: "{{ consul_generate_ca_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Check if CA cert already exists
+  ansible.builtin.stat:
+    path: "{{ consul_generate_ca_path }}/consul-agent-ca.pem"
+  register: consul_ca_cert_stat
+
+- name: Check if server cert already exists
+  ansible.builtin.stat:
+    path: "{{ consul_generate_ca_path }}/{{ consul_dc_name }}-server-consul-0.pem"
+  register: consul_server_cert_stat
+
+- name: Generate Consul CA certificate using docker
+  community.docker.docker_container:
+    name: consul-ca-generate
+    image: "hashicorp/consul:{{ consul_server_version }}"
+    command: "consul tls ca create -days 3650"
+    working_dir: "{{ consul_generate_ca_path }}"
+    volumes:
+      - "{{ consul_generate_ca_path }}:{{ consul_generate_ca_path }}"
+    entrypoint: ""
+    auto_remove: true
+    detach: false
+    cleanup: true
+    tty: false
+  when: not consul_ca_cert_stat.stat.exists
+
+- name: Remove existing server cert and key if forced
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ consul_generate_ca_path }}/{{ consul_dc_name }}-server-consul-0-key.pem"
+    - "{{ consul_generate_ca_path }}/{{ consul_dc_name }}-server-consul-0.pem"
+  when: consul_server_recreate | default(false) | bool
+
+- name: Generate shared server certificate for all Consul servers using docker
+  community.docker.docker_container:
+    name: consul-server-cert-generate
+    image: "hashicorp/consul:{{ consul_server_version }}"
+    command: >
+      consul tls cert create -server
+      -dc {{ consul_dc_name }}
+      {% for san in consul_san_dns_list %}
+      -additional-dnsname {{ san }}
+      {% endfor %}
+      -days 3650
+    working_dir: "{{ consul_generate_ca_path }}"
+    volumes:
+      - "{{ consul_generate_ca_path }}:{{ consul_generate_ca_path }}"
+    entrypoint: ""
+    auto_remove: true
+    detach: false
+    cleanup: true
+    tty: false
+  when: not consul_server_cert_stat.stat.exists or consul_server_recreate is defined

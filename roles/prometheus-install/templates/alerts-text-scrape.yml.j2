@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: text scrape alert rules
+  rules:
+  - alert: Textfile scrape error
+    annotations:
+      description: "{% raw %} Textfile scrape error on {{ $labels.instance }} {% endraw %}"
+      summary: Textfile scrape error
+    expr: |
+      node_textfile_scrape_error == 1
+    for: 1m
+    labels:
+      severity: warning  

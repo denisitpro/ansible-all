@@ -1,0 +1,34 @@
+addresses = {
+  http  = "127.0.0.1"
+}
+ports {
+  https = 8501
+  dns = -1
+}
+tls {
+  defaults {
+    ca_file = "{{ consul_mtls_cert_path }}/consul-agent-ca.pem"
+{% if consul_mode == "server" %}
+    cert_file = "{{ consul_mtls_cert_path }}/server-cert.pem"
+    key_file = "{{ consul_mtls_cert_path }}/server-key.pem"
+{% endif %}
+    verify_incoming = true
+    verify_outgoing = true
+    verify_server_hostname = true
+  }
+}
+# Enable Consul Connect to support service identity certificates
+# Allows enforcing service-to-service authorization via intentions
+# Replaces network-level ACLs with identity-based access control
+connect {
+  enabled = true
+}
+{% if consul_mode == "server" %}
+auto_encrypt {
+  allow_tls = true
+}
+{% else %}
+auto_encrypt {
+  tls = true
+}
+{% endif %}

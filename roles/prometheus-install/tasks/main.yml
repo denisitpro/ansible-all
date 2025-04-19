@@ -22,6 +22,7 @@
   tags:
     - prom
     - prom-config
+    - prom-configs-update
 
 - ansible.builtin.import_tasks: 40-compose.yml
   tags:

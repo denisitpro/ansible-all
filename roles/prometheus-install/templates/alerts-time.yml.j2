@@ -1,0 +1,57 @@
+
+{{ ansible_managed | comment }}
+
+groups:
+- name: clickhouse alert rules
+  rules:
+  # - alert: Critical node time seconds
+  #   expr: abs(time() - node_time_seconds) > 60
+  #   for: 1m
+  #   labels:
+  #     severity: warning
+  #   annotations:
+  #     description: "{% raw %}{{ $labels.instance }} node time seconds alert to more 60 {% endraw %}"
+  #     summary: "{% raw %}Instance {{ $labels.instance }} - node time seconds alert to more ({{ humanize $value}}){% endraw %}"
+
+  - alert: ClockSkewDetected g2
+    expr: abs(node_timex_estimated_error_seconds) * 1000 > 15
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Clock skew detected on {{ $labels.instance }}. Ensure NTP is configured correctly on this host.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} - Clock skew detected{% endraw %}"
+
+  - alert: ClockSkewDetectedStable
+    expr: |
+      (abs(node_timex_offset_seconds offset 2m) > 0.05)
+      and ignoring(instance)
+      (changes(node_timex_offset_seconds[2m]) < 5)
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Stable clock skew detected on {{ $labels.instance }}. Offset > 50ms over 2m.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} - clock offset is stable and too high: {{ humanize $value }}{% endraw %}"
+
+# dublicate ClockSkewDetected g2
+  - alert: NodeClockSkewDetected - 0.15
+    annotations:
+      summary: "{% raw %}Clock skew detected (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Clock at {{ $labels.instance }} is out of sync by more than 0.15s. Ensure NTP is configured correctly on this host. VALUE = {{ printf \"%.8f\" $value }}s{% endraw %}"
+    expr: ((node_timex_offset_seconds > 0.15 and deriv(node_timex_offset_seconds[5m]) >= 0) or (node_timex_offset_seconds < -0.15 and deriv(node_timex_offset_seconds[5m]) <= 0)) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}
+    for: 10m
+    labels:
+      severity: warning
+
+  - alert: NodeClockNotSynchronising
+    annotations:
+      description: "{% raw %}Clock at {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.{% endraw %}"
+      summary: Clock not synchronising.
+    expr: |
+      min_over_time(node_timex_sync_status{job="node-exporter"}[5m]) == 0
+      and
+      node_timex_maxerror_seconds{job="node-exporter"} >= 16
+    for: 10m
+    labels:
+      severity: warning

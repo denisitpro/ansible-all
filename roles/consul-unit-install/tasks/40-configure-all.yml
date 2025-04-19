@@ -1,10 +1,15 @@
 ---
+- name: Set retry_join for Consul agent
+  ansible.builtin.set_fact:
+    consul_retry_join: ["{{ consul_cls_pub_name | default('consul.example.com') }}"]
+  when: consul_mode == 'agent'
+
 - name: copy configs agent configs
   ansible.builtin.template:
-    src: "roles/consul-docker-install/templates/{{ item }}.j2"
+    src: "roles/consul-docker-mtls/templates/{{ item }}.j2"
     dest: "{{ consul_config_dir }}/{{ item }}"
     mode: "0644"
   with_items:
-    - agent.hcl
-    - consul-agent.hcl
+    - consul-general.hcl
+    - consul-mtls.hcl
   notify: restart consul
