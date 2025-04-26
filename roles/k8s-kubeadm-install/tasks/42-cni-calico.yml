@@ -1,37 +1,37 @@
 ---
 # install calico  50 nodes or less
 # https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
-- name: Print cni_network
+- name: Print k8s_cni_network
   ansible.builtin.debug:
-    msg: CNI network {{ cni_network }}
+    msg: CNI network {{ k8s_cni_network }}
 
-- name: "Check {{ cni_network }} daemonset is working"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} get ds --all-namespaces | grep {{ cni_network }}"
+- name: "Check calico daemonset is working"
+  ansible.builtin.shell: "kubectl --kubeconfig={{ kubeadmin_config }} get ds --all-namespaces | grep {{ k8s_cni_network }}"
   run_once: true
   register: check_net
   ignore_errors: true
   changed_when: false
 
 - name: "Check if Calico operator exists"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} get deployment tigera-operator -n tigera-operator --ignore-not-found"
+  ansible.builtin.command: "kubectl --kubeconfig={{ kubeadmin_config }} get deployment tigera-operator -n tigera-operator --ignore-not-found"
   register: calico_operator_check
   changed_when: false
-  check_mode: no
+  check_mode: false
 
 
-- name: "Create operator"
+- name: Create operator
 #  when: check_net is failed
-  command: "kubectl --kubeconfig={{ kubeadmin_config }} create -f https://raw.githubusercontent.com/projectcalico/calico/{{calico_operator_version}}/manifests/tigera-operator.yaml"
+  ansible.builtin.command: "kubectl --kubeconfig={{ kubeadmin_config }} create -f https://raw.githubusercontent.com/projectcalico/calico/{{ calico_operator_version }}/manifests/tigera-operator.yaml"
   run_once: true
   when: calico_operator_check.stdout == "" and check_net is failed
 
 - name: copy init config calico
-  template:
+  ansible.builtin.template:
     src: "calico.yaml.j2"
     dest: /tmp/calico.yaml
     owner: root
     group: root
-    mode: 0600
+    mode: "0600"
   delegate_to: "{{ groups[k8s_master_group_name][0] }}"
   tags:
     - k8s-calico-copy
@@ -39,20 +39,18 @@
 
 - name: install calico v2
   when: check_net is failed
-  command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico.yaml"
+  ansible.builtin.command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico.yaml"
   run_once: true
   tags:
     calico-install
 
-
 # todo remove old
-#- name: copy ipv6 config
+# - name: copy ipv6 config
 #  copy:
 #    src: calico-ipv6-crd.yml
 #    dest: /tmp/calico-ipv6-crd.yml
 
-
-#- name: install calico
+# - name: install calico
 #  when: check_net is failed
-#  command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico-ipv6-crd.yml"
+#  ansible.builtin.command: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f /tmp/calico-ipv6-crd.yml"
 #  run_once: true

@@ -3,6 +3,7 @@
   ansible.builtin.file:
     path: /tmp/containerd
     state: directory
+    mode: "0755"
 
 - name: download  containerd
   ansible.builtin.get_url:

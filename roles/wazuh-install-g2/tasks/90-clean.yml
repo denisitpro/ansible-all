@@ -1,0 +1,11 @@
+- name: stop wazuh-agent
+  ansible.builtin.systemd_service:
+    name: "{{ wazuh_agent_system_name }}"
+    state: "stopped"
+    enabled: false
+
+- name: uninstall wazuh-agent
+  ansible.builtin.apt:
+    name: "{{ wazuh_agent_system_name }}"
+    state: "absent"
+    purge: true

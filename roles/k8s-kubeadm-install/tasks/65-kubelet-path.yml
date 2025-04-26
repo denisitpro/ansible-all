@@ -1,0 +1,19 @@
+---
+- name: Deploy kubelet resolv.conf template
+  ansible.builtin.template:
+    src: kubelet.resolv.conf.j2
+    dest: /etc/kubernetes/kubelet.resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart kubelet
+
+- name: copy kubelet.yml override config
+  ansible.builtin.template:
+    src: "kubelet-config.yaml.j2"
+    dest: "/var/lib/kubelet/config.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart kubelet
+  # when: k8s_master is not defined

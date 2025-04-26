@@ -34,6 +34,7 @@ consul_node_exporter_token: "{{ vault_dict_users_secret.consul_all_exporters_tok
 node_exporter_tags:
   - "{{ stand_type }}"
   - "{{ node_exporter_name | default('node-exporter') }}"
+  - "dc={{ consul_dc_name }}"
 
 
 scripts_path: /opt/scripts

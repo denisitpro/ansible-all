@@ -1,0 +1,21 @@
+---
+- name: Download Cilium CLI binary
+  ansible.builtin.get_url:
+    url: "https://github.com/cilium/cilium-cli/releases/download/v{{ cilium_cli_version }}/cilium-linux-amd64.tar.gz"
+    dest: "/tmp/cilium-linux-amd64.tar.gz"
+    mode: '0644'
+
+
+- name: Extract and install Cilium CLI
+  ansible.builtin.unarchive:
+    src: "/tmp/cilium-linux-amd64.tar.gz"
+    dest: "/usr/local/bin"
+    remote_src: true
+    mode: '0755'
+
+- name: Ensure cilium binary is executable
+  ansible.builtin.file:
+    path: /usr/local/bin/cilium
+    mode: '0755'
+    owner: root
+    group: root
