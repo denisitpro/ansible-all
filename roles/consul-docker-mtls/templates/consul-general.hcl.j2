@@ -1,9 +1,14 @@
 datacenter = "{{ consul_dc_name }}"
 data_dir = "{{ consul_base_path }}"
 
+log_level = "{{ consul_log_level | default('INFO') }}"
+
 bind_addr = "{{ consul_bind_addr | default('[::]') }}"
 reconnect_timeout = "{{consul_reconnect_timeout | default('24h') }}"
 
+{% if consul_advertise_bind is defined %}
+advertise_addr = "{{ consul_advertise_bind }}"
+{% endif %}
 
 encrypt = "{{ consul_encrypt_key }}"
 encrypt_verify_outgoing = true

@@ -1,0 +1,7 @@
+{{ ansible_managed | comment }}
+{% for ns in dns_nameservers %}
+nameserver {{ ns }}
+{% endfor %}
+{% if dns_resolved_domains is defined %}
+search {{ dns_resolved_domains | join(' ') }}
+{% endif %}

@@ -6,6 +6,12 @@
     - dns
     - common-base
 
+- ansible.builtin.import_tasks: 55-resolv-conf.yml
+  when: dns_management is defined and dns_management == "resolv.conf"
+  tags:
+    - base
+    - dns
+    - common-base
 
 - ansible.builtin.import_tasks: 70-update-installed-packages.yml
   tags:

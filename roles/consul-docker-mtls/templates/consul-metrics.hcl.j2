@@ -1,13 +1,13 @@
 service {
   name  = "{{ consul_metrics_name | default('consul-metrics') }}"
-  port  = {{ consul_metrics_bind_port | default('8500') }}
+  port  = {{ consul_metrics_bind_port | default('8501') }}
   tags  = [
     "prometheus",
-    {% if consul_metrics_tags is defined %}
-      {% for tag in consul_metrics_tags %}
+{% if consul_metrics_tags is defined %}
+{% for tag in consul_metrics_tags %}
         "{{ tag }}",
-      {% endfor %}
-    {% endif %}
+{% endfor %}
+{% endif %}
   ]
 
   {% if consul_agent_disabled is not defined %}
@@ -17,7 +17,7 @@ service {
   check = {
     id       = "consul-metrics"
     name     = "consul-metrics healthcheck"
-    tcp      = "{{ consul_metrics_bind_addr | default('') }}:{{ consul_metrics_bind_port | default('8500') }}"
+    tcp      = "{{ consul_metrics_bind_addr | default('') }}:{{ consul_metrics_bind_port | default('8501') }}"
     interval = "30s"
     timeout  = "2s"
   }
