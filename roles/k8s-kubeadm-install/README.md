@@ -1,13 +1,8 @@
 # Description  
-* Role  install and configure k8s to ubuntu 22 - use kubeadm
-* Another distribution not testing
-* Test use servers - one interface
+* Role  install and configure k8s to ubuntu 24 - use kubeadm
 * need set variable `k8s_master_group_name` = out host group
-* join worked node need hands get token for join - use control panel node. todo ned autmation use delegation 
-```
-export KUBECONFIG=/etc/kubernetes/admin.conf
-kubeadm token create --print-join-command
-```
+
+
 
 # Local ip address launch
 need set variable  for master node
@@ -36,7 +31,21 @@ k8s_calico_ipv4_ipip_mode: Never
 k8s_calico_ipv4_vxlan_mode: Always
 ```
 
-# Todo
-* local iface - need support env, current state harcode - level task
-* calico bird support specific bind iface or address
-* calico typha support specific bind iface or address
+# Cilium install
+Helm - required localhost installed
+
+Check corrected work
+```bash
+export KUBECONFIG=~/.kube/sigma.conf
+cilium status
+```
+
+# Commands
+###  Create join token for worker nodes
+```
+export KUBECONFIG=/etc/kubernetes/admin.conf
+kubeadm token create --print-join-command
+```
+
+
+

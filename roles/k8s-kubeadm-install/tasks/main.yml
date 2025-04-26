@@ -22,6 +22,16 @@
     - k8s
     - k8s-repo
 
+- ansible.builtin.import_tasks: 27-prefly-cilium.yml
+  when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_install_mode == 'cli'
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  tags:
+    - k8s
+    - k8s-repo
+    - cilium
+    - cilium-cli
+
 - ansible.builtin.import_tasks: 30-kube-services.yml
   when: ansible_distribution == 'Ubuntu'
   tags:
@@ -33,21 +43,24 @@
   tags:
     - k8s
     - k8s-init
+    - k8s-reconfigure
 
-- ansible.builtin.import_tasks: 37-k8s-init-cls-specific-iface.yml
-  when: k8s_master is defined and k8s_local_network_force is defined
-  tags:
-    - k8s
-    - k8s-init
+# - ansible.builtin.import_tasks: 37-k8s-init-cls-specific-iface.yml
+#   when: k8s_master is defined and k8s_local_network_force is defined
+#   tags:
+#     - k8s
+#     - k8s-init
+#     - k8s-reconfigure
 
 
-- ansible.builtin.import_tasks: 42-cni-calico.yml
-  when: k8s_master is defined
-  delegate_to: "{{ k8s_master_init_host }}"
-  tags:
-    - k8s
-    - k8s-calico
-    - k8s-calico-ipv6
+# - ansible.builtin.import_tasks: 42-cni-calico.yml
+#   when: k8s_master is defined and k8s_cni_network == "calico"
+#   delegate_to: "{{ k8s_master_init_host }}"
+#   tags:
+#     - k8s
+#     - k8s-calico
+#     - k8s-calico-ipv6
+#     - k8s-reconfigure
 
 
 - ansible.builtin.import_tasks: 50-join-worker-node-global.yml
@@ -55,12 +68,59 @@
   tags:
     - k8s
     - k8s-worker-node
+    - k8s-reconfigure
 
-- ansible.builtin.import_tasks: 55-join-worker-node-iface.yml
-  when: k8s_master is not defined and k8s_local_network_force is defined
+# - ansible.builtin.import_tasks: 55-join-worker-node-iface.yml
+#   when: k8s_master is not defined and k8s_local_network_force is defined
+#   tags:
+#     - k8s
+#     - k8s-worker-node
+#     - k8s-reconfigure
+
+
+- ansible.builtin.import_tasks: 65-kubelet-path.yml
+  when: kubelet_path is defined
   tags:
     - k8s
-    - k8s-worker-node
+    - kubelet-path
+    - k8s-reconfigure
 
-- ansible.builtin.import_tasks: 95-reset-k8s-cls.yml
+- ansible.builtin.import_tasks: 70-sysctl-cilium-tune.yml
+  when: cilium_sysctl_tune_force is defined and k8s_cni_network == "cilium"
+  tags:
+    - k8s
+    - k8s-cilium
+    - k8s-reconfigure
+    - cilium-sysctl
+
+- ansible.builtin.import_tasks: 73-cni-cilium-helm.yml
+  when: k8s_master is defined and k8s_cni_network == "cilium"  and cilium_install_mode == 'helm'
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  tags:
+    - k8s
+    - k8s-cilium
+    - k8s-reconfigure
+
+- ansible.builtin.import_tasks: 75-cni-cilium-cli.yml
+  when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_install_mode == 'cli'
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  tags:
+    - k8s
+    - k8s-cilium
+    - k8s-reconfigure
+
+
+- ansible.builtin.import_tasks: 80-get-admin-config.yml
+  when: k8s_get_config is defined
+  run_once: true
+  tags:
+    - k8s
+    - k8s-config
+    - k8s-reconfigure
+    - k8s-get-config
+    - k8s-cilium
+
+- ansible.builtin.import_tasks: 200-reset-k8s-cls.yml
   tags: ['never', 'k8s-reset', 'k8s-clean']

@@ -6,7 +6,7 @@ certificateValidityPeriod: "{{k8s_cert_component_valid_hour |default('43800h')}}
 controlPlaneEndpoint: "{{ k8s_cls_name |default('k8s.example.com') }}:{{ k8s_cls_port |default('6443') }}"
 {% endif %}
 networking:
-  podSubnet: "{{ k8s_net_cluster_pool}}{% if k8s_ipv6 is defined %},fd00:10:48::/48{% endif %}"  # order ip4 first second ipv6 important
+  podSubnet: "10.48.0.0/21{% if k8s_ipv6 is defined %},fd00:10:48::/48{% endif %}"  # order ip4 first second ipv6 important
   serviceSubnet: "10.96.0.0/12{% if k8s_ipv6 is defined %},fd00:10:96::/108{% endif %}"  #order ip4 first second ipv6 important
 {% if k8s_ipv6 is defined %}
 ---

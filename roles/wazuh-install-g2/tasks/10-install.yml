@@ -1,0 +1,9 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install specific version of Wazuh agent
+  ansible.builtin.apt:
+    name: wazuh-agent={{ wazuh_agent_version }}
+    state: present

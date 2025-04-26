@@ -1,0 +1,29 @@
+---
+- name: Uninstall Cilium using Cilium CLI
+  ansible.builtin.command: cilium uninstall --force -n {{ cilium_namespace | default('cilium') }}
+  when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_install_mode == 'cli'
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+
+# - name: Delete Cilium interfaces
+#   ansible.builtin.shell: |
+#     ip link del cilium_host || true
+#     ip link del cilium_net || true
+#   args:
+#     warn: false
+#   tags: cilium
+
+# - name: Remove leftover eBPF maps
+#   ansible.builtin.shell: |
+#     rm -rf /sys/fs/bpf/tc/globals/cilium_*
+#   args:
+#     warn: false
+#   tags: cilium
+
+- name: Reset Kubernetes component - dedical tasks
+  ansible.builtin.command: "kubeadm reset --force --cri-socket=/var/run/{{ container_runtime }}/{{ container_runtime }}.sock"
+
+- name: remove data dir
+  ansible.builtin.file:
+    path: /etc/systemd/system/kubelet.service.d
+    state: absent

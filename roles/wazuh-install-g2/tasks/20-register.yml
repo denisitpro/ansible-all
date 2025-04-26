@@ -1,0 +1,23 @@
+---
+- name: Check if Wazuh agent key file exists and is non-empty
+  ansible.builtin.stat:
+    path: /var/ossec/etc/client.keys
+  register: wazuh_key_stat
+
+- name: Register Wazuh agent with manager
+  ansible.builtin.command: >
+    /var/ossec/bin/agent-auth
+    -m {{ wazuh_management_server }}
+    -P {{ wazuh_agent_registration_pass }}
+  when: not wazuh_key_stat.stat.exists or wazuh_key_stat.stat.size == 0
+  register: wazuh_register_result
+
+- name: Debug Wazuh registration output
+  ansible.builtin.debug:
+    var: wazuh_register_result.stdout_lines
+
+- name: Ensure Wazuh agent is enabled and started
+  ansible.builtin.systemd:
+    name: wazuh-agent
+    enabled: true
+    state: restarted
