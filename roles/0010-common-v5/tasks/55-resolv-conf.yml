@@ -1,0 +1,27 @@
+---
+- name: enable write resolv.conf
+  ansible.builtin.command: /usr/bin/chattr -f -i /etc/resolv.conf
+  ignore_errors: true
+
+- name: remove default systemd-managed resolv.conf
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    state: absent
+
+- name: copy static resolv.conf
+  ansible.builtin.template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: disable write resolv.conf
+  ansible.builtin.command: /usr/bin/chattr -f  +i /etc/resolv.conf
+
+# - name: disable systemd-resolved
+#   ansible.builtin.systemd:
+#     name: systemd-resolved
+#     state: stopped
+#     enabled: no
+#   when: force_dns_ext is defined

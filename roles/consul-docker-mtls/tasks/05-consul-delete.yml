@@ -1,5 +1,15 @@
 ---
+- name: stop compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ consul_compose_path }}"
+    state: absent
+
 - name: Remove files consul
   ansible.builtin.file:
     path: "{{ consul_base_path }}/data/"
     state: absent
+
+# - name: start compose
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ consul_compose_path }}"
+#     state: absent

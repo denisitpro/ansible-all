@@ -11,6 +11,7 @@
     dest: "/etc/consul.d/{{ item }}"
     mode: "0644"
   notify: restart-docker consul
+  when: consul_metric_disable is not defined
   with_items:
     - consul-metrics.hcl
     - consul-telemetry.hcl

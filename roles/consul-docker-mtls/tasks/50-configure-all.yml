@@ -8,6 +8,10 @@
     consul_retry_join: ["{{ consul_cls_pub_name | default('consul.example.com') }}"]
   when: consul_mode == 'agent'
 
+- name: consul bind address
+  ansible.builtin.debug:
+    msg: "bind address {{ consul_bind_addr }}"
+
 - name: copy configs for all
   ansible.builtin.template:
     src: "{{ item }}.j2"

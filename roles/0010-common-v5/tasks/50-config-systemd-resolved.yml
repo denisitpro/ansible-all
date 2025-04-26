@@ -1,52 +1,11 @@
 ---
-# - name: create path
-#   ansible.builtin.file:
-#     path: "{{ item }}"
-#     owner: root
-#     group: root
-#     state: directory
-#     mode: "0644"
-#   with_items:
-#     - "/usr/lib/systemd/resolved.conf.d"
-
-# - name: copy ansible-management.conf
-#   ansible.builtin.template:
-#     src: systemd_resolved_resolv.conf.j2
-#     dest: "/usr/lib/systemd/resolved.conf.d/ansible-managed.conf"
-#     mode: "0644"
-
-# - name: create path
-#   ansible.builtin.file:
-#     path: "{{ item }}"
-#     owner: root
-#     group: root
-#     state: directory
-#     mode: "0644"
-#   with_items:
-#     - "/etc/systemd/resolved.conf.d"
-
-
-# To recreate , remove /etc/systemd/resolved.conf and restart the unit systemd-resolved
 - name: copy ansible-management.conf
   ansible.builtin.template:
     src: systemd_resolved_resolv.conf.j2
     dest: "/etc/systemd/resolved.conf"
     mode: "0644"
 
-
-# dont work hetzner and DO
-# - name: copy ansible-management.conf
-#   ansible.builtin.template:
-#     src: systemd_resolved_resolv.conf.j2
-#     dest: "/etc/systemd/resolved.conf.d/ansible-managed.conf"
-#     mode: "0644"
-
 - name: restart systemd-resolved
   ansible.builtin.systemd:
     state: restarted
     name: systemd-resolved
-
-# - name: Set global search domain using resolvectl
-#   ansible.builtin.command:
-#     cmd: "resolvectl domain {{ ansible_default_ipv4.interface }} {% for dom in  dns_resolved_domains %}{{ dom }} {% endfor %}"
-#   when: resolvectl_force_domain is defined

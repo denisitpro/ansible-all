@@ -1,8 +1,10 @@
 [Resolve]
-{% if cloud_provider is defined and cloud_provider != 'aws' %}
-DNS={{dns1}} {{dns2}}
+DNS={% for ns in dns_nameservers %}{{ ns }} {% endfor %}
+
+{% if dns_resolved_domains is defined %}
+Domains={{ dns_resolved_domains | join(' ') }}
 {% endif %}
-Domains={% for dom in  dns_resolved_domains %}{% if ansible_distribution == 'CentOS' %}~{% endif %}{{dom}} {% endfor %}
 
 Cache=no-negative
 LLMNR=false
+DNSStubListener=no

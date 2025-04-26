@@ -1,3 +1,4 @@
+---
 - name: Write Consul agent CA certificate from variable
   ansible.builtin.copy:
     content: "{{ consul_agent_ca }}"

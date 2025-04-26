@@ -1,5 +1,5 @@
 ---
 - name: restart process-exporter
-  systemd:
+  ansible.builtin.systemd:
     name: process-exporter
     state: restarted

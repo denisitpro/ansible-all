@@ -8,8 +8,7 @@ consul_gid: 1000
 
 # need for teleport
 consul_bind_addr: '[::]'
-consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me') }}"
-
+consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me', true) }}"
 
 consul_compose_path: /opt/docker/consul
 consul_base_path: /opt/consul
@@ -33,6 +32,7 @@ consul_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | d
 consul_metrics_tags:
   - "{{ stand_type }}"
   - "{{ consul_metrics_name | default('consul-metrics') }}"
+  - "dc={{ consul_dc_name }}"
 
 
 consul_san_dns_list:

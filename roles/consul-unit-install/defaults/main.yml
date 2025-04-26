@@ -16,5 +16,6 @@ consul_download_dir: /tmp
 consul_config_dir: /etc/consul.d
 consul_tmpl_dir: "{{ consul_base_path }}/tmpl"
 
+consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me', true) }}"
 consul_encrypt_key: "{{ vault_dict_users_secret.consul_encrypt_key | default('set_me') }}"
 consul_agent_token: "{{ vault_dict_users_secret.consul_agent_token | default('set_me') }}"
