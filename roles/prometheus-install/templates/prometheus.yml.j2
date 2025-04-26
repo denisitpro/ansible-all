@@ -50,6 +50,10 @@ scrape_configs:
 {% for tag in target.tags %}
       - {{ tag }}
 {% endfor %}
+  - source_labels: [__meta_consul_tags]
+    regex: .*dc=([^,]+).*
+    target_label: dc
+    replacement: $1
 {% endif %}
     job_name: {{ target.job_name }}
 {% if target.scrape_interval is defined %}
@@ -67,8 +71,15 @@ scrape_configs:
 {% endif %}
 {% if target.scheme is defined %}
     scheme: {{ target.scheme }}
+{% if target.insecure_skip_verify is defined %}
     tls_config:
       insecure_skip_verify: {{ target.insecure_skip_verify }}
+{% endif %}
+{% if prom_support_consul_mtls is defined %}
+      ca_file: "{{ prometheus_mtls_path }}/agent-ca.pem"
+      cert_file: "{{ prometheus_mtls_path }}/client-prometheus.crt"
+      key_file: "{{ prometheus_mtls_path }}/client-prometheus.key"
+{% endif %}
 {% endif %}
     relabel_configs:
     - action: keep
@@ -78,6 +89,10 @@ scrape_configs:
     - source_labels:
       - __meta_consul_tags
       target_label: tags
+      replacement: $1
+    - source_labels: [__meta_consul_tags]
+      regex: .*dc=([^,]+).*
+      target_label: dc
       replacement: $1
     - source_labels:
       - __meta_consul_service

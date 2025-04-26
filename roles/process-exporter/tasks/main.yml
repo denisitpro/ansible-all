@@ -1,0 +1,21 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - process-exporter
+    - process-exporter-prefly
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - process-exporter
+    - process-exporter-config
+    - pe-config
+
+- ansible.builtin.import_tasks: 50-consul-reg.yml
+  when: consul_monitoring_disable is not defined
+
+  tags:
+    - process-exporter
+    - consul-reg
+
+- ansible.builtin.import_tasks: 90-restart.yml
+  tags: ['never', 'exporter-restart-restart']

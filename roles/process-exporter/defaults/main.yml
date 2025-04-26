@@ -1,0 +1,26 @@
+---
+process_exporter_version: 0.8.7
+process_exporter_conf_path: /etc/process-exporter
+process_exporter_bind_addr: "{{ ansible_default_ipv4.address }}"
+
+go_arch_map:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+
+
+go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+
+# default array for mon
+processes_to_monitor:
+  - name: "node-exporter"
+    cmdline: ["node-exporter"]
+  - name: "process-exporter"
+    cmdline: ["process-exporter"]
+
+consul_process_exporter_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+
+process_exporte_tags:
+  - "{{ stand_type }}"
+  - "{{ process_exporter_name | default('process-exporter') }}"
+  # - "dc={{ consul_dc_name }}"

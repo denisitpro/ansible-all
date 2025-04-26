@@ -1,0 +1,40 @@
+---
+- name: download process exporter binary to local folder
+  become: false
+  ansible.builtin.get_url:
+    url: "https://github.com/ncabatoff/process-exporter/releases/download/v{{ process_exporter_version }}/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    mode: "0644"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+
+- name: unpack process-exporter binaries
+  become: false
+  ansible.builtin.unarchive:
+    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}"
+    remote_src: true
+
+- name: copy to /usr/loca/bin
+  ansible.builtin.copy:
+    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: "0755"
+    owner: root
+    group: root
+    remote_src: true
+  with_items:
+    - process-exporter
+  notify:
+    - restart process-exporter
+
+- name: create config folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ process_exporter_conf_path }}"

@@ -1,0 +1,25 @@
+---
+- name: Check consul directory is exists
+  ansible.builtin.stat:
+    path: "{{ consul_config_dir | default('/etc/consul.d') }}"
+  register: consul_config_dir_exists
+
+- name: Copy node_exporter consul config - notify unit
+  ansible.builtin.template:
+    src: "process-exporter.hcl.j2"
+    dest: "/etc/consul.d/process-exporter.hcl"
+    mode: "0644"
+  notify: restart consul
+  when:
+    - consul_config_dir_exists.stat.exists
+    - consul_unit is  defined
+
+- name: Copy node_exporter consul config - notify docker
+  ansible.builtin.template:
+    src: "process-exporter.hcl.j2"
+    dest: "/etc/consul.d/process-exporter.hcl"
+    mode: "0644"
+  notify: restart-docker consul
+  when:
+    - consul_config_dir_exists.stat.exists
+    - consul_unit is not  defined

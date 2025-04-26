@@ -1,0 +1,27 @@
+---
+- name: Write Consul Prometheus client cert
+  ansible.builtin.copy:
+    content: "{{ consul_client_prometheus_cert }}"
+    dest: "{{ prometheus_mtls_path }}/client-prometheus.crt"
+    owner: "{{ prometheus_user_uid }}"
+    group: "{{ prometheus_user_gid }}"
+    mode: '0644'
+  when: consul_client_prometheus_cert != 'set_me'
+
+- name: Write Consul Prometheus client key
+  ansible.builtin.copy:
+    content: "{{ consul_client_prometheus_key }}"
+    dest: "{{ prometheus_mtls_path }}/client-prometheus.key"
+    owner: "{{ prometheus_user_uid }}"
+    group: "{{ prometheus_user_gid }}"
+    mode: '0600'
+  when: consul_client_prometheus_key != 'set_me'
+
+- name: Write Consul agent CA
+  ansible.builtin.copy:
+    content: "{{ consul_agent_ca }}"
+    dest: "{{ prometheus_mtls_path }}/agent-ca.pem"
+    owner: "{{ prometheus_user_uid }}"
+    group: "{{ prometheus_user_gid }}"
+    mode: '0644'
+  when: consul_agent_ca != 'set_me'

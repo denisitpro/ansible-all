@@ -1,0 +1,23 @@
+---
+- name: copy config
+  ansible.builtin.template:
+    src: "process-exporter.yml.j2"
+    dest: "{{ process_exporter_conf_path }}/process-exporter.yml"
+    mode: "0644"
+  notify: restart process-exporter
+
+- name: copy unit apps
+  ansible.builtin.template:
+    src: "process-exporter.service.j2"
+    dest: "/etc/systemd/system/process-exporter.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart process-exporter
+
+- name: enable process-exporter  unit
+  ansible.builtin.systemd:
+    name: "process-exporter"
+    enabled: true
+    daemon_reload: true
+  notify: restart process-exporter
