@@ -22,5 +22,6 @@
     - "{{ prometheus_db_dir }}"
     - "{{ prometheus_config_path }}"
     - "{{ prometheus_rules_path }}"
+    - "{{ prometheus_mtls_path }}"
   tags:
     - prom-dir

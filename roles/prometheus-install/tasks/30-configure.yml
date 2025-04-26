@@ -21,7 +21,7 @@
 
 - name: Validate prometheus config
   ansible.builtin.command:
-    cmd: "docker run --rm --entrypoint sh --name prometheus.check -v {{ prometheus_config_path }}:{{ prometheus_config_dir }} prom/prometheus:{{ prometheus_image }} -c '/bin/promtool check config {{ prometheus_config_dir }}/prometheus.yml'"
+    cmd: "docker run --rm --entrypoint sh --name prometheus.check -v {{ prometheus_base_path }}:{{ prometheus_base_path }} prom/prometheus:{{ prometheus_image }} -c '/bin/promtool check config {{ prometheus_config_dir }}/prometheus.yml'"
   register: promtool_config_output
   changed_when: false
   failed_when: promtool_config_output.rc != 0

@@ -1,0 +1,9 @@
+{{ ansible_managed | comment }}
+process_names:
+{% for process in processes_to_monitor %}
+  - name: "{{ process.name }}"
+    cmdline:
+{% for cmd in process.cmdline %}
+      - '{{ cmd }}'
+{% endfor %}
+{% endfor %}

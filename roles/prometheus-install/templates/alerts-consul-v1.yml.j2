@@ -40,10 +40,10 @@ groups:
       summary: "{% raw %}Inconsistent Consul leader state{% endraw %}"
       description: "{% raw %}There is a mismatch between servers reporting raft leader state and actual leader identity. Potential split-brain or telemetry issue.{{ $value }}{% endraw %}"
   - alert: Consul_leader_inconsistency
-    expr: sum(consul_raft_state_leader) != 1 or sum(consul_server_isLeader) != 1
+    expr: sum by (dc)(consul_raft_state_leader == 1) != 1
     for: 1m
     labels:
       severity: critical
     annotations:
-      summary: "{% raw %}Consul cluster leader inconsistency{% endraw %}"
-      description: "{% raw %}There is no leader or multiple nodes report themselves as leaders in the Consul cluster.{% endraw %}"      
+      summary: "{% raw %}Consul cluster leader inconsistency  (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}There is no leader or multiple nodes report themselves as leaders in the Consul cluster (dc {{ $labels.dc }}).{% endraw %}"

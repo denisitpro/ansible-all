@@ -1,0 +1,24 @@
+service {
+  name  = "{{ process_exporter_name | default('process-exporter') }}"
+  port  = {{ process_exporter_bind_port | default('9256') }}
+  tags  = [
+    "prometheus",
+{% if process_exporter_tags is defined %}
+{% for tag in process_exporter_tags %}
+        "{{ tag }}",
+{% endfor %}
+{% endif %}
+  ]
+
+  {% if consul_agent_disabled is not defined %}
+    token = "{{ consul_process_exporter_token }}"
+  {% endif %}
+
+  check = {
+    id       = "process-exporter"
+    name     = "process-exporter healthcheck"
+    tcp      = "{{ process_exporter_bind_addr | default('') }}:{{ process_exporter_bind_port | default('9256') }}"
+    interval = "30s"
+    timeout  = "2s"
+  }
+}
