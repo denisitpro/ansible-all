@@ -111,7 +111,6 @@
     - k8s-cilium
     - k8s-reconfigure
 
-
 - ansible.builtin.import_tasks: 80-get-admin-config.yml
   when: k8s_get_config is defined
   run_once: true
