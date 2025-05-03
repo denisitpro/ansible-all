@@ -1,0 +1,41 @@
+global:
+  domain: {{ argocd_domain | default('argocd.example.com') }}
+  ha:
+    enabled: false
+
+{% if argocd_ingress_support is defined %}
+configs:
+  params:
+    server.insecure: true
+{% endif %}
+redis-ha:
+  enabled: false
+
+controller:
+  replicas: 2
+
+repoServer:
+  replicas: 2
+  extraEnv:
+    - name: ARGOCD_GIT_VALUE_FILES
+      value: "true"
+
+server:
+  replicas: 2
+{% if argocd_teleport is defined %}
+  service:
+    labels:
+      app_acl_level300: "300"
+{% endif %}
+{% if argocd_ingress_support is defined %}
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    extraTls:
+      - hosts:
+        - {{ argocd_domain | default('argocd.example.com') }}
+        secretName: fake-tls
+{% endif %}

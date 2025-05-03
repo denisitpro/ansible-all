@@ -1,0 +1,43 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  tags:
+    - k8s
+    - k8s-addition
+
+- ansible.builtin.import_tasks: 20-longhorn.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'longhorn' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-longhorn
+
+- ansible.builtin.import_tasks: 25-ingress-nginx.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'ingress-nginx' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-ingress-nginx
+
+- ansible.builtin.import_tasks: 30-argocd.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'argocd' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-argocd
+
+- ansible.builtin.import_tasks: 40-prom-stack.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'prometheus' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-prom-stack

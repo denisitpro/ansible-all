@@ -1,0 +1,64 @@
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+{% if k8s_calico_typha_disable is defined %}
+  typhaAffinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values: []
+{% endif %}
+  calicoNetwork:
+{% if k8s_local_iface_autodetect is defined %}
+    nodeAddressAutodetectionV4:
+      interface: {{k8s_local_iface_autodetect}}
+    nodeAddressAutodetectionV6: {}
+{% endif %}
+    ipPools:
+    - blockSize: 26
+      cidr: 10.48.0.0/21
+      encapsulation: {{ k8s_calico_ipv4_encapsulation | default("IPIP") }}
+      natOutgoing: Enabled
+      nodeSelector: all()
+{% if k8s_ipv6 is defined %}
+    - blockSize: 122
+      cidr: fd00:10:48::/64
+      encapsulation: {{ k8s_calico_ipv6_encapsulation | default("VXLAN") }}
+      natOutgoing: Enabled
+      nodeSelector: all()
+{% endif %}
+  nodeUpdateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  controlPlaneReplicas: 3
+---
+apiVersion: crd.projectcalico.org/v1
+kind: IPPool
+metadata:
+  name: default-ipv4-ippool
+spec:
+  cidr: 10.48.0.0/21
+  natOutgoing: true
+  blockSize: 26
+  nodeSelector: all()
+  ipipMode: {{ k8s_calico_ipv4_ipip_mode | default("Always") }}
+  vxlanMode: {{ k8s_calico_ipv4_vxlan_mode | default("Never") }}
+{% if k8s_ipv6 is defined %}
+---
+apiVersion: crd.projectcalico.org/v1
+kind: IPPool
+metadata:
+  name: default-ipv6-ippool
+spec:
+  cidr: fd00:10:48::/64
+  natOutgoing: true #need for support ping6 to internet
+  blockSize: 122
+  nodeSelector: all()
+  ipipMode: {{ k8s_calico_ipv6_ipip_mode | default("Never") }}
+  vxlanMode: {{ k8s_calico_ipv6_vxlan_mode | default("Always") }} # support VXLAN for IPv6
+{% endif %}

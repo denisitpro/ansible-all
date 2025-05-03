@@ -1,0 +1,35 @@
+---
+- name: Check if Cilium namespace exists
+  ansible.builtin.command: kubectl get namespace {{ cilium_namespace | default('cilium') }} --kubeconfig {{ k8s_config_path }}
+  register: cilium_ns_check
+  failed_when: false
+  changed_when: false
+
+- name: Create Cilium namespace if not exists
+  ansible.builtin.command: >
+    kubectl create namespace {{ cilium_namespace | default('cilium') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: cilium_ns_check.rc != 0
+  register: cilium_ns_create
+  changed_when: "'created' in cilium_ns_create.stdout"
+
+- name: install Cilium using cilium-cli
+  ansible.builtin.command: >
+    cilium install
+    --version {{ cilium_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --namespace {{ cilium_namespace | default('cilium') }}
+    --set encryption.enabled=true
+    --set encryption.type=wireguard
+    --set operator.replicas={{ cilium_operator_replicas | default(2) }}
+    --set hubble.enabled=true
+    --set hubble.relay.enabled=true
+    --set hubble.ui.enabled=true
+    --set kubeProxyReplacement=true
+    --set ipam.mode={{ cilium_ipam_mode | default('cluster-pool') }}
+    --set ipam.operator.clusterPoolIPv4PodCIDRList={{ k8s_net_cluster_pool }}
+    --set ipam.operator.clusterPoolIPv4MaskSize=24
+    --set tunnelProtocol={{ cilium_tunnel_protocol | default('vxlan') }}
+    --set routingMode={{ cilium_routing_mode | default('tunnel') }}
+  args:
+    creates: /etc/cni/net.d/05-cilium.conflist

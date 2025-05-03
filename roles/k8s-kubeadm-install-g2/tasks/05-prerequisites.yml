@@ -1,0 +1,59 @@
+---
+- name: copy modules
+  ansible.builtin.copy:
+    src: modules-k8s.conf
+    dest: /etc/modules-load.d/k8s.conf
+    mode: "0644"
+
+- name: load modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - overlay
+    - br_netfilter
+
+- name: copy sysctl
+  ansible.builtin.template:
+    src: sysctl-k8s.conf.j2
+    dest: /etc/sysctl.d/k8s.conf
+    mode: "0644"
+
+- name: copy noproc file
+  ansible.builtin.template:
+    src: "20-nofiles.conf.j2"
+    dest: "/etc/security/limits.d/20-nofiles.conf"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: apply k8s sysctl
+  ansible.builtin.command: /usr/sbin/sysctl -p /etc/sysctl.d/k8s.conf
+
+- name: Disable system swap
+  ansible.builtin.command: "swapoff -a"
+
+- name: Remove current swaps from fstab
+  ansible.builtin.lineinfile:
+    dest: /etc/fstab
+    regexp: '(?i)^([^#][\S]+\s+(none|swap)\s+swap.*)'
+    line: '# \1'
+    backrefs: true
+    state: present
+
+- name: Set hosts file
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    mode: "0644"
+  when: k8s_hostname_force is defined
+
+- name: Set a hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  when: k8s_hostname_force is defined
+
+# - name: install socat
+#  ansible.builtin.apt:
+#    name:
+#      - socat

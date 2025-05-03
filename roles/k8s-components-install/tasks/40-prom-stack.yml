@@ -1,0 +1,44 @@
+---
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Check if prometheus is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_prometheus_namespace | default('monitoring') }} --kubeconfig {{ k8s_config_path }} | grep -w prometheus
+  register: prometheus_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip prometheus install
+  ansible.builtin.set_fact:
+    skip_prometheus_install: "{{ prometheus_installed.rc == 0 and (not prometheus_force_install | default(false)) }}"
+
+- name: Add prometheus Helm repository
+  ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  register: helm_prom_repo
+  changed_when: "'\"has been added\"' in helm_prom_repo.stdout"
+  when: not skip_prometheus_install
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_prometheus_install
+
+- name: Create values config from template
+  ansible.builtin.template:
+    src: "prometheus-values.yaml.j2"
+    dest: /tmp/prometheus-values.yaml
+    mode: "0644"
+  when: not skip_prometheus_install
+
+- name: Install prometheus via Helm
+  ansible.builtin.command: >
+    helm upgrade --install prometheus prometheus-community/kube-prometheus-stack
+    --namespace {{ helm_prometheus_namespace | default('monitoring') }}
+    --version {{ helm_prometheus_version | default('70.10.0') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/prometheus-values.yaml
+  when: not skip_prometheus_install

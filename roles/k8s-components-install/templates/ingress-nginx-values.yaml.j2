@@ -1,0 +1,12 @@
+controller:
+  replicaCount: 2
+  kind: DaemonSet
+  service:
+    type: NodePort
+    externalTrafficPolicy: Local
+    ports:
+      http: 80
+      https: 443
+    nodePorts:
+      http: 30080
+      https: 30443

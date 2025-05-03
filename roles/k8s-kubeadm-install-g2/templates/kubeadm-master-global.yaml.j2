@@ -1,0 +1,19 @@
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+clusterName: "{{ k8s_cls_name | default('my-cluster') }}"
+kubernetesVersion: v{{k8s_cls_version}}
+certificateValidityPeriod: "{{k8s_cert_component_valid_hour |default('43800h')}}" # 5 year default
+{% if k8s_cls_name is defined %}
+controlPlaneEndpoint: "{{ k8s_cls_name |default('k8s.example.com') }}:{{ k8s_cls_port |default('6443') }}"
+{% endif %}
+networking:
+  podSubnet: "{{ k8s_net_cluster_pool}}{% if k8s_ipv6 is defined %},fd00:10:48::/48{% endif %}"  # order ip4 first second ipv6 important
+  serviceSubnet: "10.96.0.0/12{% if k8s_ipv6 is defined %},fd00:10:96::/108{% endif %}"  #order ip4 first second ipv6 important
+{% if k8s_ipv6 is defined %}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+ipvs:
+  strictARP: true
+{% endif %}

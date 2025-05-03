@@ -1,0 +1,9 @@
+---
+helm_componets_list:
+  - longhorn
+  - ingress-nginx
+  - prometheus
+
+
+argocd_github_client_id: "{{ vault_dict_users_secret.argocd_github_client_id | default('set_me') }}"
+github_client_secret_id: "{{ vault_dict_users_secret.github_client_secret_id | default('set_me') }}"
