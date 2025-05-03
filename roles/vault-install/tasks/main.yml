@@ -1,30 +1,24 @@
 ---
-- import_tasks: 05-create-folder.yml
+- ansible.builtin.import_tasks: 05-create-folder.yml
   tags:
-    - vault
+    - vault-install
     - vault-path
 
-- import_tasks: 10-config.yml
+- ansible.builtin.import_tasks: 10-config.yml
   tags:
-    - vault
+    - vault-install
     - vault-config
 
-- import_tasks: 15-copy-ssl.yml
+- ansible.builtin.import_tasks: 15-copy-ssl.yml
   when: vault_domain is defined and vault_domain == "selfsign"
   tags:
-    - vault
+    - vault-install
     - vault-ssl
 
-- import_tasks: 25-copy-compose.yml
+- ansible.builtin.import_tasks: 25-copy-compose.yml
   tags:
-    - vault
+    - vault-install
     - vault-compose
 
-- import_tasks: 50-lauch.yml
-  tags:
-    - vault
-    - vault-compose
-    - vault-config
-
-- import_tasks: 80-vault-clean.yml
-  tags: ['never','vault-clean']
+- ansible.builtin.import_tasks: 80-vault-clean.yml
+  tags: ['never', 'vault-clean']

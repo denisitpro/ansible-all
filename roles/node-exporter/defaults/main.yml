@@ -26,7 +26,10 @@ node_exporter_enabled_collectors:
 #      ignored-mount-points: "^/(sys|proc|dev)($|/)"
 #      ignored-fs-types: "^(sys|proc|auto)fs$"
 
-node_exporter_disabled_collectors: []
+
+node_exporter_disabled_collectors:
+  - ipvs
+
 node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version_binary }}/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
 
 consul_node_exporter_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
