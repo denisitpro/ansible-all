@@ -1,0 +1,20 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: clickhouse alert rules
+  rules:
+  - alert: KafkaConsumerLagDetected
+    annotations:
+      summary: "Lag detected in Kafka consumer groups"
+      description: >-
+        {% raw %}Consumer group {{ $labels.consumergroup }} has a lag over {% endraw %}{{ kafka_consumer_lag_threshold | default(50000) }}{% raw %}
+        for more than 15 minutes on topic {{ $labels.topic }}.
+        Current lag: {{ humanize $value }}{% endraw %}
+
+    expr: >-
+      sum by (instance, consumergroup, topic) (kafka_consumergroup_lag{% if excld_kafka_consumergroup_lag | length > 0 %}{consumergroup!~"{{ excld_kafka_consumergroup_lag | join('|') }}"}{% endif %}) > {{ kafka_consumer_lag_threshold | default(50000) }}
+    for: 15m
+    labels:
+      severity: warning
+      service: kafka
+      team: devops
