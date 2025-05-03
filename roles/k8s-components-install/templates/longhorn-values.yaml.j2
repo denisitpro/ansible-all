@@ -1,0 +1,14 @@
+defaultSettings:
+  replicaCount: 3
+  storageOverProvisioningPercentage: 100
+  storageMinimalAvailablePercentage: 15
+  nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
+  replicaAutoBalance: "best-effort"
+  dataLocality: "best-effort"
+  rebalanceDisksWhenLowSpace: true # not foun value chart
+
+# # failed https://github.com/longhorn/longhorn/issues/6415
+# # https://github.com/longhorn/longhorn/issues/6623
+# preUpgradeChecker:
+#   jobEnabled: false
+

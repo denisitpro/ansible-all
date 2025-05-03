@@ -1,0 +1,4 @@
+---
+- name: install helm
+  ansible.builtin.import_role:
+    name: helm-install

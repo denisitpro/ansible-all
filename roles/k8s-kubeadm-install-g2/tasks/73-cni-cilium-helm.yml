@@ -1,0 +1,50 @@
+---
+- name: print CNI network
+  ansible.builtin.debug:
+    msg: CNI network {{ k8s_cni_network }}
+
+- name: install helm
+  ansible.builtin.import_role:
+    name: helm-install
+
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Add Cilium Helm repository
+  ansible.builtin.command: helm repo add cilium https://helm.cilium.io/
+  register: cilium_repo
+  changed_when: "'\"has been added\"' in cilium_repo.stdout"
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+
+- name: Create Cilium values config from template
+  ansible.builtin.template:
+    src: "cilium-values.yaml.j2"
+    dest: /tmp/cilium-values.yaml
+    mode: "0644"
+
+- name: Check if Cilium is already installed
+  ansible.builtin.shell: |
+    helm list -n kube-system --kubeconfig {{ k8s_config_path }} | grep -w cilium
+  register: cilium_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip cilium install
+  ansible.builtin.set_fact:
+    skip_cilium_install: "{{ cilium_installed.rc == 0 and (not cilium_force_install | default(false)) }}"
+
+- name: Install Cilium via Helm
+  ansible.builtin.command: >
+    helm upgrade --install cilium cilium/cilium
+    --namespace {{ cilium_namespace | default('cilium') }}
+    --version {{ cilium_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --force
+    --values /tmp/cilium-values.yaml
+  when: not skip_cilium_install

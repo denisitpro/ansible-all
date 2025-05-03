@@ -1,0 +1,27 @@
+---
+# use prepare generate config
+
+# The systemd cgroup driver is recommended if you use cgroup v2.
+- name: create /etc/containerd/
+  ansible.builtin.file:
+    path: /etc/containerd/
+    state: directory
+    mode: "0755"
+
+#  https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd-systemd
+# generate
+# - name: generate config for cri
+#  shell: containerd config default > /etc/containerd/config.toml
+
+# https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd-systemd
+- name: copy contained config.toml
+  ansible.builtin.copy:
+    src: containerd-config.toml.v3
+    dest: /etc/containerd/config.toml
+    mode: "0644"
+
+- name: restarted  containerd
+  ansible.builtin.systemd:
+    name: containerd
+    enabled: true
+    state: restarted

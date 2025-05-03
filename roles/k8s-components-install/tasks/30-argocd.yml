@@ -1,0 +1,66 @@
+---
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Check if argocd is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_argocd_namespace | default('argocd') }} --kubeconfig {{ k8s_config_path }} | grep -w argocd
+  register: argocd_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip argocd install
+  ansible.builtin.set_fact:
+    skip_argocd_install: "{{ argocd_installed.rc == 0 and (not argocd_force_install | default(false)) }}"
+
+- name: Add argocd Helm repository
+  ansible.builtin.command: helm repo add argo https://argoproj.github.io/argo-helm
+  register: helm_prom_repo
+  changed_when: "'\"has been added\"' in helm_prom_repo.stdout"
+  when: not skip_argocd_install
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_argocd_install
+
+- name: Create  values config from template
+  ansible.builtin.template:
+    src: "argocd-values.yaml.j2"
+    dest: /tmp/argocd-values.yaml
+    mode: "0644"
+  when: not skip_argocd_install
+
+- name: Install argocd via Helm
+  ansible.builtin.command: >
+    helm upgrade --install argocd argo/argo-cd
+    --namespace {{ helm_argocd_namespace | default('argocd') }}
+    --version {{ helm_argocd_version | default('7.9.0') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/argocd-values.yaml
+  when: not skip_argocd_install or argocd_force_install is defined
+
+- name: Create  argocd cm
+  ansible.builtin.template:
+    src: "argocd-cm.yml.j2"
+    dest: /tmp/argocd-cm.yml
+    mode: "0644"
+  when: (skip_argocd_install and argocd_github_enabled is defined) or argocd_force_install is defined
+  tags:
+    - argocd-cm
+
+
+- name: Install argocd cm for github
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/argocd-cm.yml
+    --namespace {{ helm_argocd_namespace | default('argocd') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: (skip_argocd_install and argocd_github_enabled is defined) or argocd_force_install is defined
+
+- name: remove argo-cm
+  ansible.builtin.file:
+    path: /tmp/argocd-cm.yml
+    state: absent

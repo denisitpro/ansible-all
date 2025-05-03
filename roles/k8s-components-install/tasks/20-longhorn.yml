@@ -1,0 +1,44 @@
+---
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Check if longhorn is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_longhorn_namespace | default('longhorn') }} --kubeconfig {{ k8s_config_path }} | grep -w longhorn
+  register: longhorn_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip longhorn install
+  ansible.builtin.set_fact:
+    skip_longhorn_install: "{{ longhorn_installed.rc == 0 and (not longhorn_force_install | default(false)) }}"
+
+- name: Add longhorn Helm repository
+  ansible.builtin.command: helm repo add longhorn https://charts.longhorn.io
+  register: helm_prom_repo
+  changed_when: "'\"has been added\"' in helm_prom_repo.stdout"
+  when: not skip_longhorn_install
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_longhorn_install
+
+- name: Create  values config from template
+  ansible.builtin.template:
+    src: "longhorn-values.yaml.j2"
+    dest: /tmp/longhorn-values.yaml
+    mode: "0644"
+  when: not skip_longhorn_install
+
+- name: Install longhorn via Helm
+  ansible.builtin.command: >
+    helm upgrade --install longhorn longhorn/longhorn
+    --namespace {{ helm_longhorn_namespace | default('longhorn') }}
+    --version {{ helm_longhorn_version | default('1.8.1') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/longhorn-values.yaml
+  when: not skip_longhorn_install

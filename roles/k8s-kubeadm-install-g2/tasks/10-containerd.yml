@@ -1,0 +1,57 @@
+---
+- name: Сreate folder to extract
+  ansible.builtin.file:
+    path: /tmp/containerd
+    state: directory
+    mode: "0755"
+
+- name: download  containerd
+  ansible.builtin.get_url:
+    url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    dest: "/tmp/containerd/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    mode: "0644"
+
+- name: extract containerd
+  ansible.builtin.unarchive:
+    src: "/tmp/containerd/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    dest: /tmp/containerd
+    remote_src: true
+
+- name: copy binary files containerd
+  ansible.builtin.copy:
+    remote_src: true
+    src: "/tmp/containerd/bin/{{ item }}"
+    dest: /usr/local/bin/
+    mode: "0755"
+  with_items:
+    - "containerd"
+    - "containerd-shim"
+    - "containerd-shim-runc-v1"
+    - "containerd-shim-runc-v2"
+    - "containerd-stress"
+    - "ctr"
+
+- name: create user specific folder for unit
+  ansible.builtin.file:
+    path: /usr/local/lib/systemd/system/
+    state: directory
+    mode: "0755"
+  with_items:
+    - "/usr/local/lib/systemd/"
+    - "/usr/local/lib/systemd/system/"
+
+- name: download  containerd unit files
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service"
+    dest: "/usr/local/lib/systemd/system/containerd.service"
+    mode: "0644"
+
+- name: force systemd to re-read configs
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: install service containerd
+  ansible.builtin.systemd:
+    name: containerd
+    enabled: true
+    state: started

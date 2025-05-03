@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+data:
+  url: https://{{ argocd_domain | default('argocd.example.com') }}
+  admin.enabled: "false"
+  dex.config: |
+    connectors:
+      - type: github
+        id: github
+        name: GitHub
+        config:
+          clientID: {{argocd_github_client_id}}
+          clientSecret: {{github_client_secret_id}}
+          orgs:
+          - name: "{{argocd_github_org | default('main-org')}}"
+            teams:
+            - "{{ argocd_github_team |default('example-team') }}"
