@@ -1,4 +1,2 @@
 ---
-- import_tasks: shared/handlers/vault.yml
-
-
+- ansible.builtin.import_tasks: shared/handlers/vault.yml

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+METRICS_FILE="{{ node_exporter_textfile_dir }}/reboot_required.prom"
+if [ -f /var/run/reboot-required ]; then
+    echo "node_reboot_required 1" > "$METRICS_FILE"
+else
+    echo "node_reboot_required 0" > "$METRICS_FILE"
+fi

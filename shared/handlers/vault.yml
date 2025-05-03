@@ -1,8 +1,15 @@
 ---
+- name: recreate-docker vault
+  community.docker.docker_compose_v2:
+    project_src: "{{ vault_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
 - name: restart vault
   community.docker.docker_compose_v2:
-    project_src: "{{vault_compose_path}}"
-    services: "{{item}}"
+    project_src: "{{ vault_compose_path }}"
+    services: "{{ item }}"
     state: restarted
   with_items:
     - "vault"

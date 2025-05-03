@@ -1,27 +1,24 @@
 ---
 - name: create docker folder
   ansible.builtin.file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
     mode: '0775'
     owner: root
     group: root
   with_items:
     - "/opt/docker"
-    - "{{vault_compose_path}}"
-
-
+    - "{{ vault_compose_path }}"
 
 - name: create folder vault
   ansible.builtin.file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
     mode: '0775'
-    owner: root
-    group: 1000
+    owner: "{{ vault_uid }}"
+    group: "{{ vault_gid }}"
   with_items:
-    - "{{vault_base_path}}"
-    - "{{vault_data_path}}"
-    - "{{vault_data_path}}/raft"
-    - "{{vault_conf_path}}"
-
+    - "{{ vault_base_path }}"
+    - "{{ vault_data_path }}"
+    - "{{ vault_data_path }}/raft"
+    - "{{ vault_conf_path }}"

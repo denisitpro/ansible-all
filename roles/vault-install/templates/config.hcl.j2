@@ -2,7 +2,7 @@ disable_cache = true
 disable_mlock = true
 ui = true
 listener "tcp" {
-   address          = "0.0.0.0:8200"
+   address          = "{{vault_bind_addr}}:8200"
 {% if  vault_domain is defined %}
    tls_cert_file    = "{{ vault_conf_path }}/ssl/fullchain.pem"
    tls_key_file     = "{{ vault_conf_path }}/ssl/privkey.pem"
@@ -23,8 +23,9 @@ storage "raft" {
 {% endif %}
 
 cluster_name = "{{vault_cluster_name}}"
-cluster_addr = "https://{{ vault_cluster_addr }}:8201"
-api_addr         = "http://0.0.0.0:8200"
+#cluster_addr = "https://{{ vault_cluster_addr }}:8201" # todo remove
+cluster_addr = "https://{{ vault_cluster_addr }}"
+api_addr         = "http://{{vault_bind_addr}}:8200"
 max_lease_ttl         = "10h"
 default_lease_ttl    = "10h"
 cluster_name         = "vault"

@@ -1,6 +1,7 @@
 ---
 - name: copy compose-file - vault
-  template:
+  ansible.builtin.template:
     src: "docker-compose.vault.yml.j2"
-    dest: "{{vault_compose_path}}/docker-compose.yml"
-    mode: 0600
+    dest: "{{ vault_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker vault
