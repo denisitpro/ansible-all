@@ -143,6 +143,7 @@ prometheus_alert_files:
   - alerts-cpu.yml
   - alerts-text-scrape.yml
   - alerts-inotify.yml # importal for k8s
+  - alerts-kafka.yml
 
   # - ansible-generate-v1.yml
   # - alerts-mysql.yml
@@ -157,9 +158,11 @@ alert_domain_expire_days: 14
 
 
 excld_click_below_1_inst: []
+excld_inst_out_of_disk_space_10: []
 excld_inst_out_of_disk_space_20: []
 excld_inst_out_of_disk_space_30: []
 
+excld_tags_out_of_disk_space_10: []
 excld_tags_out_of_disk_space_20: []
 excld_tags_out_of_disk_space_30: []
 
@@ -177,6 +180,8 @@ excld_inst_unusual_net_out: []
 
 excld_node_too_many_pods: []
 excld_cluster_instance_down: []
+
+excld_kafka_consumergroup_lag: []
 
 
 # consul section
