@@ -21,7 +21,7 @@
     - tls1_2-tls1_3.conf
     - request-id.conf
   tags:
-    - nginx_include
+    - nginx-include
 
 - name: Copy files
   ansible.builtin.copy:

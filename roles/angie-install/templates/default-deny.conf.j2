@@ -1,0 +1,29 @@
+server	{
+{% if nginx_bind_addr_ipv4  is defined%}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }} default_server;
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_port | default("443") }} ssl default_server;
+{% else %}
+    listen {{ item.http_port | default("80") }} default_server;
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("80") }} default_server;
+    listen {{ item.https_port | default("443") }} ssl default_server;
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.https_port | default("443") }} ssl default_server;
+
+{% endif %}
+	server_name	_;
+	return	403;
+
+# log project use  include
+{% if nginx_logs_stdout is not defined %}
+        access_log  {{ nginx_log_path | default('/var/log/angie') }}/default-site-access.log  {{ nginx_access_log_format | default ("extend_json") }};
+        error_log   {{ nginx_log_path | default('/var/log/angie')}}/default-site-error.log {{nginx_error_log_format | default('')}};
+{% endif %}
+{% if nginx_logs_stdout is defined %}
+        access_log  /dev/stdout  {{nginx_access_log_format | default ("extended")}};
+        error_log   /dev/stdout {{nginx_error_log_format | default('')}};
+{% endif %}
+
+
+## include ssl certificate
+    ssl_certificate     {{  item.ssl_path | default ("/opt/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path| default ("/opt/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+}

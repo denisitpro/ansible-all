@@ -48,12 +48,20 @@ server {
 
 ## include ssl certificate
 {% if nginx.vhosts %}
+# todo remove need for support certbot agent
 {% if item.acme is defined %}
     ssl_certificate     {{  item.ssl_path | default ("/opt/certbot/ssl/live") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
     ssl_certificate_key {{ item.ssl_path| default ("/opt/certbot/ssl/live")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% else %}
+# --- end remove
+{% if item.domain == 'acme' %}
+    ssl_certificate $acme_cert_angie_acme_http;
+    ssl_certificate_key $acme_cert_key_angie_acme_http;
+    acme angie_acme_http;
+{% else %}
     ssl_certificate     {{  item.ssl_path | default ("/opt/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
     ssl_certificate_key {{ item.ssl_path| default ("/opt/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% endif %}
 {% endif %}
 {% endif %}
 

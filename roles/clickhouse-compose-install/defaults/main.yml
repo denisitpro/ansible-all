@@ -21,6 +21,8 @@ click_srv_tags:
   - "clickhouse"
   - "{{ stand_type }}"
   - "{{ click__server_metrics_name | default('clickhouse-server-metrics') }}"
+  - "dc={{ consul_dc_name }}"
+
 #
 #
 #

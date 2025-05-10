@@ -32,3 +32,4 @@ consul_click_keeper_metrics_token: "{{ vault_dict_users_secret.consul_all_export
 click_keeper_tags:
   - "{{ stand_type }}"
   - "{{ click__server_metrics_name | default('clickhouse-keeper-metrics') }}"
+  - "dc={{ consul_dc_name }}"
