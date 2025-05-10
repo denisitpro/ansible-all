@@ -1,45 +1,44 @@
 ---
-- name: Check for existing binary
-  stat:
-    path: "{{helm_binary_path}}"
+- name: Check for exist
+  ansible.builtin.stat:
+    path: "{{ helm_binary_path }}"
   register: binary_stat_result
 
-- debug:
+- ansible.builtin.debug:
     msg: binary_stat_result -  {{ binary_stat_result }}
 
 - name: Download helm
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ helm_download_url }}"
     dest: "{{ helm_download_dir }}"
-    mode: 0644
+    mode: "0644"
   when: not binary_stat_result.stat.exists
 
 - name: Unarchive helm  a file that is already on the remote machine
-  unarchive:
-    src: "{{ helm_download_dir }}/helm-{{helm_version}}-linux-amd64.tar.gz"
+  ansible.builtin.unarchive:
+    src: "{{ helm_download_dir }}/helm-{{ helm_version }}-linux-amd64.tar.gz"
     dest: "/tmp/"
     owner: root
     group: root
-    remote_src: yes
-  when: not binary_stat_result.stat.exists
-
-
-- name: Install  binary
-  copy:
-    src: "/tmp/linux-amd64/helm"
-    dest: "{{helm_binary_path}}"
-    owner: root
-    group: root
-    mode: 0755
     remote_src: true
   when: not binary_stat_result.stat.exists
 
+- name: Install  binary
+  ansible.builtin.copy:
+    src: "/tmp/linux-amd64/helm"
+    dest: "{{ helm_binary_path }}"
+    owner: root
+    group: root
+    mode: "0755"
+    remote_src: true
+  when: not binary_stat_result.stat.exists
 
-#- name: remove download files
-#  file:
-#    path: "{{item}}"
-#    state: absent
-#  with_items:
-#    - "{{ helm_download_dir }}/helm_{{helm_version}}_linux_amd64.zip"
-#    - "{{ helm_download_dir }}/helm"
-#  tags: [clean]
+# - name: remove download files
+#   ansible.builtin.file:
+#     path: "{{ item }}"
+#     state: absent
+#   with_items:
+#     - "{{ helm_download_dir }}/helm-{{ helm_version }}-linux-amd64.tar.gz"
+#     - "/tmp/linux-amd64"
+#   tags:
+#     - helm-clean

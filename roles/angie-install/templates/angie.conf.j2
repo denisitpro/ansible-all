@@ -142,6 +142,13 @@ http {
 	client_max_body_size	{{ nginx_client_max_body_size }};
 {% endif %}
 
+
+{% if angie_used_acme is defined %}
+# for angie acme support
+    resolver {{angie_acme_resolver | default('127.0.0.53') }}; # Required for the 'acme_client' directive
+    acme_client angie_acme_http https://acme-v02.api.letsencrypt.org/directory;
+{% endif %}
+
 # extended configs - upstream
     include /etc/angie/conf.d/*.conf;
     include /etc/angie/upstream.d/*.conf;

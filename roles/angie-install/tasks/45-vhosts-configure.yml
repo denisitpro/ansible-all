@@ -34,3 +34,13 @@
     - nginx.vhosts is defined
     - nginx.vhosts | type_debug == "list"
     - nginx.vhosts | length > 0
+
+- name: Copy default site - deny access not unknow sites
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ angie_base_path }}/site.d/{{ item }}"
+    owner: "{{ angie_uid }}"
+    group: "{{ angie_guid }}"
+    mode: '0644'
+  loop:
+    - default-deny.conf

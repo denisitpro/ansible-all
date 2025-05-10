@@ -7,9 +7,10 @@
 #  ansible.builtin.debug:
 #    msg: "{{ nginx.vhosts | selectattr('domain', '==', 'selfsign') | list }}"
 
+# enable for default site deny any acccess
 - name: Create SSL selfsign cert - Import SSL role
   ansible.builtin.import_role:
     name: "ssl-selfsigned-cert"
-  when: >
-    nginx.vhosts is defined and
-    (nginx.vhosts | selectattr('domain', '==', 'selfsign') | list | length) > 0
+  # when: >
+  #   nginx.vhosts is defined and
+  #   (nginx.vhosts | selectattr('domain', '==', 'selfsign') | list | length) > 0
