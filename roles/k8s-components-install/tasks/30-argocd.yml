@@ -11,15 +11,19 @@
   register: argocd_installed
   failed_when: false
   changed_when: false
+  tags:
+    - argocd-cm
 
 - name: Set fact whether to skip argocd install
   ansible.builtin.set_fact:
     skip_argocd_install: "{{ argocd_installed.rc == 0 and (not argocd_force_install | default(false)) }}"
+  tags:
+    - argocd-cm
 
 - name: Add argocd Helm repository
   ansible.builtin.command: helm repo add argo https://argoproj.github.io/argo-helm
-  register: helm_prom_repo
-  changed_when: "'\"has been added\"' in helm_prom_repo.stdout"
+  register: helm_argocd_repo
+  changed_when: "'\"has been added\"' in helm_argocd_repo.stdout"
   when: not skip_argocd_install
 
 - name: Update Helm repos
@@ -45,22 +49,56 @@
 
 - name: Create  argocd cm
   ansible.builtin.template:
-    src: "argocd-cm.yml.j2"
-    dest: /tmp/argocd-cm.yml
-    mode: "0644"
+    src: "{{ item }}.j2"
+    dest: /tmp/{{ item }}
+    mode: "0600"
   when: (skip_argocd_install and argocd_github_enabled is defined) or argocd_force_install is defined
+  with_items:
+    - argocd-cm.yml
+    - argocd-rbac-cm.yml
+    - argocd-projects.yml
   tags:
     - argocd-cm
 
 
 - name: Install argocd cm for github
   ansible.builtin.command: >
-    kubectl apply -f /tmp/argocd-cm.yml
+    kubectl apply -f /tmp/{{ item }}
     --namespace {{ helm_argocd_namespace | default('argocd') }}
     --kubeconfig {{ k8s_config_path }}
   when: (skip_argocd_install and argocd_github_enabled is defined) or argocd_force_install is defined
+  with_items:
+    - argocd-cm.yml
+    - argocd-rbac-cm.yml
+    - argocd-projects.yml
+  tags:
+    - argocd-cm
 
 - name: remove argo-cm
   ansible.builtin.file:
-    path: /tmp/argocd-cm.yml
+    path: /tmp/{{ item }}
     state: absent
+  with_items:
+    - argocd-cm.yml
+    - argocd-rbac-cm.yml
+    - argocd-projects.yml
+  tags:
+    - argocd-cm
+
+- name: Create  teleport-manifest
+  ansible.builtin.template:
+    src: "argocd-svc.yml.j2"
+    dest: /tmp/argocd-svc.yml
+    mode: "0644"
+  when: argocd_teleport is defined
+  tags:
+    - argocd-svc
+
+- name: Install teleport manifest
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/argocd-svc.yml
+    --namespace {{ helm_argocd_namespace | default('argocd') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: argocd_teleport is defined or argocd_force_install is defined
+  tags:
+    - argocd-svc

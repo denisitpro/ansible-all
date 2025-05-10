@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: argocd
+    meta.helm.sh/release-namespace: argocd
+  name: argocd-rbac-cm
+  namespace: argocd
+data:
+{% if argocd_policy_csv_admins is defined and argocd_policy_csv_admins | length > 0 %}
+  policy.csv: |
+{% for user in argocd_policy_csv_admins %}
+{% if user | length > 0 %}
+    g, {{ user }}, role:admin
+{% endif %}
+{% endfor %}
+{% else %}
+  policy.csv: ""
+{% endif %}
+  policy.default: ""
+  policy.matchMode: glob
+  scopes: '[groups,email]'

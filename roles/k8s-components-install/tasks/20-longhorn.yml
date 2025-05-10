@@ -36,7 +36,7 @@
 - name: Install longhorn via Helm
   ansible.builtin.command: >
     helm upgrade --install longhorn longhorn/longhorn
-    --namespace {{ helm_longhorn_namespace | default('longhorn') }}
+    --namespace {{ helm_longhorn_namespace | default('longhorn-system') }}
     --version {{ helm_longhorn_version | default('1.8.1') }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace

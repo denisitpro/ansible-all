@@ -3,7 +3,28 @@ helm_componets_list:
   - longhorn
   - ingress-nginx
   - prometheus
+  - teleport-agent
 
 
 argocd_github_client_id: "{{ vault_dict_users_secret.argocd_github_client_id | default('set_me') }}"
-github_client_secret_id: "{{ vault_dict_users_secret.github_client_secret_id | default('set_me') }}"
+argocd_github_secret_id: "{{ vault_dict_users_secret.argocd_github_secret_id | default('set_me') }}"
+teleport_k8s_agent_token: "{{ vault_dict_users_secret.teleport_k8s_agent_token | default('set_me') }}"
+
+k8s_teleport_agent_kub_cluster_base_labels:
+  region: "unknown"
+  platform: "amd64"
+  stand: "example"
+
+teleport_app_acl_access_level:
+  - name: "argocd-example"
+    app_acl_level: [900]
+
+k8s_teleport_agent_kubernetes_discovery:
+  - types: ["app"]
+    namespaces: ["example-app"]
+    labels:
+      app_acl_level900: "900"
+
+
+# argocd_policy_csv_admins:
+#   - org:team

@@ -1,0 +1,9 @@
+---
+- name: copy ansible.properties
+  ansible.builtin.template:
+    src: "ansible.properties.j2"
+    dest: "{{ kafka_config_path }}/ansible.properties"
+    mode: "0644"
+  # notify: recreate-docker kafka
+  tags:
+    - kafka-debug-file

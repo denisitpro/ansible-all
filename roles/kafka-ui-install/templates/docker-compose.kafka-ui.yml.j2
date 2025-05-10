@@ -8,11 +8,17 @@ services:
     network_mode: host
     volumes:
       - {{ kafka_ui_config_path }}/config.yml:/etc/kafkaui/config.yml:ro
+{% if kafkaui_auth_enable is defined %}
+      - {{kafka_ui_config_path}}/jaas.conf:{{kafka_ui_config_path}}/jaas.conf
+{% endif %}
     environment:
 #      DYNAMIC_CONFIG_ENABLED: 'true'
       SPRING_CONFIG_ADDITIONAL-LOCATION: /etc/kafkaui/config.yml
       SERVER_PORT: {{ kafka_ui_port | default(8080) }}
       SERVER_ADDRESS: {{ kafka_ui_bind_address | default('::1') }}
+{% if kafkaui_auth_enable is defined %}
+      JAVA_TOOL_OPTIONS: '-Djava.security.auth.login.config={{kafka_ui_config_path}}/jaas.conf'
+{% endif %}
     restart: {{ kafka_ui_restart | default('unless-stopped') }}
     logging:
       driver: json-file

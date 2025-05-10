@@ -1,0 +1,51 @@
+---
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Check if teleport is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_teleport_namespace | default('teleport') }} --kubeconfig {{ k8s_config_path }} | grep -w teleport
+  register: teleport_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip teleport install
+  ansible.builtin.set_fact:
+    skip_teleport_install: "{{ teleport_installed.rc == 0 and (not teleport_force_install | default(false)) }}"
+
+- name: Add teleport Helm repository
+  ansible.builtin.command: helm repo add teleport https://charts.releases.teleport.dev
+  register: helm_teleport_repo
+  changed_when: "'\"has been added\"' in helm_teleport_repo.stdout"
+  when: not skip_teleport_install
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_teleport_install
+
+- name: Create  values config from template
+  ansible.builtin.template:
+    src: "teleport-values.yaml.j2"
+    dest: /tmp/teleport-values.yaml
+    mode: "0600"
+  when: not skip_teleport_install or teleport_force_install is defined
+  tags:
+    - teleport-value
+
+- name: Install teleport via Helm
+  ansible.builtin.command: >
+    helm upgrade --install teleport-agent teleport/teleport-kube-agent
+    --namespace {{ helm_teleport_namespace | default('teleport') }}
+    --version {{ helm_teleport_version | default('17.4.7') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/teleport-values.yaml
+  when: not skip_teleport_install or teleport_force_install is defined
+
+- name: remove /tmp/teleport-values.yaml
+  ansible.builtin.file:
+    path: /tmp/teleport-values.yaml
+    state: absent

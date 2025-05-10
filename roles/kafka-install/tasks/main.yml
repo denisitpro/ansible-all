@@ -24,6 +24,12 @@
     - kafka-facts
     - kafka-config
 
+# - ansible.builtin.import_tasks: 30-config.yml
+#   tags:
+#     - kafka
+#     - kafka-docker
+#     - kafka-compose
+#     - kafka-config
 
 - ansible.builtin.import_tasks: 50-compose.yml
   tags:

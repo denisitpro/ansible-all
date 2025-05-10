@@ -7,3 +7,14 @@
   loop:
     - "config.yml"
   notify: restart-docker kafka-ui
+
+
+- name: copy config auth
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ kafka_ui_config_path }}/{{ item }}"
+    mode: "0644"
+  when: kafkaui_auth_enable is defined
+  loop:
+    - "jaas.conf"
+  notify: restart-docker kafka-ui

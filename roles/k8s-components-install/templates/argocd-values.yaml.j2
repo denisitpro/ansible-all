@@ -3,7 +3,7 @@ global:
   ha:
     enabled: false
 
-{% if argocd_ingress_support is defined %}
+{% if argocd_ingress_support is defined or argocd_teleport is defined%}
 configs:
   params:
     server.insecure: true
@@ -22,11 +22,6 @@ repoServer:
 
 server:
   replicas: 2
-{% if argocd_teleport is defined %}
-  service:
-    labels:
-      app_acl_level300: "300"
-{% endif %}
 {% if argocd_ingress_support is defined %}
   ingress:
     enabled: true
