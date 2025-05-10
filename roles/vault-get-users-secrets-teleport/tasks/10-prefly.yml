@@ -18,6 +18,9 @@
   ansible.builtin.set_fact:
     vault_token: "{{ lookup('env', 'VAULT_ACCESS_TOKEN') }}"
 
+- name: PRINT vault server
+  ansible.builtin.debug:
+    msg: "server: {{ vault_url_teleport }}"
 
 - name: get teleport cert path
   ansible.builtin.shell:

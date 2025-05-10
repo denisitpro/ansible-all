@@ -29,7 +29,7 @@ ssh_service:
 {% else %}
     ssh_acl_level: 900
 {% endif %}
-#    teleport.internal/resource-id: "resource-id" # todo debug
+#    teleport.internal/resource-id: "resource-id"
   commands:
   - name: hostname
     command: [hostname]

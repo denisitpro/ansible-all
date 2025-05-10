@@ -1,4 +1,8 @@
 ---
+# - name: DEBUG teleport.app
+#   ansible.builtin.debug:
+#     var: teleport.app
+
 - name: teleport config
   ansible.builtin.template:
     src: teleport-v2.yaml.j2
