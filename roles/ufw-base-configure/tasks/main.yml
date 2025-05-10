@@ -5,4 +5,4 @@
 
 - ansible.builtin.import_tasks: 20-ufw-log.yml
   tags:
-    -  enable-ufw
+    - enable-ufw

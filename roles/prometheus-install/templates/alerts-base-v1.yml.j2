@@ -55,12 +55,12 @@ groups:
       description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 5 minutes.{% endraw %}"
       summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
 
-  - alert: RebootRequired
-    expr: |
-      node_reboot_required{instance!~"{{ excl_inst_reboot_required | default([]) | join('|') }}"} == 1
-    for: 5m
-    labels:
-      severity: info
-    annotations:
-      description: "{% raw %}{{ $labels.instance }} requires a system reboot.{% endraw %}"
-      summary: "{% raw %}Reboot required on {{ $labels.instance }}{% endraw %}"
+  # - alert: RebootRequired
+  #   expr: |
+  #     node_reboot_required{instance!~"{{ excl_inst_reboot_required | default([]) | join('|') }}"} == 1
+  #   for: 5m
+  #   labels:
+  #     severity: info
+  #   annotations:
+  #     description: "{% raw %}{{ $labels.instance }} requires a system reboot.{% endraw %}"
+  #     summary: "{% raw %}Reboot required on {{ $labels.instance }}{% endraw %}"
