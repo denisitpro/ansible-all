@@ -31,5 +31,5 @@
     group: "{{ kafka_gid }}"
   when: kafka_enable_ssl is defined
   with_items:
-    - "{{ kafka_base_path }}/config/"
+    - "{{ kafka_config_path }}"
     - "{{ kafka_ssl_path }}"

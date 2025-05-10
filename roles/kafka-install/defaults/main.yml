@@ -8,9 +8,13 @@ kafka_gid: 0
 
 kafka_base_path: "/opt/kafka"
 # kafka_data_path: "{{ kafka_base_path }}/data"
-# kafka_config_path: "{{ kafka_base_path }}/config"
+kafka_config_path: "{{ kafka_base_path }}/config"
 # kafka_logs_path: "{{ kafka_base_path }}/logs"
 kafka_ssl_path: "{{ kafka_base_path }}/config/certs"
+
+kafka_interbroker_pass: "{{ vault_dict_users_secret.kafka_interbroker_pass | default('set_me') }}"
+
+kafka_cfg_advertised_listeners: "{{ ansible_fqdn }}"
 
 # ---------------------------------------
 #

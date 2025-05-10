@@ -24,3 +24,17 @@
       | sort(attribute=0)
       | map(attribute=1)
       | list }}
+
+
+- name: Set kafka_group_count based on number of hosts in group
+  ansible.builtin.set_fact:
+    kafka_group_count: "{{ groups[kafka_group_count_calculate] | length }}"
+  when: kafka_group_count_calculate is defined
+  tags:
+    - kafka-count
+
+# - name: Debug - count
+#   ansible.builtin.debug:
+#     msg: "Kafka server count -  {{ kafka_group_count }}"
+#   tags:
+#     - kafka-count

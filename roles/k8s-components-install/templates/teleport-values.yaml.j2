@@ -1,0 +1,25 @@
+proxyAddr: "{{ teleport_proxy_host | default('tp.example.com:443') }}"
+authToken: "{{ teleport_k8s_agent_token | default('set_me') }}"
+
+kubeClusterName:  "{{ k8s_cls_name | default('k8s-example.example.com') }}"
+roles: "kube,app,discovery"
+labels:
+{% for key, value in k8s_teleport_agent_kub_cluster_base_labels.items() %}
+  {{ key }}: "{{ value | quote }}"
+{% endfor %}
+{% if k8s_teleport_agent_k8s_cluster_acl is defined and k8s_teleport_agent_k8s_cluster_acl | length > 0 %}
+{% for key, value in k8s_teleport_agent_k8s_cluster_acl.labels.items() %}
+  {{ key }}: "{{ value | quote }}"
+{% endfor %}
+{% endif %}
+
+insecureSkipProxyTLSVerify: true
+kubernetesDiscovery:
+{% for rule in k8s_teleport_agent_kubernetes_discovery %}
+  - types: {{ rule.types | to_json }}
+    namespaces: {{ rule.namespaces | to_json }}
+    labels:
+{% for key, value in rule.labels.items() %}
+      {{ key }}: "{{ value | quote }}"
+{% endfor %}
+{% endfor %}

@@ -10,3 +10,10 @@ controller:
     nodePorts:
       http: 30080
       https: 30443
+{% if nginx_ingress_host_port is defined%}
+  hostPort
+    enabled: "{{ nginx_ingress_host_port | default('false') }}"
+    ports:
+      http: "{{ nginx_ingress_host_http_port | default('80') }}"
+      https: "{{ nginx_ingress_host_https_port | default('443') }}"
+{% endif %}

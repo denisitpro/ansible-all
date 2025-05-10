@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
 data:
   url: https://{{ argocd_domain | default('argocd.example.com') }}
-  admin.enabled: "false"
+  admin.enabled: "true"
   dex.config: |
     connectors:
       - type: github
@@ -13,8 +13,12 @@ data:
         name: GitHub
         config:
           clientID: {{argocd_github_client_id}}
-          clientSecret: {{github_client_secret_id}}
+          clientSecret: {{argocd_github_secret_id}}
           orgs:
-          - name: "{{argocd_github_org | default('main-org')}}"
-            teams:
+            - name: "{{argocd_github_org | default('main-org')}}"
+          teams:
             - "{{ argocd_github_team |default('example-team') }}"
+          scopes:
+            - "read:org"
+            - "user:email"
+          loadAllGroups: true

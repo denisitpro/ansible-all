@@ -41,3 +41,12 @@
     - k8s
     - k8s-addition
     - k8s-prom-stack
+
+- ansible.builtin.import_tasks: 50-teleport-agent.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'teleport-agent' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-teleport
