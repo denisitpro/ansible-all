@@ -6,6 +6,15 @@ metadata:
 data:
   url: https://{{ argocd_domain | default('argocd.example.com') }}
   admin.enabled: "true"
+{% if argocd_exclude_cilium_identity is defined%}
+  resource.exclusions: |
+    - apiGroups:
+      - cilium.io
+      kinds:
+      - CiliumIdentity
+      clusters:
+      - "*"
+{% endif %}
   dex.config: |
     connectors:
       - type: github

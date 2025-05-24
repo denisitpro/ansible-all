@@ -7,7 +7,7 @@
 
 - name: Check if longhorn is already installed
   ansible.builtin.shell: |
-    helm list -n {{ helm_longhorn_namespace | default('longhorn') }} --kubeconfig {{ k8s_config_path }} | grep -w longhorn
+    helm list -n {{ helm_longhorn_namespace | default('longhorn-system') }} --kubeconfig {{ k8s_config_path }} | grep -w longhorn-system
   register: longhorn_installed
   failed_when: false
   changed_when: false

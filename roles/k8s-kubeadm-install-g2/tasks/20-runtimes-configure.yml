@@ -16,7 +16,7 @@
 # https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd-systemd
 - name: copy contained config.toml
   ansible.builtin.copy:
-    src: containerd-config.toml.v3
+    src: containerd-config-2.1.toml
     dest: /etc/containerd/config.toml
     mode: "0644"
 

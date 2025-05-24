@@ -17,3 +17,12 @@ controller:
       http: "{{ nginx_ingress_host_http_port | default('80') }}"
       https: "{{ nginx_ingress_host_https_port | default('443') }}"
 {% endif %}
+{% if nginx_ingress_real_ip is defined %}
+  config:
+    use-forwarded-headers: "true"
+    real-ip-header: "CF-Connecting-IP"
+    proxy-real-ip-cidr: "{{ nginx_ingress_real_ip.ipv4 | join(',') }}"
+{% if nginx_ingress_real_ip.ipv6 is defined and nginx_ingress_real_ip.ipv6 | length > 0 %}
+    proxy-real-ip-cidr-6: "{{ nginx_ingress_real_ip.ipv6 | join(',') }}"
+{% endif %}
+{% endif %}

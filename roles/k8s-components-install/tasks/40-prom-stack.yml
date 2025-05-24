@@ -31,7 +31,14 @@
     src: "prometheus-values.yaml.j2"
     dest: /tmp/prometheus-values.yaml
     mode: "0644"
-  when: not skip_prometheus_install
+  when: not skip_prometheus_install or k8s_prom_force_install is defined
+
+- name: Render remote write secrets to YAML manifests
+  ansible.builtin.template:
+    src: prometheus-secrets.yaml.j2
+    dest: "/tmp/prometheus-secrets.yaml"
+    mode: '0644'
+
 
 - name: Install prometheus via Helm
   ansible.builtin.command: >
@@ -41,4 +48,19 @@
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/prometheus-values.yaml
-  when: not skip_prometheus_install
+  when: not skip_prometheus_install or k8s_prom_force_install is defined
+
+- name: Install argocd cm for github
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/{{ item }}
+    --namespace {{ helm_prometheus_namespace | default('monitoring') }}
+    --kubeconfig {{ k8s_config_path }}
+  with_items:
+    - prometheus-secrets.yaml
+
+- name: remove secrets
+  ansible.builtin.file:
+    path: /tmp/{{ item }}
+    state: absent
+  with_items:
+    - prometheus-secrets.yaml

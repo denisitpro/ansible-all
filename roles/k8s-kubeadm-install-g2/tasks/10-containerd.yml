@@ -25,8 +25,8 @@
     mode: "0755"
   with_items:
     - "containerd"
-    - "containerd-shim"
-    - "containerd-shim-runc-v1"
+    # - "containerd-shim"
+    # - "containerd-shim-runc-v1"
     - "containerd-shim-runc-v2"
     - "containerd-stress"
     - "ctr"

@@ -1,0 +1,21 @@
+---
+defaultVaultConnection:
+  enabled: true
+  address: "{{ vault_server_address | default('https://vault.example.com')}}"
+
+defaultAuthMethod:
+  enabled: true
+  namespace: "vault-secrets-operator"
+  allowedNamespaces: []
+  method: kubernetes
+  mount: kubernetes
+  skipTLSVerify: false
+  kubernetes:
+    role: "vso-default"
+    serviceAccount: vault-secrets-operator-controller-manager
+
+controller:
+  manager:
+    logLevel: "{{vault_controller_manager_log_level | default('info')}}"
+    metricsAddr: ":8080"
+    enableLeaderElection: true
