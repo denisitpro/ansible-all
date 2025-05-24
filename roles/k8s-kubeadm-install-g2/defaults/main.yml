@@ -1,16 +1,19 @@
 ---
-k8s_cls_version: "1.32.3"
+k8s_cls_version: "1.33.1"
+
+# need for upgrade cluster
+k8s_cluster_minor_version: v1.33
 
 k8s_local_config_path: ~/.kube/new-cluster.conf
 
 kubelet_ver: "{{ k8s_cls_version }}-1.1"
-kubeadm_ver: "{{ kubelet_ver }}"
-kubectl_ver: "{{ kubelet_ver }}"
 
-kubeadmin_version: v1.32
-containerd_version: 1.7.22
-runc_version: 1.1.15
-cni_version: 1.5.1
+# need for  cluster upgrade
+kubeadm_ver: "{{ kubelet_ver }}"
+
+containerd_version: 2.1.0
+runc_version: 1.3.0
+containerd_plugin_cni_version: 1.7.0
 
 container_runtime: containerd
 kubeadmin_config: /etc/kubernetes/admin.conf
@@ -18,13 +21,8 @@ kubeadmin_config: /etc/kubernetes/admin.conf
 # support  CNI networks -  calico, cilium
 k8s_cni_network: "cilium"
 
-# Calico section
-
-# https://github.com/projectcalico/calico
-calico_operator_version: v3.29.0
-
 # Cilium section
-cilium_version: 1.17.3
+cilium_version: 1.17.4
 cilium_cli_version: 0.18.3
 k8s_config_path: /etc/kubernetes/admin.conf
 cilium_install_mode: "cli" # support cli and helm

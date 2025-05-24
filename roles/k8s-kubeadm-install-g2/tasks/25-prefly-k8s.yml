@@ -1,7 +1,7 @@
 ---
 - name: Add k8s key - Ubuntu
   ansible.builtin.apt_key:
-    url: "https://pkgs.k8s.io/core:/stable:/{{ kubeadmin_version }}/deb/Release.key"
+    url: "https://pkgs.k8s.io/core:/stable:/{{ k8s_cluster_minor_version }}/deb/Release.key"
     keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
   when: apt_keyring_force_file is not defined
 
@@ -12,11 +12,14 @@
     state: present
   when: apt_keyring_force_file is defined
 
+- name: print cluste minor  version
+  ansible.builtin.debug:
+    msg: version - "{{ k8s_cluster_minor_version }}"
 
 #  address repo https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 - name: Add k8s repository
   ansible.builtin.apt_repository:
-    repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ kubeadmin_version }}/deb/ /
+    repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ k8s_cluster_minor_version }}/deb/ /
 
 # need for set corrected hostname
 - name: restart systemd-resolved

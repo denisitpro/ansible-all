@@ -31,7 +31,7 @@
     src: "ingress-nginx-values.yaml.j2"
     dest: /tmp/ingress-nginx-values.yaml
     mode: "0644"
-  when: not skip_ingress_nginx_install
+  when: not skip_ingress_nginx_install  or ingress_nginx_force_install is defined
 
 - name: Install ingress-nginx via Helm
   ansible.builtin.command: >
@@ -41,4 +41,10 @@
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/ingress-nginx-values.yaml
-  when: not skip_ingress_nginx_install
+  when: not skip_ingress_nginx_install  or ingress_nginx_force_install is defined
+  register: ingress_nginx_helm_result
+
+- name: Show ingress-nginx Helm output
+  ansible.builtin.debug:
+    var: ingress_nginx_helm_result.stdout_lines
+  when: ingress_nginx_helm_result is defined

@@ -1,0 +1,21 @@
+---
+- name: stop kubelet
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: kubelet
+    state: stopped
+
+- name: include containerd upgrade tasks
+  ansible.builtin.import_tasks: 10-containerd.yml
+
+- name: include runc + cni upgrade tasks
+  ansible.builtin.import_tasks: 15-runc-cni.yml
+
+- name: include runc + cni upgrade tasks
+  ansible.builtin.import_tasks: 20-runtimes-configure.yml
+
+- name: start kubelet
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: kubelet
+    state: started

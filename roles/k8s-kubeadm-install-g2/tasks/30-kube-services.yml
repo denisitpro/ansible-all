@@ -5,11 +5,37 @@
     update_cache: true
     cache_valid_time: 3600
 
-- name: install k8s components
+- name: Unhold kubeadm packages if k8s_upgrade_force is true
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: install
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+  when: k8s_upgrade_force is defined
+
+- name: print kubeadm_ver
+  ansible.builtin.debug:
+    msg: version - "{{ kubeadm_ver }}"
+  tags:
+    - k8s-kubeadm
+
+
+- name: install kubeadm
+  ansible.builtin.apt:
+    name:
+      - kubeadm={{ kubeadm_ver }}
+    state: latest
+    update_cache: true
+    cache_valid_time: 3600
+  tags:
+    - k8s-kubeadm
+
+- name: install k8s components - kubelet and kubectl
   ansible.builtin.apt:
     name:
       - kubelet={{ kubelet_ver }}
-      - kubeadm={{ kubelet_ver }}
       - kubectl={{ kubelet_ver }}
     state: latest
     update_cache: true

@@ -22,6 +22,7 @@
   tags:
     - k8s
     - k8s-addition
+    - k8s-ingress
     - k8s-ingress-nginx
 
 - ansible.builtin.import_tasks: 30-argocd.yml
@@ -41,6 +42,7 @@
     - k8s
     - k8s-addition
     - k8s-prom-stack
+    - k8s-prom
 
 - ansible.builtin.import_tasks: 50-teleport-agent.yml
   delegate_to: "{{ k8s_master_init_host }}"
@@ -50,3 +52,21 @@
     - k8s
     - k8s-addition
     - k8s-teleport
+
+- ansible.builtin.import_tasks: 60-vault-secret-operator.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'vso' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-vso
+
+- ansible.builtin.import_tasks: 70-cert-manager.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'cert-manager' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-cert-manager

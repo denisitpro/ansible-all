@@ -13,7 +13,7 @@
 
 - name: Download CNI Plugins tarball
   ansible.builtin.get_url:
-    url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-amd64-v{{ cni_version }}.tgz"
+    url: "https://github.com/containernetworking/plugins/releases/download/v{{ containerd_plugin_cni_version }}/cni-plugins-linux-amd64-v{{ containerd_plugin_cni_version }}.tgz"
     dest: /tmp/cni-plugins.tgz
     mode: "0644"
 

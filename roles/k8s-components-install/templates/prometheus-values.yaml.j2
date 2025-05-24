@@ -1,6 +1,65 @@
 prometheus:
+{% if k8s_prometheus_annotations is defined or k8s_prometheus_labels is defined %}
+  service:
+{% if k8s_prometheus_annotations is defined %}
+    annotations:
+{% for k, v in k8s_prometheus_annotations.items() %}
+{% if '\n' in v %}
+      {{ k }}: |
+{% for line in v.splitlines() %}
+        {{ line }}
+{% endfor %}
+{% else %}
+      {{ k }}: "{{ v }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if k8s_prometheus_labels is defined %}
+    labels:
+{% for k, v in k8s_prometheus_labels.items() %}
+      {{ k }}: "{{ v }}"
+{% endfor %}
+{% endif %}
+{% endif %}
   prometheusSpec:
-    retention: 7d
+    retention: 2d
+    retentionSize: 18GB
+    enableFeatures: ["exemplar-storage"]
+    serviceDiscoveryRole: "EndpointSlice"
+    externalLabels:
+      clusterId: {{ k8s_prom_cluster_id | default('k8s-cluster.example') }}
+{% if k8s_prom_pvc_enable is defined %}
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          # storageClassName: {{ prometheus_storage_class | default("standard") }}
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: {{ k8s_prometheus_storage_size | default("20Gi") }}
+{% endif %}
+{% set remote_write_config = k8s_prom_remote_write | default([]) %}
+{% if remote_write_config | length > 0 %}
+    remoteWrite:
+{% for remote in remote_write_config %}
+      - url: {{ remote.remote_write.url }}
+        messageVersion: "V2.0"
+        sendExemplars: true
+        enableHTTP2: true
+        basicAuth:
+          username:
+            name: {{ remote.remote_write.user_secret_name | default("remote-write-auth") }}
+            key: {{ remote.remote_write.user_secret_key | default("username") }}
+          password:
+            name: {{ remote.remote_write.pass_secret_name | default("remote-write-auth") }}
+            key: {{ remote.remote_write.pass_secret_key | default("password") }}
+        queueConfig:
+          batchSendDeadline: {{ remote.remote_write.batch_send_deadline | default("5s") }}
+          maxSamplesPerSend: {{ remote.remote_write.max_samples_per_send | default(1000) }}
+          maxShards: {{ remote.remote_write.max_shards | default(5) }}
+{% endfor %}
+{% endif %}
+
 
 nodeExporter:
   enabled: false
@@ -9,4 +68,67 @@ alertmanager:
   enabled: false
 
 grafana:
+  enabled: true
+{% if k8s_grafana_annotations is defined or k8s_grafana_labels is defined %}
+  service:
+{% if k8s_grafana_annotations is defined %}
+    annotations:
+{% for k, v in k8s_grafana_annotations.items() %}
+{% if '\n' in v %}
+      {{ k }}: |
+{% for line in v.splitlines() %}
+        {{ line }}
+{% endfor %}
+{% else %}
+      {{ k }}: "{{ v }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if k8s_grafana_labels is defined %}
+    labels:
+{% for k, v in k8s_grafana_labels.items() %}
+      {{ k }}: "{{ v }}"
+{% endfor %}
+{% endif %}
+{% endif %}
+
+kubeProxy:
   enabled: false
+
+kubeControllerManager:
+  enabled: false
+#   service:
+#     enabled: true
+#     port: null
+#     targetPort: null
+#     ipDualStack:
+#       enabled: false
+#       ipFamilies: [ "IPv4"]
+#       ipFamilyPolicy: "SingleStack"
+#     selector:
+#       component: kube-controller-manager
+kubeEtcd:
+  enabled: false
+#   service:
+#     enabled: true
+#     port: 2381
+#     targetPort: 2381
+#     selector:
+#       component: etcd
+#   endpoints:
+#     - 127.0.0.1
+#   tls:
+#     enabled: true
+#     certFile: /etc/kubernetes/pki/etcd/server.crt
+#     keyFile: /etc/kubernetes/pki/etcd/server.key
+#     caFile: /etc/kubernetes/pki/etcd/ca.crt
+
+kubeScheduler:
+  enabled: false
+#   endpoints:
+#     - 127.0.0.1
+#   service:
+#     enabled: true
+#     port: 10259
+#   https:
+#     enabled: true  

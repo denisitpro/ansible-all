@@ -4,6 +4,9 @@
   tags:
     - k8s
 
+- ansible.builtin.import_tasks: 08-upgrade-runtime.yml
+  tags: ['never', 'k8s-upgrade-runtime']
+
 - ansible.builtin.import_tasks: 10-containerd.yml
   tags:
     - k8s
@@ -21,6 +24,7 @@
   tags:
     - k8s
     - k8s-repo
+    - k8s-upgrade
 
 - ansible.builtin.import_tasks: 27-prefly-cilium.yml
   when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_install_mode == 'cli'
@@ -37,6 +41,7 @@
   tags:
     - k8s
     - k8s-components
+    - k8s-upgrade
 
 - ansible.builtin.import_tasks: 35-k8s-init-cls-global.yml
   when: k8s_master is defined and k8s_local_network_force is not defined

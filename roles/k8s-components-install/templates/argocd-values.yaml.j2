@@ -29,6 +29,9 @@ server:
     annotations:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+{% if argocd_ingress_support is defined and argocd_ingress_whitelist is defined %}
+      nginx.ingress.kubernetes.io/whitelist-source-range: "{{ argocd_ingress_whitelist | join(', ') }}"
+{% endif %}
     extraTls:
       - hosts:
         - {{ argocd_domain | default('argocd.example.com') }}
