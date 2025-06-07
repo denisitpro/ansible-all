@@ -20,12 +20,12 @@ ExecStart={{ node_epxorter_binary_path }} \
 {% set name, options = (collector.items()|list)[0] %}
     --collector.{{ name }} \
 {% for k,v in options|dictsort %}
-    --collector.{{ name }}.{{ k }}={{ v }}
+    --collector.{{ name }}.{{ k }}={{ v }} \
 {% endfor -%}
 {% endif -%}
 {% endfor -%}
 {% for collector in node_exporter_disabled_collectors %}
-    --no-collector.{{ collector }}
+    --no-collector.{{ collector }} 
 {% endfor %}
 
 SyslogIdentifier=node-exporter

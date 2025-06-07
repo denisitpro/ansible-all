@@ -1,0 +1,56 @@
+#!/bin/bash
+
+METRICS_FILE="{{ node_exporter_textfile_dir }}/elastic_agent.prom"
+
+# --- 1. Check if elastic-agent is installed ---
+# Check if elastic-agent binary is available in PATH
+if command -v elastic-agent &>/dev/null; then
+    echo "node_elastic_agent_installed 1" > "$METRICS_FILE"
+else
+    echo "node_elastic_agent_installed 0" > "$METRICS_FILE"
+fi
+
+# --- 2. Check if elastic-agent is running ---
+# Check by process name
+if pgrep -x "elastic-agent" &>/dev/null; then
+    echo "node_elastic_agent_running 1" >> "$METRICS_FILE"
+else
+    echo "node_elastic_agent_running 0" >> "$METRICS_FILE"
+fi
+
+# --- 3. Check if elastic-agent is connected via JSON ---
+# Get JSON status; if failed — assume agent is not connected
+STATUS_JSON=$(elastic-agent status --output json 2>/dev/null)
+if [[ -z "$STATUS_JSON" ]]; then
+    echo "node_elastic_agent_state 0" >> "$METRICS_FILE"
+    echo "node_elastic_agent_fleet_state 0" >> "$METRICS_FILE"
+    echo "node_elastic_agent_connected 0" >> "$METRICS_FILE"
+    exit 0
+fi
+
+# Check if jq is available
+if ! command -v jq &>/dev/null; then
+    # Without jq we can't properly parse JSON — assume not connected
+    echo "node_elastic_agent_state 0" >> "$METRICS_FILE"
+    echo "node_elastic_agent_fleet_state 0" >> "$METRICS_FILE"
+    echo "node_elastic_agent_connected 0" >> "$METRICS_FILE"
+    exit 0
+fi
+
+# Extract .state and .FleetState fields
+agent_state=$(echo "$STATUS_JSON" | jq '.state')
+fleet_state=$(echo "$STATUS_JSON" | jq '.FleetState')
+
+# Extract .FleetMessage field (as plain string)
+fleet_message=$(echo "$STATUS_JSON" | jq -r '.FleetMessage')
+
+# Write state and FleetState values
+echo "node_elastic_agent_state $agent_state" >> "$METRICS_FILE"
+echo "node_elastic_agent_fleet_state $fleet_state" >> "$METRICS_FILE"
+
+# Set node_elastic_agent_connected=1 only if state=2, FleetState=2, and FleetMessage="Connected"
+if [[ "$agent_state" -eq 2 && "$fleet_state" -eq 2 && "$fleet_message" == "Connected" ]]; then
+    echo "node_elastic_agent_connected 1" >> "$METRICS_FILE"
+else
+    echo "node_elastic_agent_connected 0" >> "$METRICS_FILE"
+fi

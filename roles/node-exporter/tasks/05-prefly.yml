@@ -1,0 +1,33 @@
+---
+- name: Check if exporter-node configuration file exists
+  ansible.builtin.stat:
+    path: "{{ supervisor_conf }}"
+  register: exporter_conf_stat
+
+- name: Stop and remove exporter-node via Supervisor module if config exists
+  community.general.supervisorctl:
+    name: exporter-node
+    state: absent
+    stop_before_removing: true
+  when: exporter_conf_stat.stat.exists
+
+- name: Remove exporter-node from Supervisor configuration
+  community.general.supervisorctl:
+    name: exporter-node
+    state: absent
+  when: exporter_conf_stat.stat.exists
+
+- name: Copy exporter-node.conf to exporter-node.conf.disabled
+  ansible.builtin.copy:
+    src: "{{ supervisor_conf }}"
+    dest: "{{ supervisor_conf }}.disabled"
+    force: true
+    remote_src: true
+    mode: "0644"
+  when: exporter_conf_stat.stat.exists
+
+- name: Remove original exporter-node.conf
+  ansible.builtin.file:
+    path: "{{ supervisor_conf }}"
+    state: absent
+  when: exporter_conf_stat.stat.exists

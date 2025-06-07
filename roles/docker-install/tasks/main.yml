@@ -1,4 +1,9 @@
 ---
+# - ansible.builtin.import_tasks: 03-arch.yml
+#   when: ansible_distribution == 'Ubuntu'
+#   tags:
+#     - docker
+
 - ansible.builtin.import_tasks: 05-add-repo.yml
   when: ansible_distribution == 'Ubuntu'
   tags:

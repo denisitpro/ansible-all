@@ -1,5 +1,5 @@
 ---
-node_exporter_version_binary: "1.9.0"
+node_exporter_version_binary: "1.9.1"
 node_exporter_bind_port: '9100'
 
 
@@ -46,3 +46,5 @@ scripts_path: /opt/scripts
 # node_exporter_textfile_scripts:
 #   - inotify-metrics.sh
 #  - ping-ipv4.sh
+
+supervisor_conf: /etc/supervisor/conf.d/exporter-node.conf

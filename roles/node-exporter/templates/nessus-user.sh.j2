@@ -1,0 +1,10 @@
+#!/bin/bash
+
+METRICS_FILE="{{ node_exporter_textfile_dir }}/nessus_user.prom"
+
+# Check if nessus user exists
+if id "nessus" &>/dev/null; then
+    echo "node_nessus_user_exists 1" > "$METRICS_FILE"
+else
+    echo "node_nessus_user_exists 0" > "$METRICS_FILE"
+fi
