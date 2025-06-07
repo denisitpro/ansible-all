@@ -1,4 +1,8 @@
 ---
+- name: Debug docker_arch
+  ansible.builtin.debug:
+    msg: "Docker architecture is: {{ go_arch }}"
+
 - name: Add Docker GPG key - Ubuntu
   ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
@@ -7,4 +11,4 @@
 
 - name: Add Docker APT repository - Ubuntu
   ansible.builtin.apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+    repo: deb [arch={{ go_arch }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable

@@ -1,0 +1,12 @@
+# ---
+# - name: Set docker_arch for non-x86_64
+#   ansible.builtin.set_fact:
+#     docker_arch: "{{ arch_map[ansible_architecture] | default(ansible_architecture) }}"
+#   vars:
+#     arch_map:
+#       aarch64: arm64
+#       x86_64: amd64
+
+# - name: Debug docker_arch
+#   ansible.builtin.debug:
+#     msg: "Docker architecture is: {{ docker_arch }}"

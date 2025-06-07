@@ -13,11 +13,6 @@
 - name: Install Docker - components Ubuntu
   ansible.builtin.apt:
     name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg2
-      - software-properties-common
       - containerd.io
       - docker-buildx-plugin
       - docker-compose-plugin

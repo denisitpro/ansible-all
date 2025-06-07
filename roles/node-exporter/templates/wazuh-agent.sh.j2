@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Metrics file for node_exporter
+METRICS_FILE="{{ node_exporter_textfile_dir }}/wazuh_agent_status.prom"
+
+# Paths to the binary and state file
+WAZUH_BIN="/var/ossec/bin/wazuh-agentd"
+STATE_FILE="/var/ossec/var/run/wazuh-agentd.state"
+
+# --- 1. Check if wazuh-agent is installed ---
+if [ -f "$WAZUH_BIN" ]; then
+    installed=1
+else
+    installed=0
+fi
+
+# --- Default values for other metrics ---
+status_val=0
+last_keep_ts=0
+last_ack_ts=0
+msg_count=0
+msg_sent=0
+msg_buffer=0
+
+# --- 2. If installed and state file exists, parse it ---
+if [ "$installed" -eq 1 ] && [ -f "$STATE_FILE" ]; then
+    # Extract the status value (line like status='connected')
+    raw_status=$(grep "^status=" "$STATE_FILE" | head -n1 | cut -d"=" -f2 | tr -d "'")
+    case "$raw_status" in
+        disconnected) status_val=0 ;;
+        pending)      status_val=1 ;;
+        connected)    status_val=2 ;;
+        *)            status_val=0 ;;
+    esac
+
+    # Extract last_keepalive and last_ack lines (format 'YYYY-MM-DD HH:MM:SS')
+    raw_keepalive=$(grep "^last_keepalive=" "$STATE_FILE" | head -n1 | cut -d"=" -f2 | tr -d "'")
+    raw_ack=$(grep "^last_ack=" "$STATE_FILE" | head -n1 | cut -d"=" -f2 | tr -d "'")
+
+    # Convert to unixtime (if empty string — remains 0)
+    if [ -n "$raw_keepalive" ]; then
+        last_keep_ts=$(date -d "$raw_keepalive" +%s 2>/dev/null) || last_keep_ts=0
+    fi
+    if [ -n "$raw_ack" ]; then
+        last_ack_ts=$(date -d "$raw_ack" +%s 2>/dev/null) || last_ack_ts=0
+    fi
+
+    # Extract numeric parameters msg_count, msg_sent, msg_buffer
+    raw_count=$(grep "^msg_count=" "$STATE_FILE" | head -n1 | cut -d"=" -f2 | tr -d "'")
+    raw_sent=$(grep "^msg_sent=" "$STATE_FILE" | head -n1 | cut -d"=" -f2 | tr -d "'")
+    raw_buffer=$(grep "^msg_buffer=" "$STATE_FILE" | head -n1 | cut -d"=" -f2 | tr -d "'")
+
+    # If value is missing (empty string), keep 0, otherwise assign it
+    if [[ "$raw_count" =~ ^[0-9]+$ ]]; then
+        msg_count=$raw_count
+    fi
+    if [[ "$raw_sent" =~ ^[0-9]+$ ]]; then
+        msg_sent=$raw_sent
+    fi
+    if [[ "$raw_buffer" =~ ^[0-9]+$ ]]; then
+        msg_buffer=$raw_buffer
+    fi
+fi
+
+# --- 3. Write all metrics to the file ---
+{
+    echo "node_wazuh_agent_installed $installed"
+    echo "node_wazuh_agent_status $status_val"
+    echo "node_wazuh_agent_last_keepalive $last_keep_ts"
+    echo "node_wazuh_agent_last_ack $last_ack_ts"
+    echo "node_wazuh_agent_msg_count $msg_count"
+    echo "node_wazuh_agent_msg_sent $msg_sent"
+    echo "node_wazuh_agent_msg_buffer $msg_buffer"
+} > "$METRICS_FILE"
