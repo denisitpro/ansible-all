@@ -3,9 +3,9 @@ defaultSettings:
   storageOverProvisioningPercentage: 100
   storageMinimalAvailablePercentage: 15
   nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
-  replicaAutoBalance: "best-effort"
+  replicaAutoBalance: "disabled" # kafka failed 
   dataLocality: "best-effort"
-  rebalanceDisksWhenLowSpace: true # not foun value chart
+  rebalanceDisksWhenLowSpace: false # not foun value chart
 
 # # failed https://github.com/longhorn/longhorn/issues/6415
 # # https://github.com/longhorn/longhorn/issues/6623

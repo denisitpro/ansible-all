@@ -8,10 +8,10 @@ defaultAuthMethod:
   namespace: "vault-secrets-operator"
   allowedNamespaces: []
   method: kubernetes
-  mount: kubernetes
+  mount: {{ k8s_vso_mount | default('kubernetes') }}
   skipTLSVerify: false
   kubernetes:
-    role: "vso-default"
+    role: "{{ k8s_vso_role | default('vso-default') }}"
     serviceAccount: vault-secrets-operator-controller-manager
 
 controller:

@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hubble-ui
+  namespace: cilium
+{% if k8s_hubble_ui_annotations is defined or k8s_hubble_ui_labels is defined %}
+{% if k8s_hubble_ui_annotations is defined %}
+  annotations:
+{% for k, v in k8s_hubble_ui_annotations.items() %}
+{% if '\n' in v %}
+    {{ k }}: |
+{% for line in v.splitlines() %}
+    {{ line }}
+{% endfor %}
+{% else %}
+    {{ k }}: "{{ v }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if k8s_hubble_ui_labels is defined %}
+  labels:
+{% for k, v in k8s_hubble_ui_labels.items() %}
+    {{ k }}: "{{ v }}"
+{% endfor %}
+{% endif %}
+{% endif %}

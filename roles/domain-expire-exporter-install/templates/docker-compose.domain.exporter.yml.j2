@@ -3,7 +3,7 @@ services:
     image: caarlos0/domain_exporter:{{domain_exporter_version}}
     container_name: domain-exporter
     network_mode: host
-    restart: {{ domain_exporter_restart | default('unless-stopped') }}
+    restart: {{ domain_exporter_restart | default('always') }}
     logging:
       driver: json-file
       options:

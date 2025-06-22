@@ -1,0 +1,47 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: root-selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: intermediate-selfsigned-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: intermediate-selfsigned-ca
+  secretName: ca-root-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: root-selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cluster-fake-tls-ca-issuer
+spec:
+  ca:
+    secretName: ca-root-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-fake-tls
+  namespace: cert-manager
+spec:
+  secretName: cluster-fake-tls
+  commonName: fake-tls.internal
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: cluster-fake-tls-ca-issuer
+    kind: ClusterIssuer
