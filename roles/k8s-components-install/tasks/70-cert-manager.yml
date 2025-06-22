@@ -12,9 +12,11 @@
   failed_when: false
   changed_when: false
 
+
 - name: Set fact whether to skip install
   ansible.builtin.set_fact:
     skip_cert_manager_install: "{{ cert_manager_installed.rc == 0 and (not cert_manager_force_install | default(false)) }}"
+
 
 - name: Add Helm repository
   ansible.builtin.command: helm repo add jetstack https://charts.jetstack.io
@@ -44,8 +46,3 @@
     --create-namespace
     --values /tmp/cert-manager-values.yaml
   when: not skip_cert_manager_install or cert_manager_force_install is defined
-
-# - name: remove /tmp/cert-manager-values.yaml
-#   ansible.builtin.file:
-#     path: /tmp/cert-manager-values.yaml
-#     state: absent

@@ -1,0 +1,11 @@
+---
+- ansible.builtin.import_tasks: 05-resolv.yml
+  delegate_to: "{{ ip_hosts_init_host }}"
+  when: list_servers_resolved | default([]) | length > 0
+  run_once: true
+  tags:
+    - always
+    # - ip-resolve
+    # - angie-vhosts
+    # - angie-acl
+    # - vhosts

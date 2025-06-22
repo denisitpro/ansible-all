@@ -1,0 +1,7 @@
+---
+# only for specific case - example
+# ip_hosts_group: example_group
+# ip_hosts_init_host: "{{ groups[ip_hosts_group][0] }}"
+
+
+ip_hosts_init_host: "{{ ansible_play_hosts_all[0] }}"

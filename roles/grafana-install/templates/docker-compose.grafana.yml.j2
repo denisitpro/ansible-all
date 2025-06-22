@@ -20,7 +20,7 @@ services:
       - "{{ grafana_data_path }}/etc/provisioning/plugins:/etc/grafana/provisioning/plugins"
       - "{{ grafana_data_path }}/etc/provisioning/notifiers:/etc/grafana/provisioning/notifiers"
 
-    restart: {{ grafana_restart | default('unless-stopped') }}
+    restart: {{ grafana_restart | default('always') }}
 {% if grafana_plugins is defined %}
     environment:
       GF_INSTALL_PLUGINS: '{{ grafana_plugins }}'

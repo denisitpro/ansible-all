@@ -1,0 +1,52 @@
+---
+# vai  - vault agent injector
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Check if vault-injector is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_vai_ns | default('vault-agent-injector') }} --kubeconfig {{ k8s_config_path }} | grep -w vault-agent-injector
+  register: vai_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip vai install
+  ansible.builtin.set_fact:
+    skip_via_install: "{{ vai_installed.rc == 0 and (not via_force_install | default(false)) }}"
+
+- name: Add vai Helm repository
+  ansible.builtin.command: helm repo add hashicorp https://helm.releases.hashicorp.com
+  register: helm_via_repo
+  changed_when: "'\"has been added\"' in helm_via_repo.stdout"
+  when: not skip_via_install
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_via_install
+
+- name: Create  values config from template
+  ansible.builtin.template:
+    src: "vai-values.yaml.j2"
+    dest: /tmp/vai-values.yaml
+    mode: "0600"
+  when: not skip_via_install or via_force_install is defined
+  tags:
+    - vai-value
+
+- name: Install vai via Helm
+  ansible.builtin.command: >
+    helm upgrade --install vault hashicorp/vault
+    --namespace {{ helm_vai_ns | default('vault-agent-injector') }}
+    --version {{ helm_via_version | default('0.30.0') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/vai-values.yaml
+  when: not skip_via_install or via_force_install is defined
+
+- name: remove /tmp/vai-values.yaml
+  ansible.builtin.file:
+    path: /tmp/vai-values.yaml
+    state: absent

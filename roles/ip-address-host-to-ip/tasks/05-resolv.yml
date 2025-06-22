@@ -1,0 +1,38 @@
+# - name: Check if list_servers_resolved is empty
+#   ansible.builtin.debug:
+#     msg: "list_servers_resolved is empty, skipping DNS resolving steps"
+#   when: list_servers_resolved | default([]) | length == 0
+
+# - name: Skip resolving steps when list is empty
+#   ansible.builtin.meta: end_play
+#   when: list_servers_resolved | default([]) | length == 0
+
+- name: Init resolved_addresses
+  ansible.builtin.set_fact:
+    resolved_addresses: []
+
+# potential may be probel very big host list
+- name: Resolve each hostname to IPs
+  ansible.builtin.shell: |
+    getent ahosts {{ item }} | awk '{print $1}' | sort -u
+  register: host_ips
+  changed_when: false
+  loop: "{{ list_servers_resolved }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Build resolved_addresses list
+  ansible.builtin.set_fact:
+    resolved_addresses: "{{ resolved_addresses + new_entries }}"
+  vars:
+    new_entries: >-
+      {{ item.stdout_lines | map('regex_replace', '^(.*)$', '{"ip": "\1", "comment": "' ~ item.item ~ '"}') | map('from_yaml') | list }}
+  loop: "{{ host_ips.results }}"
+
+- name: Deduplicate resolved_addresses
+  ansible.builtin.set_fact:
+    resolved_addresses: "{{ resolved_addresses | unique }}"
+
+# - name: Display resolved addresses
+#   ansible.builtin.debug:
+#     var: resolved_addresses

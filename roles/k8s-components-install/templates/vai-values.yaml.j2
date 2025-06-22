@@ -1,0 +1,18 @@
+global:
+  enabled: true
+  externalVaultAddr: "{{ k8s_vault_injector_external_vault_addr | default('https://vault.example.com') }}"
+  tlsDisable: {{ k8s_vault_injector_tls_disable | default('true') }}
+  serverTelemetry:
+    # Enable integration with the Prometheus Operator
+    # See the top level serverTelemetry section below before enabling this feature.
+    prometheusOperator: {{ k8s_vault_injector_prometheus_operator | default('true') }}
+
+injector:
+  enabled: true
+  replicas: {{ k8s_vault_injector_replicas | default(1) }}
+  logLevel: "{{ k8s_vault_injector_log_level | default('info') }}"
+
+# If true, will enable a node exporter metrics endpoint at /metrics.
+metrics:
+  enabled: {{ k8s_vault_injector_metrics_enabled | default('false') }}
+
