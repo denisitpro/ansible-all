@@ -3,6 +3,7 @@
     name: "{{ wazuh_agent_system_name }}"
     state: "stopped"
     enabled: false
+  ignore_errors: true
 
 - name: uninstall wazuh-agent
   ansible.builtin.apt:

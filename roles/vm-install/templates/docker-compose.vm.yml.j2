@@ -19,7 +19,9 @@ services:
       - "--search.maxUniqueTimeseries={{vm_search_max_unique_timeseries}}"
       - "--search.maxQueryDuration=30s"
       - "--promscrape.config={{ vm_config_path }}/scrape.yaml"
+{% if vm_alert is defined %}
       - "--vmalert.proxyURL={{vm_proxy_url}}"
+{% endif %}
 {% if vm_enterprise is defined %}
       - "--eula"
       - "--downsampling.period=14d:1m,30d:10m,60d:1h,180d:8h"
@@ -28,7 +30,7 @@ services:
 {% for flag in vm_extra_args %}
       - "{{ flag }}"
 {% endfor %}
-    restart: {{ vm_restart | default('unless-stopped') }}
+    restart: {{ vm_restart | default('always') }}
     logging:
       driver: json-file
       options:
@@ -56,5 +58,5 @@ services:
       - "--remoteWrite.basicAuth.password={{ write.basic_auth_pass | default('set_me') }}"
 {% endif %}
 {% endfor %}
-    restart: {{ vmagent_restart | default('unless-stopped') }}
+    restart: {{ vmagent_restart | default('always') }}
 {% endif %}    
