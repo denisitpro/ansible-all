@@ -1,5 +1,5 @@
 ---
-prometheus_image: "v3.3.0"
+prometheus_image: "v3.4.1"
 
 prometheus_compose_path: /opt/docker/prometheus
 
@@ -40,6 +40,7 @@ prometheus_command_run:
   - "web.listen-address={{ prometheus_web_listen_address }}"
   - "web.enable-lifecycle"
   - "web.enable-remote-write-receiver"
+  - "enable-feature=exemplar-storage"
 #  - "web.external-url="
 
 ### Prom config section
@@ -126,6 +127,7 @@ coins_http_405_fail: []
 # ALERTS section gen 2
 prometheus_alert_files:
   - alerts-disks-v1.yml
+  - alerts-memory.yml
   - alerts-base-v1.yml
   - alerts-time.yml
   - alerts-domain-expire-v1.yml
@@ -181,7 +183,8 @@ excld_inst_unusual_net_out: []
 excld_node_too_many_pods: []
 excld_cluster_instance_down: []
 
-excld_kafka_consumergroup_lag: []
+excld_kafka_consumergroup_lag_15m: []
+excld_kafka_consumergroup_lag_1h: []
 
 
 # consul section

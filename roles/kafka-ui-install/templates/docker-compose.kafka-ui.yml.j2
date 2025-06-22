@@ -19,7 +19,7 @@ services:
 {% if kafkaui_auth_enable is defined %}
       JAVA_TOOL_OPTIONS: '-Djava.security.auth.login.config={{kafka_ui_config_path}}/jaas.conf'
 {% endif %}
-    restart: {{ kafka_ui_restart | default('unless-stopped') }}
+    restart: {{ kafka_ui_restart | default('always') }}
     logging:
       driver: json-file
       options:

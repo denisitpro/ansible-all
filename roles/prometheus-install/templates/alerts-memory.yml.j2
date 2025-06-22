@@ -1,0 +1,37 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: memory alert rules
+  rules:
+  - alert: Memory usage over 80%
+    expr: |
+      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 80
+      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over80 |  default([]) | join('|') }}"}
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 15 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  - alert: Memory usage over 90%
+    expr: |
+      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 90
+      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over90 |  default([]) | join('|') }}"}
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 15 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  - alert: Memory usage over 95%
+    expr: |
+      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 95
+      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over95 |  default([]) | join('|') }}"}
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 15 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"

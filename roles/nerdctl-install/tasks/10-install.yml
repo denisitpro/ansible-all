@@ -1,0 +1,12 @@
+---
+- name: Download nerdctl archive
+  ansible.builtin.get_url:
+    url: "{{ nerdctl_download_url }}"
+    dest: "{{ nerdctl_download_dir }}"
+    mode: "0644"
+
+- name: Extract nerdctl archive
+  ansible.builtin.unarchive:
+    src: "{{ nerdctl_download_dir }}/nerdctl-{{ nerdctl_version }}-linux-{{ nerdctl_arch }}.tar.gz"
+    dest: "{{ nerdctl_binary_path }}"
+    remote_src: true

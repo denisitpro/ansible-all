@@ -40,7 +40,7 @@ services:
 {% endif %}
       - KAFKA_CFG_UNCLEAN_LEADER_ELECTION_ENABLE=true # inportant
       - ALLOW_PLAINTEXT_LISTENER=yes
-    restart: {{ kafka_restart | default('unless-stopped') }}
+    restart: {{ kafka_restart | default('always') }}
     logging:
       driver: json-file
       options:

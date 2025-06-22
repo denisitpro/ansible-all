@@ -14,7 +14,7 @@ services:
       - '--sasl.password={{ kafka_exporter_sasl_password | default('set_me_passwordl') }}'
       - '--sasl.mechanism={{ kafka_exporter_sasl_mechanism | default("PLAIN") }}'
 {% endif %}      
-    restart: {{ kafka_exporter_restart | default('unless-stopped') }}
+    restart: {{ kafka_exporter_restart | default('always') }}
     logging:
       driver: json-file
       options:
