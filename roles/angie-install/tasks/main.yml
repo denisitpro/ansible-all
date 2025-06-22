@@ -14,6 +14,7 @@
     - angie
     - angie-selfsign
     - nginx-selfsign
+    - angie-ssl
 
 - ansible.builtin.import_tasks: 28-compose.yml
   tags:
@@ -33,6 +34,9 @@
     - angie-check
     - angie-upstream
     - vhosts
+
+- ansible.builtin.import_tasks: 90-ssl-clean.yml
+  tags: ['never', 'ssl-clean']
 
 - ansible.builtin.import_tasks: 99-clean.yml
   tags: ['never', 'angie-clean']

@@ -11,7 +11,7 @@ services:
       - {{keeper_data_path}}:/var/lib/clickhouse
       - {{keeper_logs_path}}:/var/log/clickhouse-keeper
       - {{keeper_ssl_path}}:{{keeper_ssl_path}}
-    restart: {{ keeper_restart | default('unless-stopped') }}
+    restart: {{ keeper_restart | default('always') }}
     logging:
       driver: json-file
       options:

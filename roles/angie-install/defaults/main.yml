@@ -4,6 +4,7 @@ angie_compose_path: /opt/docker/angie
 angie_version: 1.9.0
 
 angie_base_path: /opt/angie
+angie_acl_conf_dir: "{{ angie_base_path }}/acl.d"
 
 angie_uid: 100
 angie_guid: 101

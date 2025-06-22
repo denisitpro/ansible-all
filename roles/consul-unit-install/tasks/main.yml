@@ -1,6 +1,6 @@
 ---
 - ansible.builtin.import_tasks: 05-clean.yml
-  tags: ['never', 'consul-clean']
+  tags: ['never', 'consul-clean', 'consul-delete']
 
 - ansible.builtin.import_tasks: 10-create-user.yml
   tags:
