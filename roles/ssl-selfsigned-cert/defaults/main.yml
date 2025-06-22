@@ -1,0 +1,27 @@
+---
+
+
+ssl_ca_path: /opt/ssl/ca
+ssl_ca_key_path: "{{ ssl_ca_path }}/ca.key"
+ssl_ca_cert_path: "{{ ssl_ca_path }}/ca.crt"
+ssl_ca_generated_key_path: "{{ ssl_ca_path }}/privkey.pem"
+ssl_ca_generated_cert_path: "{{ ssl_ca_path }}/fullchain.pem"
+
+ssl_path: /opt/ssl/selfsign
+ssl_privkey_path: "{{ ssl_path }}/privkey.pem"
+ssl_cert_path: "{{ ssl_path }}/fullchain.pem"
+ssl_user: root
+ssl_group: root
+
+# only for specific case - example
+# ssl_cls_group: example_group
+# ssl_ca_init_host: "{{ groups[ssl_cls_group][0] }}"
+
+
+ssl_ca_init_host: "{{ ansible_play_hosts_all[0] }}"
+
+ssl_subject_alt_name:
+  - "IP:127.0.0.1"
+  - "DNS:ansible.com"
+  - "DNS:www.ansible.com"
+  - "DNS:docs.ansible.com"

@@ -1,0 +1,42 @@
+---
+- name: Create private key for new certificate
+  community.crypto.openssl_privatekey:
+    path: "{{ ssl_ca_generated_key_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    type: "{{ ssl_privkey_type | default('ECC') }}"
+    curve: secp256r1
+
+- name: Create certificate signing request (CSR) for new certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ ssl_ca_generated_key_path }}"
+    subject_alt_name: "{{ ssl_subject_alt_name }}"
+  register: csr
+
+- name: Check whether certificate exists
+  ansible.builtin.stat:
+    path: "{{ ssl_ca_generated_cert_path }}"
+  register: certificate_exists
+
+- name: Read existing certificate if exists
+  ansible.builtin.slurp:
+    src: "{{ ssl_ca_generated_cert_path }}"
+  when: certificate_exists.stat.exists
+  register: certificate
+
+- name: Sign certificate with our CA
+  community.crypto.x509_certificate_pipe:
+    csr_content: "{{ csr.csr }}"
+    provider: ownca
+    ownca_path: "{{ ssl_ca_cert_path }}"
+    ownca_privatekey_path: "{{ ssl_ca_key_path }}"
+    ownca_privatekey_passphrase: "{{ ssl_ca_key_passphrase | default(omit) }}"
+    ownca_not_after: "{{ ssl_cert_not_after | default('+3650d') }}"
+    ownca_not_before: "{{ ssl_cert_not_before | default('-1d') }}"
+  register: certificate
+
+- name: Write certificate file
+  ansible.builtin.copy:
+    dest: "{{ ssl_ca_generated_cert_path }}"
+    content: "{{ certificate.certificate }}"
+    mode: "0644"
