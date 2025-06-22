@@ -5,7 +5,7 @@ services:
     network_mode: host
     volumes:
       - {{vault_base_path}}:{{vault_base_path}}
-    restart: {{ vault_restart | default('unless-stopped') }}
+    restart: {{ vault_restart | default('always') }}
     cap_add:
       - IPC_LOCK
     command: vault server -config={{vault_conf_path}}/config.hcl

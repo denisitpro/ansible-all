@@ -19,6 +19,7 @@
     group: "{{ vault_gid }}"
   with_items:
     - "{{ vault_base_path }}"
+    - "{{ vault_backup_path }}"
     - "{{ vault_data_path }}"
-    - "{{ vault_data_path }}/raft"
+    - "{{ vault_raft_path }}"
     - "{{ vault_conf_path }}"

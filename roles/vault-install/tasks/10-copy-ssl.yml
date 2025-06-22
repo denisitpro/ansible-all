@@ -6,5 +6,6 @@
     ssl_path: "{{ vault_conf_path }}/ssl"
     ssl_cert_path: "{{ vault_conf_path }}/ssl/fullchain.pem"
     ssl_privkey_path: "{{ vault_conf_path }}/ssl/privkey.pem"
+    # ssl_ca_path: "{{ vault_conf_path }}/ca"
     ssl_user: "{{ vault_uid }}"
     ssl_group: "{{ vault_gid }}"

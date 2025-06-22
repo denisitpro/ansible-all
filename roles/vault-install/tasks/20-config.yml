@@ -1,0 +1,30 @@
+---
+- name: copy vault config - single
+  ansible.builtin.template:
+    src: "config.hcl.j2"
+    dest: "{{ vault_conf_path }}/config.hcl"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart vault
+  when: vault_cluster is not defined
+
+# - name: Debug vault_cluster
+#   ansible.builtin.debug:
+#     var: vault_cluster
+#   when: vault_cluster is defined
+
+# - name: Debug ansible_fqdn
+#   ansible.builtin.debug:
+#     var: ansible_fqdn
+#   when: vault_cluster is defined
+
+- name: copy vault config - cluster
+  ansible.builtin.template:
+    src: "config-cluster.hcl.j2"
+    dest: "{{ vault_conf_path }}/config.hcl"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart vault
+  when: vault_cluster is defined
