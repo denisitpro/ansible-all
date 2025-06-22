@@ -1,0 +1,4 @@
+---
+- ansible.builtin.import_tasks: 10-install.yml
+  tags:
+    - nerdctl

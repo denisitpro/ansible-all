@@ -48,7 +48,7 @@ services:
 {% endif %}
       - KAFKA_CFG_UNCLEAN_LEADER_ELECTION_ENABLE=true # inportant
       - KAFKA_CFG_MIN_INSYNC_REPLICAS=2
-    restart: {{ kafka_restart | default('unless-stopped') }}
+    restart: {{ kafka_restart | default('always') }}
     logging:
       driver: json-file
       options:

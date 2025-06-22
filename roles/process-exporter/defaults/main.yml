@@ -17,6 +17,10 @@ processes_to_monitor:
     cmdline: ["node-exporter"]
   - name: "process-exporter"
     cmdline: ["process-exporter"]
+  - name: "elastic-agent"
+    cmdline: ["elastic-agent"]
+  - name: "elastic-endpoint"
+    cmdline: ["elastic-endpoint"]
 
 consul_process_exporter_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
 

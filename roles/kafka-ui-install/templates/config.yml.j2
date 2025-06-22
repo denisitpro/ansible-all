@@ -7,7 +7,7 @@ kafka:
         security.protocol: {{ cluster.security_protocol | default('PLAINTEXT') }}
         sasl.mechanism: {{ cluster.sasl_mechanism | default('PLAIN') }}
 {% if cluster.security_protocol == 'SASL_PLAINTEXT' %}
-      KAFKA_CLUSTERS_{{ loop.index0 }}_PROPERTIES_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"{{ cluster.username | default('set_me') }}\" password=\"{{ cluster.password | default('bbb') }}\";"
+      KAFKA_CLUSTERS_{{ loop.index0 }}_PROPERTIES_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"{{ cluster.username | default('emcd') }}\" password=\"{{ cluster.password | default('bbb') }}\";"
 {% endif %}
       metrics:
         type: {{ cluster.metrics_type | default('PROMETHEUS') }}

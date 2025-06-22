@@ -12,8 +12,8 @@
 
 - ansible.builtin.import_tasks: 50-consul-reg.yml
   when: consul_monitoring_disable is not defined
-
   tags:
+    - consul
     - process-exporter
     - consul-reg
 

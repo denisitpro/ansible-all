@@ -11,7 +11,7 @@ groups:
     annotations:
       description: "{% raw %}{{ $labels.instance }} response code not eq 200{% endraw %}"
       summary: "{% raw %}\n
-      Instance {{ $labels.instance }} - response code not eq - {{ humanize $value }}.\n
+      Instance {{ $labels.instance }} - response code - {{ humanize $value }}.\n
       HTTP_CODE = {{ printf \"%.2f\" $value }}\n
       TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }} 
       {% endraw %}"

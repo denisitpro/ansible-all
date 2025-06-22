@@ -21,31 +21,12 @@ groups:
     annotations:
       summary: "{% raw %} process-exporter proccess down (instance {{ $labels.instance }}){% endraw %}"
       description: "{% raw %}process-exporter proccess down more 5 minutes.\n  VALUE = {{ printf \"%.2f\" $value }}%\n  LABELS = {{ $labels }}{% endraw %}"
-  # - alert: Ton Validator High CPU Usage
-  #   expr: |
-  #     sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname="ton-validator"}[5m])) by (instance) * 100 > 400
-  #   for: 5m
-  #   labels:
-  #     severity: warning
-  #   annotations:
-  #     summary: "{% raw %}Ton Validator CPU usage exceeds 400 % on instance {{ $labels.instance }}{% endraw %}"
-  #     description: "{% raw %}Ton Validator CPU usage exceeds 400 %.\n
-  #       Current value: {{ printf \"%.2f\" $value }}%\n
-  #       Labels: {{ $labels }}{% endraw %}"      
-  #   - alert: ton-validator HighMemoryUsage
-  #   expr: (
-  #     sum by (instance) (namedprocess_namegroup_memory_bytes{groupname="ton-validator", memtype="resident"}) +
-  #     sum by (instance) (namedprocess_namegroup_memory_bytes{groupname="ton-validator", memtype="proportionalResident"})
-  #     ) / 1024 / 1024 / 1024 > 55
-  #   for: 5m
-  #   labels:
-  #     severity: warning
-  #   annotations:
-  #     summary: "{% raw %} ton-validator high memory usage detected (instance {{ $labels.instance }}){% endraw %}"
-  #     description: "{% raw %}\n
-  #       ton-validator memory usage over 55GB.\n
-  #       Current VALUE = {{ printf \"%.2f\" $value }} GB\n
-  #       LABELS = {{ $labels }}\n
-  #       TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }} 
-  #       {% endraw %}"
-
+  - alert: consul proccess down
+    expr: (namedprocess_namegroup_num_procs{groupname="consul"} == 0)
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %} consul proccess down (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}consul proccess down more 5 minutes.\n  VALUE = {{ printf \"%.2f\" $value }}%\n  LABELS = {{ $labels }}{% endraw %}"
+    

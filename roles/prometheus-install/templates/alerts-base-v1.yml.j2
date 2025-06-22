@@ -12,9 +12,9 @@ groups:
       description: 'This is an alert meant to ensure that the entire alerting pipeline is functional. '
       summary: 'Ensure entire alerting pipeline is functional'
 
-  - alert: InstanceDown
+  - alert: InstanceDown - servers
     expr: |
-      up{clusterId!~"{{ excld_cluster_instance_down | default([]) | join('|') }}"} == 0
+      up{instance!~"{{ excld_instance_down | default([]) | join('|') }}", prometheus!~"^.*prometheus.*"} == 0
     for: 5m
     labels:
       severity: critical
@@ -22,38 +22,26 @@ groups:
       description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.{% endraw %}"
       summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
 
-  - alert: Memory usage over 80%
+  - alert: InstanceDown - pods - kostili
     expr: |
-      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 80
-      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over80 |  default([]) | join('|') }}"}
+          up{prometheus=~"^.*prometheus.*", container!~"{{ excld_k8s_containers_kostili | default([]) | join('|') }}"} == 0
     for: 5m
     labels:
       severity: critical
     annotations:
-      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 5 minutes.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
+      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
 
-  - alert: Memory usage over 90%
+  - alert: InstanceDown - pods clusterId support
     expr: |
-      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 90
-      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over90 |  default([]) | join('|') }}"}
+          up{clusterId!="" , container!~"{{ excld_k8s_containers_cluster_id | default([]) | join('|') }}"} == 0
     for: 5m
     labels:
       severity: critical
     annotations:
-      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 5 minutes.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
+      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
 
-  - alert: Memory usage over 95%
-    expr: |
-      100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 95
-      and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over95 |  default([]) | join('|') }}"}
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 5 minutes.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
 
   # - alert: RebootRequired
   #   expr: |

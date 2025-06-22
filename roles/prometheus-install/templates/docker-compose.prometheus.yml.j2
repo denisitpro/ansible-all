@@ -6,7 +6,7 @@ services:
     network_mode: host
     volumes:
       - {{ prometheus_base_path }}:{{ prometheus_base_path }}
-    restart: {{ prometheus_restart | default('unless-stopped') }}
+    restart: {{ prometheus_restart | default('always') }}
     command: >
 {% for p in prometheus_command_run %}
       --{{ p }}

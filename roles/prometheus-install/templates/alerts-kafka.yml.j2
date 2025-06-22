@@ -1,18 +1,62 @@
 {{ ansible_managed | comment }}
 
 groups:
-- name: clickhouse alert rules
+- name: kafka alert rules
   rules:
-  - alert: KafkaConsumerLagDetected
+  - alert: KafkaConsumerLagDetected - 15m
     annotations:
-      summary: "Lag detected in Kafka consumer groups"
+      summary: "Lag detected in Kafka consumer groups 15m"
       description: >-
         {% raw %}Consumer group {{ $labels.consumergroup }} has a lag over {% endraw %}{{ kafka_consumer_lag_threshold | default(50000) }}{% raw %}
         for more than 15 minutes on topic {{ $labels.topic }}.
         Current lag: {{ humanize $value }}{% endraw %}
 
     expr: >-
-      sum by (instance, consumergroup, topic) (kafka_consumergroup_lag{% if excld_kafka_consumergroup_lag | length > 0 %}{consumergroup!~"{{ excld_kafka_consumergroup_lag | join('|') }}"}{% endif %}) > {{ kafka_consumer_lag_threshold | default(50000) }}
+      sum by (instance, consumergroup, topic) (kafka_consumergroup_lag{% if excld_kafka_consumergroup_lag_15m | length > 0 %}{consumergroup!~"{{ excld_kafka_consumergroup_lag_15m | join('|') }}"}{% endif %}) > {{ kafka_consumer_lag_threshold | default(50000) }}
+    for: 15m
+    labels:
+      severity: warning
+      service: kafka
+      team: devops
+
+  - alert: KafkaConsumerLagDetected - 1h
+    annotations:
+      summary: "Lag detected in Kafka consumer groups 1h"
+      description: >-
+        {% raw %}Consumer group {{ $labels.consumergroup }} has a lag over {% endraw %}{{ kafka_consumer_lag_threshold | default(50000) }}{% raw %}
+        for more than 1h minutes on topic {{ $labels.topic }}.
+        Current lag: {{ humanize $value }}{% endraw %}
+
+    expr: >-
+      sum by (instance, consumergroup, topic) (kafka_consumergroup_lag{% if excld_kafka_consumergroup_lag_1h | length > 0 %}{consumergroup!~"{{ excld_kafka_consumergroup_lag_1h | join('|') }}"}{% endif %}) > {{ kafka_consumer_lag_threshold | default(50000) }}
+    for: 1h
+    labels:
+      severity: warning
+      service: kafka
+      team: devops
+
+  - alert: KafkaConsumerLagDetectedExcludedTopic - 15m
+    annotations:
+      summary: "Lag detected in Kafka consumer groups 15m (excluding certain topics)"
+      description: >-
+        {% raw %}Consumer group {{ $labels.consumergroup }} has a lag over {% endraw %}{{ kafka_consumer_lag_threshold | default(50000) }}{% raw %}
+        for more than 15 minutes on topic {{ $labels.topic }}.
+        Current lag: {{ humanize $value }}{% endraw %}
+
+    expr: >-
+      sum by (instance, consumergroup, topic) (
+        kafka_consumergroup_lag
+        {% set filters = [] -%}
+        {% if excld_kafka_consumergroup_lag_15m | length > 0 %}
+          {% set _ = filters.append('consumergroup!~"' ~ excld_kafka_consumergroup_lag_15m | join('|') ~ '"') %}
+        {% endif %}
+        {% if alert_kafka_exclude_topic_15m is defined and alert_kafka_exclude_topic_15m | length > 0 %}
+          {% set _ = filters.append('topic!~"' ~ alert_kafka_exclude_topic_15m | join('|') ~ '"') %}
+        {% endif %}
+        {% if filters | length > 0 %}
+          {{ '{' ~ filters | join(', ') ~ '}' }}
+        {% endif %}
+      ) > {{ kafka_consumer_lag_threshold | default(50000) }}
     for: 15m
     labels:
       severity: warning

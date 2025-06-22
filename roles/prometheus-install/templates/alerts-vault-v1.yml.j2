@@ -12,12 +12,24 @@ groups:
         summary: "Vault is sealed"
         description: "Vault is not unsealed and is therefore unusable."
 
-    - alert: VaultNoActiveNode
+    # - alert: VaultNoActiveNode
+    #   expr: |
+    #     (
+    #       sum by(cluster) ((vault_core_unsealed == 1) * 1)
+    #       -
+    #       sum by(cluster) ((vault_core_active == 0 and vault_core_unsealed == 1) * 1)
+    #     ) != 1
+    #   for: 1m
+    #   labels:
+    #     severity: critical
+    #   annotations:
+    #     summary: "No active Vault node"
+    #     description: "Unexpected number of active Vault nodes among unsealed ones. Expected exactly 1."
+
+    - alert: VaultNoActiveNode - support multi-cluster
       expr: |
-        (
-          count(vault_core_unsealed == 1)
-          -
-          count(vault_core_active == 0 and vault_core_unsealed == 1)
+        count by(cluster) (
+          vault_core_unsealed == 1 and vault_core_active == 1
         ) != 1
       for: 1m
       labels:

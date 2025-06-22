@@ -1,0 +1,15 @@
+---
+nerdctl_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+nerdctl_arch: "{{ nerdctl_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+nerdctl_version: "2.1.2"
+nerdctl_download_dir: /tmp
+nerdctl_binary_path: "/usr/local/bin/"
+
+nerdctl_download_url: "https://github.com/containerd/nerdctl/releases/download/v{{ nerdctl_version }}/nerdctl-{{ nerdctl_version }}-linux-{{ nerdctl_arch }}.tar.gz"
