@@ -1,0 +1,40 @@
+---
+- name: check exist self-sign cert
+  ansible.builtin.import_tasks: 05-check-exist.yml
+  tags:
+    - cert
+
+- name: Import dir
+  ansible.builtin.import_tasks: 10-create-dir.yml
+  when: not file_check.stat.exists
+  tags:
+    - cert
+
+- name: check exist ca file
+  ansible.builtin.import_tasks: 18-ca-check.yml
+  delegate_to: "{{ ssl_ca_init_host }}"
+  tags:
+    - cert
+
+- name: Create CA - ca support
+  ansible.builtin.import_tasks: 20-ca-selfsign.yml
+  delegate_to: "{{ ssl_ca_init_host }}"
+  when: not ca_file_check.stat.exists
+  tags:
+    - cert
+
+- ansible.builtin.import_tasks: 25-generate-ssl.yml
+  delegate_to: "{{ ssl_ca_init_host }}"
+  when: not ssl_ca_generated_cert_file_check.stat.exists or ssl_selfsign_recreate_force is defined
+  tags:
+    - cert
+
+- ansible.builtin.import_tasks: 30-copy-cert.yml
+  when: not file_check.stat.exists or ssl_selfsign_recreate_force is defined or ssl_selfsign_copy_force is defined
+  tags:
+    - cert
+    - ssl-copy-cert
+
+# not enable clean always if import task - only for debug
+# - ansible.builtin.import_tasks: 90-ssl-clean.yml
+#   tags: ['never', 'ssl-clean']

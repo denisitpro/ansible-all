@@ -10,7 +10,7 @@ services:
 {% if teleport_backup is defined %}
       - {{teleport_data_path}}/backup:/opt/teleport/backups
 {% endif %}
-    restart: "{{ teleport_restart | default('unless-stopped') }}"
+    restart: "{{ teleport_restart | default('always') }}"
     logging:
       driver: json-file
       options:

@@ -1,0 +1,35 @@
+---
+- name: Create CA private key
+  community.crypto.openssl_privatekey:
+    path: "{{ ssl_ca_key_path }}"
+    mode: "0600"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    type: "{{ ssl_privkey_type | default('ECC') }}"
+    curve: secp256r1
+
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ ssl_ca_key_path }}"
+    privatekey_passphrase: "{{ ssl_ca_key_passphrase | default(omit) }}"
+    common_name: "{{ ssl_ca_common_name | default('Ansible CA') }}"
+    use_common_name_for_san: false
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+
+
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ ssl_ca_cert_path }}"
+    csr_content: "{{ ca_csr.csr }}"
+    privatekey_path: "{{ ssl_ca_key_path }}"
+    privatekey_passphrase: "{{ ssl_ca_key_passphrase | default(omit) }}"
+    provider: selfsigned
+    mode: "0644"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"

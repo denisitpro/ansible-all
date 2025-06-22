@@ -1,0 +1,21 @@
+---
+- name: check ca file exist
+  ansible.builtin.stat:
+    path: "{{ ssl_ca_key_path }}"
+  register: ca_file_check
+
+- name: print result check exist CA cert
+  ansible.builtin.debug:
+    msg: "current CA  cert found"
+  when: ca_file_check.stat.exists
+
+
+- name: check create ca cert exist
+  ansible.builtin.stat:
+    path: "{{ ssl_ca_generated_cert_path }}"
+  register: ssl_ca_generated_cert_file_check
+
+- name: print result check exist ca_generated cert
+  ansible.builtin.debug:
+    msg: "current ssl_ca_generated_cert_path  cert found"
+  when: ssl_ca_generated_cert_file_check.stat.exists
