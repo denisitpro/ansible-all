@@ -1,9 +1,0 @@
----
-- name: copy vault config - single
-  ansible.builtin.template:
-    src: "config.hcl.j2"
-    dest: "{{ vault_conf_path }}/config.hcl"
-    owner: root
-    group: root
-    mode: "0644"
-  notify: restart vault

@@ -1,0 +1,55 @@
+---
+- name: Slurp server cert from CA host
+  ansible.builtin.slurp:
+    src: "{{ ssl_ca_server_cert_path }}"
+  register: slurped_ca_cert
+  delegate_to: "{{ ssl_ca_init_host }}"
+  run_once: true
+
+
+- name: Slurp serever key from CA host
+  ansible.builtin.slurp:
+    src: "{{ ssl_ca_server_key_path }}"
+  register: slurped_ca_key
+  delegate_to: "{{ ssl_ca_init_host }}"
+  run_once: true
+
+
+- name: Write fullchain.pem to each server
+  ansible.builtin.copy:
+    dest: "{{ ssl_cert_path }}"
+    content: "{{ slurped_ca_cert.content | b64decode }}"
+    owner: "{{ vault_uid }}"
+    group: "{{ vault_gid }}"
+    mode: '0644'
+  notify: restart vault
+
+
+- name: Write privkey.pem to each server
+  ansible.builtin.copy:
+    dest: "{{ ssl_privkey_path }}"
+    content: "{{ slurped_ca_key.content | b64decode }}"
+    owner: "{{ vault_uid }}"
+    group: "{{ vault_gid }}"
+    mode: '0600'
+  notify: restart vault
+
+- name: Slurp CA cert from CA host for ca.pem
+  ansible.builtin.slurp:
+    src: "{{ ssl_ca_cert_path }}"
+  register: slurped_ca_cert_pem
+  delegate_to: "{{ ssl_ca_init_host }}"
+  run_once: true
+
+- name: Debug CA cert path
+  ansible.builtin.debug:
+    var: ssl_ca_cert_path
+  delegate_to: "{{ ssl_ca_init_host }}"
+
+- name: Write ca.pem to each server
+  ansible.builtin.copy:
+    content: "{{ slurped_ca_cert_pem.content | b64decode }}"
+    dest: "{{ vault_conf_path }}/ssl/ca.pem"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: '0644'

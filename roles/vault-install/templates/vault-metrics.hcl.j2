@@ -1,0 +1,24 @@
+service {
+  name  = "{{ vault_metrics_name | default('vault-metrics') }}"
+  port  = {{ vault_metrics_bind_port | default('8200') }}
+  tags  = [
+    "prometheus",
+    {% if vault_metrics_tags is defined %}
+      {% for tag in vault_metrics_tags %}
+        "{{ tag }}",
+      {% endfor %}
+    {% endif %}
+  ]
+
+  {% if consul_agent_disabled is not defined %}
+    token = "{{ consul_vault_metrics_token }}"
+  {% endif %}
+
+  check = {
+    id       = "vault-metrics"
+    name     = "vault-metrics healthcheck"
+    tcp      = "{{ vault_metrics_bind_addr | default('') }}:{{ vault_metrics_bind_port | default('8200') }}"
+    interval = "30s"
+    timeout  = "2s"
+  }
+}

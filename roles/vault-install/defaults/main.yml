@@ -1,9 +1,13 @@
 ---
+vault_image_version: 1.19.5
+
 vault_compose_path: /opt/docker/vault
 
 vault_base_path: /opt/vault
 vault_conf_path: "{{ vault_base_path }}/config"
 vault_data_path: "{{ vault_base_path }}/data"
+vault_raft_path: "{{ vault_base_path }}/raft"
+vault_backup_path: "{{ vault_base_path }}/backup"
 
 # vault_bind_addr: "{{ansible_default_ipv4.address}}"
 vault_bind_addr: "127.0.0.1"
@@ -11,14 +15,28 @@ vault_bind_addr: "127.0.0.1"
 vault_app_port: 8200
 vault_cls_port: 8201
 
-vault_image_version: 1.19.3
 # vault_domain: "selfsign"
 
-vault_listener_addr: "0.0.0.0:8200"
-vault_cluster_addr: "0.0.0.0:8201"
+vault_listener_addr: "[::]:8200"
+vault_cluster_addr: "[::]:8201"
 
-vault_cluster_name: "vault-{{stand_type | default('none')}}"
+vault_cluster_name: "vault-{{ stand_type | default('none') }}"
 # vault_cluster_name: vault-single
 
 vault_uid: 100
 vault_gid: 1000
+
+vault_resolv_domain: example.com
+
+# ssl_subject_alt_name:
+#   - "IP:127.0.0.1"
+#   - "DNS:vault.example.com"
+#   - "DNS:vault-01.example.com"
+#   - "DNS:vault-02.example.com"
+#   - "DNS:vault-03.example.com"
+
+
+consul_vault_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+vault_metrics_tags:
+  - "{{ stand_type }}"
+  - "{{ vault_metrics_name | default('vault-metrics') }}"

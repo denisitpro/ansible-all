@@ -1,0 +1,57 @@
+{{ ansible_managed | comment }}
+
+disable_cache = true
+disable_mlock = false
+ui = true
+
+{% for node in vault_cluster.nodes %}
+{% if node.name == ansible_fqdn %}
+listener "tcp" {
+  address          = "{{ vault_listener_addr }}"
+  cluster_address  = "{{ vault_cluster_addr }}"
+  tls_disable      = false
+  tls_cert_file    = "{{ vault_conf_path }}/ssl/fullchain.pem"
+  tls_key_file     = "{{ vault_conf_path }}/ssl/privkey.pem"
+  # tls_require_and_verify_client_cert = true
+  tls_client_ca_file = "{{ vault_conf_path }}/ssl/ca.pem"
+  telemetry {
+    unauthenticated_metrics_access = "true"
+  }
+
+}
+
+storage "raft" {
+  path  = "{{vault_raft_path}}"
+  node_id = "raf_node{{node.id}}"
+
+{% for node in vault_cluster.nodes %}
+{% if node.name != ansible_fqdn %}
+    retry_join {
+      leader_api_addr = "{{node.protocol}}://{{node.name}}.{{ vault_resolv_domain }}{% if node.port_api != '' %}:{% endif %}{{node.port_api}}"
+      leader_ca_cert_file = "{{ vault_conf_path }}/ssl/ca.pem"
+      leader_client_cert_file = "{{ vault_conf_path }}/ssl/fullchain.pem"
+      leader_client_key_file = "{{ vault_conf_path }}/ssl/privkey.pem"
+      tls_skip_verify = {{ vault_ssl_skip_verify | default('false') }}
+    }
+{% endif %}
+{% endfor %}
+
+}
+
+api_addr     = "{{ vault_public_api_addr | default('https://vault.example.com') }}"
+cluster_addr = "https://{{ ansible_fqdn }}.{{ vault_resolv_domain }}:8201"
+{% endif %}
+{% endfor %}
+
+
+max_lease_ttl         = "10h"
+default_lease_ttl    = "10h"
+cluster_name         = "{{vault_cluster_name | default('vault')}}"
+raw_storage_endpoint     = true
+disable_sealwrap     = true
+disable_printable_check = true
+
+telemetry {
+  # disable_hostname = true
+  prometheus_retention_time = "{{ vault_prometheus_retention_time | default('4h') }}"
+}
