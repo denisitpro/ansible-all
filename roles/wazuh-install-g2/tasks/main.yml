@@ -1,24 +1,28 @@
 ---
 - ansible.builtin.import_tasks: 05-prefly.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
   tags:
     - wazuh
+    - ciso
 
 - ansible.builtin.import_tasks: 10-install.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
   tags:
     - wazuh
+    - ciso
 
 - ansible.builtin.import_tasks: 15-configure.yml
   tags:
     - wazuh
     - wazuh-config
+    - ciso
 
 - ansible.builtin.import_tasks: 20-register.yml
+  when: wazuh_management_server is defined and wazuh_agent_registration_pass is defined
   tags:
     - wazuh
     - wazuh-register
-  when: wazuh_management_server is defined and wazuh_agent_registration_pass is defined
+    - ciso
 
 
 - ansible.builtin.import_tasks: 90-clean.yml

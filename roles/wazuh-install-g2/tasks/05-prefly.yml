@@ -3,12 +3,19 @@
   ansible.builtin.apt_key:
     url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
     state: present
+  when: not wazuh_gpg_key_use_local | default(false)
 
-- name: Add Wazuh GPG key - Ubuntu
+- name: Add Wazuh GPG key ubuntu use url
   ansible.builtin.apt_key:
     url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
     keyring: /etc/apt/trusted.gpg.d/wazuh.gpg
+  when: not wazuh_gpg_key_use_local | default(false)
 
+- name: Add Wazuh GPG key ubuntu use file
+  ansible.builtin.apt_key:
+    data: "{{ lookup('ansible.builtin.file', 'GPG-KEY-WAZUH') }}"
+    state: present
+  when: wazuh_gpg_key_use_local is defined
 
 - name: Add Wazuh repository
   ansible.builtin.apt_repository:
