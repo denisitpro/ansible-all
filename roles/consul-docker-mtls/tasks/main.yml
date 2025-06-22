@@ -5,6 +5,7 @@
 - ansible.builtin.import_tasks: 10-path.yml
   tags:
     - consul
+    - consul-mtls
 
 - ansible.builtin.import_tasks: 30-ca-certs.yml
   when: consul_mode == "server"
@@ -60,8 +61,14 @@
 - ansible.builtin.import_tasks: 90-clean.yml
   tags: ['never', 'consul-clean']
 
+- ansible.builtin.import_tasks: 94-consul-restart.yml
+  tags: ['never', 'consul-restart']
+
 - ansible.builtin.import_tasks: 95-consul-start.yml
   tags: ['never', 'consul-start']
 
 - ansible.builtin.import_tasks: 99-debug.yml
   tags: ['never', 'debug']
+
+- ansible.builtin.import_tasks: 100-consul-stop.yml
+  tags: ['never', 'consul-stop']

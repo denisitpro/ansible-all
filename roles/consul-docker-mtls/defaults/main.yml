@@ -1,5 +1,5 @@
 ---
-consul_server_version: 1.20.5
+consul_server_version: 1.21.1
 consul_mode: "agent" # support agent and server
 
 # https://github.com/hashicorp/consul/blob/main/Dockerfile

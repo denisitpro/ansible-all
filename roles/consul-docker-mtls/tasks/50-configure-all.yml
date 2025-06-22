@@ -36,4 +36,4 @@
     mode: "0644"
   notify: recreate-docker consul-compose
   tags:
-    - consul-copy
+    - consul-compose

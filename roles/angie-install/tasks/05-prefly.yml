@@ -24,3 +24,4 @@
     - "{{ angie_base_path }}/site.d/"
     - "{{ angie_base_path }}/upstream.d/"
     - "{{ angie_base_path }}/conf.d/"
+    - "{{ angie_acl_conf_dir }}"

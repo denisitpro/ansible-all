@@ -4,4 +4,11 @@
     src: "docker-compose.angie.yml.j2"
     dest: "{{ angie_compose_path }}/docker-compose.yml"
     mode: "0600"
-  notify: recreate-docker angie
+  # notify: recreate-docker angie
+
+- name: recreate-docker angie
+  community.docker.docker_compose_v2:
+    project_src: "{{ angie_compose_path }}"
+    state: present
+    recreate: always
+    pull: always

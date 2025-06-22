@@ -1,7 +1,5 @@
 ---
-# keeper_image: "23.8.11.28-alpine" # current role version
-# https://clickhouse.com/docs/whats-new/changelog/2024#a-id248a-clickhouse-release-248-lts-2024-08-20
-keeper_image: "24.8.14.39-alpine" # LTS
+keeper_image: "25.3.3.42-alpine" # LTS
 keeper_compose_path: "/opt/docker/keeper"
 
 keeper_base_path: "/opt/keeper"

@@ -3,7 +3,7 @@ services:
     image: prom/blackbox-exporter:{{blackbox_exporter_version}}
     container_name: blackbox
     network_mode: host
-    restart: {{ blackbox_exporter_restart | default('unless-stopped') }}
+    restart: {{ blackbox_exporter_restart | default('always') }}
     volumes:
       - {{ blackbox_config_path }}/blackbox.yml:{{ blackbox_config_path }}/blackbox.yml
     command:

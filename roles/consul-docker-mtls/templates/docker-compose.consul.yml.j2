@@ -17,7 +17,7 @@ services:
       "-bind", "{{ consul_bind_addr | default('[::]') }}"
       {% if consul_privateip_perfer is defined %}, "-advertise", "{% raw %}{{ GetPrivateIP }}{% endraw %}"{% endif %}
     ]
-    restart: {{ consul_restart | default('unless-stopped') }}
+    restart: {{ consul_restart | default('always') }}
     logging:
       driver: json-file
       options:

@@ -7,12 +7,23 @@
 - ansible.builtin.debug:
     msg: binary_stat_result -  {{ binary_stat_result }}
 
+- name: Install prerequisites - unzip
+  ansible.builtin.apt:
+    name:
+      - unzip
+    update_cache: true
+  when: not binary_stat_result.stat.exists
+
 - name: Download
   ansible.builtin.get_url:
     url: "{{ consul_download_url }}"
     dest: "{{ consul_download_dir }}"
     mode: "0644"
+    use_proxy: "{{ download_use_proxy | default('no') }}"
   when: not binary_stat_result.stat.exists
+  environment:
+    http_proxy: "{{ download_http_proxy | default('http://user:password@proxy.example.com') }}"
+    https_proxy: "{{ download_https_proxy | default('https://user:password@proxy.example.com') }}"
 
 - name: Unarchive a file that is already on the remote machine
   ansible.builtin.unarchive:

@@ -1,0 +1,11 @@
+---
+- name: stop compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ consul_compose_path }}"
+    state: stopped
+
+
+- name: start compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ consul_compose_path }}"
+    state: present
