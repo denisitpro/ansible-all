@@ -39,7 +39,6 @@
     dest: "/tmp/prometheus-secrets.yaml"
     mode: '0644'
 
-
 - name: Install prometheus via Helm
   ansible.builtin.command: >
     helm upgrade --install prometheus prometheus-community/kube-prometheus-stack

@@ -15,12 +15,12 @@
 
 - name: Set fact whether to skip vai install
   ansible.builtin.set_fact:
-    skip_via_install: "{{ vai_installed.rc == 0 and (not via_force_install | default(false)) }}"
+    skip_via_install: "{{ vai_installed.rc == 0 and (not vai_force_install | default(false)) }}"
 
 - name: Add vai Helm repository
   ansible.builtin.command: helm repo add hashicorp https://helm.releases.hashicorp.com
   register: helm_via_repo
-  changed_when: "'\"has been added\"' in helm_via_repo.stdout"
+  changed_when: '''"has been added"'' in helm_via_repo.stdout'
   when: not skip_via_install
 
 - name: Update Helm repos
@@ -32,7 +32,7 @@
     src: "vai-values.yaml.j2"
     dest: /tmp/vai-values.yaml
     mode: "0600"
-  when: not skip_via_install or via_force_install is defined
+  when: not skip_via_install or vai_force_install is defined
   tags:
     - vai-value
 
@@ -44,7 +44,7 @@
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/vai-values.yaml
-  when: not skip_via_install or via_force_install is defined
+  when: not skip_via_install or vai_force_install is defined
 
 - name: remove /tmp/vai-values.yaml
   ansible.builtin.file:

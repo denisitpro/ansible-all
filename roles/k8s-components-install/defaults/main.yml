@@ -5,9 +5,10 @@ helm_componets_list:
   - prometheus
   - teleport-agent
   - vso
-  - vault-agent-injector
+  - vai
   - cert-manager
   - hubble-ui
+  - metrics-server
 
 
 argocd_github_client_id: "{{ vault_dict_users_secret.argocd_github_client_id | default('set_me') }}"

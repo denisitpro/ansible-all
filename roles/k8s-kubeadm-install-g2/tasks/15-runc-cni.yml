@@ -1,7 +1,7 @@
 ---
 - name: download  runc
   ansible.builtin.get_url:
-    url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64"
+    url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.{{ k8s_go_arch }}"
     dest: "/usr/local/bin/runc"
     mode: "0755"
 
@@ -13,7 +13,7 @@
 
 - name: Download CNI Plugins tarball
   ansible.builtin.get_url:
-    url: "https://github.com/containernetworking/plugins/releases/download/v{{ containerd_plugin_cni_version }}/cni-plugins-linux-amd64-v{{ containerd_plugin_cni_version }}.tgz"
+    url: "https://github.com/containernetworking/plugins/releases/download/v{{ containerd_plugin_cni_version }}/cni-plugins-linux-{{ k8s_go_arch }}-v{{ containerd_plugin_cni_version }}.tgz"
     dest: /tmp/cni-plugins.tgz
     mode: "0644"
 

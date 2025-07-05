@@ -1,0 +1,52 @@
+---
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Check if metrics-server is already installed
+  ansible.builtin.shell: |
+    helm list -n kube-system --kubeconfig {{ k8s_config_path }} | grep -w metrics-server
+  register: metrics_server_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip metrics-server install
+  ansible.builtin.set_fact:
+    skip_metrics_server_install: "{{ metrics_server_installed.rc == 0 and (not metrics_server_force_install | default(false)) }}"
+
+- name: Add metrics-server Helm repository
+  ansible.builtin.command: helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+  register: helm_metrics_repo
+  changed_when: '''"has been added"'' in helm_metrics_repo.stdout'
+  when: not skip_metrics_server_install
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_metrics_server_install
+
+- name: Create values config from template
+  ansible.builtin.template:
+    src: "metrics-server.yml.j2"
+    dest: /tmp/metrics-server.yml
+    mode: "0644"
+  when: not skip_metrics_server_install
+  tags:
+    - metrics-server-value
+
+- name: Install metrics-server via Helm
+  ansible.builtin.command: >
+    helm upgrade --install metrics-server metrics-server/metrics-server
+    --namespace kube-system
+    --kubeconfig {{ k8s_config_path }}
+    --version {{ metrics_server_helm_version | default('3.12.1') }}
+    --values /tmp/metrics-server.yml
+  when: not skip_metrics_server_install
+
+- name: Remove values config
+  ansible.builtin.file:
+    path: /tmp/{{ item }}
+    state: absent
+  with_items:
+    - metrics-server.yml

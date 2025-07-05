@@ -27,7 +27,7 @@ prometheus:
     enableFeatures: ["exemplar-storage"]
     serviceDiscoveryRole: "EndpointSlice"
     externalLabels:
-      clusterId: {{ k8s_prom_cluster_id | default('k8s-cluster.example') }}
+      cluster: {{ k8s_prom_cluster_id | default('k8s-cluster.example') }}
 {% if k8s_prom_pvc_enable is defined %}
     storageSpec:
       volumeClaimTemplate:
@@ -43,8 +43,10 @@ prometheus:
     remoteWrite:
 {% for remote in remote_write_config %}
       - url: {{ remote.remote_write.url }}
+{% if remote.remote_server_prometheus is defined %}
         messageVersion: "V2.0"
         sendExemplars: true
+{% endif %}
         enableHTTP2: true
         basicAuth:
           username:

@@ -1,6 +1,7 @@
 controller:
   replicaCount: 2
   kind: DaemonSet
+{% if nginx_ingress_node_port is defined%}
   service:
     type: NodePort
     externalTrafficPolicy: Local
@@ -8,11 +9,11 @@ controller:
       http: 80
       https: 443
     nodePorts:
-      http: 30080
-      https: 30443
-{% if nginx_ingress_host_port is defined%}
-  hostPort
-    enabled: "{{ nginx_ingress_host_port | default('false') }}"
+      http: "{{ nginx_ingress_node_port.http | default('30080') }}"
+      https: "{{ nginx_ingress_node_port.https | default('30443') }}"
+{% else %}
+  hostPort:
+    enabled: true
     ports:
       http: "{{ nginx_ingress_host_http_port | default('80') }}"
       https: "{{ nginx_ingress_host_https_port | default('443') }}"
