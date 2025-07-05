@@ -65,7 +65,7 @@
 - ansible.builtin.import_tasks: 65-vault-injector.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
-  when: "'vault-agent-injector' in helm_componets_list"
+  when: "'vai' in helm_componets_list"
   tags:
     - k8s
     - k8s-addition
@@ -98,3 +98,13 @@
     - k8s
     - k8s-addition
     - k8s-hubble
+
+- ansible.builtin.import_tasks: 90-metrics-server.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'metrics-server' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-ms
+    - k8s-metrics-server

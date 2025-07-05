@@ -7,13 +7,13 @@
 
 - name: download  containerd
   ansible.builtin.get_url:
-    url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
-    dest: "/tmp/containerd/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-{{ k8s_go_arch }}.tar.gz"
+    dest: "/tmp/containerd/containerd-{{ containerd_version }}-linux-{{ k8s_go_arch }}.tar.gz"
     mode: "0644"
 
 - name: extract containerd
   ansible.builtin.unarchive:
-    src: "/tmp/containerd/containerd-{{ containerd_version }}-linux-amd64.tar.gz"
+    src: "/tmp/containerd/containerd-{{ containerd_version }}-linux-{{ k8s_go_arch }}.tar.gz"
     dest: /tmp/containerd
     remote_src: true
 

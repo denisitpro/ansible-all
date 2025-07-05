@@ -17,6 +17,7 @@ data:
 {% endif %}
   dex.config: |
     connectors:
+{% if argocd_github_enabled is defined%}
       - type: github
         id: github
         name: GitHub
@@ -26,8 +27,22 @@ data:
           orgs:
             - name: "{{argocd_github_org | default('main-org')}}"
           teams:
-            - "{{ argocd_github_team |default('example-team') }}"
+            - "{{ argocd_github_team | default('example-team') }}"
           scopes:
             - "read:org"
             - "user:email"
           loadAllGroups: true
+{% endif %}
+{% if argocd_google_enabled is defined%}
+      - type: oidc
+        config:
+          issuer: https://accounts.google.com
+          clientID: {{ argocd_google_clientid | default('set-me') }}
+          clientSecret: {{ argocd_google_secret | default('set-me') }}
+          staticGroups:
+          - developers
+          - default
+          userNameKey: email
+        id: google
+        name: Google
+{% endif %}

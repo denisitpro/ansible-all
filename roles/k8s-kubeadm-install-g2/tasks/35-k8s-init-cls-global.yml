@@ -18,6 +18,19 @@
   tags:
     - k8s-check-cls
 
+
+- name: Copy kubecontext to /root/.kube/config if kubecontext_master_default is true
+  ansible.builtin.copy:
+    remote_src: "{{ kubeadmin_config }}"
+    dest: /root/.kube/config
+    owner: root
+    group: root
+    mode: '0600'
+  become: true
+  ignore_errors: true
+  when: kubecontext_master_default | default(false) | bool
+
+
 - name: print cluster info status - global
   ansible.builtin.debug:
     msg: cls info - "{{ cluster_info.rc }}"

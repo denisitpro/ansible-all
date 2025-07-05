@@ -47,6 +47,21 @@ staticPodPath: /etc/kubernetes/manifests
 streamingConnectionIdleTimeout: 0s
 syncFrequency: 0s
 volumeStatsAggPeriod: 0s
+{% if k8s_master is not defined and k8s_worker_disable_reserved_resources is not defined %}
+kubeReserved:
+  cpu: {{ k8s_worker_reserved_resources.kube_reserved_cpu | default("200m") }}
+  memory: {{ k8s_worker_reserved_resources.kube_reserved_memory | default("512Mi") }}
+  ephemeral-storage: {{ k8s_worker_reserved_resources.kube_reserved_ephemeral_storage | default("1Gi") }}
+systemReserved:
+  cpu: {{ k8s_worker_reserved_resources.system_reserved_cpu | default("200m") }}
+  memory: {{ k8s_worker_reserved_resources.system_reserved_memory | default("1024Mi") }}
+  ephemeral-storage: {{ k8s_worker_reserved_resources.system_reserved_ephemeral_storage | default("1Gi") }}
+evictionHard:
+  memory.available: {{ k8s_worker_reserved_resources.eviction_hard_memory_available | default("2Gi") }}
+  nodefs.available: {{ k8s_worker_reserved_resources.eviction_hard_nodefs_available | default("5%") }}
+  nodefs.inodesFree: {{ k8s_worker_reserved_resources.eviction_hard_nodefs_inodes_free | default("5%") }}
+  imagefs.available: {{ k8s_worker_reserved_resources.eviction_hard_imagefs_available | default("5%") }}
+{% endif %}
 {% if k8s_master is not defined and k8s_max_pods_force is defined %}
 maxPods: {{ k8s_max_pods | default(240) }}
 {% endif %}

@@ -1,5 +1,5 @@
 defaultSettings:
-  replicaCount: 3
+  replicaCount: {{ k8s_longhorn_default_settings_replica_count | default('2') }}
   storageOverProvisioningPercentage: 100
   storageMinimalAvailablePercentage: 15
   nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
