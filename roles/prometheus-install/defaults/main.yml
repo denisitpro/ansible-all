@@ -1,5 +1,5 @@
 ---
-prometheus_image: "v3.4.1"
+prometheus_image: "v3.5.0"
 
 prometheus_compose_path: /opt/docker/prometheus
 
@@ -14,7 +14,12 @@ prometheus_config_path: "{{ prometheus_base_path }}/config"
 prometheus_config_dir: "{{ prometheus_config_path }}"
 prometheus_db_dir: "{{ prometheus_base_path }}/data"
 prometheus_rules_path: "{{ prometheus_config_path }}/rules"
-prometheus_mtls_path: "{{ prometheus_base_path }}/mtls"
+
+# mtls path
+prometheus_mtls_base_path: "{{ prometheus_base_path }}/mtls"
+prometheus_mtls_consul_path: "{{ prometheus_mtls_base_path }}/consul"
+prometheus_mtls_prom_stack_path: "{{ prometheus_mtls_base_path }}/prom-stack"
+
 
 prometheus_user_uid: "65534"
 prometheus_user_gid: "65534"
@@ -44,7 +49,7 @@ prometheus_command_run:
 #  - "web.external-url="
 
 ### Prom config section
-prometheus_storage_retention: "30d"
+prometheus_storage_retention: "14d"
 # Available since Prometheus 2.7.0
 # [EXPERIMENTAL] Maximum number of bytes that can be stored for blocks. Units
 # supported: KB, MB, GB, TB, PB.
@@ -93,6 +98,7 @@ prometheus_remote_read: []
 prometheus_external_labels:
   environment: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
   monitoring: monitoring
+  cluster: "{{ standalone_prom_cluster_id | default('k8s-cluster.example') }}"
 
 prometheus_targets: {}
 #  node:
@@ -129,6 +135,7 @@ prometheus_alert_files:
   - alerts-disks-v1.yml
   - alerts-memory.yml
   - alerts-base-v1.yml
+  - alerts-pods.yml
   - alerts-time.yml
   - alerts-domain-expire-v1.yml
   - alerts-clickhouse-alerts.yml
@@ -155,18 +162,32 @@ prometheus_alert_files:
   # - alerts-nats.yml
 
 
-alert_click_connections_count: 100
+alert_click_connections_count: 150
 alert_domain_expire_days: 14
 
 
 excld_click_below_1_inst: []
+
+excld_inst_out_of_disk_space_5: []
 excld_inst_out_of_disk_space_10: []
 excld_inst_out_of_disk_space_20: []
 excld_inst_out_of_disk_space_30: []
 
+excld_tags_out_of_disk_space_5: []
 excld_tags_out_of_disk_space_10: []
 excld_tags_out_of_disk_space_20: []
 excld_tags_out_of_disk_space_30: []
+
+excld_tags_critical_disk_space_5: []
+excld_tags_critical_disk_space_10: []
+
+excld_tags_high_disk_iops_15m: []
+excld_tags_high_disk_iops_1h: []
+
+
+excl_tags_memory_usage_over80: []
+excl_tags_memory_usage_over90: []
+excl_tags_memory_usage_over95: []
 
 excld_inst_high_disk_iops_1h: []
 excld_inst_high_disk_iops_15m: []
@@ -188,6 +209,14 @@ excld_kafka_consumergroup_lag_1h: []
 
 
 # consul section
-consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me') }}"
+# vault g1
+# consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me') }}"
+
+# vault g2
+consul_agent_ca: "{{ vault_dict_users_secret_g2.consul_agent_ca.value | default('set_me') }}"
 consul_client_prometheus_cert: "{{ vault_dict_users_secret.consul_client_prometheus_cert | default('set_me') }}"
 consul_client_prometheus_key: "{{ vault_dict_users_secret.consul_client_prometheus_key | default('set_me') }}"
+
+# mTLS section prom prom_stack_mtls
+prom_stack_cert_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls'].mtls_cert }}"
+prom_stack_key_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls'].mtls_key }}"

@@ -1,4 +1,15 @@
 ---
+- name: "Create folder ca ssl"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  delegate_to: "{{ ssl_ca_init_host }}"
+  with_items:
+    - "{{ ssl_ca_path }}"
+
 - name: Create CA private key
   community.crypto.openssl_privatekey:
     path: "{{ ssl_ca_key_path }}"
@@ -22,6 +33,13 @@
     key_usage_critical: true
   register: ca_csr
 
+- name: Save CA CSR to file
+  ansible.builtin.copy:
+    content: "{{ ca_csr.csr }}"
+    dest: "{{ ssl_ca_csr_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: "0644"
 
 - name: Create self-signed CA certificate from CSR
   community.crypto.x509_certificate:

@@ -5,7 +5,7 @@ groups:
   rules:
   - alert: HTTP-200-Fail-general
     expr: probe_http_status_code{job="blackbox_200x_without_auth"} != 200
-    for: 1m
+    for: 5m
     labels:
       severity: warning
     annotations:

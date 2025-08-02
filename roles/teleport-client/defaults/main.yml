@@ -1,12 +1,15 @@
 ---
-teleport_version: stable/v17
+teleport_version: stable/v18
 teleport_proxy_host: teleport.example.com:443
 teleport_node_name: "{{ inventory_hostname_short }}"
 
 teleport_ssh_acl_level: 900
 teleport_app_acl_level: 900
 
-teleport_join_token: "{{ vault_dict_users_secret.teleport_join_token | default('need_join_token') }}"
+# only vault_g1
+# teleport_join_token: "{{ vault_dict_users_secret.teleport_join_token | default('need_join_token') }}"
+# support vault_g2
+teleport_join_token: "{{ vault_dict_users_secret_g2.teleport_join_token.value | default('need_join_token') }}"
 
 # example
 # teleport:

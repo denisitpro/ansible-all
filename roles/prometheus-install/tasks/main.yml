@@ -24,6 +24,11 @@
     - alert-rules
     - prom-config
 
+- ansible.builtin.import_tasks: 25-mtls-certs.yml
+  tags:
+    - prom
+    - prom-mtls
+
 - ansible.builtin.import_tasks: 30-configure.yml
   tags:
     - prom

@@ -30,7 +30,7 @@
     - cert
 
 - ansible.builtin.import_tasks: 30-copy-cert.yml
-  when: not file_check.stat.exists or ssl_selfsign_recreate_force is defined or ssl_selfsign_copy_force is defined
+  when: not file_check.stat.exists or ssl_selfsign_recreate_force is defined
   tags:
     - cert
     - ssl-copy-cert

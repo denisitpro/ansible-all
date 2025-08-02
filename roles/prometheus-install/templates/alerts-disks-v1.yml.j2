@@ -2,7 +2,11 @@ groups:
 - name: disks alert rules
   rules:
   - alert: CriticalDiskSpace lower 10
-    expr: 'node_filesystem_free_bytes{mountpoint!~"^/run(/.*|$)",fstype!~"(squashfs|fuse.*)",job=~"node.*.exporter"} / node_filesystem_size_bytes{job=~"node.*.exporter"} < 0.1'
+    expr: |
+      (((node_filesystem_free_bytes{mountpoint!~"^/run(/.*|$)",fstype!~"(squashfs|fuse.*)",job=~"node.*.exporter",tags!~"{{ excld_tags_critical_disk_space_10 | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} * 100) 
+        / node_filesystem_size_bytes{job=~"node.*.exporter"} < 10) 
+      and ON (instance, device, mountpoint) node_filesystem_readonly == 0)
+      * on(instance) group_left (nodename) node_uname_info{instance!~"{{ excld_inst_critical_disk_space_10 | join('|') }}"}
     for: 4m
     labels:
       severity: critical
@@ -10,7 +14,11 @@ groups:
       description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has less than 10% space remaining.{% endraw %}"
       summary: "{% raw %}Instance {{ $labels.instance }} - Critical disk space usage{% endraw %}"
   - alert: CriticalDiskSpace lower 5
-    expr: 'node_filesystem_free_bytes{mountpoint!~"^/run(/.*|$)",fstype!~"(squashfs|fuse.*)",job=~"node.*.exporter"} / node_filesystem_size_bytes{job=~"node.*.exporter"} < 0.05'
+    expr: |
+      (((node_filesystem_free_bytes{mountpoint!~"^/run(/.*|$)",fstype!~"(squashfs|fuse.*)",job=~"node.*.exporter",tags!~"{{ excld_tags_critical_disk_space_5 | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} * 100) 
+        / node_filesystem_size_bytes{job=~"node.*.exporter"} < 5) 
+      and ON (instance, device, mountpoint) node_filesystem_readonly == 0)
+      * on(instance) group_left (nodename) node_uname_info{instance!~"{{ excld_inst_critical_disk_space_5 | join('|') }}"}
     for: 4m
     labels:
       severity: critical
@@ -21,6 +29,18 @@ groups:
   # Please add ignored mountpoints in node_exporter parameters like
   # "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/)".
   # Same rule using "node_filesystem_free_bytes" will fire when disk fills for non-root users.
+  - alert: HostOutOfDiskSpace - 5
+    expr: |
+      (((node_filesystem_avail_bytes{tags!~"{{ excld_tags_out_of_disk_space_5 | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} * 100) 
+        / node_filesystem_size_bytes < 5) 
+      and ON (instance, device, mountpoint) node_filesystem_readonly == 0)
+      * on(instance) group_left (nodename) node_uname_info{instance!~"{{ excld_inst_out_of_disk_space_5 | join('|') }}"}
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Host out of disk space (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Disk is almost full (< 20% left)\n  VALUE = {{ printf \"%.2f\" $value }}\n  LABELS = {{ $labels }}{% endraw %}"
   - alert: HostOutOfDiskSpace - 10
     expr: |
       (((node_filesystem_avail_bytes{tags!~"{{ excld_tags_out_of_disk_space_10 | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} * 100) 
@@ -89,26 +109,26 @@ groups:
     annotations:
       summary: "{% raw %}Host out of inodes (instance {{ $labels.instance }}){% endraw %}"
       description: "{% raw %}Disk is almost running out of available inodes (< 30% left)\n  VALUE = {{ printf \"%.2f\" $value }}\n  LABELS = {{ $labels }}{% endraw %}"
-  - alert: HighDiskIOPS - 10m over 500 iops
+  - alert: HighDiskIOPS - 15m over 500 iops
     expr: >
-      rate(node_disk_reads_completed_total{instance!~"{{ excld_inst_high_disk_iops_15m | join('|') }}"}[15m]) +
+      rate(node_disk_reads_completed_total{instance!~"{{ excld_inst_high_disk_iops_15m | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_15m | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[15m]) +
       rate(node_disk_writes_completed_total[15m]) > 500
-    for: 10m
+    for: 15m
     labels:
       severity: warning
     annotations:
       summary: "{% raw %}High Disk IOPS on instance {{ $labels.instance }}{% endraw %}"
-      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 100 IOPS over the last 10 minutes.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"
+      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 500 IOPS over the last 10 minutes.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"
   - alert: HighDiskIOPS - 1h over 500 iops
     expr: >
-      rate(node_disk_reads_completed_total{instance!~"{{ excld_inst_high_disk_iops_1h | join('|') }}"}[1h]) +
+      rate(node_disk_reads_completed_total{instance!~"{{ excld_inst_high_disk_iops_1h | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_1h | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[1h]) +
       rate(node_disk_writes_completed_total[1h]) > 500
     for: 1h
     labels:
       severity: warning
     annotations:
       summary: "{% raw %}High Disk IOPS on instance {{ $labels.instance }}{% endraw %}"
-      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 100 IOPS over the last 1 hour.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"
+      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 500 IOPS over the last 1 hour.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"
 
   - alert: NodeDiskIOSaturation
     expr: |
@@ -121,7 +141,7 @@ groups:
       description: "{% raw %}Disk IO queue (aqu-sq) is high on {{ $labels.device }} at {{ $labels.instance }}. Sustained over 10 for the last 30 minutes. This may indicate disk saturation.{% endraw %}"
 
   - alert: HighOpenFileDescriptors over 50k
-    expr: (node_filefd_allocated{instance!~"{{ excl_inst_high_fd_50k | default([]) | join('|') }}"} > {{ open_fd_threshold_50k | default(50000) }})
+    expr: (node_filefd_allocated{instance!~"{{ excl_inst_high_fd_50k | default([]) | join('|') }}", tags!~"{{ excl_tags_high_fd_50k | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} > {{ open_fd_threshold_50k | default(50000) }})
     for: 5m
     labels:
       severity: warning
@@ -132,7 +152,7 @@ groups:
   - alert: HighOpenFileDescriptors over 80%
     expr: >
       (
-        node_filefd_allocated{instance!~"{{ excl_inst_high_fd_percent_80 | default([]) | join('|') }}"}
+        node_filefd_allocated{instance!~"{{ excl_inst_high_fd_percent_80 | default([]) | join('|') }}", tags!~"{{ excl_tags_high_fd_percent_80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
         / ignoring(job, container, pod) node_filefd_maximum
       ) * 100 > {{ open_fd_threshold_percent_80 | default(80) }}
       AND ignoring(job, container, pod) node_filefd_maximum < 1000000000000

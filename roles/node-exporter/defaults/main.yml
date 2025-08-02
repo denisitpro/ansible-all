@@ -32,7 +32,11 @@ node_exporter_disabled_collectors:
 
 node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version_binary }}/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
 
-consul_node_exporter_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+# vault g1
+# consul_node_exporter_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+# vault g2
+consul_node_exporter_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default('set_me') }}"
+
 
 node_exporter_tags:
   - "{{ stand_type }}"

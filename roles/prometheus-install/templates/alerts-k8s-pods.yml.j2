@@ -6,13 +6,13 @@ groups:
     - alert: TooManyPodsPerNode
       expr: |
         count by (node) (
-          max by(pod, namespace, clusterId) (
+          max by(pod, namespace, cluster) (
             kube_pod_container_status_running{container!="POD"} == 1
           )
-          * on(pod, namespace, clusterId) group_left(node)
+          * on(pod, namespace, cluster) group_left(node)
           kube_pod_info{node!=""}
         )
-        > {{ max_pods_per_node | default('100') }}
+        > {{ max_pods_per_node | default('200') }}
         and on(node)
         kube_node_info{node!~"{{ excld_node_too_many_pods | join('|') }}"}
       for: '10m'

@@ -4,6 +4,7 @@
 ssl_ca_path: /opt/ssl/ca
 ssl_ca_key_path: "{{ ssl_ca_path }}/ca.key"
 ssl_ca_cert_path: "{{ ssl_ca_path }}/ca.crt"
+ssl_ca_csr_path: "{{ ssl_ca_path }}/ca.csr"
 ssl_ca_generated_key_path: "{{ ssl_ca_path }}/privkey.pem"
 ssl_ca_generated_cert_path: "{{ ssl_ca_path }}/fullchain.pem"
 
