@@ -1,22 +1,31 @@
 ---
-- import_tasks: shared/tasks/create-dir-docker-compose.yml
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ certbot_compose_path }}"
 
 - name: create folder certbot
   ansible.builtin.file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
     mode: '0755'
     owner: root
     group: 1000
   with_items:
-    - "{{certbot_path}}"
-    - "{{certbot_path}}/data"
-    - "{{certbot_path}}/conf"
+    - "{{ certbot_path }}"
+    - "{{ certbot_path }}/data"
+    - "{{ certbot_path }}/conf"
 
 - name: copy config
-  template:
+  ansible.builtin.template:
     src: "cloudflare.ini.j2"
-    dest: "{{certbot_path}}/conf/cloudflare.ini"
-    mode: 0644
+    dest: "{{ certbot_path }}/conf/cloudflare.ini"
+    mode: "0644"
   tags:
     - certbot-token

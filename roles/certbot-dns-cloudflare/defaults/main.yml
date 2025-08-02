@@ -1,14 +1,11 @@
 ---
-docker_compose_path: /opt/docker
 certbot_image: certbot/dns-cloudflare
-certbot_version: v2.7.4
+certbot_version: v4.1.1
 
 certbot_path: /opt/certbot
+certbot_compose_path: /opt/docker/certbot
 
 certbot_email: mail@example.com
 certbot_domain: domain1.example.com
 
-certbot_cf_access_token: "{{ vault_dict_users_secret.certbot_token  | default('set_me') }}"
-
-folder_apps:
-  - certbot
+certbot_cf_access_token: "{{ vault_dict_users_secret.certbot_token | default('set_me') }}"

@@ -9,7 +9,9 @@ services:
     volumes:
       - {{ angie_base_path }}:/etc/angie
       - {{ angie_base_path }}/logs:/var/log/angie
-      - {{ssl_path | default('/opt/ssl/')}}:{{ssl_path | default('/opt/ssl/')}}
+      - {{ angie_ssl_path | default('/opt/ssl/')}}:{{angie_ssl_path | default('/opt/ssl/')}}
+      - {{ angie_ssl_path | default('/opt/ssl/')}}:{{angie_ssl_path | default('/opt/ssl/')}}
+      - {{ angie_mtls_path | default('/opt/mtls/angie/')}}:{{angie_mtls_path | default('/opt/mtls/angie/')}}
 {% if certbot_cert_usage is defined %}
       - {{certbot_path | default('/opt/certbot') }}/www:{{angie_certbot_path | default('/var/www/certbot')}}
       - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{angie_container_ssl_certbot_path| default('/opt/certbot/ssl')}}

@@ -16,24 +16,56 @@
     - nginx-selfsign
     - angie-ssl
 
-- ansible.builtin.import_tasks: 28-compose.yml
+- ansible.builtin.import_tasks: 33-mtls-cert.yml
+  tags:
+    - angie
+    - angie-mtls
+    - nginx-mtls
+
+- ansible.builtin.import_tasks: 35-compose.yml
   tags:
     - angie
     - angie-compose
+
+- ansible.builtin.import_tasks: 40-upstreams-acl.yml
+  tags:
+    - angie
+    - angie-upstreams
+    - angie-acl
+    - upstreams
+    - acl
+    - vhosts
+    - angie-vhosts
 
 - ansible.builtin.import_tasks: 45-vhosts-configure.yml
   tags:
     - angie
     - angie-vhosts
+    - angie-acl
+    - acl
     - vhosts
+    - angie-vhosts
 
-- ansible.builtin.import_tasks: 50-vhosts-check.yml
+- ansible.builtin.import_tasks: 50-streams-configure.yml
+  tags:
+    - angie
+    - angie-streams
+    - streams
+    - angie-acl
+    - acl
+
+- ansible.builtin.import_tasks: 55-configs-check.yml
   tags:
     - angie
     - angie-vhosts
+    - angie-streams
+    - angie-upstreams
+    - angie-acl
     - angie-check
-    - angie-upstream
     - vhosts
+    - streams
+    - upstreams
+    - acl
 
 - ansible.builtin.import_tasks: 90-ssl-clean.yml
   tags: ['never', 'ssl-clean']

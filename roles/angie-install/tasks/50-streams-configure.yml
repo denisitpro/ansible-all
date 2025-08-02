@@ -1,0 +1,13 @@
+---
+- name: copy streams
+  ansible.builtin.template:
+    src: "shared/templates/streams/{{ item.config_file | default('vhost-general-g1.conf.j2') }}"
+    dest: "{{ angie_base_path }}/stream.d/{{ item.servername.split(' ')[0] }}.conf"
+    owner: "{{ angie_uid }}"
+    group: "{{ angie_gid }}"
+    mode: "0644"
+  with_items: "{{ nginx.streams }}"
+  when:
+    - nginx.streams is defined
+    - nginx.streams | type_debug == "list"
+    - nginx.streams | length > 0

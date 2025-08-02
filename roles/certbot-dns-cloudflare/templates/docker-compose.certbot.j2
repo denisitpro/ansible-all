@@ -9,7 +9,7 @@ services:
     command: >
       certonly
       --agree-tos
-      --email {{certbot_email}}
+      --email {{ certbot_email }}
       --no-eff-email
       --dns-cloudflare
       --dns-cloudflare-credentials /var/lib/letsencrypt/cloudflare.ini

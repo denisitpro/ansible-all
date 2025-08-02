@@ -4,7 +4,7 @@
     src: "{{ angie_conf_name | default('angie.conf.j2') }}"
     dest: "{{ angie_base_path }}/angie.conf"
     owner: "{{ angie_uid }}"
-    group: "{{ angie_guid }}"
+    group: "{{ angie_gid }}"
     mode: '0644'
   notify:
     - reload angie
@@ -14,7 +14,7 @@
     src: "{{ item }}.j2"
     dest: "{{ angie_base_path }}/conf.d/{{ item }}"
     owner: "{{ angie_uid }}"
-    group: "{{ angie_guid }}"
+    group: "{{ angie_gid }}"
     mode: '0644'
   loop:
     - log-format-g2.conf
@@ -28,7 +28,7 @@
     src: "{{ item }}"
     dest: "{{ angie_base_path }}/{{ item }}"
     owner: "{{ angie_uid }}"
-    group: "{{ angie_guid }}"
+    group: "{{ angie_gid }}"
     mode: '0644'
   loop:
     - fastcgi_params

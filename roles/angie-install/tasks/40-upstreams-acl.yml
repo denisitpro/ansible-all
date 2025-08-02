@@ -1,0 +1,46 @@
+---
+- name: Check if directories exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  with_items:
+    - "{{ angie_base_path }}/site.d/"
+    - "{{ angie_base_path }}/upstream.d/"
+    - "{{ angie_base_path }}/stream.d/"
+    - "{{ angie_acl_conf_dir }}/"
+  register: dir_stats
+
+# TODO Fix cleanup logic, when only one of alc/streams/upstreams tags are used
+- name: Clean up files site.d and upstream.d
+  ansible.builtin.command: "find {{ item.item }} -type f -delete"
+  loop: "{{ dir_stats.results }}"
+  when: item.stat.exists
+
+- name: copy upstreams config
+  ansible.builtin.template:
+    src: "{{ item.conf }}"
+    dest: "{{ angie_base_path }}/upstream.d/{{ item.name }}.conf"
+    owner: "{{ angie_uid }}"
+    group: "{{ angie_gid }}"
+    mode: "0644"
+  with_items: "{{ upstream_multi.upstream }}"
+  when:
+    - upstream_multi is defined
+    - upstream_multi.upstream is defined
+    - upstream_multi.upstream | type_debug == "list"
+    - upstream_multi.upstream | length > 0
+  tags:
+    - upstream
+    - angie-upstream
+
+- name: Render ACL allow list to file
+  ansible.builtin.template:
+    src: acl-template.conf.j2
+    dest: "{{ angie_acl_conf_dir }}/{{ item.acl_list_name | default('default-acl.conf') }}"
+    mode: "0644"
+  loop: "{{ angie_acl_allow }}"
+  loop_control:
+    label: "{{ item.acl_list_name }}"
+  when: angie_acl_allow is defined and angie_acl_allow | length > 0
+  tags:
+    - acl
+    - angie-acl

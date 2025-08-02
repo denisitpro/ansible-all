@@ -145,7 +145,7 @@ http {
 
 {% if angie_used_acme is defined %}
 # for angie acme support
-    resolver {{angie_acme_resolver | default('127.0.0.53') }}; # Required for the 'acme_client' directive
+    resolver {{angie_acme_resolver | default('1.1.1.1') }}; # Required for the 'acme_client' directive
     acme_client angie_acme_http https://acme-v02.api.letsencrypt.org/directory;
 {% endif %}
 
@@ -159,6 +159,9 @@ http {
 
 }
 
-#stream {
-#    include /etc/angie/stream.d/*.conf;
-#}
+{% if nginx.streams is defined %}
+stream {
+    include /etc/angie/upstream.d/*.conf;
+    include /etc/angie/stream.d/*.conf;
+}
+{% endif %}
