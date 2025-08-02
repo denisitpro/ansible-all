@@ -1,5 +1,5 @@
 ---
-- name: copy cert-manager manifests
+- name: Cert Manager Configure - Copy cert-manager manifests
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: /tmp/{{ item }}
@@ -8,13 +8,13 @@
   with_items:
     - cert-manager-cloudflare.yml
 
-- name: Apply cert-manager manifests
+- name: Cert Manager Configure - Apply cert-manager manifests
   ansible.builtin.command: kubectl apply -f /tmp/{{ item }} --kubeconfig {{ k8s_config_path }}
   when: cert_manager_force_install is defined
   with_items:
     - cert-manager-cloudflare.yml
 
-- name: remove secrets
+- name: Cert Manager Configure - Remove secrets
   ansible.builtin.file:
     path: /tmp/{{ item }}
     state: absent

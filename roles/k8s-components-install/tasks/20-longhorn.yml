@@ -1,39 +1,43 @@
 ---
-- name: Ensure Helm is installed
+- name: Longhorn - Ensure Helm is installed
   ansible.builtin.command: helm version
   register: helm_check
   failed_when: helm_check.rc != 0
   changed_when: false
 
-- name: Check if longhorn is already installed
+- name: Longhorn - Check if longhorn is already installed
   ansible.builtin.shell: |
     helm list -n {{ helm_longhorn_namespace | default('longhorn-system') }} --kubeconfig {{ k8s_config_path }} | grep -w longhorn-system
   register: longhorn_installed
   failed_when: false
   changed_when: false
+  tags:
+    - k8s-longhorn-path
 
-- name: Set fact whether to skip longhorn install
+- name: Longhorn - Set fact whether to skip longhorn install
   ansible.builtin.set_fact:
     skip_longhorn_install: "{{ longhorn_installed.rc == 0 and (not longhorn_force_install | default(false)) }}"
+  tags:
+    - k8s-longhorn-path
 
-- name: Add longhorn Helm repository
+- name: Longhorn - Add longhorn Helm repository
   ansible.builtin.command: helm repo add longhorn https://charts.longhorn.io
   register: helm_prom_repo
-  changed_when: "'\"has been added\"' in helm_prom_repo.stdout"
+  changed_when: '''"has been added"'' in helm_prom_repo.stdout'
   when: not skip_longhorn_install
 
-- name: Update Helm repos
+- name: Longhorn - Update Helm repos
   ansible.builtin.command: helm repo update
-  when: not skip_longhorn_install
+  when: not skip_longhorn_install or helm_cache_update is defined
 
-- name: Create  values config from template
+- name: Longhorn - Create  values config from template
   ansible.builtin.template:
     src: "longhorn-values.yaml.j2"
     dest: /tmp/longhorn-values.yaml
     mode: "0644"
   when: not skip_longhorn_install or longhorn_force_install is defined
 
-- name: Install longhorn via Helm
+- name: Longhorn - Install longhorn via Helm
   ansible.builtin.command: >
     helm upgrade --install longhorn longhorn/longhorn
     --namespace {{ helm_longhorn_namespace | default('longhorn-system') }}
@@ -43,8 +47,7 @@
     --values /tmp/longhorn-values.yaml
   when: not skip_longhorn_install or longhorn_force_install is defined
 
-
-- name: copy longhorn-path manifests
+- name: Longhorn - copy longhorn-path manifests
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: /tmp/{{ item }}
@@ -52,17 +55,49 @@
   with_items:
     - longhorn-ui-path.yml
   when: not skip_longhorn_install or longhorn_force_install is defined
+  tags:
+    - k8s-longhorn-path
 
-- name: path svc longhorn-path
+- name: Longhorn - Patch svc longhorn-path
   ansible.builtin.command: kubectl --kubeconfig {{ k8s_config_path }} patch svc longhorn-frontend -n {{ helm_longhorn_namespace | default('longhorn-system') }}  --type merge --patch-file /tmp/longhorn-ui-path.yml
   with_items:
     - longhorn-ui-path.yml
   when: not skip_longhorn_install or longhorn_force_install is defined
+  tags:
+    - k8s-longhorn-path
 
-- name: remove files
+- name: Longhorn - Remove files
   ansible.builtin.file:
     path: /tmp/{{ item }}
     state: absent
   with_items:
     - longhorn-ui-path.yml
   when: not skip_longhorn_install or longhorn_force_install is defined
+  tags:
+    - k8s-longhorn-path
+
+- name: Longhorn - Create Longhorn additional StorageClasses manifest
+  ansible.builtin.template:
+    src: longhorn-storageclass.yaml.j2
+    dest: /tmp/longhorn-storageclass.yaml
+    mode: "0644"
+  when:
+    - (not skip_longhorn_install or longhorn_force_install is defined)
+    - k8s_longhorn_additional_storage_classes is defined and k8s_longhorn_additional_storage_classes
+
+- name: Longhorn - Apply Longhorn additional StorageClasses
+  ansible.builtin.command: >
+    kubectl --kubeconfig {{ k8s_config_path }} apply -f /tmp/longhorn-storageclass.yaml
+  register: longhorn_sc_apply
+  changed_when: "'created' in longhorn_sc_apply.stdout or 'configured' in longhorn_sc_apply.stdout"
+  when:
+    - (not skip_longhorn_install or longhorn_force_install is defined)
+    - k8s_longhorn_additional_storage_classes is defined
+
+- name: Longhorn - Remove Longhorn additional StorageClasses manifest
+  ansible.builtin.file:
+    path: /tmp/longhorn-storageclass.yaml
+    state: absent
+  when:
+    - (not skip_longhorn_install or longhorn_force_install is defined)
+    - k8s_longhorn_additional_storage_classes is defined and k8s_longhorn_additional_storage_classes | length > 0

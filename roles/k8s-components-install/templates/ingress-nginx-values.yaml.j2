@@ -1,5 +1,5 @@
 controller:
-  replicaCount: 2
+  replicaCount: 1 # ignored DaemonSet
   kind: DaemonSet
 {% if nginx_ingress_node_port is defined%}
   service:
@@ -12,15 +12,25 @@ controller:
       http: "{{ nginx_ingress_node_port.http | default('30080') }}"
       https: "{{ nginx_ingress_node_port.https | default('30443') }}"
 {% else %}
+  service:
+    enabled: true
+    type: ClusterIP
+  publishService:
+    enabled: true
   hostPort:
     enabled: true
     ports:
       http: "{{ nginx_ingress_host_http_port | default('80') }}"
       https: "{{ nginx_ingress_host_https_port | default('443') }}"
 {% endif %}
-{% if nginx_ingress_real_ip is defined %}
   config:
+    proxy-body-size: "{{ nginx_ingress_proxy_body_size | default('1m') }}"
+{% if nginx_ingress_real_ip is defined %}
     use-forwarded-headers: "true"
+{% if nginx_ingress_allow_snippet_annotations is defined%}
+    allow-snippet-annotations: "true"
+    annotations-risk-level: "Critical"
+{% endif %}    
 {% if nginx_ingress_proxy_protocol is defined %}
     use-proxy-protocol: "true"
     real-ip-header: "proxy_protocol"

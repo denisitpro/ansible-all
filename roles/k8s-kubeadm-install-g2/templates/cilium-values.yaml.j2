@@ -1,28 +1,31 @@
-# https://github.com/cilium/cilium/blob/v1.18.0-pre.0/install/kubernetes/cilium/values.yaml
-encryption:
-{% if cilium_encryption_enabled is defined %}
-  enabled: true
-  type: wireguard
-  wireguard:
-    persistentKeepalive: 25s
-{% else %}
-  enabled: false
-{% endif %}
-operator:
-  replicas: {{ cilium_operator_replicas | default(2) }}
-hubble:
-  enabled: true
-  relay:
-    enabled: true
-  ui:
-    enabled: true
-kubeProxyReplacement: true
-k8sServiceHost: "auto"
-k8sServicePort: "auto"
-ipam:
-  mode: "{{ cilium_ipam_mode | default('cluster-pool') }}"
-  operator:
-    clusterPoolIPv4PodCIDRList: ["{{ k8s_net_cluster_pool }}"]
-    clusterPoolIPv4MaskSize: 24
-tunnelProtocol: "{{ cilium_tunnel_protocol | default('vxlan') }}"
-routingMode:  "{{ cilium_routing_mode |default('tunnel') }}"
+# # disable - use cilium-cli
+
+# # https://github.com/cilium/cilium/blob/v1.18.0-pre.0/install/kubernetes/cilium/values.yaml
+# encryption:
+# {% if cilium_encryption_enabled is defined %}
+#   enabled: true
+#   type: wireguard
+#   wireguard:
+#     persistentKeepalive: 25s
+#   nodeEncryption: true
+# {% else %}
+#   enabled: false
+# {% endif %}
+# operator:
+#   replicas: {{ cilium_operator_replicas | default(2) }}
+# hubble:
+#   enabled: true
+#   relay:
+#     enabled: true
+#   ui:
+#     enabled: true
+# kubeProxyReplacement: true
+# k8sServiceHost: "auto"
+# k8sServicePort: "auto"
+# ipam:
+#   mode: "{{ cilium_ipam_mode | default('cluster-pool') }}"
+#   operator:
+#     clusterPoolIPv4PodCIDRList: ["{{ k8s_net_cluster_pool }}"]
+#     clusterPoolIPv4MaskSize: 24
+# tunnelProtocol: "{{ cilium_tunnel_protocol | default('vxlan') }}"
+# routingMode:  "{{ cilium_routing_mode |default('tunnel') }}"

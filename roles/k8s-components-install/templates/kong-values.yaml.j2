@@ -1,0 +1,33 @@
+# https://github.com/Kong/charts/blob/main/charts/kong/README.md
+# Kong Ingress Controller
+
+ingressController:
+  enabled: true
+  ingressClass: kong
+  ingressClassAnnotations:
+    "ingressclass.kubernetes.io/is-default-class": "false"
+  watchNamespaces: {{ kong_watch_namespaces | default([]) }}
+
+proxy:
+  type: NodePort
+  http:
+    enabled: true
+    nodePort: {{ kong_proxy_http_node_port | default('32080') }}
+  tls:
+    enabled: true
+    nodePort: {{ kong_proxy_https_node_port | default('32443') }}
+
+admin:
+  enabled: true
+  type: ClusterIP
+
+portal:
+  enabled: true
+  type: ClusterIP
+
+manager:
+  enabled: true
+
+env:
+  database: "off"
+  KONG_LOG_LEVEL: {{ kong_log_level | default('info') }}

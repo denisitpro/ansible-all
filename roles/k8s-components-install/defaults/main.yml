@@ -9,7 +9,9 @@ helm_componets_list:
   - cert-manager
   - hubble-ui
   - metrics-server
-
+  - loki
+  # - vector
+  # - kong
 
 argocd_github_client_id: "{{ vault_dict_users_secret.argocd_github_client_id | default('set_me') }}"
 argocd_github_secret_id: "{{ vault_dict_users_secret.argocd_github_secret_id | default('set_me') }}"

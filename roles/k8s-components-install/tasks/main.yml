@@ -15,7 +15,7 @@
     - k8s-addition
     - k8s-longhorn
 
-- ansible.builtin.import_tasks: 25-ingress-nginx.yml
+- ansible.builtin.import_tasks: 30-ingress-nginx.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
   when: "'ingress-nginx' in helm_componets_list"
@@ -25,14 +25,6 @@
     - k8s-ingress
     - k8s-ingress-nginx
 
-- ansible.builtin.import_tasks: 30-argocd.yml
-  delegate_to: "{{ k8s_master_init_host }}"
-  run_once: true
-  when: "'argocd' in helm_componets_list"
-  tags:
-    - k8s
-    - k8s-addition
-    - k8s-argocd
 
 - ansible.builtin.import_tasks: 40-prom-stack.yml
   delegate_to: "{{ k8s_master_init_host }}"
@@ -44,34 +36,7 @@
     - k8s-prom-stack
     - k8s-prom
 
-- ansible.builtin.import_tasks: 50-teleport-agent.yml
-  delegate_to: "{{ k8s_master_init_host }}"
-  run_once: true
-  when: "'teleport-agent' in helm_componets_list"
-  tags:
-    - k8s
-    - k8s-addition
-    - k8s-teleport
-
-- ansible.builtin.import_tasks: 60-vault-secret-operator.yml
-  delegate_to: "{{ k8s_master_init_host }}"
-  run_once: true
-  when: "'vso' in helm_componets_list"
-  tags:
-    - k8s
-    - k8s-addition
-    - k8s-vso
-
-- ansible.builtin.import_tasks: 65-vault-injector.yml
-  delegate_to: "{{ k8s_master_init_host }}"
-  run_once: true
-  when: "'vai' in helm_componets_list"
-  tags:
-    - k8s
-    - k8s-addition
-    - k8s-vai
-
-- ansible.builtin.import_tasks: 70-cert-manager.yml
+- ansible.builtin.import_tasks: 50-cert-manager.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
   when: "'cert-manager' in helm_componets_list"
@@ -80,8 +45,9 @@
     - k8s-addition
     - k8s-cert-manager
 
-- ansible.builtin.import_tasks: 75-cert-manager-configure.yml
+- ansible.builtin.import_tasks: 55-cert-manager-configure.yml
   delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
   when:
     - "'cert-manager' in helm_componets_list"
     - k8s_cert_manager_condifured is defined
@@ -91,15 +57,70 @@
     - k8s-cert-manager
     - k8s-cert-manager-config
 
-- ansible.builtin.import_tasks: 80-cilium-hubble.yml
+- ansible.builtin.import_tasks: 60-argocd.yml
   delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'argocd' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-argocd
+
+- ansible.builtin.import_tasks: 70-loki.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'loki' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-loki
+
+- ansible.builtin.import_tasks: 75-vector.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'vector' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-vector
+
+- ansible.builtin.import_tasks: 80-teleport-agent.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'teleport-agent' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-teleport
+
+- ansible.builtin.import_tasks: 90-vault-secret-operator.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'vso' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-vso
+
+- ansible.builtin.import_tasks: 100-vault-injector.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'vai' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-vai
+
+- ansible.builtin.import_tasks: 110-cilium-hubble.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
   when: "'hubble-ui' in helm_componets_list"
   tags:
     - k8s
     - k8s-addition
     - k8s-hubble
 
-- ansible.builtin.import_tasks: 90-metrics-server.yml
+- ansible.builtin.import_tasks: 120-metrics-server.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
   when: "'metrics-server' in helm_componets_list"
@@ -108,3 +129,13 @@
     - k8s-addition
     - k8s-ms
     - k8s-metrics-server
+
+
+- ansible.builtin.import_tasks: 130-kong.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'kong' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-kong

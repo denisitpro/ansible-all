@@ -1,0 +1,51 @@
+---
+- name: Kong - Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Kong - Check if kong is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_kong_namespace | default('kong') }} --kubeconfig {{ k8s_config_path }} | grep -w kong
+  register: kong_installed
+  failed_when: false
+  changed_when: false
+
+- name: Kong - Set fact whether to skip kong install
+  ansible.builtin.set_fact:
+    skip_kong_install: "{{ kong_installed.rc == 0 and (not kong_force_install | default(false)) }}"
+
+- name: Kong - Add Helm repository
+  ansible.builtin.command: helm repo add kong https://charts.konghq.com
+  register: helm_kong_repo
+  changed_when: helm_kong_repo.stdout is search('has been added')
+  when: not skip_kong_install
+
+- name: Kong - Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_kong_install
+
+- name: Kong - Create values config from template
+  ansible.builtin.template:
+    src: "kong-values.yaml.j2"
+    dest: /tmp/kong-values.yaml
+    mode: "0600"
+  when: not skip_kong_install or kong_force_install is defined
+  tags:
+    - kong-value
+
+- name: Kong - Install via Helm
+  ansible.builtin.command: >
+    helm upgrade --install kong kong/kong
+    --namespace {{ helm_kong_namespace | default('kong') }}
+    --version {{ helm_kong_version | default('2.51.0') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/kong-values.yaml
+  when: not skip_kong_install or kong_force_install is defined
+
+# - name: remove /tmp/kong-values.yaml
+#   ansible.builtin.file:
+#     path: /tmp/kong-values.yaml
+#     state: absent

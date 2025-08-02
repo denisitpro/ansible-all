@@ -1,63 +1,71 @@
 ---
-- name: Ensure Helm is installed
+- name: Prom - Ensure Helm is installed
   ansible.builtin.command: helm version
   register: helm_check
   failed_when: helm_check.rc != 0
   changed_when: false
 
-- name: Check if prometheus is already installed
+- name: Prom - Check if prometheus is already installed
   ansible.builtin.shell: |
     helm list -n {{ helm_prometheus_namespace | default('monitoring') }} --kubeconfig {{ k8s_config_path }} | grep -w prometheus
   register: prometheus_installed
   failed_when: false
   changed_when: false
 
-- name: Set fact whether to skip prometheus install
+- name: Prom - Set fact whether to skip prometheus install
   ansible.builtin.set_fact:
     skip_prometheus_install: "{{ prometheus_installed.rc == 0 and (not prometheus_force_install | default(false)) }}"
 
-- name: Add prometheus Helm repository
+- name: Prom - Add prometheus Helm repository
   ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
   register: helm_prom_repo
   changed_when: "'\"has been added\"' in helm_prom_repo.stdout"
   when: not skip_prometheus_install
 
-- name: Update Helm repos
+- name: Prom - Update Helm repos
   ansible.builtin.command: helm repo update
-  when: not skip_prometheus_install
+  when: not skip_prometheus_install or helm_cache_update is defined
 
-- name: Create values config from template
+- name: Prom - Create values config from template
   ansible.builtin.template:
     src: "prometheus-values.yaml.j2"
     dest: /tmp/prometheus-values.yaml
     mode: "0644"
   when: not skip_prometheus_install or k8s_prom_force_install is defined
+  tags:
+    - k8s-prom-gen-conf
 
-- name: Render remote write secrets to YAML manifests
+- name: Prom - Render remote write secrets to YAML manifests - mTLS
   ansible.builtin.template:
     src: prometheus-secrets.yaml.j2
     dest: "/tmp/prometheus-secrets.yaml"
     mode: '0644'
+  when: not skip_prometheus_install or k8s_prom_force_install
+  tags:
+    - prometheus-secrets-mtls
 
-- name: Install prometheus via Helm
+
+- name: Prom - Install prometheus via Helm
   ansible.builtin.command: >
     helm upgrade --install prometheus prometheus-community/kube-prometheus-stack
     --namespace {{ helm_prometheus_namespace | default('monitoring') }}
-    --version {{ helm_prometheus_version | default('70.10.0') }}
+    --version {{ helm_prometheus_version | default('75.15.1') }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/prometheus-values.yaml
   when: not skip_prometheus_install or k8s_prom_force_install is defined
 
-- name: Install argocd cm for github
+- name: prom - install secrets
   ansible.builtin.command: >
     kubectl apply -f /tmp/{{ item }}
     --namespace {{ helm_prometheus_namespace | default('monitoring') }}
     --kubeconfig {{ k8s_config_path }}
   with_items:
     - prometheus-secrets.yaml
+  tags:
+    - prometheus-secrets-mtls
 
-- name: remove secrets
+- name: Prom - Remove secrets
   ansible.builtin.file:
     path: /tmp/{{ item }}
     state: absent

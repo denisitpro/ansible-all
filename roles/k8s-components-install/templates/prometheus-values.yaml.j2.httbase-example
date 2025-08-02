@@ -40,59 +40,25 @@ prometheus:
 {% endif %}
 {% set remote_write_config = k8s_prom_remote_write | default([]) %}
 {% if remote_write_config | length > 0 %}
-    volumes:
-{% for remote in remote_write_config %}
-{% if remote.remote_write.secret_type == 'mtls' %}
-      - name: {{ remote.remote_write.secret_name }}-secret
-        secret:
-          secretName: {{ remote.remote_write.secret_name }}
-{% endif %}
-{% endfor %}
-    volumeMounts:
-{% for remote in remote_write_config %}
-{% if remote.remote_write.secret_type == 'mtls' %}
-      - name: {{ remote.remote_write.secret_name }}-secret
-        mountPath: /etc/prometheus/secrets/{{ remote.remote_write.secret_name }}
-        readOnly: true
-{% endif %}
-{% endfor %}
-{% endif %}
-{% set remote_write_config = k8s_prom_remote_write | default([]) %}
-{% if remote_write_config | length > 0 %}
     remoteWrite:
 {% for remote in remote_write_config %}
       - url: {{ remote.remote_write.url }}
-        enableHTTP2: true
-{% if remote.remote_write.protobuf_message is defined %}
+{% if remote.remote_server_prometheus is defined %}
         messageVersion: "V2.0"
-{% endif %}
-{% if remote.remote_write.send_exemplars is defined and remote.remote_write.send_exemplars %}
         sendExemplars: true
 {% endif %}
-{% if remote.remote_write.secret_type == 'mtls' %}
-        tlsConfig:
-          caFile: /etc/prometheus/secrets/{{ remote.remote_write.secret_name }}/cacert
-          certFile: /etc/prometheus/secrets/{{ remote.remote_write.secret_name }}/client.crt
-          keyFile: /etc/prometheus/secrets/{{ remote.remote_write.secret_name }}/client.key
-{% if remote.remote_write.tls_config.insecure_skip_verify is defined and remote.remote_write.tls_config.insecure_skip_verify %}
-          insecureSkipVerify: true
-{% endif %}
-{% endif %}
-{% if remote.remote_write.secret_type == 'http-basic' %}
+        enableHTTP2: true
         basicAuth:
           username:
-            name: {{ remote.remote_write.secret_name }}
-            key: username
+            name: {{ remote.remote_write.user_secret_name | default("remote-write-auth") }}
+            key: {{ remote.remote_write.user_secret_key | default("username") }}
           password:
-            name: {{ remote.remote_write.secret_name }}
-            key: password
-{% endif %}
-{% if remote.remote_write.queue_config is defined %}
+            name: {{ remote.remote_write.pass_secret_name | default("remote-write-auth") }}
+            key: {{ remote.remote_write.pass_secret_key | default("password") }}
         queueConfig:
-          batchSendDeadline: {{ remote.remote_write.queue_config.batch_send_deadline | default("5s") }}
-          maxSamplesPerSend: {{ remote.remote_write.queue_config.max_samples_per_send | default(1000) }}
-          maxShards: {{ remote.remote_write.queue_config.max_shards | default(5) }}
-{% endif %}
+          batchSendDeadline: {{ remote.remote_write.batch_send_deadline | default("5s") }}
+          maxSamplesPerSend: {{ remote.remote_write.max_samples_per_send | default(1000) }}
+          maxShards: {{ remote.remote_write.max_shards | default(5) }}
 {% endfor %}
 {% endif %}
 
