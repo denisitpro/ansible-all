@@ -1,17 +1,10 @@
 ---
-- include: shared/tasks/create-script-path.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - version
+    - version-prefly
 
-- include: 00-ver.yml
+- ansible.builtin.import_tasks: 10-ver-dynamic-docker.yml
   tags:
     - version
-  when:
-    - use_dynamic_docker_version_checker != true
-
-
-- include: 01-ver-dynamic-docker.yml
-  tags:
-    - version
-  when:
-    - use_dynamic_docker_version_checker == true
+    - version-scripts

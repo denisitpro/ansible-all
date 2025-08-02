@@ -1,0 +1,92 @@
+---
+- name: Debug Vault issue certificate URL
+  ansible.builtin.debug:
+    msg: "Vault issue URL: {{ vault_address }}/v1/{{ item.cert_pki_path }}/issue/{{ item.cert_role_name }}"
+
+- name: Check if issued certificate key already exists in Vault KV
+  ansible.builtin.shell: |
+    vault kv get -field=mtls_key "{{ vault_mtls_kv_mount }}/{{ mtls_path_name }}/{{ item.cert_pki_path }}/{{ item.cert_common_name }}/{{ item.cert_role_name }}"
+  register: mtls_issued_cert_check
+  failed_when: false
+  changed_when: false
+
+- name: Determine if issued certificate push is needed
+  ansible.builtin.set_fact:
+    push_issued_cert: "{{ mtls_certs_common_push_force | default(false) or mtls_issued_cert_check.rc != 0 }}"
+
+- name: Request certificate from HCP Vault using curl and Teleport cert
+  ansible.builtin.shell: |
+    curl --silent --show-error --cert "{{ teleport_cert_path }}" --key "{{ teleport_key_path }}" \
+         --header "Accept: application/json" \
+         --header "X-Vault-Token: {{ vault_token }}" \
+         --request POST \
+         --data '{"common_name": "{{ item.cert_common_name }}", "ttl": "{{ item.cert_ttl }}"}' \
+         "{{ vault_address }}/v1/{{ item.cert_pki_path }}/issue/{{ item.cert_role_name }}"
+  register: mtls_cert_response
+  when: push_issued_cert
+
+- name: Debug certificate response
+  ansible.builtin.debug:
+    var: mtls_cert_response
+  when: push_issued_cert
+
+- name: Save certificate bundle to local file
+  ansible.builtin.copy:
+    content: "{{ mtls_cert_response.stdout }}"
+    dest: "{{ local_cert_dir }}/{{ cert_bundle_file }}"
+    mode: '0644'
+  when: mtls_cert_response.stdout is defined and mtls_cert_response.stdout | length > 0 and push_issued_cert
+
+- name: Extract certificate from bundle
+  ansible.builtin.shell: |
+    jq -r '.data.certificate' "{{ local_cert_dir }}/{{ cert_bundle_file }}" > "{{ local_cert_dir }}/{{ cert_file }}"
+  when: push_issued_cert
+
+- name: Extract private key from bundle
+  ansible.builtin.shell: |
+    jq -r '.data.private_key' "{{ local_cert_dir }}/{{ cert_bundle_file }}" > "{{ local_cert_dir }}/{{ key_file }}"
+  when: push_issued_cert
+
+# - name: Extract issuing CA from bundle
+#   ansible.builtin.shell: |
+#     jq -r '.data.issuing_ca' "{{ local_cert_dir }}/{{ cert_bundle_file }}" > "{{ local_cert_dir }}/{{ ca_file }}"
+#   when: push_issued_cert
+
+# - name: Display certificate information
+#   ansible.builtin.debug:
+#     msg: |
+#       Certificate files created successfully:
+#       - Certificate: {{ local_cert_dir }}/{{ cert_file }}
+#       - Private Key: {{ local_cert_dir }}/{{ key_file }}
+#       - CA Certificate: {{ local_cert_dir }}/{{ ca_file }}
+#       - Bundle: {{ local_cert_dir }}/{{ cert_bundle_file }}
+#   when: push_issued_cert
+
+- name: Push issued certificate to Vault KV using vault CLI
+  ansible.builtin.shell: |
+    vault kv put {{ vault_mtls_kv_mount }}/{{ mtls_path_name }}/{{ item.cert_pki_path }}/{{ item.cert_common_name }}/{{ item.cert_role_name }} \
+      mtls_cert="$(cat {{ local_cert_dir }}/{{ cert_file }})" \
+      mtls_key="$(cat {{ local_cert_dir }}/{{ key_file }})" \
+  register: issued_kv_push_response
+  when: push_issued_cert
+
+# Clean up local certificate files after push
+- name: Remove certificate file after push
+  ansible.builtin.file:
+    path: "{{ local_cert_dir }}/{{ cert_file }}"
+    state: absent
+
+- name: Remove private key file after push
+  ansible.builtin.file:
+    path: "{{ local_cert_dir }}/{{ key_file }}"
+    state: absent
+
+# - name: Remove CA certificate file after push
+#   ansible.builtin.file:
+#     path: "{{ local_cert_dir }}/{{ ca_file }}"
+#     state: absent
+
+- name: Remove certificate bundle file after push
+  ansible.builtin.file:
+    path: "{{ local_cert_dir }}/{{ cert_bundle_file }}"
+    state: absent

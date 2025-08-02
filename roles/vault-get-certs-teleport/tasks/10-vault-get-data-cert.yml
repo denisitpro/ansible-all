@@ -1,0 +1,75 @@
+---
+- name: create tmp folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ cert_tmp }}"
+
+# - name: Debug request
+#   ansible.builtin.debug:
+#     msg: "request {{ curl_get_cert }}"
+#   tags:
+#     - vault-ansible.builtin.debug
+#   loop: "{{ vault.certs }}"
+
+# - name: Debug get key request
+#   ansible.builtin.debug:
+#     msg: "get key request {{ curl_get_key }}"
+#   tags:
+#     - vault-ansible.builtin.debug
+#   loop: "{{ vault.certs }}"
+
+
+- name: curl save certs array
+  ansible.builtin.shell: "{{ curl_get_cert }} > {{ cert_tmp }}/{{ item.name }}-cert.pem"
+  loop: "{{ vault.certs }}"
+  tags:
+    - vault-ansible.builtin.debug
+
+- name: curl save privkey certs array
+  ansible.builtin.shell: "{{ curl_get_key }} > {{ cert_tmp }}/{{ item.name }}-priv.pem"
+  loop: "{{ vault.certs }}"
+  tags:
+    - vault-ansible.builtin.debug
+
+- name: Stat certificate files
+  ansible.builtin.stat:
+    path: "{{ cert_tmp }}/{{ item.name }}-cert.pem"
+  register: cert_stats
+  loop: "{{ vault.certs }}"
+  loop_control:
+    loop_var: item
+
+# - name: Debug filestat
+#   ansible.builtin.debug:
+#     msg: "get key request {{ cert_stats }}"
+#   tags:
+#     - vault-ansible.builtin.debug
+#   loop: "{{ vault.certs }}"
+
+
+- name: Fail if any certificate file is empty
+  ansible.builtin.fail:
+    msg: "Certificate file {{ item.stat.path }} is empty"
+  when: item.stat.size == 5
+  loop: "{{ cert_stats.results }}"
+  loop_control:
+    loop_var: item
+
+- name: Stat private key files
+  ansible.builtin.stat:
+    path: "{{ cert_tmp }}/{{ item.name }}-priv.pem"
+  register: key_stats
+  loop: "{{ vault.certs }}"
+  loop_control:
+    loop_var: item
+
+- name: Fail if any private key file is empty
+  ansible.builtin.fail:
+    msg: "Private key file {{ item.stat.path }} is empty"
+  when: item.stat.size == 5
+  loop: "{{ key_stats.results }}"
+  loop_control:
+    loop_var: item

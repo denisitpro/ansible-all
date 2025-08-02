@@ -1,17 +1,36 @@
 #!/bin/bash
 # Dynamic version checker for DOCKER
-# Version 0.0.1
+# Version 0.7.0
+# {{ ansible_managed | comment }}
 
 # global variables
 FQDN=$(hostname)
 STAND={{stand_type}}
+{% raw %}
+# escape function for SQL literals
+escape_sql_value() {
+    echo "$1" | sed "s/\\\\/\\\\\\\\/g; s/'/\\\\'/g"
+}
 
-for app in $(/usr/bin/docker ps | grep -E exampledevops | awk -F ' ' '{print $2}' | awk -F '/' '{print $NF}'); do
-    APPNAME=$(echo $app | cut -d ':' -f 1)
-    VER=$(echo $app | cut -d ':' -f 2)
+docker ps --format '{{.Image}}' | while read img; do
+    REGISTRY_PATH=$(echo "$img" | cut -d ':' -f 1)
+    APPNAME=$(echo "$img" | awk -F '/' '{print $NF}' | cut -d ':' -f 1)
+    VER=$(echo "$img" | awk -F ':' '{print $2}')
 
-    # echo "APPNAME=$APPNAME, STAND=$STAND, FQDN=$FQDN, VER=$VER"
-    # send version to clickhouse
-    echo "('$APPNAME','$STAND','$FQDN','$VER')" | curl --data-binary "@-" "http://{{ch_version_user}}:{{ vault_dict_users_secret[ch_version_user] }}@{{ch_version_srv}}:{{ch_version_http_port}}/?query=INSERT+INTO+{{ch_version_db_name}}.{{version_table_name}}+(appname,+stand,+servername,+ver)+FORMAT+Values"
+    ESC_REGISTRY_PATH=$(escape_sql_value "$REGISTRY_PATH")
+    ESC_APPNAME=$(escape_sql_value "$APPNAME")
+    ESC_STAND=$(escape_sql_value "$STAND")
+    ESC_SERVERNAME=$(escape_sql_value "$FQDN")
+    ESC_VER=$(escape_sql_value "$VER")
 
+#    echo "APPNAME=$ESC_APPNAME, STAND=$ESC_STAND, FQDN=$ESC_SERVERNAME, VER=$ESC_VER, REGISTRY_PATH=$ESC_REGISTRY_PATH"
+{% endraw %}
+    QUERY=$(cat <<EOF
+INSERT INTO infra.compose_versions (registry_path, appname, stand, servername, version) FORMAT Values
+('$ESC_REGISTRY_PATH','$ESC_APPNAME','$ESC_STAND','$ESC_SERVERNAME','$ESC_VER')
+EOF
+)
+
+    echo "$QUERY" | curl --silent --show-error -X POST --data-binary @- \
+      https://{{ch_version_username |default('username')}}:{{ch_version_pass}}@{{ch_version_srv |default('clickhouse-server')}}:{{ch_version_http_port | default('443')}}?async_insert=1&wait_for_async_insert=0&async_insert_busy_timeout_max_ms=1000
 done

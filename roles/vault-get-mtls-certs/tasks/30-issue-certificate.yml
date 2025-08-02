@@ -1,0 +1,4 @@
+---
+- ansible.builtin.include_tasks: 35-loop-issue-certificate.yml
+  with_items:
+    - "{{ mtls_certs_request_list }}"

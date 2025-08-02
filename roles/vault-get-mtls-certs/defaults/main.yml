@@ -1,0 +1,33 @@
+---
+# HCP Vault connection settings
+vault_address: "https://vault.example.com"
+vault_token: "{{ lookup('env', 'VAULT_TOKEN') | default('') }}"
+
+# CA certificate settings
+# ca_cert_path: "/etc/ssl/certs/ca.pem"
+# ca_cert_name: "ca-certificate"
+
+# Certificate request settings
+
+mtls_certs_request_list:
+  - cert_pki_path: "pki/auth-engine-ca-01"
+    cert_role_name: "auth-engine-ca-01-any"
+    cert_common_name: "example-test-01.example.com"
+    cert_ttl: "730d"
+  # - cert_pki_path: "pki/auth-engine-ca-01"
+  #   cert_role_name: "auth-engine-ca-01-any"
+  #   cert_common_name: "example-test-02.example.com"
+  #   cert_ttl: "1h"
+
+# Путь монтирования KV в Vault, куда сохранять CA
+vault_mtls_kv_mount: "kv"
+
+# Префикс неймспейса (например, имя приложения/кластера)
+mtls_path_name: "mtls"
+
+# Local certificate storage
+local_cert_dir: "/tmp"
+cert_bundle_file: "cert_bundle.json"
+cert_file: "cert.pem"
+key_file: "key.pem"
+ca_file: "ca.pem"
