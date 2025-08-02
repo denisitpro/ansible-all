@@ -1,0 +1,42 @@
+---
+- name: "ansible.builtin.copy  certs"
+  ansible.builtin.copy:
+    src: "{{ cert_tmp }}/{{ item.name }}-cert.pem"
+    dest: "{{ cert_ssl_path }}/{{ item.name }}/{{ item.certname | default('fullchain.pem') }}"
+    owner: "{{ cert_ssl_user }}"
+    group: "{{ cert_ssl_group }}"
+    mode: "0644"
+  with_items: "{{ vault.certs }}"
+
+- name: ansible.builtin.copy  privkey
+  ansible.builtin.copy:
+    src: "{{ cert_tmp }}/{{ item.name }}-priv.pem"
+    dest: "{{ cert_ssl_path }}/{{ item.name }}/{{ item.privkey | default('privkey.pem') }}"
+    owner: "{{ cert_ssl_user }}"
+    group: "{{ cert_ssl_group }}"
+    mode: "0600"
+  with_items: "{{ vault.certs }}"
+
+## clean section
+- name: sleep for 5 seconds and continue with play
+  ansible.builtin.wait_for:
+    timeout: 5
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+
+- name: delete temp dir
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  with_items:
+    - "{{ cert_tmp }}"
+  ignore_errors: true
+
+# - name: debug certs
+#   debug: msg="{{cert_out}}"

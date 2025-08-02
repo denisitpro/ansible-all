@@ -1,0 +1,36 @@
+---
+
+- ansible.builtin.import_tasks: 05-create-remote-path-cert.yml
+  tags:
+    - get-certs
+    - cert
+    - ssl
+    - cert-update
+
+
+- ansible.builtin.import_tasks: 10-vault-get-data-cert.yml
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  tags:
+    - get-certs
+    - cert
+    - ssl
+    - cert-update
+    - cert-get-data
+
+- ansible.builtin.import_tasks: 20-copy-data-cert.yml
+  tags:
+    - get-certs
+    - cert
+    - ssl
+    - cert-update
+    - cert-get-data
+
+- ansible.builtin.import_tasks: 30-cert-size.yml
+  tags:
+    - get-certs
+    - cert
+    - ssl
+    - cert-update

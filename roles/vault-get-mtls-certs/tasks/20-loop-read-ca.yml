@@ -1,0 +1,71 @@
+---
+- name: Debug Vault CA URL
+  ansible.builtin.debug:
+    msg: "Vault CA URL: {{ vault_address }}/v1/{{ item.cert_pki_path }}/ca/pem"
+
+- name: Check if CA certificate already exists in Vault KV
+  ansible.builtin.shell: |
+    vault kv get -field=ca_root_cert "{{ vault_mtls_kv_mount }}/{{ mtls_path_name }}/{{ item.cert_pki_path | urlencode }}-ca-root"
+  register: vault_ca_check
+  failed_when: false
+  changed_when: false
+
+- name: Determine if CA push is needed
+  ansible.builtin.set_fact:
+    push_ca_cert: "{{ mtls_cert_ca_push_force | default(false) or vault_ca_check.rc != 0 }}"
+
+
+- name: Read CA certificate from HCP Vault using curl and Teleport cert
+  ansible.builtin.shell: |
+    curl --silent --show-error --cert "{{ teleport_cert_path }}" --key "{{ teleport_key_path }}" \
+         --header "Accept: application/json" \
+         --header "X-Vault-Token: {{ vault_token }}" \
+         --request GET \
+         "{{ vault_address }}/v1/{{ item.cert_pki_path }}/ca/pem"
+  register: ca_response
+  when: push_ca_cert
+
+# - name: Debug CA response
+#   ansible.builtin.debug:
+#     var: ca_response
+
+# - name: Fail if CA certificate is invalid or empty
+#   ansible.builtin.fail:
+#     msg: "CA certificate appears to be invalid or empty"
+#   when: ca_response.stdout is not defined
+#         or ca_response.stdout | length < 10
+#         or ca_response.stdout is search("null")
+#         or ca_response.stdout is search("-----BEGIN CERTIFICATE-----") == false
+
+- name: Save CA certificate to local file
+  ansible.builtin.copy:
+    content: "{{ ca_response.stdout }}"
+    dest: "{{ local_cert_dir }}/{{ ca_file }}"
+    mode: '0644'
+  when: ca_response.stdout is defined and ca_response.stdout | length > 0
+
+
+- name: Push CA certificate to Vault KV using vault CLI
+  ansible.builtin.shell: |
+    vault kv put {{ vault_mtls_kv_mount }}/{{ mtls_path_name }}/{{ item.cert_pki_path | urlencode }}-ca-root \
+    ca_root_cert=@"{{ local_cert_dir }}/{{ ca_file }}"
+  register: kv_push_response
+  when: push_ca_cert
+  # environment:
+  #   VAULT_TOKEN: "{{ lookup('env', 'VAULT_TOKEN') }}"
+  #   VAULT_CLIENT_CERT: "{{ lookup('env', 'VAULT_CLIENT_CERT') }}"
+  #   VAULT_CLIENT_KEY: "{{ lookup('env', 'VAULT_CLIENT_KEY') }}"
+
+- name: CA path - vault kv path
+  ansible.builtin.debug:
+    msg: "CA KV path: {{ vault_mtls_kv_mount }}/{{ mtls_path_name }}/{{ item.cert_pki_path | urlencode }}-ca-root"
+
+- name: Debug KV push response
+  ansible.builtin.debug:
+    var: kv_push_response
+
+# Clean up CA local certificate files after push
+- name: Remove CA certificate file after push
+  ansible.builtin.file:
+    path: "{{ local_cert_dir }}/{{ ca_file }}"
+    state: absent

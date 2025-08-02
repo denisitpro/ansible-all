@@ -24,6 +24,5 @@
     - wazuh-register
     - ciso
 
-
 - ansible.builtin.import_tasks: 90-clean.yml
   tags: ['never', 'wazuh-clean']

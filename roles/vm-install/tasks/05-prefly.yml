@@ -16,7 +16,7 @@
     state: directory
     mode: '0775'
     # owner: "{{angie_uid}}"
-    # group: "{{angie_guid}}"
+    # group: "{{angie_gid}}"
   with_items:
     - "{{ vm_base_path }}"
     - "{{ vm_config_path }}"

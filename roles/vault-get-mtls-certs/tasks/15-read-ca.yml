@@ -1,0 +1,4 @@
+---
+- ansible.builtin.include_tasks: 20-loop-read-ca.yml
+  with_items:
+    - "{{ mtls_certs_request_list }}"

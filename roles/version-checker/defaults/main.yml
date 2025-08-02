@@ -1,7 +1,11 @@
 ---
 version_file: "version.txt"
 version_table_name: version
-use_dynamic_docker_version_checker: false
 
-apps:
-    - {name: "{{appname}}", path: "{{app_path}}", ver_file: "{{version_file}}" }
+version_scripts_path: "/opt/scripts"
+# ch_version_pass: "{{ vault_dict_users_secret.ch_version_pass | default('set_me') }}"
+ch_version_pass: "{{ vault_dict_users_secret.version_user_push_pass | default('set_me') }}"
+
+
+ch_http_auth_user: user
+ch_http_auth_pass: "{{ vault_dict_users_secret.ch_http_base_compose | default('set_me') }}"

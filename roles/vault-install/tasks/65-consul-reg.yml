@@ -4,6 +4,9 @@
     path: "{{ consul_config_dir | default('/etc/consul.d') }}"
   register: consul_config_dir_exists
 
+# - name: Display consul_vault_metrics_token value
+#   ansible.builtin.debug:
+#     msg: "consul_vault_metrics_token: {{ consul_vault_metrics_token | default('NOT_DEFINED') }}"
 
 - name: Copy vault-metrics consul config - notify docker
   ansible.builtin.template:

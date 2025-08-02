@@ -1,0 +1,15 @@
+---
+# localhost path for temp store env
+cert_tmp: /tmp/cert_tmp
+
+cert_ssl_path: /opt/ssl
+cert_ssl_user: root
+cert_ssl_group: root
+
+# Fetch certificate from Vault using curl and parse the value
+curl_get_cert: >-
+  curl -s -H "X-Vault-Token: {{ vault_token }}" --cert {{ teleport_cert_path }} --key {{ teleport_key_path }} -X GET {{ vault_url_teleport }}/v1/{{ item.kv }}/data/{{ item.path }}/{{ item.certname | default('fullchain.pem') }} | jq '.data' | jq '.data' | jq -r '.value'
+
+# Fetch private key from Vault using curl and parse the value
+curl_get_key: >-
+  curl -s -H "X-Vault-Token: {{ vault_token }}" --cert {{ teleport_cert_path }} --key {{ teleport_key_path }} -X GET {{ vault_url_teleport }}/v1/{{ item.kv }}/data/{{ item.path }}/{{ item.privkey | default('privkey.pem') }} | jq '.data' | jq '.data' | jq -r '.value'

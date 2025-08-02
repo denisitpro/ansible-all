@@ -1,0 +1,27 @@
+---
+- ansible.builtin.import_tasks: 10-prefly.yml
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  tags: ['always', 'vault', "mtls-hcp"]
+
+- ansible.builtin.import_tasks: 15-read-ca.yml
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  tags:
+    - mtls-hcp
+    - mtls-ca
+    - vault
+
+- ansible.builtin.import_tasks: 30-issue-certificate.yml
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  tags:
+    - mtls-hcp
+    - mtls-certs
+    - vault

@@ -42,6 +42,7 @@
     - consul
     - consul-reg
     - consul-owner
+    - vault-consul-metrics
 
 
 - ansible.builtin.import_tasks: 80-vault-clean.yml
