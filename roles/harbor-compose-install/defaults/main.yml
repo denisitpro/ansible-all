@@ -1,0 +1,10 @@
+---
+harbor_compose_path: /opt/docker/harbor
+harbor_base_path: /opt/harbor
+harbor_config_path: "{{ harbor_base_path }}/config"
+harbor_data_path: "{{ harbor_base_path }}/data"
+
+harbor_version: v2.13.1
+
+harbor_psql_docker_user_uid: 999
+harbor_psql_docker_user_gid: 999

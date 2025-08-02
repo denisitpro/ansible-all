@@ -66,7 +66,7 @@
 
 - name: copy dashboards
   ansible.builtin.copy:
-    src: "{{ item.folder | default( 'general' ) }}/{{ item.file }}"
+    src: "{{ item.folder | default('general') }}/{{ item.file }}"
     dest: "/opt/grafana/etc/provisioning/dashboards/{{ item.folder | default('general') }}/{{ item.file }}"
     owner: "{{ grafana_uid }}"
     group: "{{ grafana_gid }}"

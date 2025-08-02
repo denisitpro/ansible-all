@@ -10,6 +10,7 @@
   tags:
     - consul
     - consul-update
+    - consul-download
 
 - ansible.builtin.import_tasks: 20-path.yml
   tags:
@@ -43,4 +44,4 @@
     - consul
 
 - ansible.builtin.import_tasks: 90-consul-restart.yml
-  tags: ['never', 'consul-unit-restart']
+  tags: ['never', 'consul-unit-restart', 'consul-restart']

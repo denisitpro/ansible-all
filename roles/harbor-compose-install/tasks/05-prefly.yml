@@ -1,0 +1,40 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ harbor_compose_path }}"
+
+- name: create folder data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+  with_items:
+    - "{{ harbor_base_path }}"
+    - "{{ harbor_config_path }}"
+    - "{{ harbor_config_path }}/registry"
+    - "{{ harbor_config_path }}/registryctl"
+    - "{{ harbor_config_path }}/db"
+    - "{{ harbor_config_path }}/core"
+    - "{{ harbor_config_path }}/jobservice"
+    - "{{ harbor_config_path }}/portal"
+    - "{{ harbor_config_path }}/nginx"
+    - "{{ harbor_data_path }}"
+    - "{{ harbor_data_path }}/core"
+    - "{{ harbor_data_path }}/redis"
+
+- name: create folder database
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ harbor_psql_docker_user_uid }}"
+    group: "{{ harbor_psql_docker_user_gid }}"
+  with_items:
+    - "{{ harbor_data_path }}/database"

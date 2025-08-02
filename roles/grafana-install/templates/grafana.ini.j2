@@ -22,6 +22,11 @@ allowed_origins = "{{grafana_allowed_origins | default('*')}}"
 [feature_toggles]
 ssoSettingsApi = true
 
+{% if grafana_auth_basic_disabled is defined %}
+[auth.anonymous]
+disable_login_form = true
+{% endif %}
+
 {% if grafana_oidc_github is defined %}
 [auth.github]
 enabled = true
@@ -57,8 +62,10 @@ scopes = {{gf_auth_google_scopes | default('openid email profile')}}
 auth_url = https://accounts.google.com/o/oauth2/v2/auth
 token_url = https://oauth2.googleapis.com/token
 api_url = https://openidconnect.googleapis.com/v1/userinfo
-allowed_domains = {{gf_auth_google_allowed_domains }}
+allowed_domains = {{gf_auth_google_allowed_domains  | default('example.com')}}
+{% if gf_auth_google_hosted_domain is defined %}
 hosted_domain = {{gf_auth_google_hosted_domain }}
+{% endif %}
 use_pkce = true
 {% endif %}
 

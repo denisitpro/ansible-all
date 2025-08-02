@@ -1,0 +1,76 @@
+---
+- name: copy configs registry
+  ansible.builtin.template:
+    src: "common/config/registry/{{ item }}"
+    dest: "{{ harbor_config_path }}/registry/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "config.yml"
+    - "passwd"
+  # notify: restart-docker harbor
+
+- name: copy configs registryctl
+  ansible.builtin.template:
+    src: "common/config/registryctl/{{ item }}"
+    dest: "{{ harbor_config_path }}/registryctl/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "config.yml"
+    - "env"
+  # notify: restart-docker harbor
+
+- name: copy configs registryctl
+  ansible.builtin.template:
+    src: "common/config/db/{{ item }}"
+    dest: "{{ harbor_config_path }}/db/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "env"
+
+- name: copy configs core
+  ansible.builtin.template:
+    src: "common/config/core/{{ item }}"
+    dest: "{{ harbor_config_path }}/core/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "env"
+    - "app.conf"
+
+- name: copy configs jobservice
+  ansible.builtin.template:
+    src: "common/config/jobservice/{{ item }}"
+    dest: "{{ harbor_config_path }}/jobservice/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "config.yml"
+    - "env"
+
+- name: copy configs portal
+  ansible.builtin.template:
+    src: "common/config/portal/{{ item }}"
+    dest: "{{ harbor_config_path }}/portal/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "nginx.conf"
+
+- name: copy configs nginx
+  ansible.builtin.template:
+    src: "common/config/nginx/{{ item }}"
+    dest: "{{ harbor_config_path }}/nginx/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - "nginx.conf"

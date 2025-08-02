@@ -3,3 +3,4 @@
   when: cron  is defined
   tags:
     - cron
+    - ciso

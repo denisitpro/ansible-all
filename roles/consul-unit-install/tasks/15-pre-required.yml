@@ -27,7 +27,7 @@
 
 - name: Unarchive a file that is already on the remote machine
   ansible.builtin.unarchive:
-    src: "{{ consul_download_dir }}/consul_{{ consul_version }}_linux_amd64.zip"
+    src: "{{ consul_download_dir }}/consul_{{ consul_version }}_linux_{{ consul_go_arch }}.zip"
     dest: "/tmp/"
     owner: root
     group: root
@@ -54,11 +54,11 @@
     state: link
   when: not binary_stat_result.stat.exists
 
-- name: remove download files
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: absent
-  with_items:
-    - "{{ consul_download_dir }}/consul_{{ consul_version }}_linux_amd64.zip"
-    - "{{ consul_download_dir }}/consul"
-  tags: [clean]
+# - name: remove download files
+#   ansible.builtin.file:
+#     path: "{{ item }}"
+#     state: absent
+#   with_items:
+#     - "{{ consul_download_dir }}/consul_{{ consul_version }}_linux_{{ consul_go_arch }}.zip"
+#     - "{{ consul_download_dir }}/consul"
+#   tags: [clean]
