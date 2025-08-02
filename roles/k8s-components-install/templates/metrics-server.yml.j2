@@ -1,11 +1,11 @@
-dnsConfig:
-  nameservers:
-    - 1.1.1.1
-    - 8.8.8.8
-  searches:
-{% for domain in dns_resolved_domains %}
-    - {{ domain }}
-{% endfor %}
+# dnsConfig:
+#   nameservers:
+#     - 1.1.1.1
+#     - 8.8.8.8
+#   searches:
+# {% for domain in dns_resolved_domains %}
+#     - {{ domain }}
+# {% endfor %}
 
 args:
   - --kubelet-insecure-tls

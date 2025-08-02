@@ -1,0 +1,31 @@
+{% for sc in k8s_longhorn_additional_storage_classes %}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ sc.name }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "{{ 'true' if sc.isDefaultClass | default(false) else 'false' }}"
+{% if sc.annotations is defined %}
+{% for k, v in sc.annotations.items() %}
+    {{ k }}: "{{ v }}"
+{% endfor %}
+{% endif %}
+provisioner: driver.longhorn.io
+reclaimPolicy: {{ sc.reclaimPolicy | default('Delete') }}
+allowVolumeExpansion: {{ sc.allowVolumeExpansion | default(true) }}
+parameters:
+  dataEngine: {{ sc.dataEngine | default('v1') | to_json }}
+  dataLocality: {{ sc.dataLocality | default('disabled') | to_json }}
+  disableRevisionCounter: {{ sc.disableRevisionCounter | default('true') | to_json }}
+  fromBackup: {{ sc.fromBackup | default('') | to_json }}
+  fsType: {{ sc.fsType | default('ext4') | to_json }}
+  numberOfReplicas: {{ sc.numberOfReplicas | default('2') | string | to_json }}
+  staleReplicaTimeout: {{ sc.staleReplicaTimeout | default('30') | to_json }}
+  unmapMarkSnapChainRemoved: {{ sc.unmapMarkSnapChainRemoved | default('ignored') | to_json }}
+{% if sc.parameters is defined %}
+{% for k, v in sc.parameters.items() %}
+  {{ k }}: {{ v | to_json }}
+{% endfor %}
+{% endif %}
+{% endfor %}

@@ -19,18 +19,6 @@
     - k8s-check-cls
 
 
-- name: Copy kubecontext to /root/.kube/config if kubecontext_master_default is true
-  ansible.builtin.copy:
-    remote_src: "{{ kubeadmin_config }}"
-    dest: /root/.kube/config
-    owner: root
-    group: root
-    mode: '0600'
-  become: true
-  ignore_errors: true
-  when: kubecontext_master_default | default(false) | bool
-
-
 - name: print cluster info status - global
   ansible.builtin.debug:
     msg: cls info - "{{ cluster_info.rc }}"
@@ -113,6 +101,35 @@
     path: "/etc/kubernetes/pki/ca.key"
   register: kubeadm_ca
 
+
 - name: join replica master to cluster - global
   ansible.builtin.command: "{{ k8s_join_token.stdout }} --control-plane --certificate-key {{ k8s_cert.stdout }}"
   when: (not kubeadm_ca.stat.exists or k8s_reset_cls_force is defined) and reset_cluster is succeeded
+
+
+- name: Ensure /root/.kube directory exists
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+  become: true
+  when: kubecontext_master_default | default(false) | bool
+  tags:
+    - k8s-kubecontext
+
+
+- name: Copy kubecontext to /root/.kube/config if kubecontext_master_default is true
+  ansible.builtin.copy:
+    src: "{{ kubeadmin_config }}"
+    dest: /root/.kube/config
+    owner: root
+    group: root
+    mode: '0600'
+    remote_src: true
+  become: true
+  ignore_errors: true
+  when: kubecontext_master_default | default(false) | bool
+  tags:
+    - k8s-kubecontext

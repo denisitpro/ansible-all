@@ -6,6 +6,14 @@ metadata:
 data:
   url: https://{{ argocd_domain | default('argocd.example.com') }}
   admin.enabled: "true"
+{% if argocd_exec_enabled | default(false) %}
+  exec.enabled: "true"
+{% endif %}
+{% if argocd_accounts is defined %}
+{% for acc in argocd_accounts %}
+  accounts.{{ acc.name }}: {{ acc.permissions }}
+{% endfor %}
+{% endif %}
 {% if argocd_exclude_cilium_identity is defined%}
   resource.exclusions: |
     - apiGroups:
@@ -14,6 +22,14 @@ data:
       - CiliumIdentity
       clusters:
       - "*"
+{% endif %}
+{% if argocd_cst_ignore_ingress | default(false) %}
+  resource.customizations: |
+    networking.k8s.io/Ingress:
+      health.lua: |
+        hs = {}
+        hs.status = "Healthy"
+        return hs
 {% endif %}
   dex.config: |
     connectors:

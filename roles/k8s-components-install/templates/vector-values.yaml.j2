@@ -1,0 +1,107 @@
+role: Agent
+customConfig:
+  api:
+    address: 0.0.0.0:8686
+    enabled: true
+    playground: false
+  data_dir: /vector-data-dir
+  sources:
+    kubernetes_logs:
+      type: "kubernetes_logs"
+      # extra_label_selector: "vector.dev/incude=true"
+      # extra_namespace_label_selector: vector.dev/incude=true
+  transforms:
+    remove_unnecessary_fields:
+      type: remap
+      inputs:
+        - kubernetes_logs
+      source: |
+        .service_team = .kubernetes.pod_labels.service_team
+        del(.file)
+        del(.stream)
+        del(.kubernetes.container_id)
+        del(.kubernetes.container_image_id)
+        del(.kubernetes.namespace_labels)
+        del(.kubernetes.node_labels)
+        del(.kubernetes.pod_labels)
+        del(.kubernetes.pod_annotations)
+        del(.kubernetes.pod_ip)
+        del(.kubernetes.pod_owner)
+        del(.kubernetes.pod_uid)
+        del(.kubernetes.pod_ips)
+        del(.source_type)
+    convert_to_json:
+      type: remap
+      inputs:
+        - remove_unnecessary_fields
+      source: |
+        .parsed_message, .err = parse_json(.message)
+        .message = if is_null(.parsed_message) { .message } else { .parsed_message }
+        del(.parsed_message)
+        del(.err)
+    # Преобразование для Loki
+    loki_transform:
+      type: "remap"
+      inputs:
+        - "kubernetes_logs"
+      source: |
+        .kubernetes.pod_labels.job = "vector"
+        .container = .kubernetes.container_name
+        .pod = .kubernetes.pod_name
+        .namespace = .kubernetes.pod_namespace
+        
+        # Convert the message to JSON if possible
+        .parsed_message, err = parse_json(.message)
+        if err == null {
+          .message = .parsed_message
+        }
+        del(.parsed_message)
+
+  sinks:
+    storage-server:
+      type: vector
+      inputs:
+        - remove_unnecessary_fields
+      address: target.example.com:501
+      compression: true
+      healthcheck: true
+      buffer:
+        max_events: 16384
+    elk-01:
+      type: vector
+      inputs:
+        - convert_to_json
+      address: elk.exampke.com:518
+      compression: true
+      healthcheck: true
+      buffer:
+        max_events: 16384
+    loki_sink:
+      type: "loki"
+      inputs:
+        - "loki_transform"
+      endpoint: "http://loki-gateway.loki.svc.cluster.local"
+      labels:
+        k8s_cluster: "{{ k8s_prom_cluster_id | default('unknown') }}"
+{% raw %}
+        pod: '{{ "{{" }} .kubernetes.pod_name {{ "}}" }}'
+        container: '{{ "{{" }} .kubernetes.container_name {{ "}}" }}'
+        namespace: '{{ "{{" }} .kubernetes.pod_namespace {{ "}}" }}'
+        app: '{{ "{{" }} .kubernetes.pod_labels.app {{ "}}" }}'
+        service_team: '{{ "{{" }}.kubernetes.pod_labels.service_team{{ "}}" }}'
+{% endraw %}
+      encoding:
+        codec: "json"
+      buffer:
+        type: "disk"
+        max_size: 1073741824 # 1 GB
+        when_full: "block"
+
+
+service:
+  enabled: true
+  ports:
+    - name: api
+      port: 8686
+      targetPort: 8686
+      protocol: TCP

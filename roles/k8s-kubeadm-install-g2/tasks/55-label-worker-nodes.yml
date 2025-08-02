@@ -1,0 +1,18 @@
+---
+- name: Debug node labels
+  ansible.builtin.debug:
+    msg: "Node labels for {{ ansible_hostname }}: {{ k8s_node_labels }}"
+
+- name: Label this worker node according to group_vars
+  ansible.builtin.shell: |
+    {% for label in k8s_node_labels %}
+    kubectl --kubeconfig {{ k8s_config_path }} label node {{ ansible_hostname }} {{ label.name }}={{ label.value }} --overwrite
+    {% endfor %}
+  when: k8s_node_labels is defined and k8s_node_labels | length > 0
+  delegate_to: "{{ k8s_master_init_host }}"
+
+- name: Ensure node labels are applied
+  ansible.builtin.command: >
+    kubectl --kubeconfig {{ k8s_config_path }} get node {{ ansible_hostname }} --show-labels
+  when: k8s_node_labels is defined and k8s_node_labels | length > 0
+  delegate_to: "{{ k8s_master_init_host }}"

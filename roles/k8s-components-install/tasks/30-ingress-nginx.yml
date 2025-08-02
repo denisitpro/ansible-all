@@ -1,39 +1,39 @@
 ---
-- name: Ensure Helm is installed
+- name: Ingress Nginx - Ensure Helm is installed
   ansible.builtin.command: helm version
   register: helm_check
   failed_when: helm_check.rc != 0
   changed_when: false
 
-- name: Check if ingress-nginx is already installed
+- name: Ingress Nginx - Check if ingress-nginx is already installed
   ansible.builtin.shell: |
     helm list -n {{ helm_ingress_nginx_namespace | default('ingress-nginx') }} --kubeconfig {{ k8s_config_path }} | grep -w ingress-nginx
   register: ingress_nginx_installed
   failed_when: false
   changed_when: false
 
-- name: Set fact whether to skip ingress-nginx install
+- name: Ingress Nginx - Set fact whether to skip ingress-nginx install
   ansible.builtin.set_fact:
     skip_ingress_nginx_install: "{{ ingress_nginx_installed.rc == 0 and (not ingress_nginx_force_install | default(false)) }}"
 
-- name: Add ingress-nginx Helm repository
+- name: Ingress Nginx - Add ingress-nginx Helm repository
   ansible.builtin.command: helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
   register: helm_prom_repo
   changed_when: "'\"has been added\"' in helm_prom_repo.stdout"
   when: not skip_ingress_nginx_install
 
-- name: Update Helm repos
+- name: Ingress Nginx - Update Helm repos
   ansible.builtin.command: helm repo update
-  when: not skip_ingress_nginx_install
+  when: not skip_ingress_nginx_install or helm_cache_update is defined
 
-- name: Create values config from template
+- name: Ingress Nginx - Create values config from template
   ansible.builtin.template:
     src: "ingress-nginx-values.yaml.j2"
     dest: /tmp/ingress-nginx-values.yaml
     mode: "0644"
   when: not skip_ingress_nginx_install  or ingress_nginx_force_install is defined
 
-- name: Install ingress-nginx via Helm
+- name: Ingress Nginx - Install ingress-nginx via Helm
   ansible.builtin.command: >
     helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx
     --namespace {{ helm_ingress_nginx_namespace | default('ingress-nginx') }}
@@ -44,7 +44,7 @@
   when: not skip_ingress_nginx_install  or ingress_nginx_force_install is defined
   register: ingress_nginx_helm_result
 
-- name: Show ingress-nginx Helm output
+- name: Ingress Nginx - Show ingress-nginx Helm output
   ansible.builtin.debug:
     var: ingress_nginx_helm_result.stdout_lines
   when: ingress_nginx_helm_result is defined

@@ -6,7 +6,7 @@ metadata:
 spec:
   secretName: {{ (argocd_domain | default('argocd.example.com') | replace('.', '-') ~ '-tls') }}
   issuerRef:
-    name: cloudflare-issuer-dns-challenge
+    name: {{ cert_manager_cf_name | default('cloudflare-issuer-dns-challenge') }}
     kind: ClusterIssuer
   dnsNames:
     - {{ argocd_domain | default('argocd.example.com') }}

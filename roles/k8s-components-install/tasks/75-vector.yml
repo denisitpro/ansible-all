@@ -1,0 +1,56 @@
+---
+- name: Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Check if vector is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_vector_namespace | default('vector') }} --kubeconfig {{ k8s_config_path }} | grep -w vector
+  register: vector_installed
+  failed_when: false
+  changed_when: false
+
+- name: Set fact whether to skip vector install
+  ansible.builtin.set_fact:
+    skip_vector_install: "{{ vector_installed.rc == 0 and (not vector_force_install | default(false)) }}"
+
+- name: Add vector Helm repository
+  ansible.builtin.command: helm repo add vector https://helm.vector.dev
+  register: helm_vector_repo
+  changed_when: "'\"has been added\"' in helm_vector_repo.stdout"
+  when: not skip_vector_install
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_vector_install
+
+- name: Create  values config from template
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /tmp/{{ item }}
+    mode: "0600"
+  # when: not skip_vector_install or vector_force_install is defined
+  with_items:
+    - vector-values.yaml
+  tags:
+    - vector-value
+
+- name: Install vector via Helm
+  ansible.builtin.command: >
+    helm upgrade --install vector vector/vector
+    --namespace {{ helm_vector_namespace | default('vector') }}
+    --version {{ helm_vector_version | default('0.44.0') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/vector-values.yaml
+  when: not skip_vector_install or vector_force_install is defined
+
+
+- name: remove /tmp files
+  ansible.builtin.file:
+    path: /tmp/{{ item }}
+    state: absent
+  with_items:
+    - vector-values.yaml

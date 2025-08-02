@@ -5,7 +5,7 @@ SYNC_QUOTA=true
 _REDIS_URL_REG=redis://redis:6379/1?idle_timeout_seconds=30
 
 LOG_LEVEL=info
-EXT_ENDPOINT=http://nbg1-c1-infra-harbor-01.sun-one.org
+EXT_ENDPOINT=http://harbor-01.example.co,
 DATABASE_TYPE=postgresql
 POSTGRESQL_HOST=postgresql
 POSTGRESQL_PORT=5432

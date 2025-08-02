@@ -1,11 +1,11 @@
 ---
-- name: Ensure Helm is installed
+- name: Cert Manager - Ensure Helm is installed
   ansible.builtin.command: helm version
   register: helm_check
   failed_when: helm_check.rc != 0
   changed_when: false
 
-- name: Check if is already installed
+- name: Cert Manager - Check if cert-manager is already installed
   ansible.builtin.shell: |
     helm list -n {{ helm_cert_manager_namespace | default('cert-manager') }} --kubeconfig {{ k8s_config_path }} | grep -w cert-manager
   register: cert_manager_installed
@@ -13,22 +13,22 @@
   changed_when: false
 
 
-- name: Set fact whether to skip install
+- name: Cert Manager - Set fact whether to skip install
   ansible.builtin.set_fact:
     skip_cert_manager_install: "{{ cert_manager_installed.rc == 0 and (not cert_manager_force_install | default(false)) }}"
 
 
-- name: Add Helm repository
+- name: Cert Manager - Add Helm repository
   ansible.builtin.command: helm repo add jetstack https://charts.jetstack.io
   register: helm_cert_manager_repo
   changed_when: "'\"has been added\"' in helm_cert_manager_repo.stdout"
   when: not skip_cert_manager_install
 
-- name: Update Helm repos
+- name: Cert Manager - Update Helm repos
   ansible.builtin.command: helm repo update
-  when: not skip_cert_manager_install
+  when: not skip_cert_manager_install or helm_cache_update is defined
 
-- name: Create  values config from template
+- name: Cert Manager - Create  values config from template
   ansible.builtin.template:
     src: "cert-manager-values.yaml.j2"
     dest: /tmp/cert-manager-values.yaml
@@ -37,7 +37,7 @@
   tags:
     - cert-manager-value
 
-- name: Install via Helm
+- name: Cert Manager - Install via Helm
   ansible.builtin.command: >
     helm upgrade --install cert-manager jetstack/cert-manager
     --namespace {{ helm_cert_manager_namespace | default('cert-manager') }}

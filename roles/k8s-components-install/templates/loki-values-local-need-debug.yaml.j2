@@ -1,0 +1,66 @@
+# https://grafana.com/docs/loki/latest/setup/install/helm/install-monolithic/
+# --- Deployment Mode ---
+# Use SingleBinary mode for a monolithic deployment.
+# This is the modern and recommended approach.
+deploymentMode: SingleBinary
+
+# Configure the single binary (monolithic) pod
+singleBinary:
+  # For a single-node setup without high availability, this must be 1.
+  replicas: 1
+
+# --- Main Loki Configuration ---
+loki:
+  # Common configuration applied to all components within the single binary.
+  commonConfig:
+    # Replication factor must be 1 for a single-node deployment.
+    replication_factor: 1
+
+  # This is the central place to define all storage configurations.
+  storage:
+    type: 'filesystem' # Define the top-level storage type.
+
+    # TSDB index type requires boltdb-shipper to store the index files.
+    boltdb_shipper:
+      active_index_directory: /data/loki/index
+      shared_store: filesystem # Use the filesystem as the shared store for the shipper.
+
+    # Filesystem configuration for both chunks and the ruler.
+    filesystem:
+      chunks_directory: /data/loki/chunks
+      rules_directory: /data/loki/rules # This path will be automatically used by the Ruler.
+
+  # The schema config now simply references the storage configured above.
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb             # Use the TSDB index store, which is recommended.
+        object_store: filesystem  # Specify that it runs on top of the 'filesystem' object store.
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  # Ruler configuration for recording rules and alerts.
+  ruler:
+    # The ruler is enabled, and its storage is automatically configured
+    # from the `loki.storage.filesystem.rules_directory` path above.
+    enabled: false
+
+  # Common operational limits and features.
+  limits_config:
+    # Allows for structured metadata in logs, which is highly useful for querying.
+    allow_structured_metadata: true
+
+  # --- Persistence Configuration ---
+  # Enable PersistentVolumeClaim to store data on a persistent disk.
+  persistence:
+    enabled: true
+    size: 10Gi
+    # storageClass: "your-storage-class" # Uncomment and specify your StorageClass if not using the default.
+    # enableStatefulSetAutoDeletePVC: true # Uncomment if you want the PVC to be deleted when the StatefulSet is deleted.
+
+# --- Dependency Disabling ---
+# Disable the Minio dependency since we are using local filesystem storage.
+minio:
+  enabled: false

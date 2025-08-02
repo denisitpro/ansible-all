@@ -59,6 +59,15 @@
     - k8s-reconfigure
 
 
+- ansible.builtin.import_tasks: 55-label-worker-nodes.yml
+  when: k8s_master is not defined and k8s_node_labels is defined
+  tags:
+    - k8s
+    - k8s-worker-node
+    - k8s-reconfigure
+    - k8s-label-nodes
+
+
 - ansible.builtin.import_tasks: 65-kubelet-path.yml
   when: kubelet_path is defined
   tags:
@@ -74,14 +83,14 @@
     - k8s-reconfigure
     - cilium-sysctl
 
-- ansible.builtin.import_tasks: 73-cni-cilium-helm.yml
-  when: k8s_master is defined and k8s_cni_network == "cilium"  and cilium_install_mode == 'helm'
-  delegate_to: "{{ k8s_master_init_host }}"
-  run_once: true
-  tags:
-    - k8s
-    - k8s-cilium
-    - k8s-reconfigure
+# - ansible.builtin.import_tasks: 73-cni-cilium-helm.yml
+#   when: k8s_master is defined and k8s_cni_network == "cilium"  and cilium_install_mode == 'helm'
+#   delegate_to: "{{ k8s_master_init_host }}"
+#   run_once: true
+#   tags:
+#     - k8s
+#     - k8s-cilium
+#     - k8s-reconfigure
 
 - ansible.builtin.import_tasks: 75-cni-cilium-cli.yml
   when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_install_mode == 'cli'
@@ -101,6 +110,9 @@
     - k8s-reconfigure
     - k8s-get-config
     - k8s-cilium
+
+- ansible.builtin.import_tasks: 190-reboot-k8s-cls.yml
+  tags: ['never', 'k8s-reboot']
 
 - ansible.builtin.import_tasks: 200-reset-k8s-cls.yml
   tags: ['never', 'k8s-reset', 'k8s-clean']

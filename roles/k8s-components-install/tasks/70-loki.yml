@@ -1,0 +1,51 @@
+---
+- name: Loki - Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Loki - Check if loki is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_loki_namespace | default('loki') }} --kubeconfig {{ k8s_config_path }} | grep -w loki
+  register: loki_installed
+  failed_when: false
+  changed_when: false
+
+- name: Loki - Set fact whether to skip loki install
+  ansible.builtin.set_fact:
+    skip_loki_install: "{{ loki_installed.rc == 0 and (not loki_force_install | default(false)) }}"
+
+- name: Loki - Add Helm repository
+  ansible.builtin.command: helm repo add grafana https://grafana.github.io/helm-charts
+  register: helm_loki_repo
+  changed_when: "'\"has been added\"' in helm_loki_repo.stdout"
+  when: not skip_loki_install
+
+- name: Loki - Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_loki_install
+
+- name: Loki - Create values config from template
+  ansible.builtin.template:
+    src: "loki-values.yaml.j2"
+    dest: /tmp/loki-values.yaml
+    mode: "0600"
+  when: not skip_loki_install or loki_force_install is defined
+  tags:
+    - loki-value
+
+- name: Loki - Install via Helm
+  ansible.builtin.command: >
+    helm upgrade --install loki grafana/loki
+    --namespace {{ helm_loki_namespace | default('loki') }}
+    --version {{ helm_loki_version | default('6.30.1') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/loki-values.yaml
+  when: not skip_loki_install or loki_force_install is defined
+
+- name: remove /tmp/loki-values.yaml
+  ansible.builtin.file:
+    path: /tmp/loki-values.yaml
+    state: absent
