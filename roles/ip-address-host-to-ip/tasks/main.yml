@@ -5,7 +5,8 @@
   run_once: true
   tags:
     - always
-    # - ip-resolve
-    # - angie-vhosts
-    # - angie-acl
-    # - vhosts
+    - ip-resolve
+    - ip-detect
+#    - angie-vhosts
+#    - angie-acl
+#    - vhosts

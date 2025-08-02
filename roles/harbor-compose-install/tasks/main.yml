@@ -1,0 +1,17 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - harbor
+
+- ansible.builtin.import_tasks: 10-config.yml
+  tags:
+    - harbor
+    - harbor-config
+
+- ansible.builtin.import_tasks: 20-compose.yml
+  tags:
+    - harbor
+    - harbor-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'harbor-clean']

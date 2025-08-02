@@ -1,0 +1,7 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.harbor.yml.j2"
+    dest: "{{ harbor_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker harbor

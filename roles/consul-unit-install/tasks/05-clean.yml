@@ -10,3 +10,11 @@
   ansible.builtin.file:
     path: "{{ consul_base_path }}"
     state: absent
+
+- name: consul data and binary
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ consul_base_path }}"
+    - "{{ consul_binary_dir }}/{{ consul_binary_name }}"

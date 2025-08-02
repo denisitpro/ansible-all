@@ -1,5 +1,5 @@
 ---
-grafana_version: "11.5.2"
+grafana_version: "12.0.2"
 # backup_path: /mnt/backup
 
 grafana_compose_path: /opt/docker/grafana
@@ -23,10 +23,10 @@ gf_app_mode: 'production'
 gf_instance_name: 'grafana'
 
 
-gf_auth_google_client_id: '{{ vault_dict_users_secret.google_client_id }}'
-gf_auth_google_client_secret: '{{ vault_dict_users_secret.google_client_secret }}'
+gf_auth_google_client_id: '{{ vault_dict_users_secret.gf_auth_google_client_id }}'
+gf_auth_google_client_secret: '{{ vault_dict_users_secret.gf_auth_google_client_secret }}'
 gf_auth_google_allowed_domains: "example.com"
-gf_auth_google_hosted_domain: "example.com"
+# gf_auth_google_hosted_domain: "example.com"
 
 # github section
 gf_auth_github_allowed_organizations: example-com
