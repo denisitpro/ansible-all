@@ -1,0 +1,38 @@
+---
+- ansible.builtin.import_tasks: 05-check-plugin.yml
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  tags:
+    - tf
+    - tf-data
+
+# - ansible.builtin.import_tasks: 20-prefly.yml
+#   tags:
+#     - tf
+#     - tf-data
+
+
+# - ansible.builtin.import_tasks: 10-install.yml
+#   when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+#   tags:
+#     - wazuh
+#     - ciso
+
+# - ansible.builtin.import_tasks: 15-configure.yml
+#   tags:
+#     - wazuh
+#     - wazuh-config
+#     - ciso
+
+# - ansible.builtin.import_tasks: 20-register.yml
+#   when: wazuh_management_server is defined and wazuh_agent_registration_pass is defined
+#   tags:
+#     - wazuh
+#     - wazuh-register
+#     - ciso
+
+
+# - ansible.builtin.import_tasks: 90-clean.yml
+#   tags: ['never', 'wazuh-clean']

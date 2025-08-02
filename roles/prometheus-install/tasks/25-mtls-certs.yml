@@ -1,0 +1,18 @@
+---
+# Write certificate (PEM) from vault_dict_users_secret_g2 without .value
+- name: Write Prometheus mTLS certificate (prom-stack-cert.pem)
+  ansible.builtin.copy:
+    content: "{{ prom_stack_cert_secret }}"
+    dest: "{{ prometheus_mtls_prom_stack_path }}/prom-stack-cert.pem"
+    owner: "{{ prometheus_user_uid }}"
+    group: "{{ prometheus_user_gid }}"
+    mode: '0644'
+
+# Write private key (PEM) from vault_dict_users_secret_g2 without .value
+- name: Write Prometheus mTLS private key (prom-stack-key.pem)
+  ansible.builtin.copy:
+    content: "{{ prom_stack_key_secret }}"
+    dest: "{{ prometheus_mtls_prom_stack_path }}/prom-stack-key.pem"
+    owner: "{{ prometheus_user_uid }}"
+    group: "{{ prometheus_user_gid }}"
+    mode: '0600'

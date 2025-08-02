@@ -39,7 +39,7 @@ groups:
     expr: >-
       sum by (instance) (ClickHouseMetrics_TCPConnection
       {% if excld_click_below_1_inst | length > 0 %}{instance!~"{{ excld_click_below_1_inst | join('|') }}"}{% endif %}) < 1
-    for: 10m
+    for: 20m
     labels:
       severity: warning
       service: clickhouse

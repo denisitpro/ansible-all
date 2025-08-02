@@ -1,8 +1,12 @@
 ---
 - ansible.builtin.import_tasks: 15-ufw.yml
+  when: ansible_distribution == 'Ubuntu'
   tags:
-    - enable-ufw
+    - ufw-all
+    - ufw-enable
 
 - ansible.builtin.import_tasks: 20-ufw-log.yml
+  when: ansible_distribution == 'Ubuntu'
   tags:
-    - enable-ufw
+    - ufw-all
+    - ufw-enable

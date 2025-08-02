@@ -3,16 +3,35 @@
 groups:
 - name: CPU alert rules
   rules:
+  - alert: NodeCPUHighUsage - 95
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 95%, VALUE = {{ printf \"%.2f\" $value }} for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_95 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 95
+        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over95 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: info
   - alert: NodeCPUHighUsage - 90
     annotations:
       description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 90%, VALUE = {{ printf \"%.2f\" $value }} for the last 15 minutes, is currently at  {% endraw %}"
       summary: High CPU usage.
     expr: |
-      sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
-        job="node-exporter",
-        mode!="idle",
-        instance!~"{{ excld_inst_cpu_usage_90 | default([]) | join('|') }}"
-      }[15m]))) * 100 > 90
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_90 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 90
+        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over90 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
     for: 15m
     labels:
       severity: info
@@ -21,11 +40,14 @@ groups:
       description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 80%, VALUE = {{ printf \"%.2f\" $value }}for the last 15 minutes, is currently at  {% endraw %}"
       summary: High CPU usage.
     expr: |
-      sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
-        job="node-exporter",
-        mode!="idle",
-        instance!~"{{ excld_inst_cpu_usage_80 | default([]) | join('|') }}"
-      }[15m]))) * 100 > 80
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_80 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 80
+        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
     for: 15m
     labels:
       severity: info
@@ -34,11 +56,14 @@ groups:
       description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 70%, VALUE = {{ printf \"%.2f\" $value }}for the last 15 minutes, is currently at  {% endraw %}"
       summary: High CPU usage.
     expr: |
-      sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
-        job="node-exporter",
-        mode!="idle",
-        instance!~"{{ excld_inst_cpu_usage_70 | default([]) | join('|') }}"
-      }[15m]))) * 100 > 70
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_70 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 70
+        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over70 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
     for: 15m
     labels:
       severity: info

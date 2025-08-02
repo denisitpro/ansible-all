@@ -76,9 +76,9 @@ scrape_configs:
       insecure_skip_verify: {{ target.insecure_skip_verify }}
 {% endif %}
 {% if prom_support_consul_mtls is defined %}
-      ca_file: "{{ prometheus_mtls_path }}/agent-ca.pem"
-      cert_file: "{{ prometheus_mtls_path }}/client-prometheus.crt"
-      key_file: "{{ prometheus_mtls_path }}/client-prometheus.key"
+      ca_file: "{{ prometheus_mtls_consul_path }}/agent-ca.pem"
+      cert_file: "{{ prometheus_mtls_consul_path }}/client-prometheus.crt"
+      key_file: "{{ prometheus_mtls_consul_path }}/client-prometheus.key"
 {% endif %}
 {% endif %}
     relabel_configs:

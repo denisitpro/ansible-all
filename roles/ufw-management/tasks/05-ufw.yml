@@ -1,16 +1,19 @@
 ---
-- name: remove temporary ssh access
+- name: delete temporary ssh access
   community.general.ufw:
     rule: "allow"
     proto: tcp
-    src: "0.0.0.0/0"
+    src: "{{ item }}"
     port: "22"
-    comment: "temporary ssh access"
+    comment: "temporary ssh access - will be removed later"
     delete: true
+  with_items:
+    - "0.0.0.0/0"
+    - "::/0"
 
 - name: ipv4 ufw management rules not specific interface
   community.general.ufw:
-    rule: "{{ item.rule | default ('allow') }}"
+    rule: "{{ item.rule | default('allow') }}"
     proto: "{{ item.protocol }}"
     src: "{{ item.source | default('0.0.0.0/0') }}"
     port: "{{ item.port | default('') }}"
@@ -18,39 +21,39 @@
     insert_relative_to: first-ipv4
   with_items:
     - "{{ iptables.ipv4 }}"
-  when:
-    - item.iface is not defined
+  when: iptables.ipv4 is defined
+  # when:
+  #   - item.iface is not defined
 
 
-- name: ipv4 ufw management rules with interface
-  community.general.ufw:
-    rule: "{{ item.rule | default('allow') }}"
-    interface: "{{item.iface}}"
-    direction: "{{item.direction|default('in')}}"
-    proto: "{{item.protocol}}"
-    src: "{{ item.source | default('0.0.0.0/0') }}"
-    port: "{{ item.port }}"
-    comment: "{{ item.name }}"
-    insert_relative_to: first-ipv4
-  with_items:
-    - "{{ iptables.ipv4 }}"
-  when:
-    - item.iface is defined
+# - name: ipv4 ufw management rules with interface
+#   community.general.ufw:
+#     rule: "{{ item.rule | default('allow') }}"
+#     interface: "{{ item.iface }}"
+#     direction: "{{item.direction|default('in')}}"
+#     proto: "{{item.protocol}}"
+#     src: "{{ item.source | default('0.0.0.0/0') }}"
+#     port: "{{ item.port }}"
+#     comment: "{{ item.name }}"
+#     insert_relative_to: first-ipv4
+#   with_items:
+#     - "{{ iptables.ipv4 }}"
+#   when:
+#     - item.iface is defined
 
 ### ipv6 section
 
 - name: ipv6 ufw management rules  not specific interface
   community.general.ufw:
     rule: "{{ item.rule | default('allow') }}"
-    proto: "{{item.protocol}}"
-    port: "{{item.port}}"
-    direction: "{{item.direction | default('in')}}"
+    proto: "{{ item.protocol }}"
+    port: "{{ item.port }}"
+    direction: "{{ item.direction | default('in') }}"
     from_ip: "{{ item.source | default('::/0') }}"
-    comment: "{{item.name}}"
+    comment: "{{ item.name }}"
     insert_relative_to: last-ipv6
   with_items:
     - "{{ iptables.ipv6 }}"
-  when:
-    - item.iface is not defined and iptables.ipv6 is defined
+  when: iptables.ipv6 is defined
   tags:
     - ufw-ipv6

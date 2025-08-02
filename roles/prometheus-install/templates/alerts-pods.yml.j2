@@ -1,0 +1,25 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: pods alert rules
+  rules:
+
+  - alert: InstanceDown - pods - kostili
+    expr: |
+          up{prometheus=~"^.*prometheus.*", container!~"{{ excld_k8s_containers_kostili | default([]) | join('|') }}"} == 0
+    for: 30m
+    labels:
+      severity: info
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 30 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
+
+  - alert: InstanceDown - pods cluster support
+    expr: |
+          up{cluster!="" , container!~"{{ excld_k8s_containers_cluster_id | default([]) | join('|') }}"} == 0
+    for: 30m
+    labels:
+      severity: info
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 30 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
