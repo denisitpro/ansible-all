@@ -1,13 +1,13 @@
 ---
 - name: copy certbot
-  template:
+  ansible.builtin.template:
     src: "docker-compose.certbot.j2"
-    dest: "{{docker_compose_path | default('/opt/docker') }}/certbot/docker-compose.yml"
+    dest: "{{ certbot_compose_path }}/docker-compose.yml"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
-#- name: run restart compose
+# - name: run restart compose
 #  shell: "docker-compose up -d"
 #  args:
-#    chdir: "{{docker_compose_path| default('/opt/docker')}}/certbot"
+#    chdir: "{{ certbot_compose_path }}"

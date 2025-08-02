@@ -6,7 +6,7 @@ upstream {{ item.name }} {
 {% endif %}
 {% for included in upstream_multi.upstream %}
 {% if item.name == included.name %}
-        server {{included.server}}:{{included.port}} weight={{included.weight|default("5") }} fail_timeout={{included.fail_timeout|default("3")}}s max_fails={{included.max_fails|default("0") }};
+        server {{included.server}}{% if included.port is defined %}:{{included.port}}{% endif %} weight={{included.weight|default("5") }} fail_timeout={{included.fail_timeout|default("3")}}s max_fails={{included.max_fails|default("0") }};
 {% endif %}
 {% endfor %}
 }

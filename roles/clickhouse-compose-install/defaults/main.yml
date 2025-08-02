@@ -1,7 +1,7 @@
 ---
 # click_image: "23.8.11.28" # current role version
 # https://clickhouse.com/docs/whats-new/changelog/2024#a-id248a-clickhouse-release-248-lts-2024-08-20
-click_image: "24.8.14.39" # LTS
+click_image: "25.3.5.42" # LTS
 click_compose_path: "/opt/docker/click"
 
 click_base_path: "/opt/click"

@@ -17,11 +17,12 @@
     state: directory
     mode: '0775'
     owner: "{{ angie_uid }}"
-    group: "{{ angie_guid }}"
+    group: "{{ angie_gid }}"
   with_items:
     - "{{ angie_base_path }}"
     - "{{ angie_base_path }}/logs"
     - "{{ angie_base_path }}/site.d/"
     - "{{ angie_base_path }}/upstream.d/"
     - "{{ angie_base_path }}/conf.d/"
+    - "{{ angie_base_path }}/stream.d/"
     - "{{ angie_acl_conf_dir }}"

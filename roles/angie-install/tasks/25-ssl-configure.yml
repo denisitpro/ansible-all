@@ -8,9 +8,19 @@
 #    msg: "{{ nginx.vhosts | selectattr('domain', '==', 'selfsign') | list }}"
 
 # enable for default site deny any acccess
-- name: Create SSL selfsign cert - Import SSL role
+- name: Create SSL selfsign cert - import ssl-selfsigned-cert
   ansible.builtin.import_role:
     name: "ssl-selfsigned-cert"
-  # when: >
-  #   nginx.vhosts is defined and
-  #   (nginx.vhosts | selectattr('domain', '==', 'selfsign') | list | length) > 0
+
+- name: Create specific certs - import vault-get-certs-teleport
+  ansible.builtin.import_role:
+    name: "vault-get-certs-teleport"
+  vars:
+    cert_ssl_user: "{{ angie_uid }}"
+    cert_ssl_group: "{{ angie_gid }}"
+  when: nginx.vhosts
+    | selectattr('domain', 'defined')
+    | selectattr('domain', '!=', '')
+    | selectattr('import_vault_cert', 'defined')
+    | list
+    | length > 0

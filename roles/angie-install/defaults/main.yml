@@ -4,7 +4,13 @@ angie_compose_path: /opt/docker/angie
 angie_version: 1.9.0
 
 angie_base_path: /opt/angie
+angie_mtls_path: /opt/mtls/angie
 angie_acl_conf_dir: "{{ angie_base_path }}/acl.d"
 
 angie_uid: 100
-angie_guid: 101
+angie_gid: 101
+
+
+angie_ssl_path: "/opt/ssl"
+angie_ssl_privkey_path: "{{ ssl_path }}/privkey.pem"
+angie_ssl_cert_path: "{{ ssl_path }}/fullchain.pem"

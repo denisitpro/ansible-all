@@ -68,3 +68,33 @@ angie:
         upstream_name: "upstream1"
       }
 ```
+
+
+
+### MTLS Certificate Retrieval from Vault
+
+This role supports retrieving mTLS certificates and keys from HashiCorp Vault. To enable this functionality, define a list of certificate sources in the following format:
+
+```yaml
+vault_g2:
+  - name: my_service_mtls
+    backend: my_backend
+    secret_type: angie_mtls
+    kv_path: "mtls/pki/auth-engine-name/cert-common-name/auth-engine-role"
+    keys:
+      - mtls_cert
+      - mtls_key
+      - mtls_issuing_ca
+```
+
+#### Important Notes:
+- The `secret_type` **must be set to `mtls`** to enable processing by the role.
+- The `kv_path` should point to a Vault KV v2 path where the certificate components are stored.
+- The keys listed (`mtls_cert`, `mtls_key`, `mtls_issuing_ca`) must exist under the Vault secret.
+
+The role will:
+- Create a directory structure under `/opt/mtls/angie/<name>/`
+- Save the certificate, key, and issuing CA as individual files in that directory
+- Fail early if no valid mTLS definitions are found or if `name` is missing or null
+
+This allows integration of Vault-managed TLS material into the Angie container or other local services securely.

@@ -1,0 +1,48 @@
+---
+- name: create base mtls folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/mtls"
+    - "{{ angie_mtls_path }}"
+
+- name: create Angie mtls folders per secret
+  ansible.builtin.file:
+    path: "{{ angie_mtls_path }}/{{ item.name }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ angie_uid }}"
+    group: "{{ angie_gid }}"
+  with_items: "{{ vault_g2 | selectattr('secret_type', 'defined') | selectattr('secret_type', 'equalto', 'angie_mtls') | list }}"
+
+- name: Set filtered mtls entries with valid name
+  ansible.builtin.set_fact:
+    filtered_vault_g2: >-
+      {{
+        vault_g2
+        | selectattr('secret_type', 'defined')
+        | selectattr('secret_type', 'equalto', 'angie_mtls')
+        | selectattr('name', 'defined')
+        | rejectattr('name', 'match', '^(null\\s*)?$')
+        | list
+      }}
+
+# - name: debug filtered mtls entries
+#   ansible.builtin.debug:
+#     var: filtered_vault_g2
+
+- name: Fail if no valid mtls entries found
+  ansible.builtin.fail:
+    msg: "No valid mtls entries with defined and non-null 'name' in vault_g2"
+  when: filtered_vault_g2 | length == 0
+
+- name: Save mtls issuing CA to file
+  ansible.builtin.copy:
+    content: "{{ vault_dict_users_secret_g2[item.name].ca_root_cert }}"
+    dest: "{{ angie_mtls_path }}/{{ item.name }}/ca.crt"
+    mode: '0644'
+  with_items: "{{ vault_g2 | selectattr('secret_type', 'defined') | selectattr('secret_type', 'equalto', 'angie_mtls') | list }}"

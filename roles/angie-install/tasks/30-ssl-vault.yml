@@ -1,0 +1,45 @@
+---
+- name: Create  SSL folder - angie
+  ansible.builtin.file:
+    path: "{{ angie_ssl_path }}"
+    state: directory
+    mode: "0755"
+
+
+- name: Create  cert folder
+  ansible.builtin.file:
+    path: "{{ angie_ssl_path }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ nginx.vhosts | selectattr('domain', '!=', 'selfsign') | map(attribute='domain') | list }}"
+
+
+# - name: Set parsed SSL cert data
+#   ansible.builtin.set_fact:
+#     ssl_cert_map: "{{ ssl_cert_map | default({}) | combine({ item.item: (item.stdout | from_json).data.data.value }) }}"
+#   loop: "{{ ssl_cert_data.results }}"
+#   no_log: true
+
+# - name: Set parsed SSL key data
+#   ansible.builtin.set_fact:
+#     ssl_key_map: "{{ ssl_key_map | default({}) | combine({ item.item: (item.stdout | from_json).data.data.value }) }}"
+#   loop: "{{ ssl_key_data.results }}"
+#   no_log: true
+
+# - name: Write fullchain.pem to disk
+#   ansible.builtin.copy:
+#     content: "{{ ssl_cert_map[item.domain] }}"
+#     dest: "{{ cert_tmp }}/{{ item.domain }}-cert.pem"
+#     mode: "0644"
+#   loop: "{{ nginx.vhosts | selectattr('domain', '!=', 'selfsign') | list }}"
+#   loop_control:
+#     label: "{{ item.domain }}"
+
+# - name: Write privkey.pem to disk
+#   ansible.builtin.copy:
+#     content: "{{ ssl_key_map[item.domain] }}"
+#     dest: "{{ cert_tmp }}/{{ item.domain }}-priv.pem"
+#     mode: "0600"
+#   loop: "{{ nginx.vhosts | selectattr('domain', '!=', 'selfsign') | list }}"
+#   loop_control:
+#     label: "{{ item.domain }}"
