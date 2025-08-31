@@ -1,0 +1,36 @@
+vector_version_binary: "0.48.0"
+vector_download_url: "https://github.com/vectordotdev/vector/releases/download/v{{ vector_version_binary }}/vector-{{ vector_version_binary }}-{{ go_arch }}-unknown-linux-gnu.tar.gz"
+
+go_arch_map:
+  i386: '386'
+  x86_64: 'x86_64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+vector_binary_path: "/usr/local/bin/vector"
+vector_data_path: "/var/lib/vector"
+vector_conf_path: "/etc/vector"
+vector_log_path: "/var/log/vector"
+
+
+vector_config_file: "default"
+
+vector_sources:
+  - name: projects
+    type: file
+    include: "/projects/**/logs/**/*.log"
+    exclude: "**/proxy-server/**/*coin*"
+
+vector_transforms:
+  - name: json_transform_loki
+    inputs: projects
+
+vector_sinks_loki:
+  - name: loki-services-apps
+    inputs: json_transform_loki
+    endpoint: "http://example.com:3100"
+    labels:
+      key1: value1

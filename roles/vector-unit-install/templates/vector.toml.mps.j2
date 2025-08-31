@@ -1,0 +1,63 @@
+data_dir = "{{ vector_data_dir | default('/var/lib/vector') }}"
+
+# ------------ SOURCE SECTION ---------------
+{% for src in vector_sources %}
+[sources.{{ src.name }}]
+  type = "{{ src.type }}"
+  include = ["{{ src.include }}"]
+  exclude = ["{{ src.exclude }}"]
+  ignore_older = 86400
+  max_line_bytes = 102400
+  file_key = "file"
+  host_key = "host"
+  oldest_first = false
+{% endfor %}
+
+# ------------ TRANSFORM_SECTION ---------------
+{% for tr in vector_transforms %}
+[transforms.{{ tr.name }}]
+type = "remap"
+inputs = ["{{ tr.inputs }}"]
+source = '''
+del(.source_type)
+.service = split!(split!(.file, "/")[-1], ".")[0]
+del(.file)
+.parsed_message, .err = parse_json(.message)
+.message = if is_null(.parsed_message) { .message } else { .parsed_message }
+. |= if is_null(.parsed_message) { . } else { flatten!(.message) }
+del(.parsed_message)
+del(.err)
+'''
+{% endfor %}
+
+# ------------ SINK SECTION ---------------
+{% if vector_sinks_loki is defined %}
+{% for sink in vector_sinks_loki %}
+[sinks.{{ sink.name }}]
+  type = "loki"
+  inputs = [ "{{ sink.inputs }}" ]
+  endpoint = "{{ sink.endpoint }}"
+  encoding.codec = "json"
+  healthcheck = false
+  #buffer.max_events=4096
+  #batch.max_bytes=16000000
+  #batch.max_events=100000
+[sinks.{{ sink.name }}.labels]
+  "app" = "proxy"
+  "env" = "production"
+  "host" = "{{'{{'}} host {{'}}'}}"
+  "service" = "{{'{{'}} service {{'}}'}}"
+{% endfor %}
+{% endif %}
+
+{% if vector_sinks_vector is defined %}
+{% for sink in vector_sinks_vector %}
+[sinks.{{ sink.name }}]
+  type = "vector"
+  inputs = ["{{ sink.input_name }}"]
+  address = "{{ sink.endpoint }}"
+  healthcheck = true
+  buffer.type = "memory"
+  buffer.max_events = 16384
+{% endfor %}
+{% endif %}

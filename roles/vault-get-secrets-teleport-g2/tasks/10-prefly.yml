@@ -11,12 +11,12 @@
 
 - name: Check if Vault token is available
   ansible.builtin.fail:
-    msg: "VAULT_ACCESS_TOKEN environment variable is not set"
-  when: lookup('ansible.builtin.env', 'VAULT_ACCESS_TOKEN') == ""
+    msg: "Vault token environment variable is not set"
+  when: lookup('ansible.builtin.env', vault_var_name | default('VAULT_ACCESS_TOKEN')) == ""
 
 - name: Set Vault token from environment variable
   ansible.builtin.set_fact:
-    vault_token: "{{ lookup('env', 'VAULT_ACCESS_TOKEN') }}"
+    vault_token: "{{ lookup('env', vault_var_name | default('VAULT_ACCESS_TOKEN')) }}"
 
 - name: PRINT vault server
   ansible.builtin.debug:

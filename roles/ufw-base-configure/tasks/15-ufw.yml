@@ -1,13 +1,11 @@
 ---
-# - name: install ufw hetz hw
-#   ansible.builtin.apt:
-#     name:
-#       - ufw
-#     state: latest
-#     update_cache: true
-#     cache_valid_time: 3600
-#   when:
-#     - hetz_hw is defined
+- name: install ufw
+  ansible.builtin.apt:
+    name:
+      - ufw
+    state: latest
+    update_cache: true
+    cache_valid_time: 3600
 
 - name: allow temporary ssh access
   community.general.ufw:

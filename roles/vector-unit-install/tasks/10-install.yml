@@ -1,37 +1,32 @@
 ---
-#- name: Add Docker GPG key - Ubuntu
-#  apt_key: "https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public"
-#  loop:
-#    - DATADOG_APT_KEY_CURRENT.public
-#    - DATADOG_APT_KEY_C0962C7D.public
-#    - DATADOG_APT_KEY_F14F620E.public
+- name: Download vector binary - {{ vector_download_url }}
+  become: false
+  ansible.builtin.get_url:
+    url: "{{ vector_download_url }}"
+    dest: "/tmp/vector-{{ vector_version_binary }}-linux-{{ go_arch }}.tar.gz"
+    mode: "0644"
+  register: vector_download_binary
+  until: vector_download_binary is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
 
-- name: Add VECTOR GPG key - Ubuntu
-  ansible.builtin.apt_key:
-    url: "https://keys.datadoghq.com/{{ item }}"
-    keyring: "/etc/apt/trusted.gpg.d/{{item}}.gpg"
-  loop:
-    - DATADOG_APT_KEY_CURRENT.public
-    - DATADOG_APT_KEY_C0962C7D.public
-    - DATADOG_APT_KEY_F14F620E.public
+- name: Unpack vector binary
+  become: false
+  ansible.builtin.unarchive:
+    src: "/tmp/vector-{{ vector_version_binary }}-linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/vector-{{ go_arch }}-unknown-linux-gnu/bin/vector"
+    remote_src: true
+  check_mode: false
 
-
-- name: Add Vector APT repository
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/DATADOG_APT_KEY_C0962C7D.public.gpg] https://apt.vector.dev/ stable vector-0"
-    state: present
-    filename: "vector"
-
-- name: install base software - ubuntu all
-  apt:
-    name:
-      - vector
-    state: latest
-    update_cache: yes
-    cache_valid_time: 3600
-
-# todo remove
-#- name: install vector - unit
-#  apt:
-#    deb: "{{vector_repo_source}}v{{vector_version}}/vector_{{vector_version}}-1_amd64.deb"
-#    install_recommends: yes
+- name: Propagate vector binaries
+  ansible.builtin.copy:
+    src: "/tmp/vector-{{ go_arch }}-unknown-linux-gnu/bin/vector"
+    dest: "{{ vector_binary_path }}"
+    mode: "0755"
+    owner: root
+    group: root
+    remote_src: true
+  notify: restart vector
+  when: not ansible_check_mode
