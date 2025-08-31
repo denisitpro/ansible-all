@@ -1,0 +1,28 @@
+---
+- name: Check consul directory is exists
+  ansible.builtin.stat:
+    path: "{{ consul_config_dir | default('/etc/consul.d') }}"
+  register: consul_config_dir_exists
+
+
+- name: Copy redis-exporter consul config - notify docker
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/consul.d/{{ item }}.hcl"
+    mode: "0644"
+  notify: restart-docker consul
+  with_items:
+    - redis-exporter.hcl
+  when:
+    - consul_config_dir_exists.stat.exists
+    - consul_unit is not defined
+
+- name: Copy redis-exporter consul config - notify unit
+  ansible.builtin.template:
+    src: "redis-exporter.hcl.j2"
+    dest: "/etc/consul.d/redis-exporter.hcl"
+    mode: "0644"
+  notify: restart consul
+  when:
+    - consul_config_dir_exists.stat.exists
+    - consul_unit is defined

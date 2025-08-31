@@ -1,0 +1,11 @@
+---
+- name: Install Redis on Ubuntu
+  ansible.builtin.apt:
+    name: "redis"
+    state: present
+
+- name: Enable and start Redis service
+  ansible.builtin.systemd:
+    name: "redis-server"
+    enabled: true
+    state: started

@@ -1,0 +1,42 @@
+{{ ansible_managed | comment }}
+
+# Redis performance tuning for 10K+ connections
+# Based on: https://redis.io/learn/operate/redis-at-scale/talking-to-redis/initial-tuning
+
+# base tune
+
+# What vm.overcommit_memory = 1 does: The kernel enables "overcommitment" of memory.
+# It optimistically approves any memory allocation request, assuming 
+# that the process will not use all the requested memory at once. 
+# This allows fork() for Redis to work reliably, preventing crashes when saving data.
+vm.overcommit_memory = 1
+
+# Memory management
+vm.swappiness=0                       # turn off swapping
+
+# Connection backlog settings for 10K+ connections
+net.ipv4.tcp_max_syn_backlog=65536    # increased from default 511 for high load
+net.core.somaxconn=65536              # increased from default 511 for high load
+
+
+{% if redis_hl_optimization is defined %}
+# TCP optimization for high connection load
+net.ipv4.tcp_sack=1                   # enable selective acknowledgements
+net.ipv4.tcp_timestamps=1             # needed for selective acknowledgements
+net.ipv4.tcp_window_scaling=1         # scale the network window
+net.ipv4.tcp_congestion_control=cubic # better congestion algorithm
+net.ipv4.tcp_syncookies=1             # enable syn cookies
+
+#### neeed advance testig
+
+# Buffer sizes for high throughput
+net.core.rmem_max=16777216            # 16MB receive buffer
+net.core.wmem_max=16777216            # 16MB send buffer
+
+# Additional optimizations for Redis
+net.core.netdev_max_backlog=5000      # network device backlog
+net.ipv4.tcp_fin_timeout=30           # reduce FIN timeout
+net.ipv4.tcp_keepalive_time=300       # keepalive interval
+net.ipv4.tcp_keepalive_probes=3       # keepalive probes
+net.ipv4.tcp_keepalive_intvl=15       # keepalive probe interval
+{% endif %}

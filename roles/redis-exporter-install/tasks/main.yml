@@ -1,17 +1,40 @@
 ---
-- ansible.builtin.import_tasks: 00-create-path.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
+  when: redis_exporter_unit is not defined or not redis_exporter_unit | bool
   tags:
     - redis-exporter
+    - redis-exporter-prefly
 
-- ansible.builtin.import_tasks: 05-consul.yml
+- ansible.builtin.import_tasks: 20-install.yml
+  when: redis_exporter_unit is defined and redis_exporter_unit | bool
+  tags:
+    - redis-exporter
+    - redis-exporter-unit
+
+- ansible.builtin.import_tasks: 40-config.yml
+  when: redis_exporter_unit is defined and redis_exporter_unit | bool
+  tags:
+    - redis-exporter
+    - redis-exporter-unit
+    - redis-exporter-config
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  when: redis_exporter_unit is not defined or not redis_exporter_unit | bool
+  tags:
+    - redis-exporter
+    - redis-exporter-docker
+    - redis-exporter-compose
+
+- ansible.builtin.import_tasks: 65-consul-reg.yml
   when: consul_monitoring_disable is not defined
   tags:
-    - consul-reg
+    - redis-exporter
     - consul
-    - redis-exporter
+    - consul-reg
+    - consul-owner
+    - redis-exporter-reg
 
-- ansible.builtin.import_tasks: 10-lauch.yml
-  when: not_alone is not defined
+- ansible.builtin.import_tasks: 99-clean.yml
   tags:
-    - redis-exporter
-    - redis-compose
+    - never
+    - redis-exporter-clean

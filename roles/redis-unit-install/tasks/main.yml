@@ -1,0 +1,23 @@
+---
+- ansible.builtin.import_tasks: 10-add-repo.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - redis
+
+- ansible.builtin.import_tasks: 20-install.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - redis
+
+- ansible.builtin.import_tasks: 30-tune-sysctl.yml
+  tags:
+    - redis
+    - redis-sysctl
+
+- ansible.builtin.import_tasks: 40-configure.yml
+  tags:
+    - redis
+    - redis-config
+
+# - ansible.builtin.import_tasks: 90-clean.yml
+#   tags: ['never', 'redis-unit-clean']

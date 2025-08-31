@@ -49,19 +49,20 @@ app_service:
       uri: "{{app.uri}}"
       public_addr: "{{app.public_addr}}"
       insecure_skip_verify: {{app.insecure_skip_verify |default('false')}}
-{% if app.grafana_config is defined %}
+{% if app.rewrite is defined %}
       rewrite:
+{% if app.rewrite.headers is defined %}
         headers:
-        - "Host: {{ app.public_addr }}"
-        - "Origin: https://{{ app.public_addr }}"
-        - "Access-Control-Allow-Origin: *"
-        - "Access-Control-Allow-Methods: GET, OPTIONS, POST"
-        - "Access-Control-Allow-Headers: Authorization, Content-Type"
+{% for header in app.rewrite.headers %}
+        - "{{ header }}"
+{% endfor %}
 {% endif %}
-{% if app.gitlab_config is defined %}
-      rewrite:
+{% if app.rewrite.redirect is defined %}
         redirect:
-        - "{{ app.public_addr }}"
+{% for redirect in app.rewrite.redirect %}
+        - "{{ redirect }}"
+{% endfor %}
+{% endif %}
 {% endif %}
       labels:
         stand: "{{stand_type| default ('not_set') }}"

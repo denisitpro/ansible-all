@@ -1,0 +1,9 @@
+- name: Configure Redis for Ubuntu
+  ansible.builtin.template:
+    src: "redis.conf"
+    dest: "/etc/redis/redis.conf"
+    owner: "{{ redis_user }}"
+    group: "{{ redis_user }}"
+    mode: "0640"
+    backup: true
+  notify: restart redis-server

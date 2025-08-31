@@ -10,7 +10,31 @@ For proper connection to PostgreSQL through Teleport, PostgreSQL must be running
 ## Example publish app and SSH access
 ```yaml
 teleport:
+
+---
+teleport:
   app:
+    - name: grafana
+      uri: "https://127.0.0.1:3000"
+      public_addr: "grafana.tp.example.com"
+      insecure_skip_verify: 'true'
+      rewrite:
+        headers:
+          - "Host: grafana.tp.example.com"
+          - "Origin: https://grafana.tp.example.com"
+          - "Access-Control-Allow-Origin: *"
+          - "Access-Control-Allow-Methods: GET, OPTIONS, POST"
+          - "Access-Control-Allow-Headers: Authorization, Content-Type"
+      app_acl_level:
+        - 300
+    - name: gitlab
+      uri: "https://gitlab.example.net/"
+      public_addr: "gitlab.tp.example.com"
+      rewrite:
+        redirect:
+          - "gitlab.example.net"
+      app_acl_level:
+        - 300
     - name: web-appp
       uri: "http://127.0.0.1:8080"
       public_addr: "web.tp.example.com"
@@ -22,5 +46,8 @@ teleport:
     - 500
   databases:
     - { protocol: "postgres", name: "demo-postgres", uri: "127.0.0.1:5432", tls_mode: "insecure" }
+ssh_acl_level:
+    - 300
+
 
 ```

@@ -1,0 +1,28 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Redis Exporter
+After=network-online.target
+StartLimitInterval=0
+
+[Service]
+Type=simple
+ExecStart={{ redis_exporter_binary_path }} \
+{% if redis_auth_enabled is defined %}
+  --redis.user={{ redis_user | default('') }} \
+  --redis.password={{ redis_default_password | default('set_me') }} \
+{% endif %}
+{% if redis_exporter_web_listen is defined %}
+  --web.listen-address={{ redis_exporter_web_listen | default('0.0.0.0:9121') }} \
+{% endif %}
+{% if redis_tls is defined %}
+  --redis.addr=rediss://{{ redis_host | default('localhost') }}:{{ redis_port | default(6379) }}
+{% else %}
+  --redis.addr=redis://{{ redis_host | default('localhost') }}:{{ redis_port | default(6379) }}
+{% endif %}
+SyslogIdentifier=redis-exporter
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

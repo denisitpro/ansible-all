@@ -1,0 +1,12 @@
+---
+- name: copy tune file
+  ansible.builtin.template:
+    src: "035-redis-sysctl.conf.j2"
+    dest: "/etc/sysctl.d/035-redis-sysctl.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart redis-server
+
+- name: apply sysctl.conf
+  ansible.builtin.command: "sysctl -p /etc/sysctl.d/035-redis-sysctl.conf"

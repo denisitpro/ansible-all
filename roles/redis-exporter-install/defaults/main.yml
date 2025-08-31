@@ -1,6 +1,24 @@
 ---
-redis_exporter_docker_compose_path: "{{ docker_compose_path | default('/opt/docker') }}/redis-exporter"
-redis_exporter_port: 9121
-redis_exporter_version: "v1.59.0"
-redis_exporter_bind_addr: "{{ global_bind_addr | default( ansible_default_ipv4.address ) }}"
-redis_exporter_consul_token: "{{ vault_dict_users_secret.consul_redis_exporter_token  | default('0000000000000000000000000000000') }}"
+redis_exporter_image: "v1.76.0"
+redis_exporter_compose_path: "/opt/docker/redis-exporter"
+
+redis_exporter_download_url: https://github.com/oliver006/redis_exporter/releases/download/{{ redis_exporter_version_binary }}/redis_exporter-{{ redis_exporter_version_binary }}.linux-{{ redis_exporter_go_arch }}.tar.gz
+redis_exporter_version_binary: "v1.76.0"
+redis_exporter_go_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+redis_exporter_go_arch: "{{ redis_exporter_go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+redis_exporter_binary_path: "/usr/local/bin/redis_exporter"
+
+
+# metrics
+consul_redis_exporter_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+redis_exporter_tags:
+  - "{{ stand_type }}"
+  - "{{ click__server_metrics_name | default('redis-exporter-metrics') }}"
+  - "dc={{ consul_dc_name }}"
