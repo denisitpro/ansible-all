@@ -16,3 +16,11 @@
     owner: "{{ prometheus_user_uid }}"
     group: "{{ prometheus_user_gid }}"
     mode: '0600'
+
+- name: Write Prometheus mTLS root CA (prom-stack-ca.pem)
+  ansible.builtin.copy:
+    content: "{{ prom_stack_ca_secret }}"
+    dest: "{{ prometheus_mtls_prom_stack_path }}/prom-stack-ca.pem"
+    owner: "{{ prometheus_user_uid }}"
+    group: "{{ prometheus_user_gid }}"
+    mode: '0644'

@@ -1,17 +1,16 @@
 ---
-psql_version: 17.4-alpine3.21
+psql_version: 17.5-alpine3.22
 psql_image: "postgres"
 
 psql_compose_path: "/opt/docker/psql"
 
-appname: "psql"
-app_path: "/opt/docker"
-
-psql_bind_addr: "{{ global_bind_addr | default('127.0.0.1') }}"
+psql_bind_addr: "127.0.0.1"
 psql_port: 5432
-psql_node_data_path: "/opt/psql/db"
-psql_node_data_conf: "/opt/psql/conf"
-psql_node_data_ssl: "/opt/psql/ssl"
+
+psql_base_path: "/opt/psql"
+psql_node_data_path: "{{ psql_base_path }}/db"
+psql_node_data_conf: "{{ psql_base_path }}/conf"
+psql_node_data_ssl: "{{ psql_base_path }}/ssl"
 psql_docker_data_path: "/var/lib/postgresql/data"
 psql_docker_conf_dir: "/etc/postgresql"
 
@@ -30,9 +29,10 @@ bkp_user: "root"
 psql_docker_user_uid: 999
 psql_docker_user_gid: 999
 
-psql_db_user: "postgres"
-psql_postgres_password: "postgres"
-psql_db_name: "db1"
+psql_default_db_user: "postgres"
+psql_default_db_password: "{{ vault_dict_users_secret_g2.psql_default_db_password.postgres_default_pass | default('set_me') }}"
+# psql_default_db_password: "postgres"
+psql_default_db_name: "db1"
 psql_pgpassword: "replication"
 
 psql_docker_container_name: "psql"

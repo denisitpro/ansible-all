@@ -1,0 +1,19 @@
+---
+- name: stop compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ psql_compose_path }}"
+    state: absent
+  register: compose_result
+  failed_when:
+    - compose_result is failed
+    - "'No such container' not in compose_result.msg"
+
+- name: clean folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{ psql_base_path }}"

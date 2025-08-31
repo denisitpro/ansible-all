@@ -14,7 +14,7 @@ groups:
 
   - alert: InstanceDown - servers
     expr: |
-      up{instance!~"{{ excld_instance_down | default([]) | join('|') }}", prometheus!~"^.*prometheus.*"} == 0
+      up{instance!~"{{ excld_instance_down | default([]) | join('|') }}", tags!~"{{ excld_tags_instance_down | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}", project!~"{{ excld_project_instance_down | join('|') }}", prometheus!~"^.*prometheus.*"} == 0
     for: 5m
     labels:
       severity: critical

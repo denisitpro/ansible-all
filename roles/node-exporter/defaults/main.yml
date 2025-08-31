@@ -15,11 +15,12 @@ go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }
 node_exporter_system_user: "node-exporter"
 node_exporter_system_group: "{{ node_exporter_system_user }}"
 
-node_epxorter_binary_path: "/usr/local/bin/node_exporter"
+node_exporter_binary_path: "/usr/local/bin/node_exporter"
 node_exporter_textfile_dir: "/var/lib/node-exporter"
 
 node_exporter_enabled_collectors:
   - systemd
+  - processes
   - textfile:
       directory: "{{ node_exporter_textfile_dir }}"
 #  - filesystem:

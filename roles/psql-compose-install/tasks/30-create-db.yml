@@ -1,0 +1,9 @@
+---
+# TODO: Create PostgreSQL db both in the docker and on the host
+- name: Create PostgreSQL databases
+  ansible.builtin.shell: |
+    if ! docker exec -i {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -tAc "SELECT 1 FROM pg_database WHERE datname='{{ item.name }}'" | grep -q 1; then
+      docker exec -i {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -c "CREATE DATABASE {{ item.name }} OWNER {{ item.owner }}";
+    fi
+  loop: "{{ postgres_db }}"
+  no_log: true

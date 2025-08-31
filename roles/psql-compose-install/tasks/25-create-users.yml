@@ -1,0 +1,16 @@
+---
+# TODO: Create PostgreSQL users both in the docker and on the host
+- name: Create PostgreSQL users
+  ansible.builtin.shell: |
+    docker exec -i {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -c "DO \$\$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '{{ item.name }}') THEN
+        CREATE ROLE {{ item.name }} LOGIN PASSWORD '{{ item.password }}';
+      END IF;
+      {% if item.member_of is defined %}
+      EXECUTE 'GRANT {{ item.member_of | join(',') }} TO {{ item.name }}';
+      {% endif %}
+    END
+    \$\$;"
+  loop: "{{ postgres_users }}"
+  no_log: true

@@ -25,6 +25,7 @@
     - prom-config
 
 - ansible.builtin.import_tasks: 25-mtls-certs.yml
+  when: prometheus_prom_stack_mtls_support is defined
   tags:
     - prom
     - prom-mtls

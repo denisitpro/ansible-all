@@ -1,0 +1,37 @@
+{{ ansible_managed | comment }}
+#### todo remove
+# need support generate rules sue template and label array
+
+groups:
+- name: blackbox alert rules v2
+  rules:
+  - alert: Production endpoint issue - v2
+    expr: probe_http_status_code{env='prod'} != 200 and probe_http_status_code{env='prod'} != 401
+    for: 40s
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+      summary: '{% raw %}Issue with {{ $labels.instance }}{% endraw %}'
+      description: '{% raw %}Endpoint {{ $labels.instance }} on {{ $labels.server }} ( {{ $labels.location }} ) in invalid state. Check services{% endraw %}'
+  - alert: Development endpoint issue - v2
+    expr: probe_http_status_code{env='dev'} != 200 and probe_http_status_code{env='dev'} != 401
+    for: 120s
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+      summary: '{% raw %}Issue with {{ $labels.instance }}{% endraw %}'
+      description: '{% raw %}Endpoint {{ $labels.instance }} on {{ $labels.server }} ( {{ $labels.location }} ) in invalid state. Check services{% endraw %}'
+  - alert: Blackbox slow probe - v2
+    expr: avg_over_time(probe_duration_seconds[1m]) > 2
+    for: 5m
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+      summary: '{% raw %}Blackbox slow probe (instance {{ $labels.instance }}){% endraw %}'
+      description: '{% raw %}Blackbox probe took more than 1s to complete\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}{% endraw %}'

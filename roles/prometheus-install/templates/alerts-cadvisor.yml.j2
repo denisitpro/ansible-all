@@ -1,0 +1,37 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: Docker state (cadvisor-exporter)
+  rules:
+  - alert: Container issue
+    annotations:
+      identifier: '{% raw %}{{ $labels.env }} - {{ $labels.location }} - {{ $labels.host }}{% endraw %}'
+      summary: '{% raw %}Server {{ $labels.server }} down{% endraw %}'
+      description: '{% raw %}( {{ $labels.name }} ) has been restarted {{ $value }} times for 5m. Server: {{ $labels.server }}{% endraw %}'
+    expr: count by (env, host, instance, job, location, name, project, server, service) (time() - container_last_seen{name!=""} > 15) > 2
+    for: 60s
+    labels:
+      severity: warning
+      receiver: slack
+
+  - alert: Container restarting issue
+    annotations:
+      identifier: '{% raw %}{{ $labels.env }} - {{ $labels.location }} - {{ $labels.host }}{% endraw %}'
+      summary: 'Container restarting'
+      description: '{% raw %}( {{ $labels.name }} ) is restarting more than 1m. Server: {{ $labels.server }}{% endraw %}'
+    expr: sum by (env, host, instance, job, location, name, project, server, service) (changes(container_last_seen{env="prod",name!=""}[30m])) < 174
+    for: 60s
+    labels:
+      severity: production
+      receiver: slack
+
+  - alert: DEV Container restarting issue
+    annotations:
+      identifier: '{% raw %}{{ $labels.env }} - {{ $labels.location }} - {{ $labels.host }}{% endraw %}'
+      summary: 'Container restarting'
+      description: '{% raw %}( {{ $labels.name }} ) is restarting more than 1m. Server: {{ $labels.server }}{% endraw %}'
+    expr: sum by (env, host, instance, job, location, name, project, server, service) (changes(container_last_seen{env=~"dev|stage",name!=""}[30m])) < 174
+    for: 60s
+    labels:
+      severity: warning
+      receiver: slack

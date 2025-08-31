@@ -4,22 +4,75 @@ groups:
 - name: pods alert rules
   rules:
 
-  - alert: InstanceDown - pods - kostili
+  - alert: K8sPodScrapeTargetDown
     expr: |
-          up{prometheus=~"^.*prometheus.*", container!~"{{ excld_k8s_containers_kostili | default([]) | join('|') }}"} == 0
-    for: 30m
+      sum by (cluster, namespace, pod) (
+        up{job=~".*applications-monitor.*", container!="", pod!="", cluster!~"{{ excld_cls_pod_scraper_down | default([]) | join('|') }}"}
+      ) == 0
+    for: 5m
     labels:
-      severity: info
+      severity: warning
     annotations:
-      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 30 minutes.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
+      summary: "Pod scrape targets are down"
+      description: "{% raw %}Pod {{ $labels.namespace }}/{{ $labels.pod }} in cluster {{ $labels.cluster }} has no healthy scrape targets for 5m.{% endraw %}"
 
-  - alert: InstanceDown - pods cluster support
+  - alert: K8sPodNotReady
     expr: |
-          up{cluster!="" , container!~"{{ excld_k8s_containers_cluster_id | default([]) | join('|') }}"} == 0
-    for: 30m
+      max by (cluster, namespace, pod) (
+        kube_pod_status_ready{condition="true", cluster!~"{{ excld_cls_pod_not_ready | default([]) | join('|') }}", namespace!~"{{ excld_ns_pod_not_ready | default([]) | join('|') }}", pod!~"{{ excld_pod_not_ready | default([]) | join('|') }}"}
+      ) == 0
+    for: 10m
     labels:
-      severity: info
+      severity: warning
     annotations:
-      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 30 minutes.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
+      summary: "Pod NotReady"
+      description: "{% raw %}Pod {{ $labels.namespace }}/{{ $labels.pod }} in cluster {{ $labels.cluster }} is NotReady for 10m.{% endraw %}"
+
+  - alert: K8sPodHighRestartRate
+    expr: |
+      sum by (cluster, namespace, pod) (
+        increase(kube_pod_container_status_restarts_total{cluster!~"{{ excld_cls_pod_restart_rate | default([]) | join('|') }}", namespace!~"{{ excld_ns_pod_restart_rate | default([]) | join('|') }}"}[30m])
+      ) > 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High restart rate in Pod"
+      description: "{% raw %}Pod {{ $labels.namespace }}/{{ $labels.pod }} in cluster {{ $labels.cluster }} restarted >10 times in 30m.{% endraw %}"
+
+  - alert: K8sPodProblematicPhase
+    expr: |
+      kube_pod_status_phase{phase=~"Pending|Failed|Unknown", namespace!~"kube-system|default|{{ excld_ns_pod_problematic_phase | default([]) | join('|') }}", cluster!~"{{ excld_cls_pod_problematic_phase | default([]) | join('|') }}"} == 1
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Pod in problematic phase"
+      description: "{% raw %}Pod {{ $labels.namespace }}/{{ $labels.pod }} in cluster {{ $labels.cluster }} is in {{ $labels.phase }} phase for more than 15 minutes.{% endraw %}"
+
+  - alert: K8sDeploymentReplicasMismatch
+    expr: |
+      kube_deployment_spec_replicas{namespace!~"kube-system|default|{{ excld_ns_deployment_replicas | default([]) | join('|') }}", cluster!~"{{ excld_cls_deployment_replicas | default([]) | join('|') }}"} != kube_deployment_status_replicas_available{namespace!~"kube-system|default|{{ excld_ns_deployment_replicas | default([]) | join('|') }}", cluster!~"{{ excld_cls_deployment_replicas | default([]) | join('|') }}"}
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Deployment replicas mismatch"
+      description: "{% raw %}Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} cluster {{ $labels.cluster }} has desired replicas {{ $value }} but only {{ $labels.value }} are available.{% endraw %}"
+
+
+  - alert: TooManyPodsPerNode
+    expr: |
+      sum by (node) (
+        count by (node, pod) (
+          kube_pod_info{node!="", cluster!~"{{ excld_cls_too_many_pods | default([]) | join('|') }}"}
+        )
+      ) > {{ max_pods_per_node | default('230') }}
+      and on(node)
+      kube_node_info{node!~"{{ excld_node_too_many_pods | default([]) | join('|') }}"}
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Too many pods on node {{ $labels.node }} ({{ humanize $value }}){% endraw %}"
+      description: "{% raw %}Node {{ $labels.node }} has more than {{ $value }} pods scheduled{% endraw %}"

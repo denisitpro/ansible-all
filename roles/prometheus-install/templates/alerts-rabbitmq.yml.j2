@@ -1,0 +1,16 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: RabbitMQ state (rabbitmq-exporter)
+  rules:	  
+  - alert: RMQ queue messages - v2
+    expr: |
+      rabbitmq_queue_messages{instance!~"{{ excld_inst_rmq_queue_messages | join('|') }}",queue!~"{{ excld_queue_rmq_queue_messages | join('|') }}"} > 200
+    for: 5m
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.env }} - {{ $labels.host }} - {{ $labels.location }}{% endraw %}'
+      summary: "{% raw %}RMQ queue messages (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}RMQ high queue messages {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}{% endraw %}"

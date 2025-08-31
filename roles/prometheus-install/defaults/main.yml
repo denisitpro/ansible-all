@@ -1,19 +1,18 @@
 ---
 prometheus_image: "v3.5.0"
-
 prometheus_compose_path: /opt/docker/prometheus
+prometheus_base_path: "/opt/prometheus"
+prometheus_config_path: "{{ prometheus_base_path }}/config"
+# todo update template remove prometheus_config_dir
+prometheus_config_dir: "{{ prometheus_config_path }}"
+prometheus_db_dir: "{{ prometheus_base_path }}/data"
+prometheus_rules_path: "{{ prometheus_config_path }}/rules"
 
 
 ## base directory config
 # prometheus_user: prometheus
 # prometheus_group: prometheus
-prometheus_base_path: "/opt/prometheus"
-prometheus_config_path: "{{ prometheus_base_path }}/config"
 
-# todo update template remove prometheus_config_dir
-prometheus_config_dir: "{{ prometheus_config_path }}"
-prometheus_db_dir: "{{ prometheus_base_path }}/data"
-prometheus_rules_path: "{{ prometheus_config_path }}/rules"
 
 # mtls path
 prometheus_mtls_base_path: "{{ prometheus_base_path }}/mtls"
@@ -34,14 +33,14 @@ prom_addr: "{{ prometheus_ext_name }}"
 ### consul
 stands_regexp: ".*,(c1-infra|c1-dev | c1-prod ),.*"
 consul_sd_server: ":8500"
-consul_prometheus_access_token: "{{ vault_dict_users_secret.consul_prometheus_access_token | default('set_me') }}"
+consul_prometheus_access_token: "{{ vault_dict_users_secret_g2.consul_prometheus_access_token.value | default('set_me') }}"
 
 # command to run
 prometheus_command_run:
   - "config.file={{ prometheus_config_dir }}/prometheus.yml"
   - "storage.tsdb.path={{ prometheus_db_dir }}"
   - "storage.tsdb.retention.time={{ prometheus_storage_retention }}"
-  - "storage.tsdb.retention.size={{ prometheus_storage_retention_size }}"
+  - "storage.tsdb.retention.size={{ prometheus_storage_retention_size | default('0') }}"
   - "web.listen-address={{ prometheus_web_listen_address }}"
   - "web.enable-lifecycle"
   - "web.enable-remote-write-receiver"
@@ -53,7 +52,6 @@ prometheus_storage_retention: "14d"
 # Available since Prometheus 2.7.0
 # [EXPERIMENTAL] Maximum number of bytes that can be stored for blocks. Units
 # supported: KB, MB, GB, TB, PB.
-prometheus_storage_retention_size: "0"
 
 prometheus_global:
   scrape_interval: 15s
@@ -120,16 +118,6 @@ prometheus_static_targets_files:
   - prometheus/targets/*.yml
   - prometheus/targets/*.json
 
-
-# alert rules default
-http_200_fail: []
-http_400_fail: []
-http_404_fail: []
-coins_http_200_fail: []
-coins_http_400_fail: []
-coins_http_404_fail: []
-coins_http_405_fail: []
-
 # ALERTS section gen 2
 prometheus_alert_files:
   - alerts-disks-v1.yml
@@ -140,13 +128,17 @@ prometheus_alert_files:
   - alerts-domain-expire-v1.yml
   - alerts-clickhouse-alerts.yml
   - alerts-blackbox-v1.yml
+  - alerts-blackbox-v2.yml
+  - alerts-cadvisor.yml
+  # - alerts-node-exporter.yml # dublicate
+  - alerts-node-monitor.yml
+  - alerts-rabbitmq.yml
   - alerts-elk.yml
   - alerts-http-code.yml
   - alerts-consul-v1.yml
   - alerts-prom-metrics-v1.yml
   - alerts-vault-v1.yml
   - alerts-redis.yml
-  - alerts-k8s-pods.yml
   - alerts-networks.yml
   - alerts-proccess.yml
   - alerts-cpu.yml
@@ -154,43 +146,87 @@ prometheus_alert_files:
   - alerts-inotify.yml # importal for k8s
   - alerts-kafka.yml
 
-  # - ansible-generate-v1.yml
-  # - alerts-mysql.yml
-  # - alerts-ipsec-exporter-v1.yml
-  # - alerts-text-collection-v1.yml
-  # - alerts-nomad-v1.yml
-  # - alerts-nats.yml
 
+# alert rules default
+http_200_fail: []
+http_400_fail: []
+http_404_fail: []
+coins_http_200_fail: []
+coins_http_400_fail: []
+coins_http_404_fail: []
+coins_http_405_fail: []
+
+# InstanceDown - servers exclusions
+excld_instance_down: []
+excld_tags_instance_down:
+  - tag_default_excld_instance_down
+excld_project_instance_down: []
 
 alert_click_connections_count: 150
 alert_domain_expire_days: 14
 
 
-excld_click_below_1_inst: []
+# ClickHouse alerts exclusions
+# Example: excld_instance_click_below_1_inst: ["clickhouse-1.example.com", "clickhouse-2.example.com"]
+excld_instance_click_below_1_inst: []
+# Example: excld_tags_click_below_1: ["dev", "test"]
+
+
+excld_tags_click_tcp_below_1:
+  - tag_default_excld_click_tcp_below_1
+
+# Example: excld_inst_high_click_connections: ["clickhouse-prod-1.example.com"]
+excld_inst_high_click_connections: []
+# Example: excld_tags_high_click_connections: ["prod", "high-load"]
+excld_tags_high_click_connections: []
 
 excld_inst_out_of_disk_space_5: []
 excld_inst_out_of_disk_space_10: []
 excld_inst_out_of_disk_space_20: []
 excld_inst_out_of_disk_space_30: []
 
-excld_tags_out_of_disk_space_5: []
-excld_tags_out_of_disk_space_10: []
-excld_tags_out_of_disk_space_20: []
-excld_tags_out_of_disk_space_30: []
+excld_tags_out_of_disk_space_5:
+  - tag_default_excld_out_of_disk_space_5
+excld_tags_out_of_disk_space_10:
+  - tag_default_excld_out_of_disk_space_10
+excld_tags_out_of_disk_space_20:
+  - tag_default_excld_out_of_disk_space_20
+excld_tags_out_of_disk_space_30:
+  - tag_default_excld_out_of_disk_space_30
 
-excld_tags_critical_disk_space_5: []
-excld_tags_critical_disk_space_10: []
+excld_tags_critical_disk_space_5:
+  - tag_default_excld_critical_disk_space_5
+
+excld_tags_critical_disk_space_10:
+  - tag_default_excld_critical_disk_space_10
+
+excld_inst_critical_disk_space_5: []
+excld_inst_critical_disk_space_10: []
+
+excld_tags_disk_fill_24h:
+  - tag_default_excld_disk_fill_24h
+excld_inst_disk_fill_24h: []
 
 excld_tags_high_disk_iops_15m: []
 excld_tags_high_disk_iops_1h: []
 
+excl_tags_memory_usage_over80:
+  - tag_default_excld_memory_usage_over80
+excl_tags_memory_usage_over90:
+  - tag_default_excld_memory_usage_over90
+excl_tags_memory_usage_over95:
+  - tag_default_excld_memory_usage_over95
 
-excl_tags_memory_usage_over80: []
-excl_tags_memory_usage_over90: []
-excl_tags_memory_usage_over95: []
+excld_high_disk_iops500_1h_inst: []
+excld_high_disk_iops500_15m_inst: []
 
-excld_inst_high_disk_iops_1h: []
-excld_inst_high_disk_iops_15m: []
+# High Open File Descriptors exclusions
+excl_inst_high_fd_50k: []
+excl_tags_high_fd_50k: []
+excl_inst_high_fd_percent_80: []
+excl_tags_high_fd_percent_80: []
+open_fd_threshold_50k: 50000
+open_fd_threshold_percent_80: 80
 
 incl_http_200_devel_instance: []
 incl_http_200_critical_channel_instance: []
@@ -198,15 +234,65 @@ incl_http_404_devel_instance: []
 incl_http_404_critical_channel_instance: []
 # clickhouse_alert_rules:
 
-excld_inst_unusual_net_in: []
-excld_inst_unusual_net_out: []
+excld_inst_unusual_net_in_30m: []
+excld_inst_unusual_net_out_30m: []
 
-excld_node_too_many_pods: []
 excld_cluster_instance_down: []
 
 excld_kafka_consumergroup_lag_15m: []
 excld_kafka_consumergroup_lag_1h: []
 
+
+excld_tags_shard_count_es:
+  - tag_default_excld_shard_count_es
+
+excld_node_too_many_pods:
+  - tag_default_excld_node_too_many_pods
+
+# Pod alerts exclusions
+excld_cls_pod_scraper_down:
+  - tag_default_excld_cls_pod_scraper_down
+excld_cls_pod_not_ready:
+  - tag_default_excld_cls_pod_not_ready
+excld_cls_pod_restart_rate:
+  - tag_default_excld_cls_pod_restart_rate
+excld_cls_pod_problematic_phase:
+  - tag_default_excld_cls_pod_problematic_phase
+excld_cls_too_many_pods:
+  - tag_default_excld_cls_too_many_pods
+excld_cls_deployment_replicas:
+  - tag_default_excld_cls_deployment_replicas
+
+# Pod exclusions by name patterns
+excld_pod_not_ready:
+  - "version-checker-.*"
+
+# Namespace exclusions for pod alerts
+excld_ns_pod_not_ready: []
+excld_ns_deployment_replicas: []
+excld_ns_pod_problematic_phase: []
+excld_ns_pod_restart_rate: []
+
+# Node monitor exclusions
+excl_ns_blockchain_node_unreachable:
+  - "exampl42"
+
+excl_ns_blockchain_node_not_synced:
+  - "exampl43"
+
+excld_tags_unusual_net_in_30m:
+  - tag_default_excld_unusual_net_in_30m
+
+excld_tags_unusual_net_out_30m:
+  - tag_default_excld_unusual_net_out_30m
+
+# Redis alerts exclusions
+excld_tags_redis_connections:
+  - tag_default_excld_redis_connections
+
+# RabbitMQ alerts exclusions
+excld_inst_rmq_queue_messages: []
+excld_queue_rmq_queue_messages: []
 
 # consul section
 # vault g1
@@ -214,9 +300,10 @@ excld_kafka_consumergroup_lag_1h: []
 
 # vault g2
 consul_agent_ca: "{{ vault_dict_users_secret_g2.consul_agent_ca.value | default('set_me') }}"
-consul_client_prometheus_cert: "{{ vault_dict_users_secret.consul_client_prometheus_cert | default('set_me') }}"
-consul_client_prometheus_key: "{{ vault_dict_users_secret.consul_client_prometheus_key | default('set_me') }}"
+consul_client_prometheus_cert: "{{ vault_dict_users_secret_g2.consul_client_prometheus_cert.value | default('set_me') }}"
+consul_client_prometheus_key: "{{ vault_dict_users_secret_g2.consul_client_prometheus_key.value | default('set_me') }}"
 
 # mTLS section prom prom_stack_mtls
 prom_stack_cert_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls'].mtls_cert }}"
 prom_stack_key_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls'].mtls_key }}"
+prom_stack_ca_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls_root_ca'].ca_root_cert }}"

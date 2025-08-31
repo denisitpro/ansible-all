@@ -116,5 +116,7 @@ scrape_configs:
       source_labels:
       - __meta_consul_tags
       target_label: stand
+    - action: labelmap
+      regex: __meta_consul_service_metadata_(.+)
 {% endfor %}
 {% endif %}

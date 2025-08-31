@@ -11,3 +11,16 @@ groups:
     annotations:
       description: "{% raw %}{{ $labels.instance }} redis db keys alert to more 1000000 {% endraw %}"
       summary: "{% raw %}Instance {{ $labels.instance }} - redis db keys alert to more ({{ humanize $value}}){% endraw %}"
+- name: Redis connectus over {{ alert_redis_connections_threshold | default(300) }}
+  rules:
+  - alert: Redis connection used
+    expr: |
+      redis_connected_clients{instance!~"{{ excld_inst_redis_connections | default([]) | join('|') }}", tags!~"{{ excld_tags_redis_connections | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} > {{ alert_redis_connections_threshold | default(300) }}
+    for: 1m
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.env }} - {{ $labels.host }} - {{ $labels.location }}{% endraw %}'
+      summary: "{% raw %}{{$labels.service}} on {{ $labels.server }}{% endraw %}"
+      description: "{% raw %}P2P {{$labels.service}} used {{$value}} connections.{% endraw %}"
