@@ -16,7 +16,10 @@ click_gid: 101
 
 # exporter sections
 # set general consul_all_exporters_token for all exporters
-consul_click_srv_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+# consul_click_srv_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+# vault g2
+consul_click_srv_metrics_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default('set_me') }}"
+
 click_srv_tags:
   - "clickhouse"
   - "{{ stand_type }}"

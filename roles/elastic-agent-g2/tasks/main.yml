@@ -1,0 +1,24 @@
+---
+- ansible.builtin.import_tasks: 05-clean.yml
+  tags: ['never', 'elastic-agent-clean', "elastic-agent-force-reinstall", "eagent-upgrade"]
+
+- ansible.builtin.import_tasks: 10-check.yml
+  tags:
+    - elastic-agent
+    - elastic-agent-force-reinstall
+    - eagent-upgrade
+    - ciso
+
+- ansible.builtin.import_tasks: "15-install.yml"
+  when: not elastic_agent_bin_stat.stat.exists
+  tags:
+    - elastic-agent
+    - elastic-agent-force-reinstall
+    - eagent-upgrade
+    - ciso
+
+- ansible.builtin.import_tasks: 50-install-jq.yml
+  tags:
+    - elastic-agent
+    - elastic-agent-jq
+    - ciso

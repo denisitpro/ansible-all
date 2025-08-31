@@ -1,8 +1,8 @@
 ---
-- name: restart vector
+- name: restart nats-server
   ansible.builtin.systemd:
     daemon_reload: true
-    name: vector
+    name: nats-server
     state: restarted
   tags:
-    - vector-restart
+    - nats-restart

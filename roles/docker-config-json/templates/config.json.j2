@@ -1,0 +1,12 @@
+{
+  "auths": {
+{% if vault_dict_users_secret_g2.registry_auths is defined %}
+{% for host, auth in vault_dict_users_secret_g2.registry_auths.items() %}
+    "{{ host }}": {
+      "auth": "{{ auth }}"
+    }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+{% endif %}
+  }
+}

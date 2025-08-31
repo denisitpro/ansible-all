@@ -1,0 +1,12 @@
+---
+- name: recreate-docker harbor
+  community.docker.docker_compose_v2:
+    project_src: "{{ harbor_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: reload-docker harbor
+  ansible.builtin.command: "docker exec harbor kill -HUP 1"
+  args:
+    chdir: "{{ harbor_compose_path }}"

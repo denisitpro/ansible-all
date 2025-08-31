@@ -1,0 +1,59 @@
+---
+- name: ip address check
+  ansible.builtin.command: "curl -4 icanhazip.com"
+  register: ip_check_output
+  when: download_use_proxy | default('no') | bool
+  environment:
+    http_proxy: "{{ download_http_proxy | default('http://user:password@proxy.example.com') }}"
+    https_proxy: "{{ download_https_proxy | default('https://user:password@proxy.example.com') }}"
+
+- name: Debug output of ip address check
+  when: download_use_proxy | default('no') | bool
+  ansible.builtin.debug:
+    var: ip_check_output.stdout
+
+- name: check exist archive
+  ansible.builtin.stat:
+    path: "{{ elastic_agent_install_dir }}/elastic-agent-{{ elastic_agent_version }}-linux-{{ elastic_agent_arch }}.tar.gz"
+  register: elastic_agent_exists
+
+- name: create elastic-agent dir
+  ansible.builtin.file:
+    path: "{{ elastic_agent_install_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Download the Linux Elastic agent if it doesn't exist
+  ansible.builtin.get_url:
+    url: "{{ elastic_agent_download_url }}"
+    dest: "{{ elastic_agent_tmp_dir }}/elastic-agent-{{ elastic_agent_version }}-linux-{{ elastic_agent_arch }}.tar.gz"
+    mode: "0644"
+    use_proxy: "{{ download_use_proxy | default('no') }}"
+  when: not elastic_agent_exists.stat.exists
+  environment:
+    http_proxy: "{{ download_http_proxy | default('http://user:password@proxy.example.com') }}"
+    https_proxy: "{{ download_https_proxy | default('https://user:password@proxy.example.com') }}"
+
+- name: Check if agent directory already exists
+  ansible.builtin.stat:
+    path: "{{ elastic_agent_install_dir }}/elastic-agent-{{ elastic_agent_version }}-linux-{{ elastic_agent_arch }}"
+  register: elastic_agent_dir_stat
+
+- name: Unzip Elastic agent
+  ansible.builtin.unarchive:
+    src: "{{ elastic_agent_tmp_dir }}/elastic-agent-{{ elastic_agent_version }}-linux-{{ elastic_agent_arch }}.tar.gz"
+    dest: "{{ elastic_agent_install_dir }}"
+    remote_src: true
+  when: not elastic_agent_dir_stat.stat.exists
+
+
+- name: Install Elastic agent using vault with proxy
+  ansible.builtin.command: "{{ elastic_agent_install_dir }}/elastic-agent-{{ elastic_agent_version }}-linux-{{ elastic_agent_arch }}/elastic-agent install --url={{ elastic_agent_fleet_server }} --enrollment-token={{ elastic_agent_token }} --force"
+  when: download_use_proxy | default('no') | bool
+  environment:
+    http_proxy: "{{ download_http_proxy | default('http://user:password@proxy.example.com') }}"
+    https_proxy: "{{ download_https_proxy | default('https://user:password@proxy.example.com') }}"
+
+- name: Install Elastic agent using vault without proxy
+  ansible.builtin.command: "{{ elastic_agent_install_dir }}/elastic-agent-{{ elastic_agent_version }}-linux-{{ elastic_agent_arch }}/elastic-agent install --url={{ elastic_agent_fleet_server }} --enrollment-token={{ elastic_agent_token }} --force"
+  when: not (download_use_proxy | default('no') | bool)

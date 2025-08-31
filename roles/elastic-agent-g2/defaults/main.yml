@@ -1,0 +1,23 @@
+elastic_agent_install_dir: "/opt/elastic-agent"
+elastic_agent_bin: "/usr/bin/elastic-agent"
+elastic_agent_version: "8.17.6"
+elastic_agent_fleet_server: "https://fleet.example.com.com"
+
+elastic_agent_download_url: "https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-{{ elastic_agent_version }}-linux-{{ elastic_agent_arch }}.tar.gz"
+
+
+elastic_agent_tmp_dir: /tmp
+# vault g1
+# elastic_agent_token: "{{ vault_dict_users_secret.elastic_agent_token | default('set_me') }}"
+# vault g2
+elastic_agent_token: "{{ vault_dict_users_secret_g2.elastic_agent_token.value | default('set_me') }}"
+
+elastic_agent_arch_map:
+  i386: '386'
+  x86_64: 'x86_64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+
+elastic_agent_arch: "{{ elastic_agent_arch_map[ansible_architecture] | default(ansible_architecture) }}"

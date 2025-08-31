@@ -10,3 +10,11 @@
   community.docker.docker_compose_v2:
     project_src: "{{ kafka_exporter_compose_path }}"
     state: restarted
+
+- name: kafka-exporter-unit-restart
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: kafka-exporter
+    state: restarted
+  tags:
+    - kafka-exporter-unit-restart
