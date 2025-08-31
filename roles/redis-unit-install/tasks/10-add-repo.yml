@@ -1,0 +1,33 @@
+---
+# Add Redis official repository for Ubuntu
+- name: Install dependencies for Redis repository
+  ansible.builtin.apt:
+    name:
+      - lsb-release
+      - curl
+      - gpg
+    state: present
+    update_cache: true
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add Redis GPG key
+  ansible.builtin.apt_key:
+    url: "https://packages.redis.io/gpg"
+    keyring: /usr/share/keyrings/redis-archive-keyring.gpg
+
+- name: Set correct permissions for Redis GPG key
+  ansible.builtin.file:
+    path: /usr/share/keyrings/redis-archive-keyring.gpg
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Add Redis repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb {{ ansible_distribution_release }} main"
+    filename: redis
+    state: present
+
+- name: Update apt cache after adding Redis repository
+  ansible.builtin.apt:
+    update_cache: true

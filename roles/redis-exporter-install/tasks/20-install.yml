@@ -1,0 +1,30 @@
+---
+- name: Download redis_exporter binary - {{ redis_exporter_download_url }}
+  ansible.builtin.get_url:
+    url: "{{ redis_exporter_download_url }}"
+    dest: "/tmp/redis_exporter-{{ redis_exporter_version_binary }}.linux-{{ redis_exporter_go_arch }}.tar.gz"
+    mode: "0644"
+  register: redis_exporter_download_binary
+  until: redis_exporter_download_binary is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+
+- name: Unpack redis_exporter binary
+  ansible.builtin.unarchive:
+    src: "/tmp/redis_exporter-{{ redis_exporter_version_binary }}.linux-{{ redis_exporter_go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/redis_exporter-{{ redis_exporter_version_binary }}.linux-{{ redis_exporter_go_arch }}/redis_exporter"
+    remote_src: true
+  check_mode: false
+
+- name: Propagate redis_exporter binaries
+  ansible.builtin.copy:
+    src: "/tmp/redis_exporter-{{ redis_exporter_version_binary }}.linux-{{ redis_exporter_go_arch }}/redis_exporter"
+    dest: "{{ redis_exporter_binary_path }}"
+    mode: "0755"
+    owner: root
+    group: root
+    remote_src: true
+  notify: redis-exporter-unit-restart
+  when: not ansible_check_mode

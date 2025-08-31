@@ -1,0 +1,4 @@
+---
+- name: Debug all hostvars - for all
+  ansible.builtin.debug:
+    msg: "All variables starting with srv_: {{ hostvars[inventory_hostname] | dict2items | selectattr('key', 'match', '^srv_') | map(attribute='key') | list }}"

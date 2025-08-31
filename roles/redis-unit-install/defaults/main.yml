@@ -1,0 +1,9 @@
+---
+redis_user: redis
+redis_bind_addr: "127.0.0.1 -::1"
+redis_memory_tuning: true
+
+# Redis persistence settings
+redis_persistence: false
+
+redis_default_password: "{{ vault_dict_users_secret_g2.redis_password.default | default('set_me') }}"

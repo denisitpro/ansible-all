@@ -1,0 +1,24 @@
+service {
+  name  = "{{ redis_exporter_metrics_name | default('redis-exporter-metrics') }}"
+  port  = {{ redis_exporter_metrics_bind_port | default('9121') }}
+  tags  = [
+    "prometheus",
+{% if redis_exporter_tags is defined %}
+{% for tag in redis_exporter_tags %}
+    "{{ tag }}",
+{% endfor %}
+{% endif %}
+  ]
+
+{% if consul_agent_disabled is not defined %}
+token = "{{ consul_redis_exporter_metrics_token }}"
+{% endif %}
+
+  check = {
+    id       = "redis-exporter-metrics"
+    name     = "redis-exporter-metrics healthcheck"
+    tcp      = "{{ redis_exporter_metrics_bind_addr | default('') }}:{{ redis_exporter_metrics_bind_port | default('9121') }}"
+    interval = "30s"
+    timeout  = "2s"
+  }
+}

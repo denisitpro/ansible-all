@@ -1,0 +1,3 @@
+---
+- name: Import redis handlers
+  ansible.builtin.import_tasks: shared/handlers/redis.yml

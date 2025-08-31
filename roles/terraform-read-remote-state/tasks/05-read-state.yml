@@ -1,0 +1,16 @@
+---
+- ansible.builtin.include_tasks: 15-loop-state-twc.yml
+  when: item.terraform_provider == 'twc'
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 20-loop-state-hetzner.yml
+  when: item.terraform_provider == 'hetzner'
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 25-loop-state-digitalocean.yml
+  when: item.terraform_provider == 'digitalocean'
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 90-print-var-srv-prefix.yml
+  run_once: true
+  with_items: "{{ terraform_states }}"

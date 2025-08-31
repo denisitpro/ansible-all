@@ -1,0 +1,7 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.redis-exporter.yml.j2"
+    dest: "{{ redis_exporter_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker redis-exporter
