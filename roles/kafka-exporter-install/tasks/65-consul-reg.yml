@@ -5,7 +5,7 @@
   register: consul_config_dir_exists
 
 
-- name: Copy node_exporter consul config - notify docker
+- name: Copy kafka-exporter consul config - notify docker
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/etc/consul.d/{{ item }}.hcl"
@@ -15,4 +15,14 @@
     - kafka-exporter.hcl
   when:
     - consul_config_dir_exists.stat.exists
-    - consul_unit is not  defined
+    - consul_unit is not defined
+
+- name: Copy kafka-exporter consul config - notify unit
+  ansible.builtin.template:
+    src: "kafka-exporter.hcl.j2"
+    dest: "/etc/consul.d/kafka-exporter.hcl"
+    mode: "0644"
+  notify: restart consul
+  when:
+    - consul_config_dir_exists.stat.exists
+    - consul_unit is defined

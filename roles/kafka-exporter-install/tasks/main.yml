@@ -1,11 +1,25 @@
 ---
 - ansible.builtin.import_tasks: 05-prefly.yml
+  when: kafka_exporter_unit is not defined or not kafka_exporter_unit | bool
   tags:
     - kafka-exporter
     - kafka-exporter-prefly
 
+- ansible.builtin.import_tasks: 20-install.yml
+  when: kafka_exporter_unit is defined and kafka_exporter_unit | bool
+  tags:
+    - kafka-exporter
+    - kafka-exporter-unit
+
+- ansible.builtin.import_tasks: 40-config.yml
+  when: kafka_exporter_unit is defined and kafka_exporter_unit | bool
+  tags:
+    - kafka-exporter
+    - kafka-exporter-unit
+    - kafka-exporter-config
 
 - ansible.builtin.import_tasks: 50-compose.yml
+  when: kafka_exporter_unit is not defined or not kafka_exporter_unit | bool
   tags:
     - kafka-exporter
     - kafka-exporter-docker

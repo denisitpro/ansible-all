@@ -30,31 +30,79 @@ ingester:
      enabled: false
   persistence:
     enabled: true
-    size: 10Gi     
+    size: {{ k8s_loki_ingester_pvc_size | default('10Gi') }}
+{% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+{% endif %}
 
 querier:
   replicas: 3 # Improve query performance via parallelism
   maxUnavailable: 2
+{% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+{% endif %}
 queryFrontend:
   replicas: 2
   maxUnavailable: 1
+{% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+{% endif %}
 queryScheduler:
   replicas: 2
 distributor:
   replicas: 3 
   maxUnavailable: 2
+{% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+{% endif %}
 compactor:
   replicas: 1
   persistence:
     enabled: true
-    size: 2Gi
+    size: {{ k8s_loki_compactor_pvc_size | default('2Gi') }}
   # Retention settings belong to the component that does the work.
   retention_enabled: true
   retention_period: 24h
+{% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+{% endif %}
 
 indexGateway:
   replicas: 2
   maxUnavailable: 1
+{% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+{% endif %}
 
 bloomPlanner:
   replicas: 0
@@ -77,13 +125,23 @@ chunksCache:
 singleBinary:
   replicas: 0
 
- # This exposes the Loki gateway so it can be written to and queried externaly
+# This exposes the Loki gateway so it can be written to and queried externaly
 gateway:
   enabled: true
   service:
     type: ClusterIP
+{% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+{% endif %}
 
 
 # Enable minio for storage
 minio:
   enabled: true
+  persistence:
+    size: {{ k8s_loki_minio_pvc_size | default('20Gi') }} 

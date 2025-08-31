@@ -32,11 +32,11 @@ server:
 {% if argocd_ingress_support is defined and argocd_ingress_whitelist is defined %}
       nginx.ingress.kubernetes.io/whitelist-source-range: "{{ argocd_ingress_whitelist | join(', ') }}"
 {% endif %}
-{% if argocd_acme %}
+{% if argocd_acme is defined %}
       cert-manager.io/cluster-issuer: {{ cert_manager_cf_name | default('cloudflare-issuer-dns-challenge') }}
 {% endif %}
     extraTls:
       - hosts:
         - {{ argocd_domain | default('argocd.example.com') }}
-        secretName: {{ (argocd_domain | default('argocd.example.com') | replace('.', '-') ~ '-tls') if argocd_acme else 'fake-tls' }}
+        secretName: {{ (argocd_domain | default('argocd.example.com') | replace('.', '-') ~ '-tls') if argocd_acme is defined else 'fake-tls' }}
 {% endif %}

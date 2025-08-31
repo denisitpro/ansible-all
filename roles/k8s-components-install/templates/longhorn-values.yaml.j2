@@ -1,7 +1,7 @@
 defaultSettings:
   replicaCount: {{ k8s_longhorn_default_settings_replica_count | default('2') }}
   storageOverProvisioningPercentage: 100
-  storageMinimalAvailablePercentage: 15
+  storageMinimalAvailablePercentage: 7
   nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
   replicaAutoBalance: "disabled" # kafka failed 
   dataLocality: "best-effort"

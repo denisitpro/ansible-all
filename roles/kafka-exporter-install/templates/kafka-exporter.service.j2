@@ -1,0 +1,16 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Kafka Exporter
+After=network-online.target
+StartLimitInterval=0
+
+[Service]
+Type=simple
+ExecStart={{ kafka_exporter_binary_path }} --web.listen-address={{ kafka_exporter_listen_address | default('0.0.0.0:9308') }} --kafka.server={{ kafka_server | default('127.0.0.1:9092') }}
+SyslogIdentifier=kafka-exporter
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

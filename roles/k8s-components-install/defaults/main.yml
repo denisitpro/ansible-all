@@ -13,10 +13,12 @@ helm_componets_list:
   # - vector
   # - kong
 
-argocd_github_client_id: "{{ vault_dict_users_secret.argocd_github_client_id | default('set_me') }}"
-argocd_github_secret_id: "{{ vault_dict_users_secret.argocd_github_secret_id | default('set_me') }}"
-teleport_k8s_agent_token: "{{ vault_dict_users_secret.teleport_k8s_agent_token | default('set_me') }}"
-k8s_cert_manager_cloudflare_token: "{{ vault_dict_users_secret.k8s_cert_manager_cloudflare_token | default('set_me') }}"
+argocd_github_client_id: "{{ vault_dict_users_secret_g2.argocd_sso_github.client_id | default('set_me') }}"
+argocd_github_secret_id: "{{ vault_dict_users_secret_g2.argocd_sso_github.client_secrets | default('set_me') }}"
+teleport_k8s_agent_token: "{{ vault_dict_users_secret_g2.teleport_k8s_agent_token.value | default('set_me') }}"
+
+
+k8s_cert_manager_cloudflare_token: "{{ vault_dict_users_secret_g2.k8s_cert_manager_cloudflare_token.value | default('set_me') }}"
 
 k8s_teleport_agent_kub_cluster_base_labels:
   region: "unknown"
@@ -32,6 +34,9 @@ k8s_teleport_agent_kubernetes_discovery:
     namespaces: ["example-app"]
     labels:
       app_acl_level900: "900"
+
+# Discovery group for unique identification of teleport agents
+k8s_teleport_agent_discovery_group: "{{ k8s_cls_name | default('k8s-example.example.com') }}"
 
 
 # argocd_policy_csv_admins:
@@ -63,3 +68,19 @@ k8s_teleport_agent_kubernetes_discovery:
 #     - 2405:8100::/32
 #     - 2a06:98c0::/29
 #     - 2c0f:f248::/32
+
+# Pod monitoring configuration - Prometheus will monitor pods with specific selectors
+k8s_pod_monitoring_enabled: "true"
+
+# Loki monitoring configuration - Enable ServiceMonitor for prometheus-operator
+k8s_loki_monitoring_enabled: "true"
+
+# Pod monitoring configuration
+k8s_pod_monitoring_config:
+  # Which pods to monitor (by labels/annotations)
+  selector:
+    matchLabels:
+      prometheus.io/scrape: "true"
+
+  # Monitor pods in ALL namespaces (dynamic discovery)
+  namespaceSelector: {}

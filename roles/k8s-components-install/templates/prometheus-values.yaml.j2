@@ -26,8 +26,12 @@ prometheus:
     retentionSize: 18GB
     enableFeatures: ["exemplar-storage"]
     serviceDiscoveryRole: "EndpointSlice"
+{% if k8s_prometheus_external_labels is defined %}
     externalLabels:
-      cluster: {{ k8s_prom_cluster_id | default('k8s-cluster.example') }}
+{% for k, v in k8s_prometheus_external_labels.items() %}
+      {{ k }}: "{{ v }}"
+{% endfor %}
+{% endif %}
 {% if k8s_prom_pvc_enable is defined %}
     storageSpec:
       volumeClaimTemplate:
@@ -95,10 +99,120 @@ prometheus:
 {% endif %}
 {% endfor %}
 {% endif %}
+    podMonitorSelector:
+      matchLabels: {}
+    additionalScrapeConfigs:
+      - job_name: 'applications-monitor'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names: []
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+            action: keep
+            regex: (?i)true
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+            action: replace
+            target_label: __scheme__
+            regex: (https?)
+          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: service
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            action: replace
+            target_label: container
+{% if k8s_prometheus_external_labels is defined and k8s_prometheus_external_labels.cluster is defined %}
+          - target_label: cluster
+            replacement: {{ k8s_prometheus_external_labels.cluster }}
+{% endif %}
+        scrape_interval: 30s
+        scrape_timeout: 10s
+{% if k8s_pod_monitoring_enabled is defined and k8s_pod_monitoring_enabled %}
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+{% if k8s_pod_monitoring_config is defined and k8s_pod_monitoring_config.selector is defined %}
+          # Use custom selector configuration
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: (?i){{ k8s_pod_monitoring_config.selector.matchLabels['prometheus.io/scrape'] | default('true') }}
+{% else %}
+          # Example: collect metrics only from pods with prometheus.io/scrape=true annotation
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: (?i)true
+          - source_labels: [__meta_kubernetes_pod_phase]
+            action: drop
+            regex: (Failed|Succeeded)
+{% endif %}
+          # Use annotation to specify metrics path (e.g., /metrics)
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+            action: replace
+            target_label: __scheme__
+            regex: (https?)
+          # Fallback: Use named container port if annotation port is not set
+          - source_labels: [__address__, __meta_kubernetes_pod_container_port_name]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;metrics
+            replacement: $1:{{ k8s_pod_monitoring_default_port | default(8080) }}
+            target_label: __address__
+          # Use annotation to specify port
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__address__]
+            action: replace
+            target_label: instance
+          # Assign meaningful name to pod in Prometheus
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            action: replace
+            target_label: container
+{% if k8s_prometheus_external_labels is defined and k8s_prometheus_external_labels.cluster is defined %}
+          - target_label: cluster
+            replacement: {{ k8s_prometheus_external_labels.cluster }}
+{% endif %}
+        scrape_interval: 30s
+        scrape_timeout: 10s
+{% endif %}
 
 
 nodeExporter:
   enabled: false
+
+kubeStateMetrics:
+  enabled: true
 
 alertmanager:
   enabled: false
@@ -167,4 +281,4 @@ kubeScheduler:
 #     enabled: true
 #     port: 10259
 #   https:
-#     enabled: true  
+#     enabled: true 
