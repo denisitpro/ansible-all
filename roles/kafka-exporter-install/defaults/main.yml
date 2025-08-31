@@ -2,6 +2,19 @@
 kafka_exporter_image: "v1.9.0"
 kafka_exporter_compose_path: "/opt/docker/kafka-exporter"
 
+kafka_exporter_download_url: https://github.com/danielqsj/kafka_exporter/releases/download/v{{ kafka_exporter_version_binary }}/kafka_exporter-{{ kafka_exporter_version_binary }}.linux-{{ kafka_exporter_go_arch }}.tar.gz
+kafka_exporter_version_binary: "1.8.0"
+kafka_exporter_go_arch_map:
+  i386: '386'
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+kafka_exporter_go_arch: "{{ kafka_exporter_go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+kafka_exporter_binary_path: "/usr/local/bin/kafka_exporter"
+
 
 # metrics
 consul_kafka_exporter_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"

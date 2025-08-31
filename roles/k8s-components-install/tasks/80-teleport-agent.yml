@@ -39,7 +39,7 @@
   ansible.builtin.command: >
     helm upgrade --install teleport-agent teleport/teleport-kube-agent
     --namespace {{ helm_teleport_namespace | default('teleport') }}
-    --version {{ helm_teleport_version | default('17.4.7') }}
+    --version {{ helm_teleport_version | default('18.1.4') }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/teleport-values.yaml

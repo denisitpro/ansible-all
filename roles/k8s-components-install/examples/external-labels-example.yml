@@ -1,0 +1,46 @@
+---
+# Пример конфигурации external_labels для Helm Prometheus
+# Файл: group_vars/k8s_worker/prometheus.yml
+
+# Базовый cluster ID (обязательный)
+k8s_prom_cluster_id: "k8s-cluster-prod-1"
+
+# Унифицированные external_labels (новый функционал)
+k8s_prometheus_external_labels:
+  # Статические значения
+  environment: production
+  monitoring: prometheus
+  datacenter: dc1
+
+  # Динамические значения с использованием Ansible переменных
+  hostname: "{{ ansible_hostname }}"
+  fqdn: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
+  replica: "{{ ansible_hostname | default(inventory_hostname) }}"
+
+  # Условные значения
+  os_family: "{{ ansible_os_family }}"
+  os_version: "{{ ansible_distribution_major_version }}"
+
+  # Пользовательские метки
+  team: "{{ team_name | default('platform') }}"
+  project: "{{ project_name | default('monitoring') }}"
+
+# Остальная конфигурация Prometheus
+k8s_prom_remote_write:
+  - remote_write:
+      url: "https://prometheus-central.example.com/api/v1/write"
+      secret_name: "prometheus-auth"
+      secret_type: http-basic
+      queue_config:
+        batch_send_deadline: "5s"
+        max_shards: 5
+        max_samples_per_send: 1000
+
+# Конфигурация Grafana
+k8s_grafana_annotations:
+  teleport.dev/name: grafana-prod
+  teleport.dev/port: "80"
+
+k8s_grafana_labels:
+  teleport: "tp.example.com"
+  app_acl_level300: "300"

@@ -1,5 +1,6 @@
 ---
 - name: Check if docker-compose.yml exists
+  when: kafka_exporter_unit is not defined or not kafka_exporter_unit | bool
   ansible.builtin.stat:
     path: "{{ kafka_exporter_compose_path }}/docker-compose.yml"
   register: compose_file
@@ -11,9 +12,24 @@
   when: compose_file.stat.exists
 
 - name: Remove directory data
+  when: kafka_exporter_unit is not defined or not kafka_exporter_unit | bool
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
     - "{{ kafka_exporter_base_path }}"
     - "{{ kafka_exporter_compose_path }}/docker-compose.yml"
+
+- name: Remove kafka_exporter binary
+  when: kafka_exporter_unit is defined and kafka_exporter_unit | bool
+  ansible.builtin.file:
+    path: "{{ kafka_exporter_bin_path }}"
+    state: absent
+
+- name: Stop and remove kafka_exporter unit
+  when: kafka_exporter_unit is defined and kafka_exporter_unit | bool
+  ansible.builtin.systemd:
+    name: "{{ kafka_exporter_unit_name }}"
+    state: stopped
+    enabled: no
+    daemon_reload: yes

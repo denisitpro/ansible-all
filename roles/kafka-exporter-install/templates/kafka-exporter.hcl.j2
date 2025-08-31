@@ -3,16 +3,16 @@ service {
   port  = {{ kafka_exporter_metrics_bind_port | default('9308') }}
   tags  = [
     "prometheus",
-    {% if kafka_exporter_tags is defined %}
-      {% for tag in kafka_exporter_tags %}
-        "{{ tag }}",
-      {% endfor %}
-    {% endif %}
+{% if kafka_exporter_tags is defined %}
+{% for tag in kafka_exporter_tags %}
+    "{{ tag }}",
+{% endfor %}
+{% endif %}
   ]
 
-  {% if consul_agent_disabled is not defined %}
-    token = "{{ consul_kafka_exporter_metrics_token }}"
-  {% endif %}
+{% if consul_agent_disabled is not defined %}
+token = "{{ consul_kafka_exporter_metrics_token }}"
+{% endif %}
 
   check = {
     id       = "kafka-exporter-metrics"

@@ -1,0 +1,18 @@
+---
+- name: Copy the Kafka Exporter systemd service file
+  ansible.builtin.template:
+    src: "kafka-exporter.service.j2"
+    dest: "/etc/systemd/system/kafka-exporter.service"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify: kafka-exporter-unit-restart
+  tags:
+    - kafka-exporter-unit
+
+- name: Ensure Kafka Exporter is enabled on boot
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: kafka-exporter
+    enabled: true
+    state: started

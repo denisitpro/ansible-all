@@ -1,0 +1,30 @@
+---
+- name: Download kafka_exporter binary - {{ kafka_exporter_download_url }}
+  ansible.builtin.get_url:
+    url: "{{ kafka_exporter_download_url }}"
+    dest: "/tmp/kafka_exporter-{{ kafka_exporter_version_binary }}.linux-{{ kafka_exporter_go_arch }}.tar.gz"
+    mode: "0644"
+  register: kafka_exporter_download_binary
+  until: kafka_exporter_download_binary is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+
+- name: Unpack kafka_exporter binary
+  ansible.builtin.unarchive:
+    src: "/tmp/kafka_exporter-{{ kafka_exporter_version_binary }}.linux-{{ kafka_exporter_go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/kafka_exporter-{{ kafka_exporter_version_binary }}.linux-{{ kafka_exporter_go_arch }}/kafka_exporter"
+    remote_src: true
+  check_mode: false
+
+- name: Propagate kafka_exporter binaries
+  ansible.builtin.copy:
+    src: "/tmp/kafka_exporter-{{ kafka_exporter_version_binary }}.linux-{{ kafka_exporter_go_arch }}/kafka_exporter"
+    dest: "{{ kafka_exporter_binary_path }}"
+    mode: "0755"
+    owner: root
+    group: root
+    remote_src: true
+  notify: kafka-exporter-unit-restart
+  when: not ansible_check_mode

@@ -16,6 +16,15 @@
   ansible.builtin.set_fact:
     skip_prometheus_install: "{{ prometheus_installed.rc == 0 and (not prometheus_force_install | default(false)) }}"
 
+# - name: Prom - Debug vault secrets
+#   ansible.builtin.debug:
+#     msg: |
+#       vault_dict_users_secret_g2 keys: {{ vault_dict_users_secret_g2.keys() | list if vault_dict_users_secret_g2 is defined else 'NOT_DEFINED' }}
+#       prom_stack_mtls exists: {{ 'prom_stack_mtls' in vault_dict_users_secret_g2 if vault_dict_users_secret_g2 is defined else 'NO_VAULT_DICT' }}
+#       prom_stack_mtls_root_ca exists: {{ 'prom_stack_mtls_root_ca' in vault_dict_users_secret_g2 if vault_dict_users_secret_g2 is defined else 'NO_VAULT_DICT' }}
+#   tags:
+#     - prometheus-secrets-mtls
+
 - name: Prom - Add prometheus Helm repository
   ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
   register: helm_prom_repo
@@ -44,16 +53,19 @@
   tags:
     - prometheus-secrets-mtls
 
-
-- name: Prom - Install prometheus via Helm
+- name: Prom - Check if namespace exists
   ansible.builtin.command: >
-    helm upgrade --install prometheus prometheus-community/kube-prometheus-stack
-    --namespace {{ helm_prometheus_namespace | default('monitoring') }}
-    --version {{ helm_prometheus_version | default('75.15.1') }}
+    kubectl get namespace {{ helm_prometheus_namespace | default('monitoring') }}
     --kubeconfig {{ k8s_config_path }}
-    --create-namespace
-    --values /tmp/prometheus-values.yaml
-  when: not skip_prometheus_install or k8s_prom_force_install is defined
+  register: namespace_check
+  failed_when: false
+  changed_when: false
+
+- name: prom - create ns
+  ansible.builtin.command: >
+    kubectl create ns {{ helm_prometheus_namespace | default('monitoring') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: namespace_check.rc != 0
 
 - name: prom - install secrets
   ansible.builtin.command: >
@@ -64,6 +76,17 @@
     - prometheus-secrets.yaml
   tags:
     - prometheus-secrets-mtls
+  when: not skip_prometheus_install or k8s_prom_force_install
+
+- name: Prom - Install prometheus via Helm
+  ansible.builtin.command: >
+    helm upgrade --install prometheus prometheus-community/kube-prometheus-stack
+    --namespace {{ helm_prometheus_namespace | default('monitoring') }}
+    --version {{ helm_prometheus_version | default('76.3.0') }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/prometheus-values.yaml
+  when: not skip_prometheus_install or k8s_prom_force_install
 
 - name: Prom - Remove secrets
   ansible.builtin.file:
