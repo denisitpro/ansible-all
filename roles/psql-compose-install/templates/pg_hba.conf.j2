@@ -97,7 +97,16 @@ local   replication     all                                     trust
 host    replication     all             127.0.0.1/32            trust
 host    replication     all             ::1/128                 trust
 
+{% if postgres_hba_acl is defined %}
+{% for acl in postgres_hba_acl %}
+{{ acl.type }}    {{ acl.database }}      {{ acl.user }}      {{ acl.address }}      {{ acl.method }}
+{% endfor %}
+{% endif %}
+
+{% if postgres_hba_acl_allow_all | default('true') %}
 host    all             all             all                     scram-sha-256
+{% endif %}
+
 {% if postgres_tls %}
 hostssl all             all             all                     scram-sha-256
 {% endif %}

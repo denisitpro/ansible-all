@@ -1,7 +1,7 @@
 {{ ansible_managed | comment }}
 
 groups:
-- name: blackbox alert rules
+- name: blackbox alert rules v1
   rules:
   - alert: SslCertificateWillExpireSoon
     expr: 'probe_ssl_earliest_cert_expiry - time() < 86400 * 7'

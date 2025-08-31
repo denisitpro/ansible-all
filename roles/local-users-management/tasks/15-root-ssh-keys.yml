@@ -1,0 +1,19 @@
+---
+- name: Remove old authorized_keys
+  ansible.builtin.file:
+    path: "/root/.ssh/authorized_keys"
+    state: absent
+
+- name: Add authorized keys for user root
+  ansible.posix.authorized_key:
+    user: "root"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ root_user_authorized_keys }}"
+
+- name: Add root authorized keys for user ubuntu
+  ansible.posix.authorized_key:
+    user: "ubuntu"
+    state: present
+    key: "{{ item }}"
+  loop: "{{ root_user_authorized_keys }}"

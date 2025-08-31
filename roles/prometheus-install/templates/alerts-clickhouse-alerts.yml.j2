@@ -10,12 +10,13 @@ groups:
         {% raw %}TCP connections at {{ $labels.instance }} have been above {% endraw %}{{alert_click_connections_count}}{% raw %}
         for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
 
-    expr: sum by (instance) (ClickHouseMetrics_TCPConnection) > {{ alert_click_connections_count }}
+    expr: sum by (instance) (ClickHouseMetrics_TCPConnection{instance!~"{{ excld_inst_high_click_connections | default([]) | join('|') }}", tags!~"{{ excld_tags_high_click_tcp_connections | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}) > {{ alert_click_connections_count }}
     for: 10m
     labels:
       severity: warning
       service: clickhouse
       team: devops
+
   - alert: HighClickHouseHTTPConnections - {{ alert_click_connections_count }}
     annotations:
       summary: "High number of HTTP connections in ClickHouse"
@@ -23,12 +24,13 @@ groups:
         {% raw %}HTTP connections at {{ $labels.instance }} have been above {% endraw %}{{alert_click_connections_count}}{% raw %}
         for the last 10 minutes. Current value: {{ humanize $value }}{% endraw %}
 
-    expr: sum by (instance) (ClickHouseMetrics_HTTPConnection) > {{ alert_click_connections_count }}
+    expr: sum by (instance) (ClickHouseMetrics_HTTPConnection{instance!~"{{ excld_inst_high_click_connections | default([]) | join('|') }}", tags!~"{{ excld_tags_high_click_http_connections | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}) > {{ alert_click_connections_count }}
     for: 10m
     labels:
       severity: warning
       service: clickhouse
       team: devops
+
   - alert: ClickHouseTCPConnectionsBelow1
     annotations:
       summary: "Number of TCP connections in ClickHouse is below 1"
@@ -38,7 +40,7 @@ groups:
 
     expr: >-
       sum by (instance) (ClickHouseMetrics_TCPConnection
-      {% if excld_click_below_1_inst | length > 0 %}{instance!~"{{ excld_click_below_1_inst | join('|') }}"}{% endif %}) < 1
+      {instance!~"{{ excld_instance_click_below_1_inst | default([]) | join('|') }}", tags!~"{{ excld_tags_click_tcp_below_1 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}) < 1
     for: 20m
     labels:
       severity: warning

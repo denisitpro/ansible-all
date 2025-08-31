@@ -41,7 +41,7 @@
 - name: Propagate node_exporter binaries
   ansible.builtin.copy:
     src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}/node_exporter"
-    dest: "{{ node_epxorter_binary_path }}"
+    dest: "{{ node_exporter_binary_path }}"
     mode: "0755"
     owner: root
     group: root

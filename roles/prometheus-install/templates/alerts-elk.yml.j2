@@ -4,7 +4,8 @@ groups:
   - name: elasticsearch exporter alert rules
     rules:
       - alert: ShardCountES
-        expr: 'elasticsearch_cluster_health_active_shards > 100'
+        expr: |
+          elasticsearch_cluster_health_active_shards{tags!~"{{ excld_tags_shard_count_es | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}",instance!~"{{ excld_inst_shard_count_es | join('|') }}"} > 100
         for: 2m
         labels:
           severity: warning

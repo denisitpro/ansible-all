@@ -48,3 +48,6 @@ prometheus_alert_rules:
       description: "{% raw %}Clock skew detected on {{ $labels.instance }}. Ensure NTP is configured correctly on this host.{% endraw %}"
       summary: "{% raw %}Instance {{ $labels.instance }} - Clock skew detected{% endraw %}"
 ```
+
+# Alert rules examples
+See: https://monitoring.mixins.dev/node-exporter/

@@ -15,6 +15,9 @@
     path: "{{ item }}"
     state: directory
     mode: '0755'
+    owner: "{{ psql_docker_user_uid }}"
+    group: "{{ psql_docker_user_gid }}"
   with_items:
+    - "{{ psql_base_path }}"
     - "{{ psql_node_data_path }}"
     - "{{ psql_node_data_conf }}"
