@@ -76,7 +76,7 @@ angie:
 This role supports retrieving mTLS certificates and keys from HashiCorp Vault. To enable this functionality, define a list of certificate sources in the following format:
 
 ```yaml
-vault_g2:
+vault_sum_g2:
   - name: my_service_mtls
     backend: my_backend
     secret_type: angie_mtls

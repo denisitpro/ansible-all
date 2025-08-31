@@ -1,10 +1,14 @@
 ---
+blackbox_exporter_version: v0.27.0
 blackbox_compose_path: /opt/docker/blackbox-exporter
 blackbox_base_path: /opt/blackbox-exporter
 blackbox_config_path: "{{ blackbox_base_path }}/config"
+blackbox_mtls_path: "{{ blackbox_base_path }}/mtls"
 
-blackbox_exporter_version: v0.26.0
-blackbox_api_key: blackbox
+blackbox_mtls_cert_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls'].mtls_cert }}"
+blackbox_mtls_key_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls'].mtls_key }}"
+blackbox_mtls_ca_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls_root_ca'].ca_root_cert }}"
+
 
 blackbox_config:
   modules:
@@ -17,6 +21,17 @@ blackbox_config:
       http:
         valid_status_codes: [200]
         method: GET
+    http_200_mtls:
+      prober: http
+      timeout: 10s
+      http:
+        valid_status_codes: [200]
+        method: GET
+        tls_config:
+          insecure_skip_verify: "{{ blackbox_mtls_insecure_skip_verify | default(true) }}"
+          ca_file: "{{ blackbox_mtls_path }}/blackbox-ca.pem"
+          cert_file: "{{ blackbox_mtls_path }}/blackbox-cert.pem"
+          key_file: "{{ blackbox_mtls_path }}/blackbox-key.pem"
     http_200_auth:
       prober: http
       timeout: 5s

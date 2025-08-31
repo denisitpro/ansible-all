@@ -1,0 +1,13 @@
+---
+- name: "Generate /etc/hosts from template"
+  ansible.builtin.template:
+    src: etc_hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - base
+    - common-base
+    - hosts
+    - etc-hosts

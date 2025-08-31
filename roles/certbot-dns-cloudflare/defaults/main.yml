@@ -1,6 +1,6 @@
 ---
 certbot_image: certbot/dns-cloudflare
-certbot_version: v4.1.1
+certbot_version: v4.2.0
 
 certbot_path: /opt/certbot
 certbot_compose_path: /opt/docker/certbot

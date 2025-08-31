@@ -18,3 +18,4 @@
   with_items:
     - "{{ blackbox_base_path }}"
     - "{{ blackbox_config_path }}"
+    - "{{ blackbox_mtls_path }}"
