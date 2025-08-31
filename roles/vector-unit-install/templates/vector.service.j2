@@ -1,23 +1,24 @@
+{{ ansible_managed | comment }}
+
 [Unit]
 Description=Vector
-Documentation=https://vector.dev
 After=network-online.target
 Requires=network-online.target
+StartLimitInterval=0
 
 [Service]
-User={{vector_user}}
-Group={{vector_group}}
-ExecStartPre=/usr/bin/vector validate /etc/vector/*.*
-ExecStart=/usr/bin/vector --config-dir /etc/vector
-ExecReload=/usr/bin/vector validate /etc/vector/*.*
+ExecStartPre={{ vector_binary_path }} validate -C {{ vector_conf_path }} 
+ExecStart={{ vector_binary_path }} -C {{ vector_conf_path }}
+ExecReload={{ vector_binary_path }} validate --no-environment -C {{ vector_conf_path }} 
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
+RestartSec=1
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 EnvironmentFile=-/etc/default/vector
-# Since systemd 229, should be in [Unit] but in order to support systemd <229,
-# it is also supported to have it here.
 StartLimitInterval=10
 StartLimitBurst=5
+StandardOutput=append:{{ vector_log_path }}/vector.log
+StandardError=append:{{ vector_log_path }}/vector.log
 
 [Install]
 WantedBy=multi-user.target

@@ -1,20 +1,18 @@
 ---
-- import_tasks: 05-prefly.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
-    - vector
-    - vector-prefly
+    - vector-unit
 
-
-- import_tasks: 10-install.yml
-  when:
-    - ansible_distribution == 'Ubuntu'
+- ansible.builtin.import_tasks: 10-install.yml
   tags:
-    - vector
-    - vector-install
+    - vector-unit
+    - vector-unit-update
 
-- import_tasks: 15-configure.yml
+- ansible.builtin.import_tasks: 15-configure.yml
   tags:
-    - vector
-    - vector-config
-    - vector-configure
+    - vector-unit
+    - vector-unit-conf
+    - vector-unit-config
 
+- ansible.builtin.import_tasks: 90-restart.yml
+  tags: ['never', 'vector-unit-restart']

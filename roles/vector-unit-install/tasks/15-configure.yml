@@ -1,30 +1,25 @@
 ---
-- name: remove default config file
-  ansible.builtin.file:
-    path: /etc/vector/vector.yaml
-    state: absent
-
-- name: copy conf file
-  template:
-    src: "{{item}}.j2"
-    dest: "/etc/vector/{{item}}"
-    mode: 0644
-  with_items:
-    - "{{vector_config_file | default('vector.toml')}}"
+- name: Copy Vector configure file
+  ansible.builtin.template:
+    src: "vector.toml.{{ vector_config_file }}.j2"
+    dest: "{{ vector_conf_path }}/vector.toml"
+    owner: "root"
+    group: "root"
+    mode: "0644"
   notify: restart vector
 
-
-
-- name: copy unit file
+- name: Copy Vector systemd service file
   ansible.builtin.template:
     src: "vector.service.j2"
-    dest: "/lib/systemd/system/vector.service"
-    mode: 0644
+    dest: "/etc/systemd/system/vector.service"
+    owner: "root"
+    group: "root"
+    mode: "0644"
   notify: restart vector
 
-- name: Enable Vector service
-  systemd:
+- name: Ensure Vector is enabled on boot
+  ansible.builtin.systemd:
     daemon_reload: true
     name: vector
-    enabled: yes
+    enabled: true
     state: started

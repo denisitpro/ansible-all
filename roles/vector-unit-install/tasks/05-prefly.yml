@@ -1,10 +1,12 @@
 ---
-- name: "create path"
+- name: Create vector folders
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: 0755
-    owner: "{{vector_user}}"
-    group: "{{vector_group}}"
+    mode: "0775"
+    owner: root
+    group: root
   with_items:
+    - "{{ vector_conf_path }}"
     - "{{ vector_data_path }}"
+    - "{{ vector_log_path }}"

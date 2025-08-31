@@ -11,17 +11,35 @@
     - "0.0.0.0/0"
     - "::/0"
 
+- name: normalize ipv4 sources to list
+  ansible.builtin.set_fact:
+    ipv4_expanded: >-
+      {{
+        (ipv4_expanded | default([]))
+        + [
+            item | combine({
+              'src_list':
+                (item.source is defined)
+                | ternary(
+                    (item.source is string) | ternary([item.source], item.source),
+                    ['0.0.0.0/0']
+                  )
+            })
+          ]
+      }}
+  loop: "{{ iptables.ipv4 }}"
+  when: iptables.ipv4 is defined
+
 - name: ipv4 ufw management rules not specific interface
   community.general.ufw:
-    rule: "{{ item.rule | default('allow') }}"
-    proto: "{{ item.protocol }}"
-    src: "{{ item.source | default('0.0.0.0/0') }}"
-    port: "{{ item.port | default('') }}"
-    comment: "{{ item.name }}"
+    rule: "{{ item.0.rule | default('allow') }}"
+    proto: "{{ item.0.protocol }}"
+    src: "{{ item.1 }}"
+    port: "{{ item.0.port | default('') }}"
+    comment: "{{ item.0.name }}"
     insert_relative_to: first-ipv4
-  with_items:
-    - "{{ iptables.ipv4 }}"
-  when: iptables.ipv4 is defined
+  loop: "{{ ipv4_expanded | subelements('src_list') }}"
+  when: ipv4_expanded is defined
   # when:
   #   - item.iface is not defined
 
@@ -42,18 +60,37 @@
 #     - item.iface is defined
 
 ### ipv6 section
-
-- name: ipv6 ufw management rules  not specific interface
-  community.general.ufw:
-    rule: "{{ item.rule | default('allow') }}"
-    proto: "{{ item.protocol }}"
-    port: "{{ item.port }}"
-    direction: "{{ item.direction | default('in') }}"
-    from_ip: "{{ item.source | default('::/0') }}"
-    comment: "{{ item.name }}"
-    insert_relative_to: last-ipv6
-  with_items:
-    - "{{ iptables.ipv6 }}"
+- name: normalize ipv6 sources to list
+  ansible.builtin.set_fact:
+    ipv6_expanded: >-
+      {{
+        (ipv6_expanded | default([]))
+        + [
+            item | combine({
+              'src_list':
+                (item.source is defined)
+                | ternary(
+                    (item.source is string) | ternary([item.source], item.source),
+                    ['::/0']
+                  )
+            })
+          ]
+      }}
+  loop: "{{ iptables.ipv6 }}"
   when: iptables.ipv6 is defined
+  tags:
+    - ufw-ipv6
+
+- name: ipv6 ufw management rules not specific interface
+  community.general.ufw:
+    rule: "{{ item.0.rule | default('allow') }}"
+    proto: "{{ item.0.protocol }}"
+    port: "{{ item.0.port | default('') }}"
+    direction: "{{ item.0.direction | default('in') }}"
+    from_ip: "{{ item.1 }}"
+    comment: "{{ item.0.name }}"
+    insert_relative_to: last-ipv6
+  loop: "{{ ipv6_expanded | subelements('src_list') }}"
+  when: ipv6_expanded is defined
   tags:
     - ufw-ipv6

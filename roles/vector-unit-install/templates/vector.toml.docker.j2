@@ -1,0 +1,64 @@
+data_dir = "{{ vector_data_dir | default('/var/lib/vector') }}"
+
+# ------------ SOURCE SECTION ---------------
+[sources.docker]
+  type = "docker_logs"
+  docker_host = "/var/run/docker.sock"
+  auto_partial_merge = true
+  #include_containers = [ "" ]
+  exclude_containers = [ "cadvisor" ]
+  retry_backoff_secs = 1
+  host_key = "host"
+
+
+# ------------ TRANSFORM_SECTION ---------------
+[transforms.json_transform]
+type = "remap"
+inputs = ["docker"]
+source = '''
+. = map_keys(., recursive: true) -> |key| { replace(key, ".", "_") }
+.service = .container_name
+del(.label)
+del(.container_id)
+del(.image)
+del(.source_type)
+del(.stream)
+.parsed_message, .err = parse_json(.message)
+.message = if is_null(.parsed_message) { .message } else { .parsed_message }
+del(.parsed_message)
+del(.err)
+'''
+
+
+# ------------ SINK SECTION ---------------
+{% if vector_sinks_loki is defined %}
+{% for sink in vector_sinks_loki %}
+[sinks.{{ sink.name }}]
+  type = "loki"
+  inputs = [ "json_transform" ]
+  endpoint = "{{ sink.endpoint }}"
+  encoding.codec = "json"
+  #buffer.max_events=4096
+  #batch.max_bytes=16000000
+  #batch.max_events=100000
+[sinks.{{ sink.name }}.labels]
+{% for key, value in sink.labels.items() %}
+  "{{ key }}" = "{{ value }}"
+{% endfor %}
+  "host" = "{{'{{'}} host {{'}}'}}"
+  "service" = "{{'{{'}} service {{'}}'}}"
+{% endfor %}
+{% endif %}
+
+
+{% if vector_sinks_vector is defined %}
+{% for sink in vector_sinks_vector %}
+[sinks.{{ sink.name }}]
+  type = "vector"
+  inputs = ["{{ sink.input_name }}"]
+  address = "{{ sink.endpoint }}"
+  healthcheck = true
+  buffer.type = "memory"
+  buffer.max_events = 16384
+{% endfor %}
+{% endif %}
