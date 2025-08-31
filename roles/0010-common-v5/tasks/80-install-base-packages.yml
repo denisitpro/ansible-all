@@ -24,6 +24,13 @@
     update_cache: true
     cache_valid_time: 3600
 
+- name: install additional software - ubuntu all
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: latest
+  loop: "{{ install_additional_packages | default([]) }}"
+  when: install_additional_packages is defined and install_additional_packages | length > 0
+
 - name: install base software - ubuntu 22.04
   ansible.builtin.apt:
     name:

@@ -21,7 +21,7 @@
     <keep_alive_timeout>{{ click_keep_alive_timeout| default('10') }}</keep_alive_timeout>
     <timezone>{{ click_timezone | default('UTC') }}</timezone>
     <default_session_timeout>{{ click_default_session_timeout | default('60') }}</default_session_timeout>
-    <max_concurrent_queries>{{ click_max_concurrent_queries | default('4096') }}</max_concurrent_queries>
+    <max_concurrent_queries>{{ click_max_concurrent_queries | default('0') }}</max_concurrent_queries>
     <max_server_memory_usage>{{ click_max_server_memory_usage | default('0') }}</max_server_memory_usage>
     <max_thread_pool_size>{{ click_max_thread_pool_size | default('10000') }}</max_thread_pool_size>
     <max_server_memory_usage_to_ram_ratio>{{ click_max_server_memory_usage_to_ram_ratio | default('0.9') }}</max_server_memory_usage_to_ram_ratio>

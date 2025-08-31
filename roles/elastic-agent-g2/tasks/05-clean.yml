@@ -1,0 +1,18 @@
+---
+- name: check exist
+  ansible.builtin.stat:
+    path: "{{ elastic_agent_bin }}"
+  register: elastic_agent_bin_stat
+
+- name: Run uninstall if binary exists
+  ansible.builtin.command: "{{ elastic_agent_bin }} uninstall  --force"
+  when: elastic_agent_bin_stat.stat.exists
+
+- name: remove data dir
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ elastic_agent_install_dir }}"
+    - "{{ elastic_agent_bin }}"
+    - "/opt/Elastic/Agent"

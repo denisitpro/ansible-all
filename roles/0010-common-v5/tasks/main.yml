@@ -54,6 +54,22 @@
     - hostname
     - hosts
 
+- ansible.builtin.import_tasks: 180-etc-hosts.yml
+  when: force_create_etc_hosts is defined
+  tags:
+    - base
+    - common-base
+    - hosts
+    - etc-hosts
+
+- ansible.builtin.import_tasks: 200-timeweb-zabbix.yml
+  when: cloud_provider == "timeweb"
+  tags:
+    - base
+    - common-base
+    - timeweb
+    - timeweb-zabbix
+
 - ansible.builtin.import_tasks: 301-security.yml
   tags:
     - base

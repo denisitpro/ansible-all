@@ -1,0 +1,6 @@
+---
+- name: Create .docker directory
+  file:
+    path: "/root/.docker"
+    state: directory
+    mode: '0700'

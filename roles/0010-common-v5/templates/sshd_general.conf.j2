@@ -84,10 +84,9 @@ Port {{ssh_override_port}}
 
 {% if required_ssh_hw_key is defined %}
 PubkeyAcceptedKeyTypes sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com
+{% elif ssh_support_ssh_rsa is defined and ssh_support_ssh_rsa %}
+PubkeyAcceptedAlgorithms ssh-rsa,rsa-sha2-512,rsa-sha2-256,ssh-ed25519,ecdsa-sha2-nistp256,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com
+PubkeyAcceptedKeyTypes=+ssh-rsa
 {% else %}
 PubkeyAcceptedAlgorithms ssh-ed25519,ecdsa-sha2-nistp256,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com
-{% endif %}
-
-{% if required_ssh_rsa_support is defined %}
-PubkeyAcceptedKeyTypes=+ssh-rsa
 {% endif %}

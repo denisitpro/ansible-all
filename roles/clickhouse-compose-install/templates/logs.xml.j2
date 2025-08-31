@@ -1,4 +1,7 @@
 <clickhouse>
+{% if click_query_log_remove | default(false) %}
+    <query_log remove="1"/>
+{% else %}
     <query_log>
         <database>system</database>
         <table>query_log</table>
@@ -6,6 +9,10 @@
         <ttl>{{ click_query_log_ttl | default('event_date + INTERVAL 7 DAY DELETE')}}</ttl>
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
     </query_log>
+{% endif %}
+{% if click_trace_log_remove | default(false) %}
+    <trace_log remove="1"/>
+{% else %}
     <trace_log>
         <database>system</database>
         <table>trace_log</table>
@@ -13,26 +20,47 @@
         <partition_by>toYYYYMM(event_date)</partition_by>
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
     </trace_log>
+{% endif %}
+{% if click_asynchronous_metric_log_remove | default(false) %}
+    <asynchronous_metric_log remove="1"/>
+{% else %}
     <asynchronous_metric_log>
         <database>system</database>
         <table>asynchronous_metric_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
         <ttl>{{ click_asynchronous_metric_log_ttl | default('event_date + INTERVAL 7 DAY DELETE')}}</ttl>
-    </asynchronous_metric_log>    
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </asynchronous_metric_log>
+{% endif %}
+{% if click_query_views_log_remove | default(false) %}
+    <query_views_log remove="1"/>
+{% else %}
     <query_views_log>
         <database>system</database>
         <table>query_views_log</table>
         <partition_by>toYYYYMM(event_date)</partition_by>
         <ttl>{{ click_query_views_log_ttl | default('event_date + INTERVAL 7 DAY DELETE')}}</ttl>
-    </query_views_log>    
+    </query_views_log>
+{% endif %}
+{% if click_part_log_remove | default(false) %}
+    <part_log remove="1"/>
+{% else %}
     <part_log>
         <database>system</database>
         <table>part_log</table>
         <partition_by>toYYYYMM(event_date)</partition_by>
         <ttl>{{ click_part_log_ttl | default('event_date + INTERVAL 7 DAY DELETE')}}</ttl>
-    </part_log>    
+    </part_log>
+{% endif %}
+{% if click_metric_log_remove | default(false) %}
+    <metric_log remove="1"/>
+{% else %}
     <metric_log>
         <database>system</database>
         <table>metric_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
         <ttl>{{ click_metric_log_ttl | default('event_date + INTERVAL 7 DAY DELETE')}}</ttl>
-    </metric_log>    
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </metric_log>
+{% endif %}
 </clickhouse>

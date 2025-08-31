@@ -5,7 +5,8 @@ services:
     network_mode: host
     restart: {{ blackbox_exporter_restart | default('always') }}
     volumes:
-      - {{ blackbox_config_path }}/blackbox.yml:{{ blackbox_config_path }}/blackbox.yml
+      - {{ blackbox_base_path }}:{{ blackbox_base_path }}
+      # - {{ blackbox_config_path }}/blackbox.yml:{{ blackbox_config_path }}/blackbox.yml
     command:
       --config.file={{ blackbox_config_path }}/blackbox.yml
       --web.listen-address={{blackbox_exporter_bind_addr | default('[::]')}}:{{ blackbox_exporter_bind_port | default('9115')}}

@@ -1,0 +1,8 @@
+---
+- name: install jq for metric-exporter
+  ansible.builtin.apt:
+    name:
+      - jq
+    state: latest
+    update_cache: true
+    cache_valid_time: 3600

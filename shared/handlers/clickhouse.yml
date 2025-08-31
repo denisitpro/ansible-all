@@ -12,5 +12,11 @@
     state: restarted
 
 - name: reload-docker clickhouse
-  ansible.builtin.command: docker exec click clickhouse-client --query "SYSTEM RELOAD CONFIG"
+  ansible.builtin.command: >
+    docker exec click clickhouse-client
+    --user default
+    {% if clickhouse_default_users[0].password is defined %}
+    --password {{ clickhouse_default_users[0].password }}
+    {% endif %}
+    --query "SYSTEM RELOAD CONFIG"
   when: click_container_exists.stdout != ""

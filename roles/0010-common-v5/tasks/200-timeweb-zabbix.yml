@@ -1,0 +1,27 @@
+---
+- name: Stop zabbix-agent service
+  ansible.builtin.systemd:
+    name: zabbix-agent
+    state: stopped
+    enabled: false
+  ignore_errors: true
+
+- name: Remove zabbix-agent package
+  ansible.builtin.apt:
+    name: zabbix-agent
+    state: absent
+    purge: true
+
+- name: Remove zabbix-agent systemd unit file
+  ansible.builtin.file:
+    path: /usr/lib/systemd/system/zabbix-agent.service
+    state: absent
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Remove zabbix_agentd binary
+  ansible.builtin.file:
+    path: /usr/sbin/zabbix_agentd
+    state: absent

@@ -1,0 +1,10 @@
+- name: Check if docker binary exists
+  ansible.builtin.command: which docker
+  register: docker_check
+  ignore_errors: true
+
+- ansible.builtin.import_tasks: 05-create-directory.yml
+  when: docker_check.rc == 0 and vault_dict_users_secret_g2.registry_auths is defined
+
+- ansible.builtin.import_tasks: 10-generate-config.yml
+  when: docker_check.rc == 0 and vault_dict_users_secret_g2.registry_auths is defined

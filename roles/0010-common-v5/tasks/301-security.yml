@@ -32,7 +32,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: create path
   ansible.builtin.file:
@@ -57,7 +57,6 @@
   tags: [sshd]
   when: "(ansible_distribution == 'Ubuntu')"
 
-
 - name: copy sshd config ubuntu - /etc/ssh/sshd_config
   ansible.builtin.template:
     src: sshd_config.j2
@@ -70,3 +69,43 @@
   tags: [sshd]
   notify: "restart {{ ssh_daemon }}"
   when: "(ansible_distribution == 'Ubuntu')"
+
+- name: Disable SSH password auth only if the directive exists
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - ssh_password_authentication is not defined or ssh_password_authentication in ['no', 'false', False]
+  block:
+    - name: Candidate files (explicit)
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/ssh/sshd_config
+        - /etc/ssh/sshd_config.d/*.conf
+      register: sshd_candidates
+
+    - name: Find any *.conf in /etc/ssh/sshd_config.d
+      ansible.builtin.find:
+        paths: /etc/ssh/sshd_config.d
+        patterns: "*.conf"
+        file_type: file
+      register: sshd_d_confs
+      failed_when: false
+
+    - name: Build final list of files that exist
+      ansible.builtin.set_fact:
+        sshd_cfgs: >-
+          {{
+            (sshd_candidates.results | selectattr('stat.exists') | map(attribute='stat.path') | list)
+            | union(sshd_d_confs.files | default([]) | map(attribute='path') | list)
+            | unique
+          }}
+
+    - name: Replace existing PasswordAuthentication directives with "no" (do not add)
+      ansible.builtin.replace:
+        path: "{{ item }}"
+        regexp: '^[ \t#]*PasswordAuthentication[ \t]+\S+'
+        replace: 'PasswordAuthentication no'
+        backup: true
+      loop: "{{ sshd_cfgs }}"
+      notify: "restart {{ ssh_daemon }}"
+  tags: [sshd]

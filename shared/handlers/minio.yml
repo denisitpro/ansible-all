@@ -1,14 +1,12 @@
-- name: restart minio
-  systemd:
-    name: minio
+---
+- name: recreate-docker minio
+  community.docker.docker_compose_v2:
+    project_src: "{{ minio_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker minio
+  community.docker.docker_compose_v2:
+    project_src: "{{ minio_compose_path }}"
     state: restarted
-
-- name: "restart minio"
-  shell: "docker compose restart minio"
-  args:
-    chdir: "{{ minio_docker_compose_path }}"
-
-- name: "restart-docker minio"
-  shell: "docker-compose pull && docker-compose down && docker-compose up -d"
-  args:
-    chdir: "{{ minio_docker_compose_path }}"

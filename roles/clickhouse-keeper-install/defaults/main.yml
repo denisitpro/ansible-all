@@ -24,9 +24,12 @@ keeper_logger_console: autodetection
 keeper_listen_hosts:
   - "0.0.0.0"
 
+# vault g1
+# consul_click_keeper_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
 
-# metrics
-consul_click_keeper_metrics_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
+# vault g2
+consul_click_keeper_metrics_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default('set_me') }}"
+
 click_keeper_tags:
   - "{{ stand_type }}"
   - "{{ click__server_metrics_name | default('clickhouse-keeper-metrics') }}"

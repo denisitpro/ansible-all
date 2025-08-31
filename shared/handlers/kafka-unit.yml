@@ -1,0 +1,16 @@
+---
+- name: kafka-unit-restart
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: kafka
+    state: restarted
+  tags:
+    - kafka-unit-restart
+
+- name: zookeeper-unit-restart
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: zookeeper
+    state: restarted
+  tags:
+    - zookeeper-unit-restart

@@ -1,0 +1,24 @@
+---
+- name: restart redis-server
+  ansible.builtin.systemd:
+    name: redis-server
+    state: restarted
+  when: ansible_distribution == 'Ubuntu'
+
+- name: reload redis-server
+  ansible.builtin.systemd:
+    name: redis-server
+    state: reloaded
+  when: ansible_distribution == 'Ubuntu'
+
+- name: start redis-server
+  ansible.builtin.systemd:
+    name: redis-server
+    state: started
+  when: ansible_distribution == 'Ubuntu'
+
+- name: stop redis-server
+  ansible.builtin.systemd:
+    name: redis-server
+    state: stopped
+  when: ansible_distribution == 'Ubuntu'

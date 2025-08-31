@@ -1,0 +1,23 @@
+---
+# Write certificate (PEM) from vault_dict_users_secret_g2 without .value
+- name: Write Blackbox mTLS certificate (client-cert.pem)
+  ansible.builtin.copy:
+    content: "{{ blackbox_mtls_cert_secret | default('') }}"
+    dest: "{{ blackbox_mtls_path }}/blackbox-cert.pem"
+    mode: '0644'
+  notify: restart-docker blackbox-exporter
+
+# Write private key (PEM) from vault_dict_users_secret_g2 without .value
+- name: Write Blackbox mTLS private key (client-key.pem)
+  ansible.builtin.copy:
+    content: "{{ blackbox_mtls_key_secret | default('') }}"
+    dest: "{{ blackbox_mtls_path }}/blackbox-key.pem"
+    mode: '0644'
+  notify: restart-docker blackbox-exporter
+
+- name: Write Blackbox mTLS root CA (ca-certificates.crt)
+  ansible.builtin.copy:
+    content: "{{ blackbox_mtls_ca_secret | default('') }}"
+    dest: "{{ blackbox_mtls_path }}/blackbox-ca.pem"
+    mode: '0644'
+  notify: restart-docker blackbox-exporter

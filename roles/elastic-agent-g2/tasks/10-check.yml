@@ -1,0 +1,5 @@
+---
+- name: check if elastic-agent is installed
+  ansible.builtin.stat:
+    path: "{{ elastic_agent_bin }}"
+  register: elastic_agent_bin_stat
