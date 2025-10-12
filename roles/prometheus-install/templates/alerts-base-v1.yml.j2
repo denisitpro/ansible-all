@@ -24,7 +24,7 @@ groups:
 
   # - alert: RebootRequired
   #   expr: |
-  #     node_reboot_required{instance!~"{{ excl_inst_reboot_required | default([]) | join('|') }}"} == 1
+  #     node_reboot_required{instance!~"{{ excld_inst_reboot_required | default([]) | join('|') }}"} == 1
   #   for: 5m
   #   labels:
   #     severity: info

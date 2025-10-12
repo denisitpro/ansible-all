@@ -12,4 +12,4 @@ fi
 
 ping_host4_metric=$(echo $ping_host4 | tr '-' '_' | tr '.' '_')  #normalization for metric format support
 
-echo "c1_$(hostname | awk -F. '{print $1}' | tr '-' '_')_ping_ms_${ping_host4_metric} $ping_results" > /var/lib/node-exporter/ping4_$ping_host4_metric.prom
+echo "$(hostname | awk -F. '{print $1}' | tr '-' '_')_ping_ms_${ping_host4_metric} $ping_results" > /var/lib/node-exporter/ping4_$ping_host4_metric.prom

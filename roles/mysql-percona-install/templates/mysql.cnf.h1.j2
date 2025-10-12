@@ -1,0 +1,44 @@
+[mysqld]
+character-set-server = {{character_set_server}}
+log-bin-trust-function-creators = 1
+slow_query_log = 1
+long_query_time = {{long_query_time}}
+slow_query_log_file = {{slow_log_path}}
+require_secure_transport = {{mysql_require_secure_transport}}
+default_authentication_plugin=mysql_native_password
+#general_log_file = /var/log/mysql/mysql.log
+#general_log  = 1
+#log_error_verbosity = 2
+skip-name-resolve = ON
+key_buffer_size = {{key_buffer_size}}
+max_allowed_packet = {{max_allowed_packet}}
+max_connections = {{max_connections}}
+innodb_buffer_pool_size = {{innodb_buffer_pool_size}}
+innodb_log_file_size = {{innodb_log_file_size}}
+innodb_log_buffer_size = {{innodb_log_buffer_size}}
+max_prepared_stmt_count = {{max_prepared_stmt_count}}
+{% if mysql_cls is defined %}
+### replication
+server-id = {{server_id}}
+log_error = {{log_error}}
+log_bin = {{log_bin}}
+log_bin_index = {{log_bin_index}}
+relay_log = {{relay_log}}
+relay_log_index = {{relay_log_index}}
+replicate-ignore-db=information_schema
+replicate-ignore-db=mysql
+replicate-ignore-db=performance_schema
+binlog-ignore-db = information_schema
+binlog-ignore-db = mysql
+binlog-ignore-db = performance_schema
+auto_increment_increment = {{auto_increment_increment}}
+auto_increment_offset = {{auto_increment_offset}}
+binlog_expire_logs_seconds = {{binlog_expire_logs_seconds}}
+max_binlog_size = {{max_binlog_size}}
+{% endif %}
+{% if mysql_replication is defined %}
+slave-skip-errors=1396
+{% endif %}
+{% if read_only is defined %}
+read-only=ON
+{% endif %}

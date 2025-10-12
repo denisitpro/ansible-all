@@ -12,4 +12,5 @@
    - users
 
 - ansible.builtin.import_tasks: 20-delete-users.yml
+  when: local_users_delete is defined and local_users_delete | length > 0
   tags: ['never', 'delete-users']

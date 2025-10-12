@@ -1,0 +1,19 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - mysql
+    - mysql-prefly
+
+- ansible.builtin.import_tasks: 10-config.yml
+  tags:
+    - mysql
+    - mysql-config
+
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - mysql
+    - mysql-compose
+
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'mysql-clean']

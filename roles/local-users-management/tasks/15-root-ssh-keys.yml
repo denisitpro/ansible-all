@@ -1,5 +1,5 @@
 ---
-- name: Remove old authorized_keys
+- name: Remove old authorized_keys - root task
   ansible.builtin.file:
     path: "/root/.ssh/authorized_keys"
     state: absent

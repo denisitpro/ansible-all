@@ -30,7 +30,7 @@ groups:
       summary: "{% raw %}{{ $labels.domain }}: domain is expiring{% endraw %}"
 
   - alert: DomainProbeFailure
-    expr: domain_probe_success == 0
+    expr: domain_probe_success{domain!~"{{ excld_domain_probe_failure | default([]) | join('|') }}"} == 0
     for: 1h
     labels:
       severity: warning

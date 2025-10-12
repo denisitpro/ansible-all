@@ -26,7 +26,7 @@ groups:
       summary: '{% raw %}Issue with {{ $labels.instance }}{% endraw %}'
       description: '{% raw %}Endpoint {{ $labels.instance }} on {{ $labels.server }} ( {{ $labels.location }} ) in invalid state. Check services{% endraw %}'
   - alert: Blackbox slow probe - v2
-    expr: avg_over_time(probe_duration_seconds[1m]) > 2
+    expr: avg_over_time(probe_duration_seconds{instance!~"{{ excld_inst_blackbox_slow_probe | default([]) | join('|') }}", tags!~"{{ excld_tags_blackbox_slow_probe | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[1m]) > 2
     for: 5m
     labels:
       severity: warning

@@ -1,5 +1,5 @@
 ---
-psql_version: 17.5-alpine3.22
+psql_version: 17.6-alpine3.22
 psql_image: "postgres"
 
 psql_compose_path: "/opt/docker/psql"
@@ -30,7 +30,7 @@ psql_docker_user_uid: 999
 psql_docker_user_gid: 999
 
 psql_default_db_user: "postgres"
-psql_default_db_password: "{{ vault_dict_users_secret_g2.psql_default_db_password.postgres_default_pass | default('set_me') }}"
+psql_default_db_password: "{{ vault_dict_users_secret_g2.psql_default_db_password.postgres_default_pass | default('postgres') }}"
 # psql_default_db_password: "postgres"
 psql_default_db_name: "db1"
 psql_pgpassword: "replication"

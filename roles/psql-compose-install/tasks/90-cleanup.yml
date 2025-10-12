@@ -1,19 +1,19 @@
 ---
+- name: Check if docker-compose.yml exists
+  ansible.builtin.stat:
+    path: "{{ psql_compose_path }}/docker-compose.yml"
+  register: compose_file
+
 - name: stop compose
   community.docker.docker_compose_v2:
     project_src: "{{ psql_compose_path }}"
     state: absent
-  register: compose_result
-  failed_when:
-    - compose_result is failed
-    - "'No such container' not in compose_result.msg"
+  when: compose_file.stat.exists
 
-- name: clean folder
+- name: Remove directory data
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-    mode: '0755'
-    owner: root
-    group: root
   with_items:
     - "{{ psql_base_path }}"
+    - "{{ psql_compose_path }}/docker-compose.yml"

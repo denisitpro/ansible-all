@@ -1,0 +1,55 @@
+[mysqld]
+# SAFETY #
+max-allowed-packet             = 1024M
+max-connect-errors             = 1000000
+
+# CACHES AND LIMITS #
+tmp-table-size                 = 64M
+max-heap-table-size            = 64M
+query-cache-type               = 1
+query-cache-size               = 256M
+max-connections                = 4096
+thread-cache-size              = 50
+open-files-limit               = 65535
+table-definition-cache         = 4096
+table-open-cache               = 4096
+join_buffer_size               = 8M
+sort_buffer_size               = 8M
+
+# INNODB #
+innodb-flush-method            = O_DIRECT
+innodb_lock_wait_timeout       = 100
+innodb-log-files-in-group      = 2
+innodb-log-file-size           = 512M
+innodb-flush-log-at-trx-commit = 2
+innodb-file-per-table          = 1
+innodb-buffer-pool-size        = 10G
+innodb_buffer_pool_instances   = 10
+innodb_adaptive_flushing       = 1
+innodb_flush_neighbors         = 0
+innodb_read_io_threads         = 4
+innodb_write_io_threads        = 4
+innodb_io_capacity             = 2000
+innodb_io_capacity_max         = 4000
+innodb_purge_threads           = 4
+innodb_max_purge_lag_delay     = 30000000
+innodb_max_purge_lag           = 0
+innodb_adaptive_hash_index     = 0
+innodb_use_native_aio          = 1
+innodb_doublewrite             = 1
+innodb_stats_persistent        = 1
+innodb_spin_wait_delay         = 6
+innodb_thread_concurrency      = 0
+innodb_max_dirty_pages_pct     = 90
+innodb_max_dirty_pages_pct_lwm = 10
+innodb_lru_scan_depth          = 4000
+innodb_page_cleaners           = 4
+innodb_open_files              = 16384
+
+log_queries_not_using_indexes  = 1
+
+slave_compressed_protocol      = ON
+performance_schema             = ON
+performance-schema-instrument  ='statement/%=ON'
+performance-schema-consumer-statements-digest = ON
+innodb_monitor_enable          = all

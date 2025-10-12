@@ -1,0 +1,7 @@
+---
+- name: copy compose-file - vault
+  ansible.builtin.template:
+    src: "docker-compose.mysql.yml.j2"
+    dest: "{{ mysql_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker mysql

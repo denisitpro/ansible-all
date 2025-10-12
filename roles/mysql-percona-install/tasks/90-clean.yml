@@ -1,0 +1,14 @@
+---
+- name: stop compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ mysql_compose_path }}"
+    state: absent
+  ignore_errors: true
+
+- name: remove mysql data and files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ mysql_base_path }}"
+    - "{{ mysql_compose_path }}/docker-compose.yml"

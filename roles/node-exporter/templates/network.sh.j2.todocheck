@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
 echo "# own test netstat metrics" > /var/lib/node-exporter/netstat.prom
-echo "c1_$(hostname | awk -F. '{print $1}' | tr '-' '_')_ssh_connections $(netstat -tan | grep 22 | wc -l)" >> /var/lib/node-exporter/netstat.prom
-echo "c1_$(hostname | awk -F. '{print $1}' | tr '-' '_')_node_exporter_connections $(netstat -tan | grep 9100 | wc -l)" >> /var/lib/node-exporter/netstat.prom
-echo "c1_$(hostname | awk -F. '{print $1}' | tr '-' '_')_all_connections $(netstat -tan | wc -l)" >> /var/lib/node-exporter/netstat.prom
+echo "$(hostname | awk -F. '{print $1}' | tr '-' '_')_ssh_connections $(netstat -tan | grep 22 | wc -l)" >> /var/lib/node-exporter/netstat.prom
+echo "$(hostname | awk -F. '{print $1}' | tr '-' '_')_node_exporter_connections $(netstat -tan | grep 9100 | wc -l)" >> /var/lib/node-exporter/netstat.prom
+echo "$(hostname | awk -F. '{print $1}' | tr '-' '_')_all_connections $(netstat -tan | wc -l)" >> /var/lib/node-exporter/netstat.prom

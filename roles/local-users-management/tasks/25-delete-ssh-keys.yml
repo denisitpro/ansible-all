@@ -1,0 +1,126 @@
+---
+# Remove SSH keys by public key part (ignoring comments) from all users' authorized_keys
+- name: Check if user has SSH keys to remove
+  ansible.builtin.set_fact:
+    user_has_keys: "{{ user.public_keys is defined and user.public_keys | length > 0 }}"
+
+- name: Process SSH key removal using shell commands
+  block:
+    - name: Extract public key parts (algorithm + key, without comments)
+      ansible.builtin.set_fact:
+        normalized_keys: >-
+          {{ user.public_keys | map('regex_replace', '^([^ ]+ [^ ]+).*$', '\1') | list }}
+
+    - name: Get list of all system users with home directories
+      ansible.builtin.getent:
+        database: passwd
+      register: all_users
+
+    - name: Filter users with home directories (excluding the deleted user)
+      ansible.builtin.set_fact:
+        target_users: >-
+          {{ all_users.ansible_facts.getent_passwd | dict2items 
+             | selectattr('value.4', 'match', '^/home/.*|^/root$') 
+             | selectattr('key', '!=', user.name) 
+             | map(attribute='key') 
+             | list + ['root'] | unique }}
+
+    - name: Remove SSH keys using shell command
+      ansible.builtin.shell: |
+        target_user="{{ item.0 }}"
+        normalized_key="{{ item.1 }}"
+
+        if [ "$target_user" = "root" ]; then
+          auth_file="/root/.ssh/authorized_keys"
+          ssh_dir="/root/.ssh"
+        else
+          auth_file="/home/$target_user/.ssh/authorized_keys"
+          ssh_dir="/home/$target_user/.ssh"
+        fi
+
+        if [ -f "$auth_file" ]; then
+          # Store original ownership and permissions
+          original_owner=$(stat -c '%U' "$auth_file")
+          original_group=$(stat -c '%G' "$auth_file")
+          original_mode=$(stat -c '%a' "$auth_file")
+          
+          echo "Processing $auth_file (owner: $original_owner:$original_group, mode: $original_mode)"
+          
+          # Create backup with timestamp
+          backup_file="$auth_file.backup.$(date +%Y%m%d_%H%M%S)"
+          cp "$auth_file" "$backup_file"
+          
+          # Create temp file
+          temp_file=$(mktemp)
+          
+          # Process each line in authorized_keys
+          removed_count=0
+          while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            if [ -z "$line" ] || echo "$line" | grep -q '^[[:space:]]*#'; then
+              echo "$line" >> "$temp_file"
+              continue
+            fi
+            
+            # Extract just the algorithm and key part (first two fields)
+            line_key_part=$(echo "$line" | awk '{print $1 " " $2}')
+            
+            # Compare with our normalized key
+            if [ "$line_key_part" = "$normalized_key" ]; then
+              echo "REMOVED: Key matching '$normalized_key' from $target_user"
+              removed_count=$((removed_count + 1))
+            else
+              echo "$line" >> "$temp_file"
+            fi
+          done < "$auth_file"
+          
+          # Replace original file if we removed any keys
+          if [ $removed_count -gt 0 ]; then
+            # Move temp file to replace original
+            mv "$temp_file" "$auth_file"
+            
+            # Restore exact original ownership and permissions
+            chown "$original_owner:$original_group" "$auth_file"
+            chmod "$original_mode" "$auth_file"
+            
+            # Ensure SSH directory has correct ownership too
+            chown "$original_owner:$original_group" "$ssh_dir"
+            chmod 700 "$ssh_dir"
+            
+            echo "Updated $auth_file - removed $removed_count matching key(s)"
+            echo "Restored ownership to $original_owner:$original_group with mode $original_mode"
+          else
+            # Clean up if no changes made
+            rm -f "$temp_file"
+            rm -f "$backup_file"
+            echo "No matching keys found for $target_user"
+          fi
+        else
+          echo "No authorized_keys file found for $target_user"
+        fi
+      args:
+        executable: /bin/bash
+      loop: "{{ target_users | product(normalized_keys) | list }}"
+      vars:
+        target_user: "{{ item.0 }}"
+        normalized_key: "{{ item.1 }}"
+      register: shell_removal_results
+      changed_when: shell_removal_results.stdout is defined and ('Updated' in shell_removal_results.stdout)
+
+    - name: Display key removal summary
+      ansible.builtin.debug:
+        msg: |
+          SSH key removal completed for user '{{ user.name }}'.
+          Processed {{ target_users | length }} system users.
+          Normalized {{ user.public_keys | length }} key(s) to remove.
+          Keys removed: {{ shell_removal_results.results | selectattr('changed', 'equalto', true) | list | length }}
+
+          Details:
+          {{ shell_removal_results.results | selectattr('stdout_lines', 'defined') | map(attribute='stdout_lines') | flatten | select('match', '.*REMOVED.*|.*Updated.*') | list | join('\n') }}
+
+    - name: Remove user's own SSH directory
+      ansible.builtin.file:
+        path: "/home/{{ user.name }}/.ssh"
+        state: absent
+
+  when: user_has_keys

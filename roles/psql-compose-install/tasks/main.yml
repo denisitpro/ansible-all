@@ -37,25 +37,29 @@
 #     - psql-consul
 
 
-- ansible.builtin.import_tasks: 20-compose.yml
+- name: Import compose
+  ansible.builtin.import_tasks: 20-compose.yml
   tags:
     - psql
     - psql-docker
     - psql-compose
 
-- ansible.builtin.import_tasks: 25-create-users.yml
-  when: postgres_users is defined
-  tags:
-    - psql
-    - psql-users
-    - psql-compose
+# - name: Import create users
+#   ansible.builtin.import_tasks: 25-create-users.yml
+#   when: postgres_users is defined
+#   tags:
+#     - psql
+#     - psql-users
+#     - psql-compose
 
-- ansible.builtin.import_tasks: 30-create-db.yml
-  when: postgres_db is defined
-  tags:
-    - psql
-    - psql-db
-    - psql-compose
+# - name: Import create db
+#   ansible.builtin.import_tasks: 30-create-db.yml
+#   when: postgres_db is defined
+#   tags:
+#     - psql
+#     - psql-db
+#     - psql-compose
 
-- ansible.builtin.import_tasks: 90-cleanup.yml
+- name: Import cleanup
+  ansible.builtin.import_tasks: 90-cleanup.yml
   tags: ['never', 'psql-clean']
