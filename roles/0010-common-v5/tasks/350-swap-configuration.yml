@@ -1,0 +1,137 @@
+---
+- name: Check current swap status
+  ansible.builtin.command: swapon --show
+  register: current_swap
+  failed_when: false
+  changed_when: false
+
+- name: Display current swap status
+  ansible.builtin.debug:
+    msg: "Current swap: {{ current_swap.stdout if current_swap.stdout else 'No swap configured' }}"
+
+- name: Disable all swap
+  ansible.builtin.command: swapoff -a
+  when: current_swap.stdout != ""
+  failed_when: false
+
+- name: Remove swap entries from /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^.*\s+swap\s+swap\s+.*$'
+    state: absent
+    backup: true
+
+- name: Find existing swap files in root
+  ansible.builtin.find:
+    paths: /
+    patterns:
+      - "swapfile*"
+      - "swap.img"
+    file_type: file
+    recurse: false
+  register: swap_files
+
+- name: Remove existing swap files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ swap_files.files }}"
+  when: swap_files.files | length > 0
+
+- name: Configure swap when swap_size is defined
+  block:
+    - name: Validate swap_size format
+      ansible.builtin.assert:
+        that:
+          - swap_size is regex('^[0-9]+[GM]$')
+        fail_msg: "swap_size must be in format like '1G', '2G', '512M', etc."
+
+    - name: Calculate swap size in MB
+      ansible.builtin.set_fact:
+        swap_size_mb: "{{ (swap_size[:-1] | int * 1024) if swap_size.endswith('G') else swap_size[:-1] | int }}"
+
+    - name: Check available disk space
+      ansible.builtin.shell: df / | tail -1 | awk '{print $4}'
+      register: available_space_kb
+      changed_when: false
+
+    - name: Convert available space to MB
+      ansible.builtin.set_fact:
+        available_space_mb: "{{ (available_space_kb.stdout | int / 1024) | int }}"
+
+    - name: Ensure enough space for swap file
+      ansible.builtin.assert:
+        that:
+          - (swap_size_mb | int) < (available_space_mb | int * 0.9)
+        fail_msg: "Not enough disk space. Available: {{ available_space_mb }}MB, Required: {{ swap_size_mb }}MB"
+
+    - name: Create swap file using fallocate (faster than dd)
+      ansible.builtin.command: fallocate -l {{ swap_size_mb }}M /swapfile
+      args:
+        creates: /swapfile
+      register: create_swap_result
+
+    - name: Fallback to dd if fallocate fails
+      ansible.builtin.command: dd if=/dev/zero of=/swapfile bs=1M count={{ swap_size_mb }}
+      args:
+        creates: /swapfile
+      when: create_swap_result is failed
+
+    - name: Set swap file permissions
+      ansible.builtin.file:
+        path: /swapfile
+        mode: "0600"
+        owner: root
+        group: root
+
+    - name: Make swap file
+      ansible.builtin.command: mkswap /swapfile
+      register: mkswap_result
+      changed_when: mkswap_result.rc == 0
+
+    - name: Enable swap file
+      ansible.builtin.command: swapon /swapfile
+      register: swapon_result
+      changed_when: swapon_result.rc == 0
+
+    - name: Add swap file to /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "/swapfile none swap sw 0 0"
+        create: true
+        backup: true
+
+    - name: Configure swap-related sysctl parameters
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/10-swap.conf
+        content: |
+          # Swap configuration
+          # Lower swappiness = less swapping (default is 60)
+          vm.swappiness = 10
+
+          # Lower vfs_cache_pressure = prefer keeping cache (default is 100)
+          vm.vfs_cache_pressure = 50
+        mode: "0644"
+        owner: root
+        group: root
+        backup: true
+
+    - name: Apply sysctl settings
+      ansible.builtin.command: sysctl -p /etc/sysctl.d/10-swap.conf
+      changed_when: false
+
+    - name: Verify swap configuration
+      ansible.builtin.command: swapon --show
+      register: final_swap
+      changed_when: false
+
+    - name: Display final swap status
+      ansible.builtin.debug:
+        msg: "Final swap configuration: {{ final_swap.stdout }}"
+
+  when: swap_size is defined and swap_size != ""
+
+- name: Display swap disabled message
+  ansible.builtin.debug:
+    msg: "Swap has been disabled and removed (swap_size not defined)"
+  when: swap_size is not defined or swap_size == ""

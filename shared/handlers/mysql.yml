@@ -1,0 +1,15 @@
+---
+- name: recreate-docker mysql
+  community.docker.docker_compose_v2:
+    project_src: "{{ mysql_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart mysql
+  community.docker.docker_compose_v2:
+    project_src: "{{ mysql_compose_path }}"
+    services: "{{ item }}"
+    state: restarted
+  with_items:
+    - "mysql"

@@ -6,8 +6,3 @@
     owner: root
     group: root
     mode: '0644'
-  tags:
-    - base
-    - common-base
-    - hosts
-    - etc-hosts

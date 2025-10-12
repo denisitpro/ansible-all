@@ -1,0 +1,7 @@
+---
+- name: recreate-docker confluence
+  community.docker.docker_compose_v2:
+    project_src: "{{ confluence_compose_path }}"
+    state: present
+    recreate: always
+    pull: always

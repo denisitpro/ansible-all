@@ -1,0 +1,15 @@
+---
+- name: recreate-docker runner
+  community.docker.docker_compose_v2:
+    project_src: "{{ runner_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart runner
+  community.docker.docker_compose_v2:
+    project_src: "{{ runner_compose_path }}"
+    services: "{{ item }}"
+    state: restarted
+  with_items:
+    - "runner"
