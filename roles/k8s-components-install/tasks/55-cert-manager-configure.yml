@@ -1,22 +1,30 @@
 ---
-- name: Cert Manager Configure - Copy cert-manager manifests
+- name: Cert Manager Configure - Copy cert-manager manifests (HTTP)
   ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: /tmp/{{ item }}
+    src: "cert-manager-http.yml.j2"
+    dest: /tmp/cert-manager-http.yml
     mode: "0600"
-  when: cert_manager_force_install is defined
-  with_items:
-    - cert-manager-cloudflare.yml
+  when: k8s_cert_manager_type == "http"
 
-- name: Cert Manager Configure - Apply cert-manager manifests
-  ansible.builtin.command: kubectl apply -f /tmp/{{ item }} --kubeconfig {{ k8s_config_path }}
-  when: cert_manager_force_install is defined
-  with_items:
-    - cert-manager-cloudflare.yml
+- name: Cert Manager Configure - Copy cert-manager manifests (Cloudflare)
+  ansible.builtin.template:
+    src: "cert-manager-cloudflare.yml.j2"
+    dest: /tmp/cert-manager-cloudflare.yml
+    mode: "0600"
+  when: k8s_cert_manager_type == "cloudflare"
 
-- name: Cert Manager Configure - Remove secrets
+- name: Cert Manager Configure - Apply cert-manager manifests (HTTP)
+  ansible.builtin.command: kubectl apply -f /tmp/cert-manager-http.yml --kubeconfig {{ k8s_config_path }}
+  when: k8s_cert_manager_type == "http"
+
+- name: Cert Manager Configure - Apply cert-manager manifests (Cloudflare)
+  ansible.builtin.command: kubectl apply -f /tmp/cert-manager-cloudflare.yml --kubeconfig {{ k8s_config_path }}
+  when: k8s_cert_manager_type == "cloudflare"
+
+- name: Cert Manager Configure - Remove temporary files
   ansible.builtin.file:
     path: /tmp/{{ item }}
     state: absent
   with_items:
+    - cert-manager-http.yml
     - cert-manager-cloudflare.yml

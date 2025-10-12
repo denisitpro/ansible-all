@@ -66,6 +66,31 @@
     - k8s-addition
     - k8s-argocd
 
+- ansible.builtin.import_tasks: 65-argocd-configure.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'argocd' in helm_componets_list and k8s_argocd_advanced_configured | default(false)"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-argocd
+    - k8s-argocd-configure
+
+- ansible.builtin.import_tasks: 67-argocd-kong-acl.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when:
+    - "'argocd' in helm_componets_list"
+    - argocd_ingress_class is defined
+    - argocd_ingress_class == 'kong'
+    - argocd_kong_ingress_whitelist is defined
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-argocd
+    - k8s-argocd-configure
+    - k8s-argocd-kong
+
 - ansible.builtin.import_tasks: 70-loki.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
@@ -130,6 +155,27 @@
     - k8s-ms
     - k8s-metrics-server
 
+# todo for future use
+# - ansible.builtin.import_tasks: 125-set-node-label.yml
+#   delegate_to: "{{ k8s_master_init_host }}"
+#   when: nodes_with_labels is defined and nodes_with_labels | length > 0
+#   run_once: true
+#   tags:
+#     - k8s
+#     - k8s-addition
+#     - k8s-label
+#     - k8s-node-label
+
+- ansible.builtin.import_tasks: 126-set-ingress-label-from-tf.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  when: k8s_ingress_nodes is defined and k8s_ingress_nodes | length > 0
+  run_once: true
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-label
+    - k8s-node-label
+    - k8s-ingress-label
 
 - ansible.builtin.import_tasks: 130-kong.yml
   delegate_to: "{{ k8s_master_init_host }}"

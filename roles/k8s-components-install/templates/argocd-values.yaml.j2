@@ -3,34 +3,47 @@ global:
   ha:
     enabled: false
 
-{% if argocd_ingress_support is defined or argocd_teleport is defined%}
+{% if argocd_ingress_support is defined or argocd_teleport is defined %}
 configs:
   params:
     server.insecure: true
 {% endif %}
+
 redis-ha:
   enabled: false
 
 controller:
-  replicas: 2
+  replicas: {{ argocd_controller_replicas | default('2') }}
 
 repoServer:
-  replicas: 2
+  replicas: {{ argocd_repo_server_replicas | default('2') }}
   extraEnv:
     - name: ARGOCD_GIT_VALUE_FILES
       value: "true"
 
 server:
-  replicas: 2
+  replicas: {{ argocd_server_replicas | default('2') }}
 {% if argocd_ingress_support is defined %}
   ingress:
     enabled: true
-    ingressClassName: nginx
+    # Ingress class: nginx or kong
+    ingressClassName: {{ argocd_ingress_class | default('nginx') }}
     annotations:
+{% if argocd_ingress_class | default('nginx') == 'nginx' %}
+      # Nginx ingress annotations
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-{% if argocd_ingress_support is defined and argocd_ingress_whitelist is defined %}
+{% if argocd_ingress_whitelist is defined %}
       nginx.ingress.kubernetes.io/whitelist-source-range: "{{ argocd_ingress_whitelist | join(', ') }}"
+{% endif %}
+{% elif argocd_ingress_class == 'kong' %}
+      # Kong ingress annotations
+      konghq.com/protocols: "https"
+      konghq.com/https-redirect-status-code: "301"
+{% if argocd_kong_ingress_whitelist is defined %}
+      # Kong IP restriction via KongPlugin
+      konghq.com/plugins: "argocd-ip-restriction"
+{% endif %}
 {% endif %}
 {% if argocd_acme is defined %}
       cert-manager.io/cluster-issuer: {{ cert_manager_cf_name | default('cloudflare-issuer-dns-challenge') }}
@@ -38,5 +51,9 @@ server:
     extraTls:
       - hosts:
         - {{ argocd_domain | default('argocd.example.com') }}
-        secretName: {{ (argocd_domain | default('argocd.example.com') | replace('.', '-') ~ '-tls') if argocd_acme is defined else 'fake-tls' }}
+{% if argocd_acme is defined %}
+        secretName: {{ argocd_domain | default('argocd.example.com') | replace('.', '-') }}-tls
+{% else %}
+        secretName: fake-tls
+{% endif %}
 {% endif %}

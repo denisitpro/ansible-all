@@ -1,0 +1,44 @@
+---
+- name: ArgoCD - create hemm oci sercret
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /tmp/{{ item }}
+    mode: "0600"
+  when: argocd_helm_secret | default(false)
+  with_items:
+    - argocd-helm-secret.yml
+
+- name: ArgoCD - create repos secret
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /tmp/{{ item }}
+    mode: "0600"
+  when: argocd_git_repos | length > 0
+  with_items:
+    - argocd-git-secret-g2.yml
+
+- name: ArgoCD - Install helm oci secret
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/{{ item }}
+    --namespace {{ helm_argocd_namespace | default('argocd') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: argocd_helm_secret | default(false)
+  with_items:
+    - argocd-helm-secret.yml
+
+- name: ArgoCD - Install git ssh keys
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/{{ item }}
+    --namespace {{ helm_argocd_namespace | default('argocd') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: argocd_git_repos | length > 0
+  with_items:
+    - argocd-git-secret-g2.yml
+
+- name: ArgoCD - Remove cm
+  ansible.builtin.file:
+    path: /tmp/{{ item }}
+    state: absent
+  with_items:
+    - argocd-helm-secret.yml
+    - argocd-git-secret-g2.yml

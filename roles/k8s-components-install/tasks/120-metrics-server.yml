@@ -40,7 +40,7 @@
     helm upgrade --install metrics-server metrics-server/metrics-server
     --namespace kube-system
     --kubeconfig {{ k8s_config_path }}
-    --version {{ metrics_server_helm_version | default('3.12.1') }}
+    --version {{ metrics_server_helm_version }}
     --values /tmp/metrics-server.yml
   when: not skip_metrics_server_install
 

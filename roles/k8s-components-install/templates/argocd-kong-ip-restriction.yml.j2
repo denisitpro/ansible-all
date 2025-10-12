@@ -1,0 +1,15 @@
+{% if argocd_ingress_class == 'kong' and argocd_kong_ingress_whitelist is defined %}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: argocd-ip-restriction
+  namespace: {{ helm_argocd_namespace | default('argocd') }}
+config:
+  allow:
+{% for ip in argocd_kong_ingress_whitelist %}
+    - {{ ip.split('/')[0] }}
+{% endfor %}
+plugin: ip-restriction
+{% endif %}
+

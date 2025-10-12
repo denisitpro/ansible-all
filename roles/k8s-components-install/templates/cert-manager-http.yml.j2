@@ -1,0 +1,30 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ k8s_cert_manager_http_prod_name | default('letsencrypt-prod-http') }}
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: {{ k8s_cert_manager_http_email | default('noreply@example.com') }}
+    privateKeySecretRef:
+      name: letsencrypt-prod-http-key
+    solvers:
+      - http01:
+          ingress:
+            class: {{ k8s_cert_manager_http_ingress_class | default('nginx') }}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ k8s_cert_manager_http_staging_name | default('letsencrypt-staging-http') }}
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: {{ k8s_cert_manager_http_email | default('noreply@example.com') }}
+    privateKeySecretRef:
+      name: letsencrypt-staging-http-key
+    solvers:
+      - http01:
+          ingress:
+            class: {{ k8s_cert_manager_http_ingress_class | default('nginx') }}

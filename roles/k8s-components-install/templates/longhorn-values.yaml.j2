@@ -1,11 +1,15 @@
 defaultSettings:
   replicaCount: {{ k8s_longhorn_default_settings_replica_count | default('2') }}
-  storageOverProvisioningPercentage: 100
-  storageMinimalAvailablePercentage: 7
+  storageOverProvisioningPercentage: "{{k8s_storage_over_provisioning_percentage | default('0')}}"
+  storageMinimalAvailablePercentage: "7"
   nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
-  replicaAutoBalance: "disabled" # kafka failed 
-  dataLocality: "best-effort"
-  rebalanceDisksWhenLowSpace: false # not foun value chart
+  replicaAutoBalance: "{{k8s_longhorn_replica_auto_balance | default('disabled')}}" # kafka failed
+
+  # Data locality options: "disabled", "best-effort", "strict-local"
+  # disabled - no data locality
+  # best-effort - try to keep data on the same node as pod, but allow scheduling on other nodes
+  # strict-local - strictly keep data on the same node as pod
+  dataLocality: "{{ k8s_longhorn_data_locality_mode | default('strict-local') }}"
 
 # # failed https://github.com/longhorn/longhorn/issues/6415
 # # https://github.com/longhorn/longhorn/issues/6623

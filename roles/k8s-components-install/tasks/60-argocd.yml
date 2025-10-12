@@ -38,11 +38,12 @@
     mode: "0644"
   when: not skip_argocd_install
 
+
 - name: ArgoCD - Install via Helm
   ansible.builtin.command: >
     helm upgrade --install argocd argo/argo-cd
     --namespace {{ helm_argocd_namespace | default('argocd') }}
-    --version {{ helm_argocd_version | default('8.3.1') }}
+    --version {{ helm_argocd_version }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/argocd-values.yaml
