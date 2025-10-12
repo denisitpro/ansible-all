@@ -1,0 +1,49 @@
+---
+- name: Check if rclone is installed
+  ansible.builtin.command: which rclone
+  register: rclone_check
+  failed_when: false
+  changed_when: false
+
+- name: Fail if rclone is not installed
+  ansible.builtin.fail:
+    msg: "Rclone is not installed. Please install rclone first or use rclone-install role."
+  when: rclone_check.rc != 0
+
+- name: Create rclone config directory
+  ansible.builtin.file:
+    path: "{{ backup_rclone_config_path | dirname }}"
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+
+- name: Generate rclone configuration
+  ansible.builtin.template:
+    src: rclone.conf.j2
+    dest: "{{ backup_rclone_config_path }}"
+    mode: '0600'
+    owner: root
+    group: root
+    backup: true
+  when: backup_rclone_targets | length > 0
+
+- name: Test rclone configuration
+  ansible.builtin.shell: |
+    rclone config show
+  register: rclone_config_test
+  changed_when: false
+  failed_when: false
+
+- name: Display rclone targets
+  ansible.builtin.debug:
+    msg: "Configured rclone targets: {{ backup_rclone_targets.keys() | list }}"
+  when: backup_rclone_targets | length > 0
+
+- name: Create backup upload script
+  ansible.builtin.template:
+    src: backup-upload.sh.j2
+    dest: "{{ backup_script_path }}/backup-upload.sh"
+    mode: '0755'
+    owner: root
+    group: root

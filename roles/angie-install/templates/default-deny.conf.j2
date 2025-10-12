@@ -1,12 +1,12 @@
 server	{
 {% if nginx_bind_addr_ipv4  is defined%}
-    listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }} default_server;
-    listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_port | default("443") }} ssl default_server;
+    listen {{ nginx_bind_addr_ipv4 }}:{{ nginx_default_http_port | default("80") }} default_server;
+    listen {{ nginx_bind_addr_ipv4 }}:{{ nginx_default_https_port | default("443") }} ssl default_server;
 {% else %}
-    listen {{ item.http_port | default("80") }} default_server;
-    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("80") }} default_server;
-    listen {{ item.https_port | default("443") }} ssl default_server;
-    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.https_port | default("443") }} ssl default_server;
+    listen {{ nginx_default_http_port | default("80") }} default_server;
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ nginx_default_http_port | default("80") }} default_server;
+    listen {{ nginx_default_https_port | default("443") }} ssl default_server;
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ nginx_default_https_port | default("443") }} ssl default_server;
 
 {% endif %}
 	server_name	_;

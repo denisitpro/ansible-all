@@ -1,0 +1,25 @@
+{{ ansible_managed | comment }}
+
+services:
+  runner-nocache:
+    image: {{ runner_registry }}:{{ runner_version }}
+    container_name: runner-nocache
+    network_mode: host
+    volumes:
+      - {{ runner_nocache_config_path }}:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: {{ runner_restart | default('always') }}
+
+{% if gitlab_runner_cache is defined %}
+  runner-cache:
+    image: {{ runner_registry }}:{{ runner_version }}
+    container_name: runner-cache
+    network_mode: host
+    volumes:
+      - {{ runner_cache_config_path }}:/etc/gitlab-runner
+      - {{ runner_cache_volume_path }}:/cache
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: {{ runner_restart | default('always') }}
+{% endif %}
+
+

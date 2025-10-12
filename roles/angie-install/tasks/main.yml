@@ -17,6 +17,7 @@
     - angie-ssl
 
 - ansible.builtin.import_tasks: 33-mtls-cert.yml
+  when: angie_use_mtls is defined
   tags:
     - angie
     - angie-mtls

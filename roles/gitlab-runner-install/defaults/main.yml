@@ -1,0 +1,18 @@
+---
+runner_registry: gitlab/gitlab-runner
+runner_version: "v18.4.0"
+
+# Paths configuration
+runner_compose_path: "/opt/docker/runner"
+
+# No-cache runner configuration
+runner_nocache_base_path: "/opt/runner-nocache"
+runner_nocache_config_path: "/opt/runner-nocache/config"
+runner_nocache_name: "runner-nocache"
+
+# Cache runner configuration
+runner_cache_base_path: "/opt/runner-cache"
+runner_cache_config_path: "/opt/runner-cache/config"
+runner_cache_volume_path: "/opt/runner-cache/cache"
+
+runer_docker_default_image: "docker:28.4-cli"

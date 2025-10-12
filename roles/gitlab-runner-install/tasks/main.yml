@@ -1,9 +1,16 @@
 ---
-- import_tasks: 10-repo.yml
-  when: ansible_distribution == 'Ubuntu'
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - gitlab-runner
+    - runner
 
-- import_tasks: 20-install.yml
+
+- ansible.builtin.import_tasks: 30-configure.yml
   tags:
     - gitlab-runner
+    - runner
+    - runner-config
+    - runner-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'runner-clean']

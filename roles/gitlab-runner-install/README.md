@@ -1,67 +1,17 @@
-# gitlab runner
+# register runner
+```bash
+cd /opt/docker/runner
+docker compose run --rm runner-nocache  register  --url https://gitlab.example.com --token glrt-aaaa
 
-* example conf runner 
-```toml
-concurrent = 4
-check_interval = 0
-listen_address = "{{global_bind_addr}}:9252"
-
-[session_server]
-  session_timeout = 1800
-
-[[runners]]
-  name = "docker_19_cache"
-  output_limit = 32768
-  request_concurrency = 32
-  url = "https://gitlab.com/"
-  token = "token"
-  executor = "docker"
-  pre_clone_script = "apk add openssh-client \n mkdir -p ~/.ssh \n echo -e 'Host *\n\tStrictHostKeyChecking no\n\n' > ~/.ssh/config \n chmod 600 ~/.ssh/config"
-  [runners.custom_build_dir]
-  [runners.cache]
-    [runners.cache.s3]
-    [runners.cache.gcs]
-    [runners.cache.azure]
-  [runners.docker]
-    tls_verify = false
-    image = "docker:20.10.5-dind"
-    dns = ["1.1.1.1", "8.8.8.8"]
-    privileged = true
-    disable_entrypoint_overwrite = false
-    oom_kill_disable = false
-    disable_cache = false
-    volumes = ["/cache"]
-    shm_size = 0
-    [[runners.docker.services]]
-      name = "docker:20.10.5-dind"
-      alias = "docker"
-
-[[runners]]
-  name = "docker_19_nocache"
-  output_limit = 32768
-  request_concurrency = 32
-  url = "https://gitlab.com/"
-  token = "token"
-  executor = "docker"
-  pre_clone_script = "apk add openssh-client \n mkdir -p ~/.ssh \n echo -e 'Host *\n\tStrictHostKeyChecking no\n\n' > ~/.ssh/config \n chmod 600 ~/.ssh/config"
-  [runners.custom_build_dir]
-  [runners.cache]
-    [runners.cache.s3]
-    [runners.cache.gcs]
-    [runners.cache.azure]
-  [runners.docker]
-    tls_verify = false
-    image = "docker:20.10.5-dind"
-    dns = ["1.1.1.1", "8.8.8.8"]
-    privileged = true
-    disable_entrypoint_overwrite = false
-    oom_kill_disable = false
-    disable_cache = true
-    volumes = ["/cache"]
-    shm_size = 0
-    [[runners.docker.services]]
-      name = "docker:20.10.5-dind"
-      alias = "docker"
-
-
+docker compose run --rm runner-cache  register  --url https://gitlab.example.com --token glrt-aaaa
 ```
+
+Need change default created config.toml
+use template /opt/runner-nocache/config/config.toml.example
+move vars /opt/runner-nocache/config/config.toml
+```
+  id = 95
+  token = "glrt-"
+  token_obtained_at = 
+  token_expires_at = 
+```  

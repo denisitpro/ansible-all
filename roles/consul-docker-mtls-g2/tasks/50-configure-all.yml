@@ -1,0 +1,39 @@
+- name: Set retry_join for Consul server
+  ansible.builtin.set_fact:
+    consul_retry_join: "{{ consul_cls_servers | default([]) + [consul_cls_pub_name | default('consul.example.com')] }}"
+  when: consul_mode == 'server'
+
+- name: Set retry_join for Consul agent
+  ansible.builtin.set_fact:
+    consul_retry_join: ["{{ consul_cls_pub_name | default('consul.example.com') }}"]
+  when: consul_mode == 'agent'
+
+- name: consul bind address
+  ansible.builtin.debug:
+    msg: "bind address {{ consul_bind_addr }}"
+
+- name: copy configs for all
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ consul_config_dir }}/{{ item }}"
+    mode: "0644"
+  with_items:
+    - consul-general.hcl
+    - consul-mtls.hcl
+  notify: restart-docker consul
+  tags:
+    - consul-import
+    - consul-config
+    - consul
+
+
+- name: copy compose consul
+  ansible.builtin.template:
+    src: docker-compose.consul.yml.j2
+    dest: "{{ consul_compose_path }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: recreate-docker consul-compose
+  tags:
+    - consul-compose

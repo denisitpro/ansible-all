@@ -1,0 +1,11 @@
+---
+- name: Create backup folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{ backup_dest_dir }}"
+    - "{{ backup_script_path }}"

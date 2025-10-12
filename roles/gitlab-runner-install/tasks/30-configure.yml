@@ -1,0 +1,26 @@
+---
+- name: copy config for nocache runner
+  ansible.builtin.template:
+    src: "config-g2.nocache.toml"
+    dest: "{{ runner_nocache_config_path }}/config.toml.example"
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: copy config for cache runner
+  ansible.builtin.template:
+    src: "config.cache.toml"
+    dest: "{{ runner_cache_config_path }}/config.toml.example"
+    mode: "0600"
+    owner: root
+    group: root
+  when: gitlab_runner_cache is defined
+
+- name: copy compose-file - runner
+  ansible.builtin.template:
+    src: "docker-compose.runner.yml.j2"
+    dest: "{{ runner_compose_path }}/docker-compose.yml"
+    mode: "0600"
+    owner: root
+    group: root
+  notify: recreate-docker runner

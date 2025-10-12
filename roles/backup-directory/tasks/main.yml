@@ -1,0 +1,29 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - backup
+    - backup-setup
+
+- ansible.builtin.import_tasks: 10-gpg-import.yml
+  tags:
+    - backup
+    - gpg-import
+
+
+- ansible.builtin.import_tasks: 15-rclone.yml
+  when: backup_use_rclone is defined
+  tags:
+    - backup
+    - rclone
+
+- ansible.builtin.import_tasks: 20-script.yml
+  when: backup_script_not_use is not defined
+  tags:
+    - backup
+    - script-backup
+
+- ansible.builtin.import_tasks: 30-cron.yml
+  when: backup_use_internal_cron is defined
+  tags:
+    - backup
+    - cron

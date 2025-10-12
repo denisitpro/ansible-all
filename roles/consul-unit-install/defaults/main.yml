@@ -1,13 +1,15 @@
-consul_version: 1.21.2
+consul_version: 1.21.4
 consul_mode: "agent" # support agent and server
 
 consul_base_path: /opt/consul
 consul_mtls_cert_path: "{{ consul_base_path }}/mtls-certs"
 
-
 consul_run_user: consul
-consul_binary_name: consul
+consul_uid: "{{ consul_run_user }}"
+consul_gid: "{{ consul_run_user }}"
+
 # consul_always_update_binary: true
+consul_binary_name: consul
 
 consul_binary_dir: /usr/local/bin
 consul_download_url: https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_{{ consul_go_arch }}.zip
@@ -16,10 +18,6 @@ consul_download_dir: /tmp
 consul_config_dir: /etc/consul.d
 consul_tmpl_dir: "{{ consul_base_path }}/tmpl"
 
-# vault g1
-# consul_encrypt_key: "{{ vault_dict_users_secret.consul_encrypt_key | default('set_me') }}"
-# consul_agent_token: "{{ vault_dict_users_secret.consul_agent_token | default('set_me') }}"
-# consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me', true) }}"
 # vault g2
 consul_encrypt_key: "{{ vault_dict_users_secret_g2.consul_encrypt_key.value | default('set_me') }}"
 consul_agent_token: "{{ vault_dict_users_secret_g2.consul_agent_token.value | default('set_me') }}"

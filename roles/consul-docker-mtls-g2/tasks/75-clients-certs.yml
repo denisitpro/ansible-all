@@ -1,0 +1,25 @@
+---
+- name: Check client-cert exist
+  ansible.builtin.stat:
+    path: "{{ consul_generate_ca_path }}/{{ consul_dc_name }}-client-consul-0-key.pem"
+  register: consul_clinet_0_pem
+
+- name: Generate clients certificate
+  community.docker.docker_container:
+    name: consul-clients-cert-generate
+    image: "hashicorp/consul:{{ consul_server_version }}"
+    command: >
+      consul tls cert create -client
+      -dc {{ consul_dc_name }}
+      -additional-dnsname {{ consul_mtls_client_dns_name }}
+      -days 3650
+    working_dir: "{{ consul_generate_ca_path }}"
+    volumes:
+      - "{{ consul_generate_ca_path }}:{{ consul_generate_ca_path }}"
+    entrypoint: ""
+    # auto_remove: true
+    # detach: false
+    cleanup: true
+    tty: false
+  loop: "{{ consul_mtls_client_dns_name }}"
+  when: not consul_clinet_0_pem.stat.exists

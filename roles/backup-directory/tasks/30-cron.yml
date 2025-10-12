@@ -1,0 +1,13 @@
+---
+- name: Create backup cron jobs
+  ansible.builtin.cron:
+    name: "{{ item.name }}"
+    minute: "{{ item.minute | default('0') }}"
+    hour: "{{ item.hour | default('2') }}"
+    job: "{{ item.job }}"
+    user: root
+    state: present
+  loop: "{{ backup_cron_jobs }}"
+  when:
+    - backup_cron_jobs is defined
+    - backup_cron_jobs | length > 0

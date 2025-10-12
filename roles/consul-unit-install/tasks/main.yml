@@ -18,11 +18,11 @@
     - consul-config
 
 
-- ansible.builtin.import_tasks: roles/consul-docker-mtls/tasks/37-copy-agents-certs.yml
+- ansible.builtin.import_tasks: 35-mtls-certs-agent.yml
   tags:
     - consul
     - consul-mtls
-    - consul-agett-cert
+    - consul-agent-cert
 
 - ansible.builtin.import_tasks: 40-configure-all.yml
   tags:
