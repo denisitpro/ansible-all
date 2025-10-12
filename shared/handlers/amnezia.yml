@@ -1,0 +1,5 @@
+---
+- name: Reboot system
+  ansible.builtin.reboot:
+    reboot_timeout: 300
+  become: yes

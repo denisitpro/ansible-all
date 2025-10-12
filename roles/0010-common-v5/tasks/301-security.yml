@@ -74,6 +74,7 @@
   when:
     - ansible_distribution == 'Ubuntu'
     - ssh_password_authentication is not defined or ssh_password_authentication in ['no', 'false', False]
+  tags: [sshd]
   block:
     - name: Candidate files (explicit)
       ansible.builtin.stat:
@@ -108,4 +109,3 @@
         backup: true
       loop: "{{ sshd_cfgs }}"
       notify: "restart {{ ssh_daemon }}"
-  tags: [sshd]

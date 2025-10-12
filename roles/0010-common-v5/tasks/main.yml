@@ -13,6 +13,14 @@
     - dns
     - common-base
 
+# - ansible.builtin.import_tasks: 60-gai-configure.yml
+#   when: cloud_provider == "twc"
+#   tags:
+#     - gai
+#     - base
+#     - dns
+#     - common-base
+
 - ansible.builtin.import_tasks: 70-update-installed-packages.yml
   tags:
     - base
@@ -26,6 +34,14 @@
     - base
     - common-base
     - base-packages
+
+- ansible.builtin.import_tasks: 85-disable-unattended-upgrades.yml
+  when: ansible_distribution == 'Ubuntu' and disable_unattended_upgrades is defined and disable_unattended_upgrades
+  tags:
+    - base
+    - common-base
+    - base-packages
+    - disable-unattended-upgrades
 
 - ansible.builtin.import_tasks: 90-qemu.yml
   when: cloud_provider == "pmx"
@@ -83,5 +99,12 @@
     - common-base
     - ipv6-only
 
+- ansible.builtin.import_tasks: 350-swap-configuration.yml
+  when: swap_size is defined and swap_size != ""
+  tags:
+    - base
+    - common-base
+    - swap
+
 - ansible.builtin.import_tasks: 900-reboot.yml
-  tags: ['never', 'reboot']
+  tags: ["never", "reboot"]

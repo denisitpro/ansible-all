@@ -1,4 +1,14 @@
 ---
+- name: Update Ubuntu APT Source
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list.d/ubuntu.sources
+    regexp: 'URIs: https?://([a-z]+\.)*archive\.ubuntu\.com/ubuntu/'
+    replace: "URIs: {{ ubuntu_apt_source }}"
+    backup: true
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - ubuntu_apt_source is defined
+
 - name: Update package cache
   ansible.builtin.apt:
     update_cache: true

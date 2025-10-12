@@ -116,3 +116,48 @@ force_create_etc_hosts: true
   tags:
     - etc-hosts
 ```
+
+### Swap Configuration (350)
+- **350-swap-configuration.yml** - Configure system swap
+
+#### Task 350 Description
+
+Task `350-swap-configuration.yml` manages system swap configuration.
+
+**Execution Condition:** Always runs, but creates swap only when `swap_size` variable is defined
+
+**What it does:**
+- Disables and removes all existing swap files and entries
+- Creates new swap file with specified size (if `swap_size` is defined)
+- Configures optimal swap parameters (swappiness=10, vfs_cache_pressure=50)
+- Adds swap to `/etc/fstab` for persistence
+
+**Variables:**
+- `swap_size` - Size of swap file (e.g., "1G", "2G", "512M"). If not defined, swap is disabled.
+
+**Features:**
+- Validates swap size format and available disk space
+- Uses fallocate for faster swap file creation (fallback to dd)
+- Creates backup of /etc/fstab before modifications
+- Configures optimal swap settings for server workloads
+
+**Usage examples:**
+```yaml
+# Enable 2GB swap
+swap_size: "2G"
+
+# Enable 512MB swap  
+swap_size: "512M"
+
+# Disable swap (default behavior)
+# swap_size: undefined
+```
+
+**Running only swap configuration:**
+```yaml
+- hosts: all
+  roles:
+    - 0010-common-v5
+  tags:
+    - swap
+```

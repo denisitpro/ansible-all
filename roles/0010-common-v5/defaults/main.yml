@@ -1,6 +1,6 @@
 ---
 dns_resolved_domains:
-  - 'example.com'
+  - "example.com"
 
 aws_fqdn_domain: example.com
 
@@ -16,7 +16,6 @@ dns_nameservers:
 # dns1: "2606:4700:4700::1001" # cloudflare
 # dns2: "2001:4860:4860::8888" # google
 
-
 default_timezone: UTC
 
 ntp_servers:
@@ -29,3 +28,5 @@ ntp_fallback_servers:
   - ntp.ubuntu.com
 
 server_hostname: "{{ inventory_hostname }}"
+# swap configuration
+# swap_size: 2G  # set size to enable swap (e.g., 1G, 2G, 512M)

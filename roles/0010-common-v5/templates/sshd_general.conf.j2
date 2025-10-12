@@ -8,7 +8,9 @@ AddressFamily inet
 AddressFamily inet6
 {% endif %}
 
+{% if required_ssh_hw_key is defined %}
 HostKey /etc/ssh/ssh_host_rsa_key
+{% endif %}
 HostKey /etc/ssh/ssh_host_ed25519_key
 
 # Ciphers and keying
@@ -62,7 +64,7 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 {% endif %}
 
 # Enable AllowAgentForwarding if you need to jump through this host
-{% if ssh_forward_disable is sameas true %}
+{% if ssh_forward_disable is defined %}
 AllowAgentForwarding no
 AllowTcpForwarding no
 {% else %}

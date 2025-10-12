@@ -3,8 +3,8 @@ alertmanager_image: "v0.28.1"
 
 
 # base directory config
-alertmanager_telegram_bot_token: "{{ vault_dict_users_secret.alertmanager_telegram_bot_token | default('set_me') }}"
-alertmanager_slack_webhook_url: "{{ vault_dict_users_secret.alertmanager_slack_webhook_url | default('set_me') }}"
+alertmanager_telegram_bot_token: "{{ vault_dict_users_secret_g2.alertmanager_telegram_bot_token.value | default('set_me') }}"
+alertmanager_slack_webhook_url: "{{ vault_dict_users_secret_g2.alertmanager_slack_webhook_url.value | default('set_me') }}"
 
 am_compose_path: "/opt/docker/alertmanager"
 alertmanager_data_path: /opt/alertmanager
