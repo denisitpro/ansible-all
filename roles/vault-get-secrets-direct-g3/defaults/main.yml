@@ -1,0 +1,4 @@
+---
+vault_url_direct: https://vault.example.com
+vault_var_name: "VAULT_ACCESS_TOKEN"
+vault_normalized_access_token: "{{ vault_token }}"

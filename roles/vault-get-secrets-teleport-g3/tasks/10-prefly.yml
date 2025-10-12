@@ -1,0 +1,62 @@
+# - name: Include vars
+#   ansible.builtin.include_vars:
+#     file: vault.secret
+#   register: env_file_result
+#   tags:
+#     - vault-debug
+
+# - debug: msg="vars {{ vault_token }}"
+#  tags:
+#    - vault-debug
+
+- name: Check if Vault token is available
+  ansible.builtin.fail:
+    msg: "Vault token environment variable is not set"
+  when: lookup('ansible.builtin.env', vault_var_name | default('VAULT_ACCESS_TOKEN')) == ""
+
+- name: Set Vault token from environment variable
+  ansible.builtin.set_fact:
+    vault_token: "{{ lookup('env', vault_var_name | default('VAULT_ACCESS_TOKEN')) }}"
+
+- name: PRINT vault server
+  ansible.builtin.debug:
+    msg: "server: {{ vault_url_teleport }}"
+
+- name: get teleport cert path
+  ansible.builtin.shell:
+    cmd: tsh app config {{ teleport_vault_app_name }} --format=json | jq .cert | tr -d '"'
+    executable: /bin/bash
+  register: teleport_cert_result
+
+- name: set teleport cert path
+  ansible.builtin.set_fact:
+    teleport_cert_path: "{{ teleport_cert_result.stdout }}"
+
+- name: get teleport key path
+  ansible.builtin.shell:
+    cmd: tsh app config {{ teleport_vault_app_name }} --format=json | jq .key | tr -d '"'
+    executable: /bin/bash
+  register: teleport_key_result
+
+- name: set teleport key path
+  ansible.builtin.set_fact:
+    teleport_key_path: "{{ teleport_key_result.stdout }}"
+
+- name: Debug teleport cert path
+  ansible.builtin.debug:
+    msg: "Cert path {{ teleport_cert_path }}"
+
+- name: Debug teleport key path
+  ansible.builtin.debug:
+    msg: "Key path {{ teleport_key_path }}"
+
+
+# - name: Check cert path  - cert path null
+#   ansible.builtin.fail: msg="Cert path null, need login to vault"
+#   when: item | string | length == 0
+#   with_items: "{{ teleport_cert_path }}"
+
+- name: Check cert path - cert path null
+  ansible.builtin.fail:
+    msg: "Cert path is empty, need login to Teleport"
+  when: teleport_cert_path | string | length == 0
