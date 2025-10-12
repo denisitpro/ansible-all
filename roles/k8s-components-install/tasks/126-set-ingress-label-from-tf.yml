@@ -1,0 +1,31 @@
+---
+# Apply K8s labels to ingress nodes based on Terraform state data
+# Uses k8s_ingress_nodes variable populated by terraform-read-remote-state-g2 role
+
+- name: Verify k8s_ingress_nodes variable is defined
+  ansible.builtin.assert:
+    that:
+      - k8s_ingress_nodes is defined
+      - k8s_ingress_nodes | length > 0
+    fail_msg: "Variable k8s_ingress_nodes is not defined or empty. Make sure terraform-read-remote-state-g2 role ran successfully."
+    success_msg: "Found {{ k8s_ingress_nodes | length }} ingress node(s) to label"
+
+- name: Debug ingress nodes from Terraform state
+  ansible.builtin.debug:
+    msg: "Will apply label {{ k8s_ingress_label_key }}={{ k8s_ingress_label_value }} to node {{ item.name }}"
+  loop: "{{ k8s_ingress_nodes }}"
+
+- name: Apply ingress label to nodes from Terraform state
+  ansible.builtin.command: >
+    kubectl label nodes {{ item.name }}
+    {{ k8s_ingress_label_key }}={{ k8s_ingress_label_value }}
+    --overwrite
+    --kubeconfig {{ k8s_config_path }}
+  loop: "{{ k8s_ingress_nodes }}"
+  register: label_result
+  changed_when: "'labeled' in label_result.stdout or 'not labeled' not in label_result.stdout"
+  failed_when: label_result.rc != 0 and 'not found' in label_result.stderr
+
+- name: Display labeling results
+  ansible.builtin.debug:
+    msg: "Successfully labeled {{ k8s_ingress_nodes | length }} ingress node(s)"

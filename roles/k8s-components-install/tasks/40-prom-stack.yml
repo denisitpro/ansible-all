@@ -82,7 +82,7 @@
   ansible.builtin.command: >
     helm upgrade --install prometheus prometheus-community/kube-prometheus-stack
     --namespace {{ helm_prometheus_namespace | default('monitoring') }}
-    --version {{ helm_prometheus_version | default('76.3.0') }}
+    --version {{ helm_prometheus_version }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/prometheus-values.yaml

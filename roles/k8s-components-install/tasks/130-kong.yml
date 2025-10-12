@@ -5,6 +5,7 @@
   failed_when: helm_check.rc != 0
   changed_when: false
 
+# todo current logical move to another tasks
 - name: Kong - Check if kong is already installed
   ansible.builtin.shell: |
     helm list -n {{ helm_kong_namespace | default('kong') }} --kubeconfig {{ k8s_config_path }} | grep -w kong
@@ -39,7 +40,7 @@
   ansible.builtin.command: >
     helm upgrade --install kong kong/kong
     --namespace {{ helm_kong_namespace | default('kong') }}
-    --version {{ helm_kong_version | default('2.51.0') }}
+    --version {{ helm_kong_version }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/kong-values.yaml

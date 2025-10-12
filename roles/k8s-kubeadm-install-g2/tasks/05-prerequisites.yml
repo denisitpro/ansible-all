@@ -5,7 +5,7 @@
     dest: /etc/modules-load.d/k8s.conf
     mode: "0644"
 
-- name: load modules
+- name: load modules  # noqa deprecated-module
   community.general.modprobe:
     name: "{{ item }}"
     state: present

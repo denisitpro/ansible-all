@@ -17,7 +17,8 @@
         kubeconfig_file.stat.exists
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
-
+  ignore_errors: true
+  
 - name: remove cilium conflic file
   ansible.builtin.file:
     path: /etc/cni/net.d/05-cilium.conflist

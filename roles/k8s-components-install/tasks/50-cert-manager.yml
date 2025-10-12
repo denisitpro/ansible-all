@@ -41,7 +41,7 @@
   ansible.builtin.command: >
     helm upgrade --install cert-manager jetstack/cert-manager
     --namespace {{ helm_cert_manager_namespace | default('cert-manager') }}
-    --version {{ helm_cert_manager_version | default('1.17.2') }}
+    --version {{ helm_cert_manager_version }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/cert-manager-values.yaml

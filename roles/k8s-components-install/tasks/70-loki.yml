@@ -39,7 +39,7 @@
   ansible.builtin.command: >
     helm upgrade --install loki grafana/loki
     --namespace {{ helm_loki_namespace | default('loki') }}
-    --version {{ helm_loki_version | default('6.36.1') }}
+    --version {{ helm_loki_version }}
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/loki-values.yaml

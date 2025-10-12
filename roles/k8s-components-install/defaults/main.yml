@@ -1,4 +1,19 @@
 ---
+# Helm chart versions for all components
+# Centralized version management for easier updates and overview
+helm_longhorn_version: "1.10.0"
+helm_ingress_nginx_version: "4.12.3"
+helm_prometheus_version: "76.3.1"
+helm_cert_manager_version: "1.19.0"
+helm_argocd_version: "8.6.0"
+helm_loki_version: "6.42.0"
+helm_vector_version: "0.46.0"
+helm_teleport_version: "18.2.7"
+helm_vso_version: "1.0.1"
+helm_vai_version: "0.31.0"
+metrics_server_helm_version: "3.12.1"
+helm_kong_version: "2.52.0"
+
 helm_componets_list:
   - longhorn
   - ingress-nginx
@@ -13,12 +28,22 @@ helm_componets_list:
   # - vector
   # - kong
 
-argocd_github_client_id: "{{ vault_dict_users_secret_g2.argocd_sso_github.client_id | default('set_me') }}"
-argocd_github_secret_id: "{{ vault_dict_users_secret_g2.argocd_sso_github.client_secrets | default('set_me') }}"
+argocd_github_client_id: "{{ vault_dict_users_secret_g2.argocd_github.client_id | default('set_me') }}"
+argocd_github_secret_id: "{{ vault_dict_users_secret_g2.argocd_github.secret_id | default('set_me') }}"
+
+argocd_dockerhub_oci_name: "{{ vault_dict_users_secret_g2.argocd_dockerhub_oci_cred.helm_charts_v1_pull_login | default('dockerhub_org_name') }}"
+argocd_dockerhub_oci_pass: "{{ vault_dict_users_secret_g2.argocd_dockerhub_oci_cred.helm_charts_v1_pull_token | default('set_me') }}"
+
 teleport_k8s_agent_token: "{{ vault_dict_users_secret_g2.teleport_k8s_agent_token.value | default('set_me') }}"
 
+# vault g1
+# k8s_cert_manager_cloudflare_token: "{{ vault_dict_users_secret.k8s_cert_manager_cloudflare_token | default('set_me') }}"
 
-k8s_cert_manager_cloudflare_token: "{{ vault_dict_users_secret_g2.k8s_cert_manager_cloudflare_token.value | default('set_me') }}"
+# vault g2
+k8s_cert_manager_cloudflare_token: "{{ vault_dict_users_secret_g2.k8s_cert_manager_cloudflare_token.k8s_cert_manager_cloudflare_token | default('set_me') }}"
+
+# Cert-manager configuration
+k8s_cert_manager_type: "cloudflare"  # http or cloudflare
 
 k8s_teleport_agent_kub_cluster_base_labels:
   region: "unknown"
@@ -84,3 +109,8 @@ k8s_pod_monitoring_config:
 
   # Monitor pods in ALL namespaces (dynamic discovery)
   namespaceSelector: {}
+
+# Ingress node labeling from Terraform state
+# These labels will be applied to nodes with role=ingress in Terraform
+k8s_ingress_label_key: "ingress.kong/enabled"
+k8s_ingress_label_value: "enabled"

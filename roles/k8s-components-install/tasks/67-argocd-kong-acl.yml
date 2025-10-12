@@ -1,0 +1,17 @@
+---
+- name: ArgoCD - Create Kong IP restriction plugin manifest
+  ansible.builtin.template:
+    src: "argocd-kong-ip-restriction.yml.j2"
+    dest: /tmp/argocd-kong-ip-restriction.yml
+    mode: "0600"
+
+- name: ArgoCD - Apply Kong IP restriction plugin
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/argocd-kong-ip-restriction.yml
+    --namespace {{ helm_argocd_namespace | default('argocd') }}
+    --kubeconfig {{ k8s_config_path }}
+
+- name: ArgoCD - Remove Kong IP restriction plugin manifest
+  ansible.builtin.file:
+    path: /tmp/argocd-kong-ip-restriction.yml
+    state: absent

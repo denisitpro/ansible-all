@@ -1,13 +1,41 @@
 # https://github.com/Kong/charts/blob/main/charts/kong/README.md
+# https://github.com/Kong/charts/blob/main/charts/kong/values.yaml
 # Kong Ingress Controller
+
+{% if kong_use_node_selector is defined and kong_use_node_selector %}
+nodeSelector:
+{% for key, value in kong_node_selector.items() %}
+  {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+
+# count replicas
+replicaCount: {{ kong_replicas | default(2) }}
 
 ingressController:
   enabled: true
   ingressClass: kong
   ingressClassAnnotations:
-    "ingressclass.kubernetes.io/is-default-class": "false"
+    "ingressclass.kubernetes.io/is-default-class": "{{ kong_ingress_class_is_default_class | default('false') }}"
   watchNamespaces: {{ kong_watch_namespaces | default([]) }}
 
+
+{% if kong_use_host_port is defined %}
+# Use hostPort when exposing Kong proxy directly on cluster nodes v2
+proxy:
+  type: ClusterIP
+  http:
+    enabled: true
+    servicePort: 80
+    containerPort: {{ kong_proxy_http_container_port | default('8000') }}
+    hostPort: "{{ kong_proxy_http_host_port | default('80') }}"
+  tls:
+    enabled: true
+    servicePort: 443
+    containerPort: {{ kong_proxy_https_container_port | default('8443') }}
+    hostPort: "{{ kong_proxy_https_host_port | default('443') }}"
+{% else %}
+# Use NodePort for standard Kubernetes service exposure
 proxy:
   type: NodePort
   http:
@@ -16,6 +44,11 @@ proxy:
   tls:
     enabled: true
     nodePort: {{ kong_proxy_https_node_port | default('32443') }}
+{% endif %}
+
+
+
+
 
 admin:
   enabled: true
@@ -30,4 +63,11 @@ manager:
 
 env:
   database: "off"
-  KONG_LOG_LEVEL: {{ kong_log_level | default('info') }}
+  log_level: {{ kong_log_level | default('info') }}
+{% if kong_real_ip is defined %}
+  # Cloudflare Real IP configuration
+  trusted_ips: "{{ kong_real_ip.ipv4 | join(',') }}{% if kong_real_ip.ipv6 is defined and kong_real_ip.ipv6 | length > 0 %},{{ kong_real_ip.ipv6 | join(',') }}{% endif %}"
+  real_ip_header: "{{ kong_real_ip_header | default('CF-Connecting-IP') }}"
+  real_ip_recursive: "{{ kong_real_ip_recursive | default('on') }}"
+{% endif %}
+
