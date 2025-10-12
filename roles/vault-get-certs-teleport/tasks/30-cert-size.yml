@@ -1,0 +1,4 @@
+---
+- name: Get stats of the certificate
+  ansible.builtin.include_tasks: 90-size-check.yml
+  loop: "{{ vault.certs }}"

@@ -2,7 +2,10 @@
 
 services:
   vm:
-    image: victoriametrics/victoria-metrics:{{ vm_image }}{%- if vm_enterprise is defined %}-enterprise
+{% if vm_enterprise is defined %}
+    image: victoriametrics/victoria-metrics:{{ vm_image }}-enterprise
+{% else %}
+    image: victoriametrics/victoria-metrics:{{ vm_image }}
 {% endif %}
     container_name: vm
     hostname: {{ansible_hostname}}

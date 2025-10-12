@@ -10,21 +10,6 @@
     - vault-install
     - vault-ssl
 
-# - ansible.builtin.import_tasks: 15-copy-cert.yml
-#   when: vault_domain is defined and vault_domain == "selfsign"
-#   vars:
-#     ssl_path: "{{ vault_conf_path }}/ssl"
-#     ssl_cert_path: "{{ vault_conf_path }}/ssl/fullchain.pem"
-#     ssl_privkey_path: "{{ vault_conf_path }}/ssl/privkey.pem"
-#     ssl_ca_path: "{{ vault_conf_path }}/ca"
-#     ssl_user: "{{ vault_uid }}"
-#     ssl_group: "{{ vault_gid }}"
-#   tags:
-#     - vault-install
-#     - vault-ssl
-#     - vault-ssl-copy
-
-
 - ansible.builtin.import_tasks: 20-config.yml
   tags:
     - vault-install

@@ -1,0 +1,14 @@
+---
+- name: Create  SSL folder - angie
+  ansible.builtin.file:
+    path: "{{ angie_ssl_path }}"
+    state: directory
+    mode: "0755"
+
+
+- name: Create  cert folder
+  ansible.builtin.file:
+    path: "{{ angie_ssl_path }}/{{ item.name }}"
+    state: directory
+    mode: "0755"
+  with_items: "{{ vault.certs }}"

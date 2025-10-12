@@ -1,0 +1,10 @@
+---
+vault_url_teleport: https://vault.example.com
+teleport_site: teleport.example.com
+teleport_cluster: cls1
+
+vault_var_name: "VAULT_ACCESS_TOKEN"
+vault_normalized_access_token: "{{ vault_token }}"
+
+
+teleport_vault_app_name: ''
