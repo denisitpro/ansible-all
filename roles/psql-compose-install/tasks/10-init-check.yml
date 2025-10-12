@@ -1,12 +1,24 @@
 ---
-- name: Check postgres init phase
+- name: Check if PostgreSQL data directory exists and has content
+  ansible.builtin.stat:
+    path: "{{ psql_node_data_path }}"
+  register: postgres_data_dir_result
+  tags:
+    - psql-compose
+
+- name: Check postgres init phase - look for PG_VERSION file
   ansible.builtin.stat:
     path: "{{ postgres_init_path }}"
   register: postgres_init_result
   tags:
     - psql-compose
 
+- name: Set PostgreSQL initialization status
+  ansible.builtin.set_fact:
+    postgres_initialized: "{{ postgres_init_result.stat.exists }}"
+  tags:
+    - psql-compose
 
 - name: Print postgres init status
   ansible.builtin.debug:
-    msg: postgres {{ postgres_init_result.stat.exists }}
+    msg: "PostgreSQL data directory exists: {{ postgres_data_dir_result.stat.exists }}, PostgreSQL initialized: {{ postgres_initialized }}"

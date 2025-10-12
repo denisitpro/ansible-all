@@ -1,9 +1,39 @@
 ---
-# TODO: Create PostgreSQL db both in the docker and on the host
-- name: Create PostgreSQL databases
-  ansible.builtin.shell: |
-    if ! docker exec -i {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -tAc "SELECT 1 FROM pg_database WHERE datname='{{ item.name }}'" | grep -q 1; then
-      docker exec -i {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -c "CREATE DATABASE {{ item.name }} OWNER {{ item.owner }}";
-    fi
+- name: Check if PostgreSQL container is running for database creation
+  ansible.builtin.command: docker ps --filter "name={{ psql_docker_container_name }}" --filter "status=running" --format "{{ '{{' }}.Names{{ '}}' }}"
+  register: psql_container_status_db
+  failed_when: psql_container_status_db.stdout != psql_docker_container_name
+  changed_when: false
+
+- name: Verify PostgreSQL is accepting connections before creating databases
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} pg_isready -U {{ psql_default_db_user }} -h localhost
+  register: pg_connection_check_db
+  failed_when: pg_connection_check_db.rc != 0
+  changed_when: false
+
+- name: Check if PostgreSQL database already exists
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -tAc "SELECT 1 FROM pg_database WHERE datname='{{ item.name }}'"
   loop: "{{ postgres_db }}"
+  register: db_exists_check
+  failed_when: false
+  changed_when: false
   no_log: true
+
+- name: Verify database owner exists before creating database
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -tAc "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ item.item.owner }}'"
+  loop: "{{ db_exists_check.results }}"
+  when: item.stdout != "1"
+  register: owner_exists_check
+  failed_when: owner_exists_check.stdout != "1"
+  changed_when: false
+  no_log: true
+
+- name: Create PostgreSQL databases
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -c "CREATE DATABASE {{ item.item.name }} OWNER {{ item.item.owner }};"
+  loop: "{{ db_exists_check.results }}"
+  when: item.stdout != "1"
+  no_log: true
+  register: create_db_result
+  failed_when:
+    - create_db_result.rc != 0
+    - "'already exists' not in create_db_result.stderr"

@@ -7,8 +7,8 @@ groups:
     annotations:
       description: "{% raw %}Node Unreachable: {{ $labels.name }}{% endraw %}"
       summary: Blockchain node is unreachable
-    expr: blockchain_node_up{namespace!~"{{ excl_ns_blockchain_node_unreachable | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} == 0
-    for: 5m
+    expr: blockchain_node_up{namespace!~"{{ excld_ns_blockchain_node_unreachable | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}", instance!~"{{ excld_inst_blockchain_node_unreachable | join('|') }}", tags!~"{{ excld_tags_blockchain_node_unreachable | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} == 0
+    for: 10m
     labels:
       severity: critical
   
@@ -16,7 +16,7 @@ groups:
     annotations:
       description: "{% raw %}Node Not Synced: {{ $labels.name }}{% endraw %}"
       summary: Blockchain node is not synced
-    expr: blockchain_node_synced{namespace!~"{{ excl_ns_blockchain_node_not_synced | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} == 0
+    expr: blockchain_node_synced{namespace!~"{{ excld_ns_blockchain_node_not_synced | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}", instance!~"{{ excld_inst_blockchain_node_not_synced | join('|') }}", tags!~"{{ excld_tags_blockchain_node_not_synced | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} == 0
     for: 10m
     labels:
       severity: warning

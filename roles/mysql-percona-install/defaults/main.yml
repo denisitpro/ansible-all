@@ -1,0 +1,61 @@
+---
+mysql_version: 5.7.24
+mysql_image: percona
+
+mysql_compose_path: /opt/docker/mysql
+
+mysql_base_path: /opt/mysql
+mysql_data_path: "{{ mysql_base_path }}/db"
+mysql_conf_path: "{{ mysql_base_path }}/conf"
+mysql_log_path: "{{ mysql_base_path }}/log"
+# mysql_backup_path: "{{ mysql_base_path }}/backup"
+mysql_uid: 999
+mysql_gid: 999
+
+# old vars
+
+
+# mysql_user: mysql
+# mysql_bind_addr: "{{ global_bind_addr }}"
+# mysql_port: 3306
+
+# mysql_cert_path: "{{ mysql_base_path }}/cert"
+
+# percona_docker_user_uid: '1001'
+# percona_docker_user_gid: '1001'
+
+# percona_user: "mysql"
+# percona_group: "mysql"
+
+# mysql_root: "mysql_root"
+
+# #mysql_bind_addr: "{{global_bind_addr}},127.0.0.1"
+
+# mysql_backup_dir: /mnt/backup
+# long_query_time: 5
+# slow_log_path: /var/log/mysql/log-slow-queries.log
+# log_error: /var/log/mysql/mysql.err
+# log_bin: /var/log/mysql/mysql-bin.log
+# log_bin_index: /var/log/mysql/mysql-bin.log.index
+# relay_log: /var/log/mysql/mysql-relay-bin
+# relay_log_index: /var/log/mysql/mysql-relay-bin.index
+# binlog_expire_logs_seconds: 604800
+# max_binlog_size: 200M
+# character_set_server: UTF8MB4
+# auto_increment_increment: 1
+# auto_increment_offset: 1
+# mysql_require_secure_transport: "OFF"
+
+# key_buffer_size: 16M
+# max_allowed_packet: 16M
+# max_connections: 300
+# innodb_buffer_pool_size: 8G
+# innodb_log_file_size: 2G
+# innodb_log_buffer_size: 8M
+# max_prepared_stmt_count: 16382
+# ###mysql mysql_exporter_
+# mysql_exporter_registry: herodevopss/mysql-exporter
+# mysql_exporter_image: 0.9.0
+# mysql_exporter_port: 9104
+# mysql_exporter_bind_addr: "{{ global_bind_addr }}"
+# mysql_exporter_data_path: "{{ mysql_base_path }}exporter"

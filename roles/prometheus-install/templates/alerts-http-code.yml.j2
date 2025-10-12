@@ -16,7 +16,7 @@ groups:
       TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }} 
       {% endraw %}"
   # - alert: HTTP-200-Fail-devel
-  #   expr: (probe_http_status_code{instance=~"{{ incl_http_200_devel_instance | join('|') }}"}) != 200
+  #   expr: (probe_http_status_code{instance=~"{{ incld_http_200_devel_instance | join('|') }}"}) != 200
   #   for: 2m
   #   labels:
   #     severity: warning
@@ -25,7 +25,7 @@ groups:
   #     summary: "{% raw %}Instance {{ $labels.instance }} returned status code {{ printf \"%.2f\" $value }}. {% endraw %}"
   #     description: "{% raw %}{{ $labels.instance }} HTTP response is not 200. It returned {{ $value }}. {% endraw %}"
   # - alert: HTTP-200-Fail-critical-channel
-  #   expr: (probe_http_status_code{instance=~"{{ incl_http_200_critical_channel_instance | join('|') }}"}) != 200
+  #   expr: (probe_http_status_code{instance=~"{{ incld_http_200_critical_channel_instance | join('|') }}"}) != 200
   #   for: 2m
   #   labels:
   #     severity: warning
@@ -45,7 +45,7 @@ groups:
       TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }}
       {% endraw %}"
   # - alert: HTTP-404-Fail-devel
-  #   expr: (probe_http_status_code{instance=~"{{ incl_http_404_devel_instance | join('|') }}"}) != 404
+  #   expr: (probe_http_status_code{instance=~"{{ incld_http_404_devel_instance | join('|') }}"}) != 404
   #   for: 2m
   #   labels:
   #     severity: warning
@@ -54,7 +54,7 @@ groups:
   #     description: "{% raw %}{{ $labels.instance }} HTTP response is not 404. It returned {{ $value }}. {% endraw %}"
   #     summary: "{% raw %}Instance {{ $labels.instance }} returned status code {{ printf \"%.2f\" $value }}. {% endraw %}"
   # - alert: HTTP-404-Fail-critical-channel
-  #   expr: (probe_http_status_code{instance=~"{{ incl_http_404_critical_channel_instance | join('|') }}"}) != 404
+  #   expr: (probe_http_status_code{instance=~"{{ incld_http_404_critical_channel_instance | join('|') }}"}) != 404
   #   for: 2m
   #   labels:
   #     severity: warning

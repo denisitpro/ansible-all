@@ -4,5 +4,21 @@
     src: "docker-compose.psql.yml.j2"
     dest: "{{ psql_compose_path }}/docker-compose.yml"
     mode: "0600"
-  # notify: restart-docker postgres
   notify: recreate-docker postgres
+
+# - name: Wait for PostgreSQL container to be ready (port check)
+#   ansible.builtin.wait_for:
+#     port: "{{ psql_port }}"
+#     host: "{{ psql_bind_addr }}"
+#     delay: 10
+#     timeout: 300
+#     msg: "PostgreSQL container did not start within 5 minutes"
+#   register: port_ready_check
+#   failed_when: false
+
+# - name: Wait for PostgreSQL service to accept connections
+#   ansible.builtin.shell: |
+#     timeout 300 bash -c 'until docker exec {{ psql_docker_container_name }} pg_isready -U {{ psql_default_db_user }} -h localhost; do sleep 2; done'
+#   register: pg_ready_check
+#   failed_when: pg_ready_check.rc != 0
+#   when: port_ready_check is succeeded

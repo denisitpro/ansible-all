@@ -1,0 +1,34 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ mysql_compose_path }}"
+
+- name: create folder mysql-data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: "{{ mysql_uid }}"
+    group: "{{ mysql_uid }}"
+  with_items:
+    - "{{ mysql_conf_path }}"
+    - "{{ mysql_data_path }}"
+    - "{{ mysql_log_path }}"
+
+# - name: create folder mysql-conf
+#   ansible.builtin.file:
+#     path: "{{ item }}"
+#     state: directory
+#     mode: '0775'
+#     owner: root
+#     group: root
+#   with_items:
+#     - "{{ mysql_node_data_conf }}"
+#     - "{{ mysql_node_cert_path }}"

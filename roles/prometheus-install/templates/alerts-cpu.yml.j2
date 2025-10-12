@@ -14,7 +14,7 @@ groups:
           mode!="idle",
           instance!~"{{ excld_inst_cpu_usage_95 | default([]) | join('|') }}"
         }[15m]))) * 100 > 95
-        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over95 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over95 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
       )
     for: 15m
     labels:
@@ -30,7 +30,7 @@ groups:
           mode!="idle",
           instance!~"{{ excld_inst_cpu_usage_90 | default([]) | join('|') }}"
         }[15m]))) * 100 > 90
-        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over90 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over90 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
       )
     for: 15m
     labels:
@@ -46,7 +46,7 @@ groups:
           mode!="idle",
           instance!~"{{ excld_inst_cpu_usage_80 | default([]) | join('|') }}"
         }[15m]))) * 100 > 80
-        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
       )
     for: 15m
     labels:
@@ -62,7 +62,7 @@ groups:
           mode!="idle",
           instance!~"{{ excld_inst_cpu_usage_70 | default([]) | join('|') }}"
         }[15m]))) * 100 > 70
-        and ON (instance) node_uname_info{tags!~"{{ excl_tags_cpu_usage_over70 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over70 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
       )
     for: 15m
     labels:

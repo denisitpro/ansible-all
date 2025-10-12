@@ -7,8 +7,8 @@ groups:
     expr: |
       (
         100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 80
-        and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over80 |  default([]) | join('|') }}"}
-        and ON (instance) node_uname_info{tags!~"{{ excl_tags_memory_usage_over80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        and ON (instance) node_uname_info{instance!~"{{ excld_inst_memory_usage_over80 |  default([]) | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_memory_usage_over80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
       )
     for: 15m
     labels:
@@ -21,8 +21,8 @@ groups:
     expr: |
       (
         100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 90
-        and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over90 |  default([]) | join('|') }}"}
-        and ON (instance) node_uname_info{tags!~"{{ excl_tags_memory_usage_over90 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        and ON (instance) node_uname_info{instance!~"{{ excld_inst_memory_usage_over90 |  default([]) | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_memory_usage_over90 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
       )
     for: 15m
     labels:
@@ -35,8 +35,8 @@ groups:
     expr: |
       (
         100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 95
-        and ON (instance) node_uname_info{instance!~"{{ excl_inst_memory_usage_over95 |  default([]) | join('|') }}"}
-        and ON (instance) node_uname_info{tags!~"{{ excl_tags_memory_usage_over95 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        and ON (instance) node_uname_info{instance!~"{{ excld_inst_memory_usage_over95 |  default([]) | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_memory_usage_over95 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
       )
     for: 15m
     labels:

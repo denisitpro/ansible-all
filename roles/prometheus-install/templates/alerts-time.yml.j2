@@ -18,7 +18,7 @@ groups:
     # The derivative logic adds complexity without providing significant value over the simpler alert
 
   - alert: ClockSkewDetected g2
-    expr: abs(node_timex_estimated_error_seconds) * 1000 > 15
+    expr: abs(node_timex_estimated_error_seconds{instance!~"{{ excld_inst_clock_skew_g2 | default([]) | join('|') }}", tags!~"{{ excld_tags_clock_skew_g2 | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}) * 1000 > 15
     for: 5m
     labels:
       severity: warning

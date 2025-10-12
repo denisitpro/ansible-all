@@ -31,7 +31,7 @@ prometheus_ext_name: "prom.example.com"
 prom_addr: "{{ prometheus_ext_name }}"
 
 ### consul
-stands_regexp: ".*,(c1-infra|c1-dev | c1-prod ),.*"
+stands_regexp: ".*,(infra|dev | prod ),.*"
 consul_sd_server: ":8500"
 consul_prometheus_access_token: "{{ vault_dict_users_secret_g2.consul_prometheus_access_token.value | default('set_me') }}"
 
@@ -130,7 +130,6 @@ prometheus_alert_files:
   - alerts-blackbox-v1.yml
   - alerts-blackbox-v2.yml
   - alerts-cadvisor.yml
-  # - alerts-node-exporter.yml # dublicate
   - alerts-node-monitor.yml
   - alerts-rabbitmq.yml
   - alerts-elk.yml
@@ -160,7 +159,9 @@ coins_http_405_fail: []
 excld_instance_down: []
 excld_tags_instance_down:
   - tag_default_excld_instance_down
-excld_project_instance_down: []
+
+excld_project_instance_down:
+  - project_default_excld_instance_down
 
 alert_click_connections_count: 150
 alert_domain_expire_days: 14
@@ -207,31 +208,54 @@ excld_tags_disk_fill_24h:
   - tag_default_excld_disk_fill_24h
 excld_inst_disk_fill_24h: []
 
-excld_tags_high_disk_iops_15m: []
-excld_tags_high_disk_iops_1h: []
+excld_tags_high_disk_iops_15m:
+  - tag_default_excld_high_disk_iops_15m
 
-excl_tags_memory_usage_over80:
+excld_tags_high_disk_iops_1h:
+  - tag_default_excld_high_disk_iops_1h
+
+excld_tags_memory_usage_over80:
   - tag_default_excld_memory_usage_over80
-excl_tags_memory_usage_over90:
+excld_tags_memory_usage_over90:
   - tag_default_excld_memory_usage_over90
-excl_tags_memory_usage_over95:
+excld_tags_memory_usage_over95:
   - tag_default_excld_memory_usage_over95
+
+excld_inst_memory_usage_over80: []
+excld_inst_memory_usage_over90: []
+excld_inst_memory_usage_over95: []
+
+# CPU alerts exclusions
+excld_tags_cpu_usage_over70:
+  - tag_default_excld_cpu_usage_over70
+excld_tags_cpu_usage_over80:
+  - tag_default_excld_cpu_usage_over80
+excld_tags_cpu_usage_over90:
+  - tag_default_excld_cpu_usage_over90
+excld_tags_cpu_usage_over95:
+  - tag_default_excld_cpu_usage_over95
+
+# Reboot alerts exclusions (currently commented)
+excld_inst_reboot_required: []
+
+excld_inst_shard_count_es:
+  - tag_default_excld_inst_shard_count_es
 
 excld_high_disk_iops500_1h_inst: []
 excld_high_disk_iops500_15m_inst: []
 
 # High Open File Descriptors exclusions
-excl_inst_high_fd_50k: []
-excl_tags_high_fd_50k: []
-excl_inst_high_fd_percent_80: []
-excl_tags_high_fd_percent_80: []
+excld_inst_high_fd_50k: []
+excld_tags_high_fd_50k: []
+excld_inst_high_fd_percent_80: []
+excld_tags_high_fd_percent_80: []
 open_fd_threshold_50k: 50000
 open_fd_threshold_percent_80: 80
 
-incl_http_200_devel_instance: []
-incl_http_200_critical_channel_instance: []
-incl_http_404_devel_instance: []
-incl_http_404_critical_channel_instance: []
+incld_http_200_devel_instance: []
+incld_http_200_critical_channel_instance: []
+incld_http_404_devel_instance: []
+incld_http_404_critical_channel_instance: []
 # clickhouse_alert_rules:
 
 excld_inst_unusual_net_in_30m: []
@@ -274,11 +298,17 @@ excld_ns_pod_problematic_phase: []
 excld_ns_pod_restart_rate: []
 
 # Node monitor exclusions
-excl_ns_blockchain_node_unreachable:
+excld_ns_blockchain_node_unreachable:
   - "exampl42"
+excld_inst_blockchain_node_unreachable: []
+excld_tags_blockchain_node_unreachable:
+  - tag_default_excld_blockchain_node_unreachable
 
-excl_ns_blockchain_node_not_synced:
+excld_ns_blockchain_node_not_synced:
   - "exampl43"
+excld_inst_blockchain_node_not_synced: []
+excld_tags_blockchain_node_not_synced:
+  - tag_default_excld_blockchain_node_not_synced
 
 excld_tags_unusual_net_in_30m:
   - tag_default_excld_unusual_net_in_30m
@@ -289,19 +319,37 @@ excld_tags_unusual_net_out_30m:
 # Redis alerts exclusions
 excld_tags_redis_connections:
   - tag_default_excld_redis_connections
+excld_inst_redis_connections: []
 
 # RabbitMQ alerts exclusions
 excld_inst_rmq_queue_messages: []
 excld_queue_rmq_queue_messages: []
+
+
+excld_inst_node_disk_io_saturation: []
+excld_tags_node_disk_io_saturation:
+  - tag_default_excld_node_disk_io_saturation
+
+excld_tags_blackbox_slow_probe:
+  - tag_default_excld_blackbox_slow_probe
+
+excld_tags_clock_skew_g2:
+  - tag_default_excld_clock_skew_g2
 
 # consul section
 # vault g1
 # consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me') }}"
 
 # vault g2
-consul_agent_ca: "{{ vault_dict_users_secret_g2.consul_agent_ca.value | default('set_me') }}"
-consul_client_prometheus_cert: "{{ vault_dict_users_secret_g2.consul_client_prometheus_cert.value | default('set_me') }}"
-consul_client_prometheus_key: "{{ vault_dict_users_secret_g2.consul_client_prometheus_key.value | default('set_me') }}"
+# consul_agent_ca: "{{ vault_dict_users_secret_g2.consul_agent_ca.value | default('set_me') }}"
+# consul_client_prometheus_cert: "{{ vault_dict_users_secret_g2.consul_client_prometheus_cert.value | default('set_me') }}"
+# consul_client_prometheus_key: "{{ vault_dict_users_secret_g2.consul_client_prometheus_key.value | default('set_me') }}"
+
+# vault g3
+consul_client_prometheus_cert: "{{ vault_dict_users_secret_g2.consul_client_prometheus.mtls_cert | default('set_me') }}"
+consul_client_prometheus_key: "{{ vault_dict_users_secret_g2.consul_client_prometheus.mtls_key | default('set_me') }}"
+consul_agent_ca: "{{ vault_dict_users_secret_g2.consul_client_prometheus.mtls_ca | default('set_me') }}"
+
 
 # mTLS section prom prom_stack_mtls
 prom_stack_cert_secret: "{{ vault_dict_users_secret_g2['prom_stack_mtls'].mtls_cert }}"

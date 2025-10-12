@@ -4,17 +4,23 @@
     name: "{{ item.name }}"
     state: absent
     remove: true
-  loop: "{{ local_users }}"
+  loop: "{{ local_users_delete }}"
 
 - name: Remove sudoers file
   ansible.builtin.file:
     path: "/etc/sudoers.d/{{ item.name }}"
     state: absent
-  loop: "{{ local_users }}"
-
+  loop: "{{ local_users_delete }}"
 
 - name: Validate sudoers file
   ansible.builtin.command: visudo -cf /etc/sudoers
   register: sudoers_check
   failed_when: sudoers_check.rc != 0 and sudoers_check.rc != 1
   changed_when: false
+
+- name: Remove SSH keys from other users and delete user's own SSH directory
+  ansible.builtin.include_tasks:
+    file: 25-delete-ssh-keys.yml
+  loop: "{{ local_users_delete }}"
+  loop_control:
+    loop_var: user

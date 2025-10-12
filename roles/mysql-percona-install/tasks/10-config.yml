@@ -1,0 +1,11 @@
+---
+- name: copy mysql config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ mysql_conf_path }}/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  # notify: restart-docker mysq
+  with_items:
+    - mysql.c3-57.cnf

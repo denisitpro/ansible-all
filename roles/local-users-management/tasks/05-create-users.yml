@@ -28,6 +28,7 @@
       {{ item.name }} ALL=(ALL) NOPASSWD:ALL
     mode: '0440'
   loop: "{{ local_users }}"
+  when: item.user_base_access_only is not defined or not item.user_base_access_only
 
 - name: Validate sudoers file
   ansible.builtin.command: visudo -cf /etc/sudoers

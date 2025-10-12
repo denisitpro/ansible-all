@@ -1,0 +1,19 @@
+services:
+  mysql:
+    image: {{ mysql_image }}:{{ mysql_version }}
+    container_name: mysql
+    network_mode: host
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - MYSQL_ROOT_PASSWORD={{ mysql_root_password | default('mysql')}}
+    volumes:
+      - {{ mysql_data_path }}:/var/lib/mysql
+      - {{ mysql_conf_path }}:/etc/my.cnf.d
+      - {{ mysql_log_path }}:/var/log/mysql
+    restart: {{ mysql_restart | default('always') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

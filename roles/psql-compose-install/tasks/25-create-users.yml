@@ -1,16 +1,40 @@
 ---
-# TODO: Create PostgreSQL users both in the docker and on the host
-- name: Create PostgreSQL users
-  ansible.builtin.shell: |
-    docker exec -i {{ psql_docker_container_name }} psql -U {{ psql_db_user }} -c "DO \$\$
-    BEGIN
-      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '{{ item.name }}') THEN
-        CREATE ROLE {{ item.name }} LOGIN PASSWORD '{{ item.password }}';
-      END IF;
-      {% if item.member_of is defined %}
-      EXECUTE 'GRANT {{ item.member_of | join(',') }} TO {{ item.name }}';
-      {% endif %}
-    END
-    \$\$;"
+- name: Check if PostgreSQL container is running
+  ansible.builtin.command: docker ps --filter "name={{ psql_docker_container_name }}" --filter "status=running" --format "{{ '{{' }}.Names{{ '}}' }}"
+  register: psql_container_status
+  failed_when: psql_container_status.stdout != psql_docker_container_name
+  changed_when: false
+
+- name: Verify PostgreSQL is accepting connections before creating users
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} pg_isready -U {{ psql_default_db_user }} -h localhost
+  register: pg_connection_check
+  failed_when: pg_connection_check.rc != 0
+  changed_when: false
+
+- name: Check if PostgreSQL user already exists
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -tAc "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ item.name }}'"
   loop: "{{ postgres_users }}"
+  register: user_exists_check
+  failed_when: false
+  changed_when: false
   no_log: true
+
+- name: Create PostgreSQL users
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -c "CREATE ROLE {{ item.item.name }} LOGIN PASSWORD '{{ item.item.password }}';"
+  loop: "{{ user_exists_check.results }}"
+  when: item.stdout != "1"
+  no_log: true
+  register: create_user_result
+  failed_when:
+    - create_user_result.rc != 0
+    - "'already exists' not in create_user_result.stderr"
+
+- name: Grant roles to PostgreSQL users
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -c "GRANT {{ item.member_of | join(',') }} TO {{ item.name }};"
+  loop: "{{ postgres_users }}"
+  when: item.member_of is defined
+  no_log: true
+  register: grant_roles_result
+  failed_when:
+    - grant_roles_result.rc != 0
+    - "'already a member of role' not in grant_roles_result.stderr"

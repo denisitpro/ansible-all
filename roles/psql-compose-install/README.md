@@ -1,5 +1,5 @@
 # Description
-need refactore readme
+need refactore  all role
 
 # Configure replica
 For configure replication need set env hosts replica
