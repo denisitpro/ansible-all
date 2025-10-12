@@ -1,6 +1,0 @@
-# Increase file descriptor and process limits for Kubernetes nodes
-* soft nofile {{soft_nproc | default (1048576) }}
-* hard nofile {{hard_nproc | default (1048576) }}
-
-* soft nproc  {{soft_nofile | default (65536) }}
-* hard nproc  {{hard_nofile | default (65536) }}

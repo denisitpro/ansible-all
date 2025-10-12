@@ -1,0 +1,22 @@
+---
+# Simplified variables for local self-signed certificate generation
+
+ssl_path: /opt/ssl/selfsign
+ssl_privkey_path: "{{ ssl_path }}/privkey.pem"
+ssl_cert_path: "{{ ssl_path }}/fullchain.pem"
+ssl_user: root
+ssl_group: root
+
+# Subject Alternative Names for certificate
+ssl_subject_alt_name:
+  - "IP:127.0.0.1"
+  - "IP:{{ ansible_default_ipv4.address }}"
+  - "DNS:{{ ansible_fqdn }}"
+  - "DNS:{{ ansible_hostname }}"
+
+# Certificate parameters
+ssl_common_name: "{{ ansible_fqdn }}"
+ssl_cert_not_after: "+3650d"  # 10 years
+ssl_cert_not_before: "-1d"
+ssl_privkey_type: "ECC"
+ssl_curve: secp256r1

@@ -1,0 +1,38 @@
+---
+- ansible.builtin.include_tasks: 15-loop-state-twc.yml
+  when: item.terraform_provider == 'twc'
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 20-loop-state-hetzner.yml
+  when: item.terraform_provider == 'hetzner' and item.resources | selectattr('type', 'equalto', 'hcloud_server') | list | length > 0
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 22-loop-state-hetzner-lb.yml
+  when: item.terraform_provider == 'hetzner' and item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list | length > 0
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 25-loop-state-digitalocean.yml
+  when: item.terraform_provider == 'digitalocean'
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 30-loop-state-hetzner-by-labels.yml
+  when: item.terraform_provider == 'hetzner' and item.filter_by_labels is defined and item.filter_by_labels | length > 0
+  with_items: "{{ terraform_states }}"
+
+- ansible.builtin.include_tasks: 90-print-var-srv-prefix.yml
+  run_once: true
+  with_items: "{{ terraform_states }}"
+
+- name: Debug all created terraform variables
+  ansible.builtin.debug:
+    msg: "All terraform variables: {{ hostvars[inventory_hostname] | dict2items | selectattr('key', 'match', '^(srv_|k8s_)') | map(attribute='key') | list }}"
+  run_once: true
+
+# - name: Debug specific variables used in ufw-base.yml
+#   ansible.builtin.debug:
+#     msg:
+#       - "srv_mgmt_01: {{ srv_mgmt_01 | default('UNDEFINED') }}"
+#       - "srv_exporters_01: {{ srv_exporters_01 | default('UNDEFINED') }}"
+#       - "srv_mgmt_ams3: {{ srv_mgmt_ams3 | default('UNDEFINED') }}"
+#       - "k8s_master_p2p: {{ k8s_master_p2p | default('UNDEFINED') }}"
+#   run_once: true

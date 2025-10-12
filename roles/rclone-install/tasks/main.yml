@@ -1,0 +1,4 @@
+---
+- ansible.builtin.import_tasks: 05-install.yml
+  tags:
+    - rclone

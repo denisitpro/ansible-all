@@ -1,0 +1,19 @@
+---
+# Simplified role for local self-signed certificate generation
+
+- name: Check certificates existence
+  ansible.builtin.import_tasks: 05-check-exist.yml
+  tags:
+    - cert
+
+- name: Create directories
+  ansible.builtin.import_tasks: 10-create-dir.yml
+  when: not file_check.stat.exists
+  tags:
+    - cert
+
+- name: Generate self-signed certificate
+  ansible.builtin.import_tasks: 20-generate-selfsigned.yml
+  when: not file_check.stat.exists or ssl_selfsign_recreate_force is defined
+  tags:
+    - cert
