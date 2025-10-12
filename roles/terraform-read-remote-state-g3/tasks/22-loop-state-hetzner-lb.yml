@@ -11,7 +11,7 @@
 
 - name: Debug run task
   ansible.builtin.debug:
-    msg: "Processing Hetzner provider for {{ item.name }}"
+    msg: "Processing Hetzner Load Balancer provider for {{ item.name }}"
 
 # - name: Debug tf_raw
 #   ansible.builtin.debug:
@@ -28,68 +28,48 @@
 # - name: Debug resources structure
 #   ansible.builtin.debug:
 #     msg: "Resource type: {{ resource_item.type }}, name: {{ resource_item.name }}, Available resources: {{ tfstate.resources | map(attribute='type') | list }}"
-#   loop: "{{ item.resources }}"
+#   loop: "{{ item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list }}"
 #   loop_control:
 #     loop_var: resource_item
 
 # - name: Debug specific resources
 #   ansible.builtin.debug:
 #     msg: "Resources of type {{ resource_item.type }}: {{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | map(attribute='name') | list }}"
-#   loop: "{{ item.resources }}"
+#   loop: "{{ item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list }}"
 #   loop_control:
 #     loop_var: resource_item
 
 # - name: Debug found resource
 #   ansible.builtin.debug:
 #     msg: "Found resource: {{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | selectattr('name', 'equalto', resource_item.name) | first }}"
-#   loop: "{{ item.resources }}"
+#   loop: "{{ item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list }}"
 #   loop_control:
 #     loop_var: resource_item
 
-- name: Set server data for each resource
+- name: Set load balancer data array for each resource (supports count)
   ansible.builtin.set_fact:
-    "srv_{{ resource_item.name }}":
-      name: >-
-        {{
-          (
-            tfstate.resources
-            | selectattr('type', 'equalto', resource_item.type)
-            | selectattr('name', 'equalto', resource_item.name)
-            | map(attribute='instances')
-            | first
-          )[0].attributes.name
-        }}
-      ipv4: >-
-        {{
-          (
-            tfstate.resources
-            | selectattr('type', 'equalto', resource_item.type)
-            | selectattr('name', 'equalto', resource_item.name)
-            | map(attribute='instances')
-            | first
-          )[0].attributes.ipv4_address
-        }}
-      ipv6: >-
-        {{
-          (
-            tfstate.resources
-            | selectattr('type', 'equalto', resource_item.type)
-            | selectattr('name', 'equalto', resource_item.name)
-            | map(attribute='instances')
-            | first
-          )[0].attributes.ipv6_address
-        }}
-  loop: "{{ item.resources }}"
+    "lb_{{ resource_item.name }}": >-
+      [
+        {% for instance in (tfstate.resources | selectattr('type', 'equalto', resource_item.type) | selectattr('name', 'equalto', resource_item.name) | map(attribute='instances') | first) %}
+        {
+          "name": "{{ instance.attributes.name }}",
+          "ipv4": "{{ instance.attributes.ipv4 }}",
+          "ipv6": "{{ instance.attributes.ipv6 }}",
+          "id": "{{ instance.attributes.id }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list }}"
   loop_control:
     loop_var: resource_item
 
-- name: Debug extracted data for each resource
+- name: Debug extracted data for each load balancer
   ansible.builtin.debug:
-    msg: "Server {{ resource_item.name }}: {{ hostvars[inventory_hostname]['srv_' + resource_item.name] }}"
-  loop: "{{ item.resources }}"
+    msg: "Load Balancer {{ resource_item.name }}: {{ hostvars[inventory_hostname]['lb_' + resource_item.name] }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list }}"
   loop_control:
     loop_var: resource_item
 
 # - name: Debug all hostvars
 #   ansible.builtin.debug:
-#     msg: "All variables starting with srv_: {{ hostvars[inventory_hostname] | dict2items | selectattr('key', 'match', '^srv_') | map(attribute='key') | list }}"
+#     msg: "All variables starting with lb_: {{ hostvars[inventory_hostname] | dict2items | selectattr('key', 'match', '^lb_') | map(attribute='key') | list }}"

@@ -1,0 +1,27 @@
+---
+# This task filters Hetzner cloud resources by Terraform labels
+# and creates variables with lists of matching instances
+
+- name: Read tfstate directly from S3 (pure stdout)
+  ansible.builtin.shell: >
+    aws s3 cp s3://{{ item.s3_bucket }}/{{ item.s3_key }} -
+    --region {{ item.s3_region }}
+    --profile {{ item.s3_profile }}
+  args:
+    executable: /bin/bash
+  register: tf_raw
+  changed_when: false
+
+- name: Debug run task for label filtering
+  ansible.builtin.debug:
+    msg: "Processing Hetzner provider with label filtering for {{ item.name }}"
+
+- name: Parse tfstate json from stdout
+  ansible.builtin.set_fact:
+    tfstate: "{{ tf_raw.stdout | from_json }}"
+
+- name: Process each label filter configuration
+  ansible.builtin.include_tasks: 35-process-label-filter.yml
+  loop: "{{ item.filter_by_labels }}"
+  loop_control:
+    loop_var: label_filter

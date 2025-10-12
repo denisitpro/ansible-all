@@ -1,0 +1,44 @@
+---
+# Local self-signed certificate generation without CA
+
+- name: Create private key
+  community.crypto.openssl_privatekey:
+    path: "{{ ssl_privkey_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: '0600'
+    type: "{{ ssl_privkey_type }}"
+    curve: "{{ ssl_curve }}"
+
+- name: Create CSR for self-signed certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ ssl_privkey_path }}"
+    common_name: "{{ ssl_common_name }}"
+    subject_alt_name: "{{ ssl_subject_alt_name }}"
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+  register: selfsigned_csr
+
+- name: Create self-signed certificate
+  community.crypto.x509_certificate:
+    path: "{{ ssl_cert_path }}"
+    csr_content: "{{ selfsigned_csr.csr }}"
+    privatekey_path: "{{ ssl_privkey_path }}"
+    provider: selfsigned
+    selfsigned_not_after: "{{ ssl_cert_not_after }}"
+    selfsigned_not_before: "{{ ssl_cert_not_before }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: '0644'
+
+- name: Display created certificate information
+  ansible.builtin.debug:
+    msg:
+      - "Certificate created: {{ ssl_cert_path }}"
+      - "Private key: {{ ssl_privkey_path }}"
+      - "CN: {{ ssl_common_name }}"
+      - "SAN: {{ ssl_subject_alt_name | join(', ') }}"

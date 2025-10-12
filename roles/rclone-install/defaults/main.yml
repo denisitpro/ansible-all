@@ -1,0 +1,31 @@
+---
+# Rclone installation parameters
+rclone_version: "v1.71.0"
+rclone_base_url: "https://downloads.rclone.org"
+rclone_install_dir: "/usr/local/bin"
+
+# Architecture mapping
+rclone_arch_map:
+  i386: "386"
+  x86_64: "amd64"
+  aarch64: "arm64"
+  armv7l: "arm"
+  armv6l: "arm"
+
+# Resolved architecture for download URL
+rclone_arch: "{{ rclone_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+# OS mapping
+rclone_os_map:
+  Linux: "linux"
+  Darwin: "osx"
+
+rclone_os: "{{ rclone_os_map[ansible_system] | default('linux') }}"
+
+# Download filename and URL
+rclone_filename: "rclone-{{ rclone_version }}-{{ rclone_os }}-{{ rclone_arch }}"
+rclone_archive: "{{ rclone_filename }}.zip"
+rclone_download_url: "{{ rclone_base_url }}/{{ rclone_version }}/{{ rclone_archive }}"
+
+# Temporary download directory
+rclone_temp_dir: "/tmp/rclone-install"

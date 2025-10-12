@@ -1,0 +1,21 @@
+---
+- name: Check private key existence
+  ansible.builtin.stat:
+    path: "{{ ssl_privkey_path }}"
+  register: privkey_check
+
+- name: Check certificate existence
+  ansible.builtin.stat:
+    path: "{{ ssl_cert_path }}"
+  register: cert_check
+
+- name: Set overall file existence status
+  ansible.builtin.set_fact:
+    file_check:
+      stat:
+        exists: "{{ privkey_check.stat.exists and cert_check.stat.exists }}"
+
+- name: Display existing certificates status
+  ansible.builtin.debug:
+    msg: "Self-signed certificates already exist"
+  when: file_check.stat.exists

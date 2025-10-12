@@ -1,0 +1,35 @@
+---
+# Process single label filter and create output variable
+
+- name: Extract all instances of specified resource type
+  ansible.builtin.set_fact:
+    all_resource_instances: "{{ tfstate.resources | selectattr('type', 'equalto', label_filter.resource_type) | map(attribute='instances') | flatten }}"
+
+- name: Filter instances by label key and value
+  ansible.builtin.set_fact:
+    filtered_instances: "{{ all_resource_instances | selectattr('attributes.labels.' + label_filter.label_key, 'defined') | selectattr('attributes.labels.' + label_filter.label_key, 'equalto', label_filter.label_value) | list }}"
+
+- name: Build properly formatted list of server data
+  ansible.builtin.set_fact:
+    "{{ label_filter.output_var_name }}": |
+      [
+      {% for instance in filtered_instances %}
+        {
+          "name": "{{ instance.attributes.name }}",
+          "ipv4": "{{ instance.attributes.ipv4_address }}",
+          "ipv6": "{{ instance.attributes.ipv6_address }}"
+        }{% if not loop.last %},{% endif %}
+      {% endfor %}
+      ]
+
+- name: Parse JSON string to proper list
+  ansible.builtin.set_fact:
+    "{{ label_filter.output_var_name }}": "{{ lookup('ansible.builtin.vars', label_filter.output_var_name) | from_json }}"
+
+- name: Debug created variable
+  ansible.builtin.debug:
+    msg: "Created variable '{{ label_filter.output_var_name }}' with {{ lookup('ansible.builtin.vars', label_filter.output_var_name) | length }} instances filtered by label {{ label_filter.label_key }}={{ label_filter.label_value }}"
+
+- name: Debug variable content
+  ansible.builtin.debug:
+    var: "{{ label_filter.output_var_name }}"

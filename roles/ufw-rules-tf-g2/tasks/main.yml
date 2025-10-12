@@ -1,0 +1,6 @@
+---
+- ansible.builtin.import_tasks: 10-ufw.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - ufw
+    - ufw-all

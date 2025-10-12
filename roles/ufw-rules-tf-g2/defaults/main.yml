@@ -1,0 +1,5 @@
+---
+# Default empty rules to prevent undefined variable errors
+iptables_rule_g2:
+  ipv4: []
+  ipv6: []

@@ -1,0 +1,96 @@
+---
+- name: Read tfstate directly from S3 (pure stdout)
+  ansible.builtin.shell: >
+    aws s3 cp s3://{{ item.s3_bucket }}/{{ item.s3_key }} -
+    --region {{ item.s3_region }}
+    --profile {{ item.s3_profile }}
+  args:
+    executable: /bin/bash
+  register: tf_raw
+  changed_when: false
+
+- name: Debug run task
+  ansible.builtin.debug:
+    msg: "task run"
+
+# - name: Debug tf_raw
+#   ansible.builtin.debug:
+#     var: tf_raw
+
+- name: Parse tfstate json from stdout
+  ansible.builtin.set_fact:
+    tfstate: "{{ tf_raw.stdout | from_json }}"
+
+# - name: Debug tfstate
+#   ansible.builtin.debug:
+#     var: tfstate
+
+# - name: Debug resources structure
+#   ansible.builtin.debug:
+#     msg: "Resource type: {{ resource_item.type }}, name: {{ resource_item.name }}, Available resources: {{ tfstate.resources | map(attribute='type') | list }}"
+#   loop: "{{ item.resources }}"
+#   loop_control:
+#     loop_var: resource_item
+
+# - name: Debug specific resources
+#   ansible.builtin.debug:
+#     msg: "Resources of type {{ resource_item.type }}: {{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | map(attribute='name') | list }}"
+#   loop: "{{ item.resources }}"
+#   loop_control:
+#     loop_var: resource_item
+
+# - name: Debug found resource
+#   ansible.builtin.debug:
+#     msg: "Found resource: {{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | selectattr('name', 'equalto', resource_item.name) | first }}"
+#   loop: "{{ item.resources }}"
+#   loop_control:
+#     loop_var: resource_item
+
+- name: Extract instances for each resource
+  ansible.builtin.set_fact:
+    temp_instances: "{{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | selectattr('name', 'equalto', resource_item.name) | map(attribute='instances') | first }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'twc_server') | list }}"
+  loop_control:
+    loop_var: resource_item
+  register: temp_data
+
+- name: Set server data for each resource (always returns lists of IPs)
+  ansible.builtin.set_fact:
+    "{{ resource_item.name }}":
+      ipv4: "{{ instances | map(attribute='attributes.main_ipv4') | list }}"
+      ipv6: "{{ instances | map(attribute='attributes.networks') | map('first') | map(attribute='ips') | map('selectattr', 'type', 'equalto', 'ipv6') | map('map', attribute='ip') | map('first') | list }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'twc_server') | list }}"
+  loop_control:
+    loop_var: resource_item
+  vars:
+    instances: "{{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | selectattr('name', 'equalto', resource_item.name) | map(attribute='instances') | first }}"
+
+- name: Debug extracted data for each resource
+  ansible.builtin.debug:
+    msg: "Server {{ resource_item.name }}: {{ hostvars[inventory_hostname][resource_item.name] }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'twc_server') | list }}"
+  loop_control:
+    loop_var: resource_item
+
+- name: Debug extracted IPv4 addresses from variables
+  ansible.builtin.debug:
+    msg: "{{ resource_item.name }}.ipv4: {{ hostvars[inventory_hostname][resource_item.name].ipv4 | default('UNDEFINED') }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'twc_server') | list }}"
+  loop_control:
+    loop_var: resource_item
+
+- name: Debug extracted IPv6 addresses from variables
+  ansible.builtin.debug:
+    msg: "{{ resource_item.name }}.ipv6: {{ hostvars[inventory_hostname][resource_item.name].ipv6 | default('UNDEFINED') }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'twc_server') | list }}"
+  loop_control:
+    loop_var: resource_item
+
+# - name: Debug all hostvars
+#   ansible.builtin.debug:
+#     msg: "All variables starting with srv_: {{ hostvars[inventory_hostname] | dict2items | selectattr('key', 'match', '^srv_') | map(attribute='key') | list }}"
+
+
+# - name: Debug teleport
+#   ansible.builtin.debug:
+#     msg: "Teleport name: {{ srv_teleport_twc.name }}"

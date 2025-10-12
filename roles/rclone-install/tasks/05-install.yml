@@ -1,0 +1,44 @@
+---
+- name: Create temporary directory for rclone installation
+  ansible.builtin.file:
+    path: "{{ rclone_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Download rclone archive
+  ansible.builtin.get_url:
+    url: "{{ rclone_download_url }}"
+    dest: "{{ rclone_temp_dir }}/{{ rclone_archive }}"
+    mode: '0644'
+    timeout: 30
+  register: rclone_download
+
+- name: Extract rclone archive
+  ansible.builtin.unarchive:
+    src: "{{ rclone_temp_dir }}/{{ rclone_archive }}"
+    dest: "{{ rclone_temp_dir }}"
+    remote_src: true
+    creates: "{{ rclone_temp_dir }}/{{ rclone_filename }}/rclone"
+
+- name: Install rclone binary
+  ansible.builtin.copy:
+    src: "{{ rclone_temp_dir }}/{{ rclone_filename }}/rclone"
+    dest: "{{ rclone_install_dir }}/rclone"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: true
+
+- name: Verify rclone installation
+  ansible.builtin.command: "{{ rclone_install_dir }}/rclone version"
+  register: rclone_version_check
+  changed_when: false
+
+- name: Display rclone version
+  ansible.builtin.debug:
+    msg: "Installed rclone version: {{ rclone_version_check.stdout_lines[0] }}"
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "{{ rclone_temp_dir }}"
+    state: absent

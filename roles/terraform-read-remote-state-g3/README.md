@@ -80,6 +80,41 @@ terraform_states:
         name: "app_server"
 ```
 
+### Filtering by Terraform Labels
+
+The role also supports filtering resources by Terraform labels. This is useful when you have multiple instances created with `count` and want to extract all instances matching specific labels.
+
+```yaml
+terraform_states:
+  - name: "prod-hetzner-k8s"
+    terraform_provider: "hetzner"
+    s3_bucket: "my-terraform-backend"
+    s3_key: "env/prod-k8s/terraform.tfstate"
+    s3_region: "eu-central-1"
+    s3_profile: "prod_s3_ro"
+    filter_by_labels:
+      - label_key: "role"
+        label_value: "ingress"
+        resource_type: "hcloud_server"
+        output_var_name: "k8s_ingress_nodes"
+      - label_key: "role"
+        label_value: "worker"
+        resource_type: "hcloud_server"
+        output_var_name: "k8s_worker_nodes"
+```
+
+The `filter_by_labels` option creates a list variable with all matching instances:
+
+```yaml
+k8s_ingress_nodes:
+  - name: "fsn1-prod-i-50"
+    ipv4: "49.13.123.200"
+    ipv6: "2a01:4f8:c014:b8ac::1"
+  - name: "fsn1-prod-i-51"
+    ipv4: "49.13.123.201"
+    ipv6: "2a01:4f8:c014:b8ac::2"
+```
+
 ## Output Variables
 
 The role creates variables for each resource in the format `srv_{{ resource_name }}` containing:
@@ -160,7 +195,10 @@ The role uses a modular approach with provider-specific tasks:
 - `05-read-state.yml` - Main orchestrator that routes to provider-specific tasks
 - `15-loop-state-twc.yml` - TimeWeb Cloud provider processing
 - `20-loop-state-hetzner.yml` - Hetzner Cloud provider processing  
+- `22-loop-state-hetzner-lb.yml` - Hetzner Load Balancer processing
 - `25-loop-state-digitalocean.yml` - DigitalOcean provider processing
+- `30-loop-state-hetzner-by-labels.yml` - Hetzner Cloud label-based filtering
+- `35-process-label-filter.yml` - Process individual label filter configuration
 
 ## Tags
 
