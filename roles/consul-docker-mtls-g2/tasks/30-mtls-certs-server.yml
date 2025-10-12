@@ -1,0 +1,35 @@
+---
+- name: Ensure mTLS cert directory exists
+  ansible.builtin.file:
+    path: "{{ consul_mtls_cert_path }}"
+    state: directory
+    owner: "{{ consul_uid }}"
+    group: "{{ consul_gid }}"
+    mode: '0755'
+
+- name: Save CA certificate from Vault
+  ansible.builtin.copy:
+    dest: "{{ consul_mtls_cert_path }}/consul-agent-ca.pem"
+    content: "{{ consul_mtls_ca_cert }}"
+    owner: "{{ consul_uid }}"
+    group: "{{ consul_gid }}"
+    mode: '0644'
+  notify: restart-docker consul
+
+- name: Save server certificate from Vault
+  ansible.builtin.copy:
+    dest: "{{ consul_mtls_cert_path }}/server-cert.pem"
+    content: "{{ consul_mtls_server_cert }}"
+    owner: "{{ consul_uid }}"
+    group: "{{ consul_gid }}"
+    mode: '0644'
+  notify: restart-docker consul
+
+- name: Save server private key from Vault
+  ansible.builtin.copy:
+    dest: "{{ consul_mtls_cert_path }}/server-key.pem"
+    content: "{{ consul_mtls_server_key }}"
+    owner: "{{ consul_uid }}"
+    group: "{{ consul_gid }}"
+    mode: '0640'
+  notify: restart-docker consul

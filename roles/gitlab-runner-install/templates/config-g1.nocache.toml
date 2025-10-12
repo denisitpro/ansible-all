@@ -1,0 +1,20 @@
+concurrent = 16
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "runner-nocache-{{ inventory_hostname_short }}"
+  url = "https://gitlab.example.com"
+  output_limit = 40960
+  executor = "docker"
+  [runners.custom_build_dir]
+  [runners.docker]
+    tls_verify = false
+    image = "{{ runer_docker_default_image }}"
+    privileged = false
+    disable_cache = true
+    volumes = ["/var/run/docker.sock:/var/run/docker.sock"]
+  [runners.cache]
+    MaxUploadedArchiveSize = 0

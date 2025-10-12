@@ -1,0 +1,70 @@
+---
+backup_dest_dir: "/mnt/backup"
+backup_gpg_recipient: "set_your_public_key_id"
+backup_retention_days: 3
+backup_filename_prefix: "backup"
+backup_compress: true
+backup_encrypt: true
+backup_log_file: "/var/log/backup.log"
+backup_script_path: "/opt/scripts"
+
+# GPG public key content (multiline string)
+backup_gpg_public_key: |
+  -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+  # Replace with your actual GPG public key content
+  # Example key content should be provided via group_vars or host_vars
+
+  -----END PGP PUBLIC KEY BLOCK-----
+
+# GPG key import settings
+backup_gpg_key_import_enabled: true
+backup_gpg_key_user: root
+backup_gpg_temp_dir: /tmp
+
+# Rclone configuration (optional)
+# Set backup_use_rclone: true to enable rclone support
+backup_rclone_config_path: "/root/.config/rclone/rclone.conf"
+backup_rclone_targets: {}
+
+# Rclone targets configuration
+# Example:
+# backup_rclone_targets:
+#   wasabi-backup:
+#     type: s3
+#     provider: Wasabi
+#     env_auth: false
+#     access_key_id: "your_access_key"
+#     secret_access_key: "your_secret_key"
+#     endpoint: "s3.eu-central-2.wasabisys.com"
+#     region: "eu-central-2"
+#     acl: "private"
+
+# Rclone upload configuration
+backup_rclone_remote_path: "backups/{{ inventory_hostname_short }}"
+backup_rclone_log_dir: "/var/log"
+backup_rclone_detailed_log_dir: "/tmp/rclone"
+backup_rclone_checkers: 8
+backup_rclone_transfers: 4
+backup_rclone_bandwidth_limit: ""
+
+# Internal cron configuration (optional)
+# Set backup_use_internal_cron: true to create cron jobs automatically
+backup_use_internal_cron: false
+
+# Cron jobs configuration
+# Example:
+# backup_cron_jobs:
+#   - name: "backup-opt-data"
+#     minute: "30"
+#     hour: "2"
+#     source: "/opt/backup"
+#     prefix: "opt_backup"
+#     retention: 14
+#     upload_after: true
+#     upload_target: "wasabi-backup:server01/"
+backup_cron_jobs: []
+
+
+wassabi_access_key_id: "{{ vault_dict_users_secret_g2.wassabi_s3_test_key.access_key_id }}"
+wassabi_secret_access_key: "{{ vault_dict_users_secret_g2.wassabi_s3_test_key.secret_access_key }}"

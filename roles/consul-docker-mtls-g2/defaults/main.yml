@@ -1,0 +1,61 @@
+---
+consul_server_version: 1.21.4
+consul_mode: "agent" # support agent and server
+
+# https://github.com/hashicorp/consul/blob/main/Dockerfile
+consul_uid: 100
+consul_gid: 1000
+
+# need for teleport
+consul_bind_addr: '[::]'
+
+consul_compose_path: /opt/docker/consul
+consul_base_path: /opt/consul
+consul_config_dir: /etc/consul.d
+consul_mtls_cert_path: "{{ consul_base_path }}/mtls-certs"
+consul_generate_ca_path: "{{ consul_base_path }}/certs-generate"
+
+consul_dc_name: "dc1"
+# consul_bind_addr: "[::]"
+
+consul_cls_group: consul_cls_group
+consul_ca_init_host: "{{ groups[consul_cls_group][0] }}"
+
+# consul server
+consul_bootstrap_expect: 3
+# vault g1
+# consul_encrypt_key: "{{ vault_dict_users_secret.consul_encrypt_key | default('set_me') }}"
+# consul_agent_token: "{{ vault_dict_users_secret.consul_agent_token | default('set_me') }}"
+# consul_agent_ca: "{{ vault_dict_users_secret.consul_agent_ca | default('set_me', true) }}"
+# vault g2
+consul_encrypt_key: "{{ vault_dict_users_secret_g2.consul_encrypt_key.value | default('set_me') }}"
+consul_agent_token: "{{ vault_dict_users_secret_g2.consul_agent_token.value | default('set_me') }}"
+consul_agent_ca: "{{ vault_dict_users_secret_g2.consul_agent_ca.value | default('set_me') }}"
+
+# mTLS certificates from Vault (server mode)
+# Dynamic certificate selection based on hostname
+consul_mtls_cert_name: >-
+  {%- if 'consul-20' in ansible_hostname -%}
+    consul_mtls_server_cert_20
+  {%- elif 'consul-21' in ansible_hostname -%}
+    consul_mtls_server_cert_21
+  {%- elif 'consul-22' in ansible_hostname -%}
+    consul_mtls_server_cert_22
+  {%- else -%}
+    consul_mtls_server_cert_20
+  {%- endif -%}
+
+consul_mtls_server_cert: "{{ vault_dict_users_secret_g2[consul_mtls_cert_name].mtls_cert | default('') }}"
+consul_mtls_server_key: "{{ vault_dict_users_secret_g2[consul_mtls_cert_name].mtls_key | default('') }}"
+consul_mtls_ca_cert: "{{ vault_dict_users_secret_g2[consul_mtls_cert_name].mtls_ca | default('') }}"
+
+consul_metrics_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default('set_me') }}"
+consul_metrics_tags:
+  - "{{ stand_type }}"
+  - "{{ consul_metrics_name | default('consul-metrics') }}"
+  - "dc={{ consul_dc_name }}"
+
+
+consul_san_dns_list:
+  - "server.{{ consul_dc_name }}.consul"
+  - "{{ consul_cls_pub_name | default('consul.example.com') }}"

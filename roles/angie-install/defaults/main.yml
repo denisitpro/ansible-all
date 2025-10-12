@@ -10,6 +10,9 @@ angie_acl_conf_dir: "{{ angie_base_path }}/acl.d"
 angie_uid: 100
 angie_gid: 101
 
+# Default ports for default-deny configuration
+nginx_default_http_port: 80
+nginx_default_https_port: 443
 
 angie_ssl_path: "/opt/ssl"
 angie_ssl_privkey_path: "{{ ssl_path }}/privkey.pem"

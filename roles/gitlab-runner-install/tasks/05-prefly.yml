@@ -1,0 +1,23 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ runner_compose_path }}"
+
+- name: create folders for both runners
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ runner_nocache_base_path }}"
+    - "{{ runner_nocache_config_path }}"
+    - "{{ runner_cache_base_path }}"
+    - "{{ runner_cache_config_path }}"
+    - "{{ runner_cache_volume_path }}"

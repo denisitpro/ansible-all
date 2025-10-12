@@ -1,0 +1,81 @@
+---
+- name: Check if GPG key import is enabled
+  ansible.builtin.debug:
+    msg: "GPG key import is {{ 'enabled' if backup_gpg_key_import_enabled else 'disabled' }}"
+  tags:
+    - gpg-key
+
+- name: Validate GPG public key variable
+  ansible.builtin.fail:
+    msg: "GPG public key content is not defined or empty"
+  when:
+    - backup_gpg_key_import_enabled | bool
+    - backup_gpg_public_key is not defined or backup_gpg_public_key | trim == ""
+  tags:
+    - gpg-key
+
+- name: Check if GPG key is already imported
+  ansible.builtin.shell: |
+    gpg --list-keys --with-colons | grep -q "^pub"
+  register: gpg_key_check
+  failed_when: false
+  changed_when: false
+  become: true
+  become_user: "{{ backup_gpg_key_user }}"
+  when: backup_gpg_key_import_enabled | bool
+  tags:
+    - gpg-key
+
+- name: Create temporary GPG key file
+  ansible.builtin.copy:
+    content: "{{ backup_gpg_public_key }}"
+    dest: "{{ backup_gpg_temp_dir }}/temp_gpg_key.asc"
+    mode: '0600'
+    owner: "{{ backup_gpg_key_user }}"
+    group: "{{ backup_gpg_key_user }}"
+  when:
+    - backup_gpg_key_import_enabled | bool
+    - gpg_key_check.rc != 0
+  tags:
+    - gpg-key
+
+- name: Import GPG public key
+  ansible.builtin.shell: |
+    gpg --import {{ backup_gpg_temp_dir }}/temp_gpg_key.asc
+  become: true
+  become_user: "{{ backup_gpg_key_user }}"
+  when:
+    - backup_gpg_key_import_enabled | bool
+    - gpg_key_check.rc != 0
+  tags:
+    - gpg-key
+
+- name: Remove temporary GPG key file
+  ansible.builtin.file:
+    path: "{{ backup_gpg_temp_dir }}/temp_gpg_key.asc"
+    state: absent
+  when:
+    - backup_gpg_key_import_enabled | bool
+    - gpg_key_check.rc != 0
+  tags:
+    - gpg-key
+
+- name: Verify GPG key import
+  ansible.builtin.shell: |
+    gpg --list-keys --with-colons
+  register: gpg_keys_list
+  become: true
+  become_user: "{{ backup_gpg_key_user }}"
+  when: backup_gpg_key_import_enabled | bool
+  changed_when: false
+  tags:
+    - gpg-key
+
+- name: Display imported GPG keys
+  ansible.builtin.debug:
+    msg: "GPG keys successfully imported"
+  when:
+    - backup_gpg_key_import_enabled | bool
+    - gpg_keys_list.stdout is defined
+  tags:
+    - gpg-key

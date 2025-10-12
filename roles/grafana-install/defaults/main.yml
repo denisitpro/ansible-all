@@ -1,5 +1,5 @@
 ---
-grafana_version: "12.0.2"
+grafana_version: "12.1.0"
 # backup_path: /mnt/backup
 
 grafana_compose_path: /opt/docker/grafana
@@ -35,8 +35,8 @@ gf_auth_github_role_attribute_path: example-com/grafana-team
 
 gf_auth_github_team_ids: 123445677 # set id github team - see readme
 
-gf_auth_github_client_id: "{{ vault_dict_users_secret.gf_auth_github_client_id | default('set_me') }}"
-gf_auth_github_client_secret: "{{ vault_dict_users_secret.gf_auth_github_client_secret | default('set_me') }}"
+gf_auth_github_client_id: "{{ vault_dict_users_secret_g2.gf_auth_github.client_id | default('set_me') }}"
+gf_auth_github_client_secret: "{{ vault_dict_users_secret_g2.gf_auth_github.client_secret | default('set_me') }}"
 
 gf_auth_ldap_allow_sign_up: true
 gf_auth_ldap_config_file: '/etc/grafana/ldap.toml'

@@ -1,0 +1,419 @@
+#!/bin/bash
+
+# Backup upload script using rclone
+# Usage: backup-upload.sh --target <rclone_target> --local-dir <path> [options]
+
+set -euo pipefail
+
+# Default configuration
+DEFAULT_LOCAL_DIR="{{ backup_dest_dir }}"
+DEFAULT_REMOTE_PATH="{{ backup_rclone_remote_path | default('backups') }}"
+DEFAULT_LOG_DIR="{{ backup_rclone_log_dir | default('/var/log') }}"
+DEFAULT_RCLONE_LOG_DIR="{{ backup_rclone_detailed_log_dir | default('/tmp/rclone') }}"
+DEFAULT_CHECKERS="{{ backup_rclone_checkers | default('8') }}"
+DEFAULT_TRANSFERS="{{ backup_rclone_transfers | default('4') }}"
+DEFAULT_BANDWIDTH_LIMIT="{{ backup_rclone_bandwidth_limit | default('') }}"
+
+# Initialize variables
+LOCAL_DIR="$DEFAULT_LOCAL_DIR"
+REMOTE_TARGET=""
+REMOTE_PATH="$DEFAULT_REMOTE_PATH"
+LOG_DIR="$DEFAULT_LOG_DIR"
+RCLONE_LOG_DIR="$DEFAULT_RCLONE_LOG_DIR"
+CHECKERS="$DEFAULT_CHECKERS"
+TRANSFERS="$DEFAULT_TRANSFERS"
+BANDWIDTH_LIMIT="$DEFAULT_BANDWIDTH_LIMIT"
+DRY_RUN=false
+SYNC_MODE="copy"  # copy, sync, move
+CHECK_AFTER=true
+
+# Show usage information
+show_usage() {
+    cat << EOF
+Usage: $0 --target <rclone_target> [options]
+
+Required:
+  --target <name>        Rclone target name (from rclone.conf)
+
+Optional:
+  --local-dir <path>     Local backup directory (default: $DEFAULT_LOCAL_DIR)
+  --remote-path <path>   Remote path prefix (default: $DEFAULT_REMOTE_PATH)
+  --mode <mode>          Upload mode: copy, sync, move (default: copy)
+  --checkers <num>       Number of checkers (default: $DEFAULT_CHECKERS)
+  --transfers <num>      Number of transfers (default: $DEFAULT_TRANSFERS)
+  --bandwidth <limit>    Bandwidth limit (e.g., 10M, 1G)
+  --log-dir <path>       Log directory (default: $DEFAULT_LOG_DIR)
+  --dry-run             Perform dry run only
+  --no-check            Skip integrity check after upload
+  --help                Show this help message
+
+Examples:
+  $0 --target wasabi-backup
+  $0 --target wasabi-c1-test:bucket-name/
+  $0 --target s3-storage --remote-path server01/backups --mode sync
+  $0 --target minio-backup --dry-run --bandwidth 50M
+EOF
+}
+
+# Parse command line arguments
+parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --target)
+                REMOTE_TARGET="$2"
+                shift 2
+                ;;
+            --local-dir)
+                LOCAL_DIR="$2"
+                shift 2
+                ;;
+            --remote-path)
+                REMOTE_PATH="$2"
+                shift 2
+                ;;
+            --mode)
+                SYNC_MODE="$2"
+                shift 2
+                ;;
+            --checkers)
+                CHECKERS="$2"
+                shift 2
+                ;;
+            --transfers)
+                TRANSFERS="$2"
+                shift 2
+                ;;
+            --bandwidth)
+                BANDWIDTH_LIMIT="$2"
+                shift 2
+                ;;
+            --log-dir)
+                LOG_DIR="$2"
+                shift 2
+                ;;
+            --dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            --no-check)
+                CHECK_AFTER=false
+                shift
+                ;;
+            --help)
+                show_usage
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+}
+
+# Validate arguments
+validate_arguments() {
+    if [[ -z "$REMOTE_TARGET" ]]; then
+        echo "Error: --target parameter is required"
+        show_usage
+        exit 1
+    fi
+    
+    if [[ ! -d "$LOCAL_DIR" ]]; then
+        echo "Error: Local directory does not exist: $LOCAL_DIR"
+        exit 1
+    fi
+    
+    if [[ ! "$SYNC_MODE" =~ ^(copy|sync|move)$ ]]; then
+        echo "Error: Mode must be one of: copy, sync, move"
+        exit 1
+    fi
+    
+    # Parse target:path format if provided
+    if [[ "$REMOTE_TARGET" == *":"* ]]; then
+        # Extract remote name (part before first colon)
+        local remote_name="${REMOTE_TARGET%%:*}"
+        # Extract path (part after first colon)
+        local target_path="${REMOTE_TARGET#*:}"
+        
+        # Validate the remote name exists
+        if ! rclone config show "$remote_name" >/dev/null 2>&1; then
+            echo "Error: Rclone remote '$remote_name' not found in configuration"
+            echo "Available remotes:"
+            rclone listremotes
+            exit 1
+        fi
+        
+        # Build final path combining target_path with remote_path
+        local final_path=""
+        if [[ "$REMOTE_PATH" != "$DEFAULT_REMOTE_PATH" ]]; then
+            # Custom --remote-path provided
+            if [[ -n "$target_path" && -n "$REMOTE_PATH" ]]; then
+                final_path="${target_path}${REMOTE_PATH}"
+            elif [[ -n "$target_path" ]]; then
+                final_path="$target_path"
+            elif [[ -n "$REMOTE_PATH" ]]; then
+                final_path="$REMOTE_PATH"
+            fi
+        else
+            # Use default remote path if target_path is empty, otherwise use target_path + default
+            if [[ -n "$target_path" ]]; then
+                if [[ -n "$DEFAULT_REMOTE_PATH" ]]; then
+                    final_path="${target_path}${DEFAULT_REMOTE_PATH}"
+                else
+                    final_path="$target_path"
+                fi
+            else
+                final_path="$DEFAULT_REMOTE_PATH"
+            fi
+        fi
+        
+        REMOTE_TARGET="${remote_name}:${final_path}"
+        REMOTE_PATH=""  # Clear since it's now part of target
+    else
+        # Check if rclone target exists (simple name format)
+        if ! rclone config show "$REMOTE_TARGET" >/dev/null 2>&1; then
+            echo "Error: Rclone target '$REMOTE_TARGET' not found in configuration"
+            echo "Available targets:"
+            rclone listremotes
+            exit 1
+        fi
+    fi
+}
+
+# Logging function
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [$$] $1" | tee -a "$LOG_DIR/backup-upload.log"
+}
+
+# Get execution time in human readable format
+get_execution_time() {
+    local start_time=$1
+    local end_time=$2
+    local duration=$((end_time - start_time))
+    local hours=$((duration / 3600))
+    local minutes=$(((duration % 3600) / 60))
+    local seconds=$((duration % 60))
+    
+    if [[ $hours -gt 0 ]]; then
+        echo "${hours}h ${minutes}m ${seconds}s"
+    elif [[ $minutes -gt 0 ]]; then
+        echo "${minutes}m ${seconds}s"
+    else
+        echo "${seconds}s"
+    fi
+}
+
+# Error handling
+error_exit() {
+    log "ERROR: $1"
+    exit 1
+}
+
+# Get file count and size
+get_backup_stats() {
+    local file_count=$(find "$LOCAL_DIR" -type f | wc -l)
+    local total_size=$(find "$LOCAL_DIR" -type f -exec du -ch {} + | tail -1 | cut -f1)
+    echo "Found $file_count files, total size: $total_size"
+}
+
+# Check upload results by comparing files
+check_upload_results() {
+    local local_count=$(find "$LOCAL_DIR" -type f | wc -l)
+    local remote_count
+    
+    if [[ -n "$REMOTE_PATH" ]]; then
+        remote_count=$(rclone lsf "$REMOTE_TARGET:$REMOTE_PATH" --files-only 2>/dev/null | wc -l)
+    else
+        remote_count=$(rclone lsf "$REMOTE_TARGET" --files-only 2>/dev/null | wc -l)
+    fi
+    
+    log "Upload verification: Local files: $local_count, Remote files: $remote_count"
+    
+    if [[ "$local_count" -eq "$remote_count" ]]; then
+        log "SUCCESS: All files uploaded correctly"
+        return 0
+    else
+        log "WARNING: File count mismatch - some files may not have uploaded"
+        return 1
+    fi
+}
+
+# Perform rclone operation
+perform_upload() {
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    
+    # Create rclone log directory
+    mkdir -p "$RCLONE_LOG_DIR"
+    
+    local log_file="$RCLONE_LOG_DIR/rclone_${SYNC_MODE}_${timestamp}.log"
+    local dry_run_flag=""
+    local bandwidth_flag=""
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        dry_run_flag="--dry-run"
+        log "PERFORMING DRY RUN - no files will be uploaded"
+    fi
+    
+    if [[ -n "$BANDWIDTH_LIMIT" ]]; then
+        bandwidth_flag="--bwlimit $BANDWIDTH_LIMIT"
+    fi
+    
+    if [[ -n "$REMOTE_PATH" ]]; then
+        log "Starting rclone $SYNC_MODE from $LOCAL_DIR to $REMOTE_TARGET:$REMOTE_PATH"
+        local destination="$REMOTE_TARGET:$REMOTE_PATH"
+    else
+        log "Starting rclone $SYNC_MODE from $LOCAL_DIR to $REMOTE_TARGET"
+        local destination="$REMOTE_TARGET"
+    fi
+    
+    # Build rclone command based on mode
+    case "$SYNC_MODE" in
+        "copy")
+            rclone copy "$LOCAL_DIR" "$destination" \
+                --checkers "$CHECKERS" \
+                --transfers "$TRANSFERS" \
+                $bandwidth_flag \
+                $dry_run_flag \
+                --progress \
+                --stats-one-line \
+                --stats 10s \
+                --stats-log-level INFO \
+                --log-file "$log_file" \
+                --log-format "date,time,microseconds" \
+                --log-level INFO \
+                --fast-list
+            ;;
+        "sync")
+            rclone sync "$LOCAL_DIR" "$destination" \
+                --checkers "$CHECKERS" \
+                --transfers "$TRANSFERS" \
+                $bandwidth_flag \
+                $dry_run_flag \
+                --progress \
+                --stats-one-line \
+                --stats 10s \
+                --stats-log-level INFO \
+                --log-file "$log_file" \
+                --log-format "date,time,microseconds" \
+                --log-level INFO \
+                --fast-list
+            ;;
+        "move")
+            rclone move "$LOCAL_DIR" "$destination" \
+                --checkers "$CHECKERS" \
+                --transfers "$TRANSFERS" \
+                $bandwidth_flag \
+                $dry_run_flag \
+                --progress \
+                --stats-one-line \
+                --stats 10s \
+                --stats-log-level INFO \
+                --log-file "$log_file" \
+                --log-format "date,time,microseconds" \
+                --log-level INFO \
+                --fast-list
+            ;;
+    esac
+    
+    local upload_result=$?
+    log "Rclone log file: $log_file"
+    
+    if [[ $upload_result -eq 0 ]]; then
+        log "Upload completed successfully"
+        # Verify upload results
+        if ! check_upload_results; then
+            log "WARNING: File count verification failed, check rclone logs"
+        fi
+    else
+        log "ERROR: Upload failed with exit code $upload_result"
+        log "Check rclone log for details: $log_file"
+        exit $upload_result
+    fi
+}
+
+# Perform integrity check
+perform_check() {
+    if [[ "$DRY_RUN" == "true" ]] || [[ "$CHECK_AFTER" == "false" ]]; then
+        return 0
+    fi
+    
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local check_log="$RCLONE_LOG_DIR/rclone_check_${timestamp}.log"
+    local differ_file="$RCLONE_LOG_DIR/rclone_differ_${timestamp}.txt"
+    local missing_dst="$RCLONE_LOG_DIR/rclone_missing_dst_${timestamp}.txt"
+    
+    log "Starting integrity check..."
+    
+    if [[ -n "$REMOTE_PATH" ]]; then
+        local check_destination="$REMOTE_TARGET:$REMOTE_PATH"
+    else
+        local check_destination="$REMOTE_TARGET"
+    fi
+    
+    rclone check "$LOCAL_DIR" "$check_destination" \
+        --size-only \
+        --one-way \
+        --fast-list \
+        --checkers "$CHECKERS" \
+        --differ "$differ_file" \
+        --missing-on-dst "$missing_dst" \
+        --log-file "$check_log" \
+        --log-format "date,time,microseconds" \
+        --log-level INFO
+    
+    local check_result=$?
+    log "Integrity check log: $check_log"
+    
+    if [[ $check_result -eq 0 ]]; then
+        log "Integrity check passed - all files match"
+    else
+        log "WARNING: Integrity check found differences"
+        log "Check log: $check_log"
+        if [[ -s "$differ_file" ]]; then
+            log "Files with differences: $differ_file"
+        fi
+        if [[ -s "$missing_dst" ]]; then
+            log "Files missing on destination: $missing_dst"
+        fi
+    fi
+}
+
+# Main execution
+main() {
+    parse_arguments "$@"
+    validate_arguments
+    
+    local start_time=$(date +%s)
+    log "=== Backup Upload Started ==="
+    log "Local directory: $LOCAL_DIR"
+    if [[ -n "$REMOTE_PATH" ]]; then
+        log "Remote target: $REMOTE_TARGET:$REMOTE_PATH"
+    else
+        log "Remote target: $REMOTE_TARGET"
+    fi
+    log "Mode: $SYNC_MODE"
+    log "Checkers: $CHECKERS, Transfers: $TRANSFERS"
+    if [[ -n "$BANDWIDTH_LIMIT" ]]; then
+        log "Bandwidth limit: $BANDWIDTH_LIMIT"
+    fi
+    
+    # Show backup statistics
+    get_backup_stats | while read line; do log "$line"; done
+    
+    # Perform upload
+    perform_upload
+    
+    # Perform check if enabled
+    if [[ "$CHECK_AFTER" == "true" ]]; then
+        perform_check
+    fi
+    
+    local end_time=$(date +%s)
+    local execution_time=$(get_execution_time $start_time $end_time)
+    log "=== Backup Upload Completed in $execution_time ==="
+}
+
+# Run main function with all arguments
+main "$@"
