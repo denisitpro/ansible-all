@@ -10,7 +10,6 @@
     owner: root
     group: root
     mode: "0644"
-#  notify: restart-unit teleport
   notify: reload-unit teleport
   tags:
     - teleport-config

@@ -1,0 +1,26 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: instances alert rules
+  rules:
+  # General rule for all components monitoring
+  - alert: InstanceDown - all components
+    expr: |
+      up{job!~"{{ excld_job_instance_down_all | default([]) | join('|') }}", instance!~"{{ excld_instance_down_all | default([]) | join('|') }}", tags!~"{{ excld_tags_instance_down_all | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}", project!~"{{ excld_project_instance_down_all | default([]) | join('|') }}", prometheus!~"^.*prometheus.*"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
+
+  # Specific rule for servers monitoring (node-exporter)
+  - alert: InstanceDown - servers
+    expr: |
+      up{job="node-exporter", instance!~"{{ excld_instance_down_servers | default([]) | join('|') }}", tags!~"{{ excld_tags_instance_down_servers | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}Server {{ $labels.instance }} has been down for more than 5 minutes.{% endraw %}"
+      summary: "{% raw %}Server {{ $labels.instance }} down{% endraw %}"

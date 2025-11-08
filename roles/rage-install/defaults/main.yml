@@ -1,0 +1,37 @@
+---
+# Rage installation parameters
+rage_version: "v0.11.1"
+rage_base_url: "https://github.com/str4d/rage/releases/download"
+rage_install_dir: "/usr/local/bin"
+
+# Architecture mapping for rage
+rage_arch_map:
+  i386: "i386"
+  x86_64: "x86_64"
+  aarch64: "arm64"
+  armv7l: "armv7"
+  armv6l: "armv6"
+
+# Resolved architecture for download URL
+rage_arch: "{{ rage_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+# OS mapping
+rage_os_map:
+  Linux: "linux"
+  Darwin: "darwin"
+
+rage_os: "{{ rage_os_map[ansible_system] | default('linux') }}"
+
+# Download filename and URL
+rage_filename: "rage-{{ rage_version }}-{{ rage_arch }}-{{ rage_os }}"
+rage_archive: "{{ rage_filename }}.tar.gz"
+rage_download_url: "{{ rage_base_url }}/{{ rage_version }}/{{ rage_archive }}"
+
+# Temporary download directory
+rage_temp_dir: "/tmp"
+
+# Binary files to install
+rage_binaries:
+  - rage
+  - rage-keygen
+  # - rage-mount

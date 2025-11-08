@@ -1,0 +1,25 @@
+groups:
+- name: disks alert rules
+  rules:
+
+  - alert: HighDiskIOPS - 15m over 500 iops
+    expr: >
+      rate(node_disk_reads_completed_total{instance!~"{{ excld_high_disk_iops500_15m_inst | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_15m | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[15m]) +
+      rate(node_disk_writes_completed_total[15m]) > 500
+    for: 15m
+    labels:
+      severity: info
+    annotations:
+      summary: "{% raw %}High Disk IOPS on instance {{ $labels.instance }}{% endraw %}"
+      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 500 IOPS over the last 15 minutes.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  - alert: HighDiskIOPS - 1h over 500 iops
+    expr: >
+      rate(node_disk_reads_completed_total{instance!~"{{ excld_high_disk_iops500_1h_inst | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_1h | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[1h]) +
+      rate(node_disk_writes_completed_total[1h]) > 500
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}High Disk IOPS on instance {{ $labels.instance }}{% endraw %}"
+      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 500 IOPS over the last 1 hour.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"

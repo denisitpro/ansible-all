@@ -1,5 +1,5 @@
 ---
-prometheus_image: "v3.5.0"
+prometheus_image: "v3.7.1"
 prometheus_compose_path: /opt/docker/prometheus
 prometheus_base_path: "/opt/prometheus"
 prometheus_config_path: "{{ prometheus_base_path }}/config"
@@ -120,9 +120,11 @@ prometheus_static_targets_files:
 
 # ALERTS section gen 2
 prometheus_alert_files:
-  - alerts-disks-v1.yml
-  - alerts-memory.yml
   - alerts-base-v1.yml
+  - alerts-instances.yml
+  - alerts-disks-general.yml
+  - alerts-disks-iops.yml
+  - alerts-memory.yml
   - alerts-pods.yml
   - alerts-time.yml
   - alerts-domain-expire-v1.yml
@@ -155,13 +157,19 @@ coins_http_400_fail: []
 coins_http_404_fail: []
 coins_http_405_fail: []
 
-# InstanceDown - servers exclusions
-excld_instance_down: []
-excld_tags_instance_down:
-  - tag_default_excld_instance_down
+# InstanceDown - all components exclusions
+excld_job_instance_down_all:
+  - node-exporter  # Exclude node-exporter from general rule (has specific rule)
+excld_instance_down_all: []
+excld_tags_instance_down_all:
+  - tag_default_excld_instance_down_all
+excld_project_instance_down_all:
+  - project_default_excld_instance_down_all
 
-excld_project_instance_down:
-  - project_default_excld_instance_down
+# InstanceDown - servers exclusions (node-exporter specific)
+excld_instance_down_servers: []
+excld_tags_instance_down_servers:
+  - tag_default_excld_instance_down_servers
 
 alert_click_connections_count: 150
 alert_domain_expire_days: 14

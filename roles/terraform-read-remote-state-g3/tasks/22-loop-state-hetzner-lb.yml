@@ -70,6 +70,23 @@
   loop_control:
     loop_var: resource_item
 
+# Create unified format variables (same as servers) for easier usage
+- name: Set load balancer data in unified format (always returns lists of IPs)
+  ansible.builtin.set_fact:
+    "{{ resource_item.name }}":
+      ipv4: "{{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | selectattr('name', 'equalto', resource_item.name) | map(attribute='instances') | first | map(attribute='attributes.ipv4') | list }}"
+      ipv6: "{{ tfstate.resources | selectattr('type', 'equalto', resource_item.type) | selectattr('name', 'equalto', resource_item.name) | map(attribute='instances') | first | map(attribute='attributes.ipv6') | list }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list }}"
+  loop_control:
+    loop_var: resource_item
+
+- name: Debug extracted LB IPs in unified format
+  ansible.builtin.debug:
+    msg: "{{ resource_item.name }}.ipv4: {{ hostvars[inventory_hostname][resource_item.name].ipv4 | default('UNDEFINED') }}"
+  loop: "{{ item.resources | selectattr('type', 'equalto', 'hcloud_load_balancer') | list }}"
+  loop_control:
+    loop_var: resource_item
+
 # - name: Debug all hostvars
 #   ansible.builtin.debug:
 #     msg: "All variables starting with lb_: {{ hostvars[inventory_hostname] | dict2items | selectattr('key', 'match', '^lb_') | map(attribute='key') | list }}"

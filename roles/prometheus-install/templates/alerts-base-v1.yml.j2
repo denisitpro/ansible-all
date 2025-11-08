@@ -12,16 +12,6 @@ groups:
       description: 'This is an alert meant to ensure that the entire alerting pipeline is functional. '
       summary: 'Ensure entire alerting pipeline is functional'
 
-  - alert: InstanceDown - servers
-    expr: |
-      up{instance!~"{{ excld_instance_down | default([]) | join('|') }}", tags!~"{{ excld_tags_instance_down | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}", project!~"{{ excld_project_instance_down | join('|') }}", prometheus!~"^.*prometheus.*"} == 0
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      description: "{% raw %}{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.{% endraw %}"
-      summary: "{% raw %}Instance {{ $labels.instance }} down{% endraw %}"
-
   # - alert: RebootRequired
   #   expr: |
   #     node_reboot_required{instance!~"{{ excld_inst_reboot_required | default([]) | join('|') }}"} == 1

@@ -2,13 +2,27 @@ service {
   name  = "{{ node_exporter_name | default('node-exporter') }}"
   port  = {{ node_exporter_bind_port }}
   tags  = [
-    "prometheus",
+        "prometheus",
 {% if node_exporter_tags is defined %}
 {% for tag in node_exporter_tags %}
         "{{ tag }}",
 {% endfor %}
 {% endif %}
   ]
+
+  meta = {
+    service = "{{ node_exporter_name | default('node-exporter') }}"
+{% if node_exporter_tags is defined %}
+{% for tag in node_exporter_tags %}
+{% if '=' in tag %}
+{% set key, value = tag.split('=', 1) %}
+    {{ key }} = "{{ value }}"
+{% else %}
+    tag_{{ loop.index }} = "{{ tag }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+  }
 
   {% if consul_agent_disabled is not defined %}
     token = "{{ consul_node_exporter_token }}"

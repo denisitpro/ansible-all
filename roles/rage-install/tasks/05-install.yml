@@ -1,0 +1,49 @@
+---
+- name: Create temporary directory for rage installation
+  ansible.builtin.file:
+    path: "{{ rage_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Download rage archive
+  ansible.builtin.get_url:
+    url: "{{ rage_download_url }}"
+    dest: "{{ rage_temp_dir }}/{{ rage_archive }}"
+    mode: '0644'
+    timeout: 30
+  register: rage_download
+
+- name: Extract rage archive
+  ansible.builtin.unarchive:
+    src: "{{ rage_temp_dir }}/{{ rage_archive }}"
+    dest: "{{ rage_temp_dir }}"
+    remote_src: true
+    creates: "{{ rage_temp_dir }}/rage"
+
+- name: Install rage binaries
+  ansible.builtin.copy:
+    src: "{{ rage_temp_dir }}/rage/{{ item }}"
+    dest: "{{ rage_install_dir }}/{{ item }}"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: true
+  loop: "{{ rage_binaries }}"
+
+- name: Verify rage installation
+  ansible.builtin.command: "{{ rage_install_dir }}/rage --version"
+  register: rage_version_check
+  changed_when: false
+
+- name: Display rage version
+  ansible.builtin.debug:
+    msg: "Installed rage version: {{ rage_version_check.stdout_lines[0] }}"
+
+- name: Verify rage-keygen installation
+  ansible.builtin.command: "{{ rage_install_dir }}/rage-keygen --version"
+  register: rage_keygen_version_check
+  changed_when: false
+
+- name: Display rage-keygen version
+  ansible.builtin.debug:
+    msg: "Installed rage-keygen version: {{ rage_keygen_version_check.stdout_lines[0] }}"
