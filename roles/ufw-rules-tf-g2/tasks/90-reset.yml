@@ -1,0 +1,43 @@
+---
+- name: allow temporary ssh access
+  community.general.ufw:
+    rule: "allow"
+    proto: tcp
+    src: "{{ item }}"
+    port: "22"
+    comment: "temporary ssh access - will be removed later"
+  with_items:
+    - "0.0.0.0/0"
+    - "::/0"
+
+- name: disable ufw before reset
+  community.general.ufw:
+    state: disabled
+
+- name: reset all ufw rules
+  ansible.builtin.command: ufw --force reset
+  changed_when: true
+
+- name: allow temporary ssh access
+  community.general.ufw:
+    rule: "allow"
+    proto: tcp
+    src: "{{ item }}"
+    port: "22"
+    comment: "temporary ssh access - will be removed later"
+  with_items:
+    - "0.0.0.0/0"
+    - "::/0"
+
+# - name: set ufw default policies
+#   community.general.ufw:
+#     direction: "{{ item.direction }}"
+#     policy: "{{ item.policy }}"
+#   loop:
+#     - { direction: 'incoming', policy: 'deny' }
+#     - { direction: 'outgoing', policy: 'allow' }
+#     - { direction: 'routed', policy: 'deny' }
+
+- name: enable ufw
+  community.general.ufw:
+    state: enabled

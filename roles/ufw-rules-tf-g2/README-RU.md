@@ -4,15 +4,15 @@
 
 ## Описание
 
-Роль автоматически создает правила UFW фаервола, используя IP-адреса, полученные из роли `terraform-read-remote-state-g2`. Поддерживает как одиночные IP-адреса, так и массивы адресов.
+Роль автоматически создает правила UFW фаервола, используя IP-адреса, полученные из роли `terraform-read-remote-state-g3`. Поддерживает как одиночные IP-адреса, так и массивы адресов.
 
 ## Зависимости
 
-Роль должна выполняться **после** роли `terraform-read-remote-state-g2`:
+Роль должна выполняться **после** роли `terraform-read-remote-state-g3`:
 
 ```yaml
 roles:
-  - terraform-read-remote-state-g2
+  - terraform-read-remote-state-g3
   - ufw-rules-tf-g2
 ```
 

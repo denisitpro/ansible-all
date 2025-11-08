@@ -1,0 +1,5 @@
+---
+# Default empty rules to prevent undefined variable errors
+ufw_k8s_g1:
+  ipv4: []
+  ipv6: []

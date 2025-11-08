@@ -3,7 +3,13 @@
   community.docker.docker_compose_v2:
     project_src: "{{ vault_compose_path }}"
     state: absent
-  ignore_errors: true
+  register: vault_compose_stop
+  # ignore_errors: true
+  failed_when:
+    - vault_compose_stop.failed is defined
+    - vault_compose_stop.failed
+    - "'No such file or directory' not in vault_compose_stop.msg | default('')"
+    - "'project does not exist' not in vault_compose_stop.msg | default('')"
 
 - name: remove vault data and files
   ansible.builtin.file:

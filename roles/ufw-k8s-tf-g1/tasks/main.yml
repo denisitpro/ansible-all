@@ -1,0 +1,7 @@
+---
+- ansible.builtin.import_tasks: 30-ufw-k8s.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - ufw
+    - ufw-all
+    - ufw-k8s

@@ -1,0 +1,38 @@
+---
+# Get mTLS certificates from HCP Vault for Vault server
+# Similar to consul-docker-mtls-g2 role implementation
+
+- name: Ensure mTLS cert directory exists
+  ansible.builtin.file:
+    path: "{{ vault_conf_path }}/ssl"
+    state: directory
+    owner: "{{ vault_uid }}"
+    group: "{{ vault_gid }}"
+    mode: '0755'
+
+- name: Save CA certificate from Vault
+  ansible.builtin.copy:
+    dest: "{{ vault_conf_path }}/ssl/ca.pem"
+    content: "{{ vault_mtls_ca_cert }}"
+    owner: "{{ vault_uid }}"
+    group: "{{ vault_gid }}"
+    mode: '0644'
+  notify: restart vault
+
+- name: Save server certificate from Vault
+  ansible.builtin.copy:
+    dest: "{{ vault_conf_path }}/ssl/fullchain.pem"
+    content: "{{ vault_mtls_server_cert }}"
+    owner: "{{ vault_uid }}"
+    group: "{{ vault_gid }}"
+    mode: '0644'
+  notify: restart vault
+
+- name: Save server private key from Vault
+  ansible.builtin.copy:
+    dest: "{{ vault_conf_path }}/ssl/privkey.pem"
+    content: "{{ vault_mtls_server_key }}"
+    owner: "{{ vault_uid }}"
+    group: "{{ vault_gid }}"
+    mode: '0640'
+  notify: restart vault
