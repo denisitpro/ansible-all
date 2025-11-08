@@ -43,3 +43,9 @@ controller:
       {{ nginx_ingress_real_ip.ipv6 | join('\n      ') }}
 {% endif %}
 {% endif %}
+{% if nginx_ingress_use_node_selector is defined and nginx_ingress_use_node_selector %}
+  nodeSelector:
+{% for key, value in nginx_ingress_node_selector.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}

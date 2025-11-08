@@ -15,6 +15,17 @@
     - k8s-addition
     - k8s-longhorn
 
+- ansible.builtin.import_tasks: 25-set-ingress-label-from-tf.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  when: k8s_ingress_nodes is defined and k8s_ingress_nodes | length > 0
+  run_once: true
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-label
+    - k8s-node-label
+    - k8s-ingress-label
+
 - ansible.builtin.import_tasks: 30-ingress-nginx.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
@@ -166,22 +177,11 @@
 #     - k8s-label
 #     - k8s-node-label
 
-- ansible.builtin.import_tasks: 126-set-ingress-label-from-tf.yml
-  delegate_to: "{{ k8s_master_init_host }}"
-  when: k8s_ingress_nodes is defined and k8s_ingress_nodes | length > 0
-  run_once: true
-  tags:
-    - k8s
-    - k8s-addition
-    - k8s-label
-    - k8s-node-label
-    - k8s-ingress-label
-
-- ansible.builtin.import_tasks: 130-kong.yml
-  delegate_to: "{{ k8s_master_init_host }}"
-  run_once: true
-  when: "'kong' in helm_componets_list"
-  tags:
-    - k8s
-    - k8s-addition
-    - k8s-kong
+# - ansible.builtin.import_tasks: 130-kong.yml
+#   delegate_to: "{{ k8s_master_init_host }}"
+#   run_once: true
+#   when: "'kong' in helm_componets_list"
+#   tags:
+#     - k8s
+#     - k8s-addition
+#     - k8s-kong

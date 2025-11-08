@@ -45,15 +45,11 @@ server:
       konghq.com/plugins: "argocd-ip-restriction"
 {% endif %}
 {% endif %}
-{% if argocd_acme is defined %}
+{% if argocd_acme is defined and argocd_notls is not defined %}
       cert-manager.io/cluster-issuer: {{ cert_manager_cf_name | default('cloudflare-issuer-dns-challenge') }}
-{% endif %}
     extraTls:
       - hosts:
         - {{ argocd_domain | default('argocd.example.com') }}
-{% if argocd_acme is defined %}
         secretName: {{ argocd_domain | default('argocd.example.com') | replace('.', '-') }}-tls
-{% else %}
-        secretName: fake-tls
 {% endif %}
 {% endif %}
