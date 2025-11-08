@@ -7,7 +7,7 @@
 
 - name: Add k8s key from local file - Ubuntu
   ansible.builtin.apt_key:
-    data: "{{ lookup('file', 'Release.1.31.key') }}"
+    data: "{{ lookup('file', 'Release.' + k8s_cluster_minor_version + '.key') }}"
     keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     state: present
   when: apt_keyring_force_file is defined

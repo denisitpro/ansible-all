@@ -75,7 +75,6 @@
   tags:
     - argocd-cm
 
-
 - name: ArgoCD - Remove cm
   ansible.builtin.file:
     path: /tmp/{{ item }}

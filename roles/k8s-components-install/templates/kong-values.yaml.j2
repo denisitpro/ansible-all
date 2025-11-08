@@ -64,6 +64,8 @@ manager:
 env:
   database: "off"
   log_level: {{ kong_log_level | default('info') }}
+  KONG_PROXY_ACCESS_LOG: /dev/stdout
+  KONG_PROXY_ERROR_LOG: /dev/stderr  
 {% if kong_real_ip is defined %}
   # Cloudflare Real IP configuration
   trusted_ips: "{{ kong_real_ip.ipv4 | join(',') }}{% if kong_real_ip.ipv6 is defined and kong_real_ip.ipv6 | length > 0 %},{{ kong_real_ip.ipv6 | join(',') }}{% endif %}"

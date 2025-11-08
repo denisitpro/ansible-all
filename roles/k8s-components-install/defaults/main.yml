@@ -2,13 +2,13 @@
 # Helm chart versions for all components
 # Centralized version management for easier updates and overview
 helm_longhorn_version: "1.10.0"
-helm_ingress_nginx_version: "4.12.3"
-helm_prometheus_version: "76.3.1"
+helm_ingress_nginx_version: "4.14.0"
+helm_prometheus_version: "79.0.0"
 helm_cert_manager_version: "1.19.0"
-helm_argocd_version: "8.6.0"
+helm_argocd_version: "9.0.5"
 helm_loki_version: "6.42.0"
 helm_vector_version: "0.46.0"
-helm_teleport_version: "18.2.7"
+helm_teleport_version: "18.2.10"
 helm_vso_version: "1.0.1"
 helm_vai_version: "0.31.0"
 metrics_server_helm_version: "3.12.1"
@@ -112,5 +112,5 @@ k8s_pod_monitoring_config:
 
 # Ingress node labeling from Terraform state
 # These labels will be applied to nodes with role=ingress in Terraform
-k8s_ingress_label_key: "ingress.kong/enabled"
+k8s_ingress_label_key: "ingress.nginx/enabled"
 k8s_ingress_label_value: "enabled"

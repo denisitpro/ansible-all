@@ -35,6 +35,22 @@
   with_items:
     - argocd-git-secret-g2.yml
 
+- name: ArgoCD - create argoprojects
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /tmp/{{ item }}
+    mode: "0600"
+  with_items:
+    - argocd-argoprojects.yaml
+
+- name: ArgoCD - Install argoprojects
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/{{ item }}
+    --namespace {{ helm_argocd_namespace | default('argocd') }}
+    --kubeconfig {{ k8s_config_path }}
+  with_items:
+    - argocd-argoprojects.yaml
+
 - name: ArgoCD - Remove cm
   ansible.builtin.file:
     path: /tmp/{{ item }}
@@ -42,3 +58,4 @@
   with_items:
     - argocd-helm-secret.yml
     - argocd-git-secret-g2.yml
+    - argocd-argoprojects.yaml

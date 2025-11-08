@@ -57,6 +57,7 @@
     - k8s
     - k8s-worker-node
     - k8s-reconfigure
+    - k8s-join-worker-node
 
 
 - ansible.builtin.import_tasks: 55-label-worker-nodes.yml
