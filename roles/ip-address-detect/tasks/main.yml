@@ -1,0 +1,6 @@
+---
+- ansible.builtin.import_tasks: 05-address.yml
+  tags:
+    - ip-address
+    - consul
+    - consul-config
