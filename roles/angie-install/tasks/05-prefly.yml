@@ -26,3 +26,15 @@
     - "{{ angie_base_path }}/conf.d/"
     - "{{ angie_base_path }}/stream.d/"
     - "{{ angie_acl_conf_dir }}"
+
+
+- name: create folder angie
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: "{{ angie_uid }}"
+    group: "{{ angie_gid }}"
+  when: angine_artifacts_path is defined
+  with_items:
+    - "{{ angine_artifacts_path }}"

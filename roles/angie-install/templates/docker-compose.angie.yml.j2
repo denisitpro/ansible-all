@@ -16,6 +16,12 @@ services:
       - {{certbot_path | default('/opt/certbot') }}/www:{{angie_certbot_path | default('/var/www/certbot')}}
       - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{angie_container_ssl_certbot_path| default('/opt/certbot/ssl')}}
 {% endif %}
+{% if angie_used_acme is defined %}
+      - {{ angie_base_path }}/acme:/var/lib/angie/acme
+{% endif %}
+{% if angine_artifacts_path is defined %}
+      -  {{ angine_artifacts_path}}:/usr/share/nginx/artifacts
+{% endif %}
     restart: {{ angie_restart | default('always') }}
 {% if angie_static_file is defined %}
 #      - {{angie_static_path}}:/var/www/html:ro

@@ -108,8 +108,9 @@
 
 user  angie;
 worker_processes  {{angie_worker_processes |default('auto')}};
-worker_rlimit_nofile 65536;
+worker_rlimit_nofile {{angie_worker_rlimit_nofile |default('65536')}};
 
+error_log /dev/stdout {{angie_error_log_level |default('crit')}};
 pid        /run/angie/angie.pid;
 
 events {
@@ -120,21 +121,67 @@ events {
 
 
 http {
+    # Open file cache settings
+    open_file_cache max={{angie_open_file_cache_max |default('200000')}} inactive={{angie_open_file_cache_inactive |default('20s')}};
+    open_file_cache_valid {{angie_open_file_cache_valid |default('30s')}};
+    open_file_cache_min_uses {{angie_open_file_cache_min_uses |default('2')}};
+    open_file_cache_errors {{angie_open_file_cache_errors |default('on')}};
+
     include       /etc/angie/mime.types;
     default_type  application/octet-stream;
+
+    server_tokens off;
     sendfile        on;
 
-    keepalive_timeout  {{angie_keepalive_timeout |default('65')}};
+    keepalive_timeout  {{angie_keepalive_timeout |default('30')}};
 
 # optimizations
 	#Number of requests a client can make over the keep-alive connection.
-	keepalive_requests 1000;
+	keepalive_requests {{angie_keepalive_requests |default('100000')}};
 	#Allow the server to close the connection after a client stops responding.
 	reset_timedout_connection on;
+	client_body_timeout {{angie_client_body_timeout |default('10')}};
+	send_timeout {{angie_send_timeout |default('2')}};
 
 	tcp_nopush	on;
 	tcp_nodelay	on;
-    gzip  on;
+
+    # Gzip compression settings
+    gzip on;
+    #gzip_static on;
+    gzip_min_length {{angie_gzip_min_length |default('1024')}};
+    gzip_buffers {{angie_gzip_buffers |default('16 8k')}};
+    gzip_comp_level {{angie_gzip_comp_level |default('1')}};
+    gzip_http_version 1.1;
+    gzip_vary on;
+    gzip_disable msie6;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_types
+      text/css
+      text/javascript
+      text/xml
+      text/plain
+      text/x-component
+      application/javascript
+      application/x-javascript
+      application/json
+      application/ld+json
+      application/manifest+json
+      application/xml
+      application/rss+xml
+      application/atom+xml
+      application/xhtml+xml
+      application/geo+json
+      font/truetype
+      font/opentype
+      font/eot
+      font/otf
+      font/ttf
+      font/woff
+      font/woff2
+      application/vnd.ms-fontobject
+      image/svg+xml;
+
 {% if angie_proxy_read_timeout is defined %}
 	proxy_read_timeout	{{ nginx_proxy_read_timeout }};
 {% endif %}
@@ -142,6 +189,11 @@ http {
 	client_max_body_size	{{ nginx_client_max_body_size }};
 {% endif %}
 
+    # WebSocket support
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+    }
 
 {% if angie_used_acme is defined %}
     resolver {{angie_acme_resolver | default('1.1.1.1') }}; # Required for the 'acme_client' directive

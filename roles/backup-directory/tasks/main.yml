@@ -5,6 +5,7 @@
     - backup-setup
 
 - ansible.builtin.import_tasks: 10-gpg-import.yml
+  when: backup_use_gpg is defined and backup_use_gpg | bool
   tags:
     - backup
     - gpg-import

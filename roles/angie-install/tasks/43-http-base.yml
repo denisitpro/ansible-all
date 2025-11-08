@@ -1,0 +1,18 @@
+---
+# generate htpasswd file for basic authentication
+# htpasswd -nb username password
+# or openssl passwd -apr1 password
+
+
+# Create htpasswd file for basic authentication
+- name: Create htpasswd file for basic auth
+  ansible.builtin.template:
+    src: htpasswd.j2
+    dest: "{{ angie_htpasswd_path | default('/opt/angie/conf.d/.htpasswd') }}"
+    owner: "{{ angie_uid | default('100') }}"
+    group: "{{ angie_gid | default('101') }}"
+    mode: '0640'
+  when:
+    - angie_htpasswd_users is defined
+    - angie_htpasswd_users | length > 0
+  no_log: true

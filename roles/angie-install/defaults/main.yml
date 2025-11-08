@@ -1,7 +1,7 @@
 ---
 angie_compose_path: /opt/docker/angie
 
-angie_version: 1.9.0
+angie_version: 1.10.2
 
 angie_base_path: /opt/angie
 angie_mtls_path: /opt/mtls/angie
