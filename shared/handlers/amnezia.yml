@@ -1,5 +1,6 @@
 ---
-- name: Reboot system
-  ansible.builtin.reboot:
-    reboot_timeout: 300
-  become: yes
+- name: Restart AmneziaWG
+  ansible.builtin.systemd:
+    name: awg-quick@awg0.service
+    state: restarted
+  listen: Restart AmneziaWG

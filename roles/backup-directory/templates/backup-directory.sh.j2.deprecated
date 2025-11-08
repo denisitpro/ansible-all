@@ -13,6 +13,7 @@ DEFAULT_FILENAME_PREFIX="{{ backup_filename_prefix }}"
 DEFAULT_LOG_FILE="{{ backup_log_file }}"
 DEFAULT_COMPRESS="{{ backup_compress | lower }}"
 DEFAULT_ENCRYPT="{{ backup_encrypt | lower }}"
+DEFAULT_PACK_FILES="{{ backup_pack_files | lower }}"
 
 # Initialize variables
 SOURCE_DIR=""
@@ -23,6 +24,7 @@ FILENAME_PREFIX="$DEFAULT_FILENAME_PREFIX"
 LOG_FILE="$DEFAULT_LOG_FILE"
 COMPRESS="$DEFAULT_COMPRESS"
 ENCRYPT="$DEFAULT_ENCRYPT"
+PACK_FILES="$DEFAULT_PACK_FILES"
 
 # Show usage information
 show_usage() {
@@ -39,6 +41,7 @@ Optional:
   --gpg-recipient <key>  GPG recipient key (default: $DEFAULT_GPG_RECIPIENT)
   --no-encrypt          Disable GPG encryption
   --no-compress         Disable compression
+  --no-pack             Disable file packing (encrypt files directly)
   --log-file <path>      Log file path (default: $DEFAULT_LOG_FILE)
   --help                Show this help message
 
@@ -46,6 +49,7 @@ Examples:
   $0 --source /opt/backup
   $0 --source /var/log --dest /backup --prefix logs --retention 7
   $0 --source /home/user --no-encrypt --no-compress
+  $0 --source /home/user --no-pack --encrypt  # Encrypt files directly without packing
 EOF
 }
 
@@ -79,6 +83,10 @@ parse_arguments() {
                 ;;
             --no-compress)
                 COMPRESS="false"
+                shift
+                ;;
+            --no-pack)
+                PACK_FILES="false"
                 shift
                 ;;
             --log-file)
@@ -139,31 +147,63 @@ mkdir -p "$DEST_DIR"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # Define backup filename
-if [ "$ENCRYPT" = "true" ]; then
-    BACKUP_FILE="${DEST_DIR}/${FILENAME_PREFIX}_${TIMESTAMP}.tar.gz.gpg"
+if [ "$PACK_FILES" = "true" ]; then
+    if [ "$ENCRYPT" = "true" ]; then
+        BACKUP_FILE="${DEST_DIR}/${FILENAME_PREFIX}_${TIMESTAMP}.tar.gz.gpg"
+    else
+        BACKUP_FILE="${DEST_DIR}/${FILENAME_PREFIX}_${TIMESTAMP}.tar.gz"
+    fi
 else
-    BACKUP_FILE="${DEST_DIR}/${FILENAME_PREFIX}_${TIMESTAMP}.tar.gz"
+    if [ "$ENCRYPT" = "true" ]; then
+        BACKUP_FILE="${DEST_DIR}/${FILENAME_PREFIX}_${TIMESTAMP}.gpg"
+    else
+        error_exit "Cannot create backup without packing or encryption"
+    fi
 fi
 
 log "Starting backup of $SOURCE_DIR"
 log "Backup file: $BACKUP_FILE"
 
 # Create backup
-if [ "$ENCRYPT" = "true" ]; then
-    # Encrypted backup
-    if [ "$COMPRESS" = "true" ]; then
-        tar -czf - -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")" | \
-        gpg --yes --batch --recipient "$GPG_RECIPIENT" --trust-model always --encrypt > "$BACKUP_FILE"
+if [ "$PACK_FILES" = "true" ]; then
+    # Pack files into archive
+    if [ "$ENCRYPT" = "true" ]; then
+        # Encrypted packed backup
+        if [ "$COMPRESS" = "true" ]; then
+            tar -czf - -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")" | \
+            gpg --yes --batch --recipient "$GPG_RECIPIENT" --trust-model always --encrypt > "$BACKUP_FILE"
+        else
+            tar -cf - -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")" | \
+            gpg --yes --batch --recipient "$GPG_RECIPIENT" --trust-model always --encrypt > "$BACKUP_FILE"
+        fi
     else
-        tar -cf - -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")" | \
-        gpg --yes --batch --recipient "$GPG_RECIPIENT" --trust-model always --encrypt > "$BACKUP_FILE"
+        # Unencrypted packed backup
+        if [ "$COMPRESS" = "true" ]; then
+            tar -czf "$BACKUP_FILE" -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")"
+        else
+            tar -cf "$BACKUP_FILE" -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")"
+        fi
     fi
 else
-    # Unencrypted backup
-    if [ "$COMPRESS" = "true" ]; then
-        tar -czf "$BACKUP_FILE" -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")"
+    # Direct file encryption without packing
+    if [ "$ENCRYPT" = "true" ]; then
+        log "Encrypting files directly without packing"
+        # Create temporary directory for encrypted files
+        TEMP_DIR="/tmp/backup_encrypt_$$"
+        mkdir -p "$TEMP_DIR"
+        
+        # Copy source to temp directory
+        cp -r "$SOURCE_DIR" "$TEMP_DIR/$(basename "$SOURCE_DIR")"
+        
+        # Encrypt the entire directory structure
+        cd "$TEMP_DIR"
+        tar -czf - "$(basename "$SOURCE_DIR")" | \
+        gpg --yes --batch --recipient "$GPG_RECIPIENT" --trust-model always --encrypt > "$BACKUP_FILE"
+        
+        # Cleanup temp directory
+        rm -rf "$TEMP_DIR"
     else
-        tar -cf "$BACKUP_FILE" -C "$(dirname "$SOURCE_DIR")" "$(basename "$SOURCE_DIR")"
+        error_exit "Cannot create backup without packing or encryption"
     fi
 fi
 
@@ -177,8 +217,15 @@ fi
 
 # Cleanup old backups
 log "Cleaning up backups older than $RETENTION_DAYS days"
-find "$DEST_DIR" -name "${FILENAME_PREFIX}_*.tar.gz*" -type f -mtime +$RETENTION_DAYS -delete
-DELETED_COUNT=$(find "$DEST_DIR" -name "${FILENAME_PREFIX}_*.tar.gz*" -type f -mtime +$RETENTION_DAYS 2>/dev/null | wc -l)
-log "Cleanup completed. Remaining backup files: $(find "$DEST_DIR" -name "${FILENAME_PREFIX}_*.tar.gz*" -type f | wc -l)"
+if [ "$PACK_FILES" = "true" ]; then
+    # Cleanup packed backups
+    find "$DEST_DIR" -name "${FILENAME_PREFIX}_*.tar.gz*" -type f -mtime +$RETENTION_DAYS -delete
+    REMAINING_COUNT=$(find "$DEST_DIR" -name "${FILENAME_PREFIX}_*.tar.gz*" -type f | wc -l)
+else
+    # Cleanup encrypted files
+    find "$DEST_DIR" -name "${FILENAME_PREFIX}_*.gpg" -type f -mtime +$RETENTION_DAYS -delete
+    REMAINING_COUNT=$(find "$DEST_DIR" -name "${FILENAME_PREFIX}_*.gpg" -type f | wc -l)
+fi
+log "Cleanup completed. Remaining backup files: $REMAINING_COUNT"
 
 log "Backup process finished successfully"

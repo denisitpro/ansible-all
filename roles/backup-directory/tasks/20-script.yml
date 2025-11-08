@@ -1,7 +1,7 @@
 ---
 - name: Create backup script
   ansible.builtin.template:
-    src: backup-directory.sh.j2
+    src: backup-rage.sh.j2
     dest: "{{ backup_script_path }}/backup-directory.sh"
     mode: '0755'
     owner: root

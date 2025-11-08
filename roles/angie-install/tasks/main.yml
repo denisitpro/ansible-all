@@ -17,7 +17,8 @@
     - angie-ssl
 
 - ansible.builtin.import_tasks: 33-mtls-cert.yml
-  when: angie_use_mtls is defined
+  # when: angie_skip_mtls is not defined or not angie_skip_mtls
+  when: angie_mtls_support is  defined
   tags:
     - angie
     - angie-mtls
@@ -37,6 +38,14 @@
     - acl
     - vhosts
     - angie-vhosts
+
+- ansible.builtin.import_tasks: 43-http-base.yml
+  when: angie_support_http_auth is defined and angie_support_http_auth is true
+  tags:
+    - angie
+    - angie-htpasswd
+    - angie-config
+
 
 - ansible.builtin.import_tasks: 45-vhosts-configure.yml
   tags:

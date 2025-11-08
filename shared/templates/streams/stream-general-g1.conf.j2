@@ -1,0 +1,42 @@
+## {{ ansible_managed }} ##
+
+server {
+{% if nginx_bind_addr_ipv4  is defined%}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.stream_port | default("12345") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% else %}
+    listen {{ item.stream_port | default("12345") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.stream_port | default("12345") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% endif %}
+
+    proxy_pass {{ item.upstream_name }};
+
+    # confugre support proxy protocol
+{% if item.stream_proxy_protocol is defined and item.stream_proxy_protocol %}
+    proxy_protocol on;
+{% endif %}
+
+    # log project use include
+{% if nginx_logs_disabled is defined %}
+    access_log off;
+    error_log /dev/stdout;
+{% elif nginx_logs_stdout is defined %}
+    access_log  /dev/stdout  {{ nginx_access_log_format | default("extended") }};
+    error_log   /dev/stdout {{nginx_error_log_format | default('')}};
+{% else %}
+    access_log  {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ nginx_access_log_format | default("extend_json") }};
+    error_log   {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-error.log {{nginx_error_log_format | default('')}};
+{% endif %}
+
+{% for included in  nginx.include | default([]) %}
+    include  {{ included }};
+{% endfor %}
+
+{% if item.acl is defined and item.acl | length > 0 %}
+## Include ACL config(s)
+{% for acl_file in item.acl %}
+    include /etc/angie/acl.d/{{ acl_file }};
+{% endfor %}
+{% endif %}
+}
+
+### end generate config

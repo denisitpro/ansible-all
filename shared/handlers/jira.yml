@@ -1,0 +1,7 @@
+---
+- name: recreate-docker jira
+  community.docker.docker_compose_v2:
+    project_src: "{{ jira_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
