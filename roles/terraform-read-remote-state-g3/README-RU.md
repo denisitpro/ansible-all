@@ -1,4 +1,4 @@
-# Роль terraform-read-remote-state-g2
+# Роль terraform-read-remote-state-g3
 
 Роль для чтения Terraform state из S3 и извлечения IP-адресов ресурсов из нескольких облачных провайдеров.
 
@@ -11,6 +11,27 @@
 - **Hetzner Cloud** (`hetzner`): `hcloud_server`, `hcloud_load_balancer`
 - **DigitalOcean** (`digitalocean`): `digitalocean_droplet`
 - **TimeWeb Cloud** (`twc`): `twc_server`
+
+## Формат выходных переменных
+
+Все ресурсы (серверы и Load Balancer) создаются в едином формате для удобства использования:
+
+```yaml
+# Для ресурса "k8s_master_lb" (Load Balancer)
+k8s_master_lb:
+  ipv4: ["167.235.110.61"]
+  ipv6: ["2a01:4f8:1c1f:6899::1"]
+
+# Для ресурса "k8s_masters" (серверы)
+k8s_masters:
+  ipv4: ["10.0.1.10", "10.0.1.11", "10.0.1.12"]
+  ipv6: ["2001:db8::10", "2001:db8::11", "2001:db8::12"]
+```
+
+Использование в правилах:
+- **Single LB**: `source: "{{ k8s_master_lb.ipv4 | first }}"` - строка
+- **Multiple LB** (с count): `source: "{{ k8s_master_lb.ipv4 }}"` - список (роль развернет для каждого)
+- **Серверы**: `source: "{{ k8s_masters.ipv4 }}"` - список
 
 ## Конфигурация
 
@@ -76,20 +97,19 @@ k8s_ingress_nodes:
     ipv6: "2a01:4f8:c014:b8ac::2"
 ```
 
-## Выходные переменные
+## Дополнительные переменные
 
-Роль создает переменные для каждого ресурса в формате `{{ resource_name }}`:
+Для Load Balancer также создается переменная с префиксом `lb_` (массив объектов) для обратной совместимости:
 
 ```yaml
-# Для ресурса "k8s_masters"
-k8s_masters:
-  ipv4: ["10.0.1.10", "10.0.1.11", "10.0.1.12"]
-  ipv6: ["2001:db8::10", "2001:db8::11", "2001:db8::12"]
-
-# Для ресурса "management_server"  
-management_server:
-  ipv4: ["10.0.0.100"]
-  ipv6: ["2001:db8::100"]
+lb_k8s_master_lb: [
+  {
+    "name": "lb-k8s-master-c1-p2p",
+    "ipv4": "167.235.110.61",
+    "ipv6": "2a01:4f8:1c1f:6899::1",
+    "id": "4320172"
+  }
+]
 ```
 
 ## Поддержка count
@@ -103,7 +123,7 @@ management_server:
 - hosts: your_hosts
   become: true
   roles:
-    - terraform-read-remote-state-g2
+    - terraform-read-remote-state-g3
     - ufw-rules-tf-g2
 ```
 

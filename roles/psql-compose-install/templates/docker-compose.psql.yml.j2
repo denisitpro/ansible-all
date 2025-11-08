@@ -5,23 +5,32 @@ services:
     image: {{ psql_image }}:{{ psql_version }}
     container_name: {{ psql_docker_container_name }}
     network_mode: host
+    stop_grace_period: {{ psql_stop_grace_period | default('120s') }}
+    stop_signal: {{ psql_stop_signal | default('SIGTERM') }}
     volumes:
       - {{ psql_node_data_path }}:{{ psql_docker_data_path }}
+{% if psql_jira is not defined %}
       - {{ psql_node_data_conf }}/postgresql.conf:{{ psql_docker_conf_dir }}/postgresql.conf
       - {{ psql_node_data_conf }}/pg_hba.conf:{{ psql_docker_conf_dir }}/pg_hba.conf
+{% endif %}
 {% if postgres_tls %}
       - {{ psql_node_data_ssl }}:{{ psql_docker_ssl_dir }}
 {% endif %}
     environment:
       - POSTGRES_USER={{ psql_default_db_user }}
       - POSTGRES_PASSWORD={{ psql_default_db_password }}
+      - PGDATA={{ psql_docker_data_path }}
+{% if psql_default_db_name is defined %}
       - POSTGRES_DB={{ psql_default_db_name }}
+{% endif %}
 {% if postgres_initialized == false and replica is defined %}
       - PGPASSWORD={{ psql_pgpassword }}
     command: pg_basebackup -h {{ pg_master_host }} -D {{ psql_docker_data_path }} -U replication -w -P -v  -R -X stream -C -S {{ pg_replica_slot_name }}
 {% else %}
     restart: {{ vm_restart | default('always') }}
+{% if psql_jira is not defined %}
     command: -c config_file={{ psql_docker_conf_dir }}/postgresql.conf -c hba_file={{ psql_docker_conf_dir }}/pg_hba.conf
+{% endif %}
 {% endif %}
     logging:
 {% if vector is defined %}
@@ -36,4 +45,12 @@ services:
       options:
         max-size: 100m
         max-file: '2'
+{% endif %}
+{% if psql_resource_limits is defined %}
+    deploy:
+      resources:
+        limits:
+{% for key, value in psql_resource_limits.items() %}
+          {{ key }}: {{ value }}
+{% endfor %}
 {% endif %}

@@ -1,5 +1,5 @@
 ---
-node_exporter_version_binary: "1.9.1"
+node_exporter_version_binary: "1.10.0"
 node_exporter_bind_port: '9100'
 
 
@@ -40,8 +40,8 @@ consul_node_exporter_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_
 
 
 node_exporter_tags:
-  - "{{ stand_type }}"
-  - "{{ node_exporter_name | default('node-exporter') }}"
+  - "stand={{ stand_type }}"
+  - "exporter={{ node_exporter_name | default('node-exporter') }}"
   - "dc={{ consul_dc_name }}"
 
 
@@ -53,3 +53,7 @@ scripts_path: /opt/scripts
 #  - ping-ipv4.sh
 
 supervisor_conf: /etc/supervisor/conf.d/exporter-node.conf
+
+
+# consul section
+consul_compose_path: /opt/docker/consul

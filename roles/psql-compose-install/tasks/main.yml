@@ -3,6 +3,7 @@
   ansible.builtin.import_tasks: 00-prefly.yml
   tags:
     - psql
+    - psql-prefly
     - psql-docker
 
 - name: Import config
@@ -44,21 +45,21 @@
     - psql-docker
     - psql-compose
 
-# - name: Import create users
-#   ansible.builtin.import_tasks: 25-create-users.yml
-#   when: postgres_users is defined
-#   tags:
-#     - psql
-#     - psql-users
-#     - psql-compose
+- name: Import create users
+  ansible.builtin.import_tasks: 25-create-users.yml
+  when: postgres_users is defined
+  tags:
+    - psql
+    - psql-users
+    - psql-compose
 
-# - name: Import create db
-#   ansible.builtin.import_tasks: 30-create-db.yml
-#   when: postgres_db is defined
-#   tags:
-#     - psql
-#     - psql-db
-#     - psql-compose
+- name: Import create db
+  ansible.builtin.import_tasks: 30-create-db.yml
+  when: postgres_db is defined
+  tags:
+    - psql
+    - psql-db
+    - psql-compose
 
 - name: Import cleanup
   ansible.builtin.import_tasks: 90-cleanup.yml

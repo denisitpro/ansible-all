@@ -5,16 +5,13 @@
   run_once: true
   become: false
   connection: local
-  tags: ['always', 'tf']
-  # tags:
-  #  - always
-  #  - tf
-  #  - tf-data
-  #  - tf-read-state
-  #  - ufw
-  #  - ufw-all
-  #  - iptables
-  #  - iptables-conf
-  #  - iptables-configure
-  #  - iptables-check
-  #  - iptables-install
+  # tags: ['always', 'tf', 'state']
+  tags:
+    - tf
+    - ufw
+    - tf-data
+    - state
+    - k8s
+    - k8s-addition
+    - k8s-label
+    - k8s-ingress-nginx
