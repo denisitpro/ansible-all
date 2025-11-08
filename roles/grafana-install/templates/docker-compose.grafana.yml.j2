@@ -10,9 +10,7 @@ services:
     cap_add:
       - NET_BIND_SERVICE
 {% endif %}
-{% if  grafana_mem_limit is defined %}
-    mem_limit: {{ grafana_mem_limit | default('512M') }}
-{% endif %}
+    mem_limit: {{ grafana_mem_limit | default('2g') }}
     volumes:
       - "{{ grafana_data_path }}/etc:/etc/grafana"
       - "{{ grafana_data_path }}/data:/var/lib/grafana"

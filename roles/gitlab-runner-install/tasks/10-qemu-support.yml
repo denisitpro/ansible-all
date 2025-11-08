@@ -1,0 +1,13 @@
+---
+- name: Distribution major version
+  ansible.builtin.debug:
+    msg: "{{ ansible_distribution_version }}"
+
+- name: install base software - ubuntu all
+  ansible.builtin.apt:
+    name:
+      - qemu-user-static
+      - binfmt-support
+    state: present
+    update_cache: true
+    cache_valid_time: 3600

@@ -5,12 +5,25 @@
     - runner
 
 
+- ansible.builtin.import_tasks: 10-qemu-support.yml
+  tags:
+    - gitlab-runner
+    - runner
+    - runner-qemu
+
 - ansible.builtin.import_tasks: 30-configure.yml
   tags:
     - gitlab-runner
     - runner
     - runner-config
     - runner-compose
+
+- ansible.builtin.import_tasks: 40-remove-old-images.yml
+  when: gitlab_runner_internal_cron_enabled is defined and gitlab_runner_internal_cron_enabled
+  tags:
+    - gitlab-runner
+    - runner
+    - runner-mantaince
 
 - ansible.builtin.import_tasks: 99-clean.yml
   tags: ['never', 'runner-clean']

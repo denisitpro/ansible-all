@@ -1,0 +1,9 @@
+---
+- name: Add cron task for Docker images cleanup
+  ansible.builtin.cron:
+    name: "Docker cleanup old images and builder cache"
+    minute: "0"
+    hour: "*/{{ gitlab_runner_cleanup_interval_hours }}"
+    job: "docker image prune -af --filter until={{ gitlab_runner_cleanup_age_hours }}h; docker builder prune -f --filter \"until={{ gitlab_runner_cleanup_age_hours }}h\""
+    user: root
+  when: gitlab_runner_internal_cron_enabled is defined and gitlab_runner_internal_cron_enabled
