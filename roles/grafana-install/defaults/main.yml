@@ -1,5 +1,5 @@
 ---
-grafana_version: "12.1.0"
+grafana_version: "12.2.1"
 # backup_path: /mnt/backup
 
 grafana_compose_path: /opt/docker/grafana
@@ -7,6 +7,7 @@ grafana_data_path: /opt/grafana
 grafana_ssl_path: "{{ grafana_data_path }}/ssl"
 
 grafana_image: 'grafana/grafana'
+grafana_mem_limit: '2g'
 gf_server_root_url: https://grafana.example.com
 gf_server_domain: example.com
 
@@ -33,7 +34,7 @@ gf_auth_github_allowed_organizations: example-com
 gf_auth_github_allowed_domains: example.com
 gf_auth_github_role_attribute_path: example-com/grafana-team
 
-gf_auth_github_team_ids: 123445677 # set id github team - see readme
+gf_auth_github_team_ids: 123445677  # set id github team - see readme
 
 gf_auth_github_client_id: "{{ vault_dict_users_secret_g2.gf_auth_github.client_id | default('set_me') }}"
 gf_auth_github_client_secret: "{{ vault_dict_users_secret_g2.gf_auth_github.client_secret | default('set_me') }}"

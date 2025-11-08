@@ -16,3 +16,8 @@ runner_cache_config_path: "/opt/runner-cache/config"
 runner_cache_volume_path: "/opt/runner-cache/cache"
 
 runer_docker_default_image: "docker:28.4-cli"
+
+# Cron maintenance
+gitlab_runner_internal_cron_enabled: true
+gitlab_runner_cleanup_interval_hours: 4
+gitlab_runner_cleanup_age_hours: 4

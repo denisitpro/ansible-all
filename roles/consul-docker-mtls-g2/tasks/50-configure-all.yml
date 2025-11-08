@@ -1,3 +1,4 @@
+---
 - name: Set retry_join for Consul server
   ansible.builtin.set_fact:
     consul_retry_join: "{{ consul_cls_servers | default([]) + [consul_cls_pub_name | default('consul.example.com')] }}"
