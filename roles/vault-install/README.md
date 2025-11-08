@@ -32,6 +32,12 @@ No specific requirements are needed for this role.
 
 - **`ssl-selfsigned-cert`**: This role is used to generate self-signed certificates when `vault_domain` is set to `selfsign`.
 
+## mTLS Certificate Requirement for Vault Cluster
+
+For Vault cluster deployment, an mTLS certificate issued by another HCP Vault instance (e.g., infrastructure Vault) is required. This certificate is used for secure communication between Vault cluster nodes and for client authentication.
+
+The mTLS certificate must be obtained before deploying the Vault cluster and should be placed in the appropriate location for the role to use during installation.
+
 ## Example Playbook
 
 ```yaml

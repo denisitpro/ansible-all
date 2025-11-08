@@ -4,11 +4,33 @@
     - vault-install
     - vault-path
 
-- ansible.builtin.import_tasks: 10-copy-ssl.yml
-  when: vault_domain is defined and vault_domain == "selfsign"
+# - ansible.builtin.import_tasks: 10-copy-ssl.yml
+#   when: vault_domain is defined and vault_domain == "selfsign"
+#   tags:
+#     - vault-install
+#     - vault-ssl
+
+# - ansible.builtin.import_tasks: 15-copy-cert.yml
+#   when: vault_domain is defined and vault_domain == "selfsign"
+#   vars:
+#     ssl_path: "{{ vault_conf_path }}/ssl"
+#     ssl_cert_path: "{{ vault_conf_path }}/ssl/fullchain.pem"
+#     ssl_privkey_path: "{{ vault_conf_path }}/ssl/privkey.pem"
+#     ssl_ca_path: "{{ vault_conf_path }}/ca"
+#     ssl_user: "{{ vault_uid }}"
+#     ssl_group: "{{ vault_gid }}"
+#   tags:
+#     - vault-install
+#     - vault-ssl
+#     - vault-ssl-copy
+
+
+- ansible.builtin.import_tasks: 18-mtls-get.yml
+  when: vault_use_mtls is defined
   tags:
     - vault-install
     - vault-ssl
+
 
 - ansible.builtin.import_tasks: 20-config.yml
   tags:
@@ -21,7 +43,7 @@
     - vault-compose
 
 - ansible.builtin.import_tasks: 65-consul-reg.yml
-  when: consul_monitoring_disable is not defined and consul_mon_vault_disable is not defined
+  when: consul_monitoring_disable is not defined
   tags:
     - vault-install
     - consul

@@ -1,0 +1,46 @@
+---
+- name: Check Vault server HTTP response code
+  ansible.builtin.shell: |
+    curl --silent --show-error --cert "{{ teleport_cert_path }}" --key "{{ teleport_key_path }}" \
+    --header "X-Vault-Token: {{ vault_normalized_access_token }}" \
+    --write-out "\n%{http_code}" \
+    "{{ vault_url_teleport }}/v1/sys/seal-status"
+  register: vault_response
+  failed_when: false
+
+- name: Fail if Vault server is unreachable
+  ansible.builtin.fail:
+    msg: "Vault server is unreachable or connection failed. Error: {{ vault_response.stderr }}"
+  when: vault_response.rc != 0
+
+# - name: Display raw Vault response for debugging
+#   ansible.builtin.debug:
+#     var: vault_response
+#     verbosity: 0
+
+- name: Extract HTTP code and response body
+  ansible.builtin.set_fact:
+    vault_http_code: "{{ vault_response.stdout_lines[-1] }}"
+    vault_response_body: "{{ vault_response.stdout_lines[:-1] | join('\n') }}"
+
+- name: Display Vault HTTP response code
+  ansible.builtin.debug:
+    msg: "Vault server {{ vault_url_teleport }} responded with HTTP code: {{ vault_http_code }}"
+
+- name: Fail if Vault returned non-200 status (possibly blocked by ACL)
+  ansible.builtin.fail:
+    msg: "Vault returned HTTP {{ vault_http_code }}, expected 200. Vault may be blocked by ACL or unavailable"
+  when: vault_http_code != "200"
+
+- name: Parse Vault seal status
+  ansible.builtin.set_fact:
+    vault_seal_info: "{{ vault_response_body if (vault_response_body is mapping) else (vault_response_body | from_json) }}"
+
+- name: Display Vault seal status
+  ansible.builtin.debug:
+    msg: "Vault status: {% if vault_seal_info.sealed %}SEALED (requires unseal){% else %}UNSEALED (ready){% endif %}, initialized: {{ vault_seal_info.initialized }}"
+
+- name: Fail if Vault is sealed
+  ansible.builtin.fail:
+    msg: "Vault is sealed and requires unseal operation"
+  when: vault_seal_info.sealed | bool

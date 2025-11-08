@@ -1,3 +1,4 @@
+---
 - name: clean ssl path
   ansible.builtin.file:
     path: "{{ item }}"

@@ -1,0 +1,21 @@
+---
+- ansible.builtin.import_tasks: 10-prefly.yml
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  tags: ['always', 'vault']
+
+- ansible.builtin.import_tasks: 12-check.yml
+  delegate_to: localhost
+  run_once: true
+  become: false
+  connection: local
+  tags: ['always', 'vault']
+
+- ansible.builtin.import_tasks: 15-get-secrets-g2-curl.yml
+  delegate_to: localhost
+  run_once: true
+  connection: local
+  become: false
+  tags: ['always', 'vault']

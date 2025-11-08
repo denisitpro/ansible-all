@@ -4,3 +4,8 @@
   tags:
     - ufw
     - ufw-all
+    - ufw-system
+
+- ansible.builtin.import_tasks: 90-reset.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags: ['never', 'ufw-reset', 'ufw-clean']

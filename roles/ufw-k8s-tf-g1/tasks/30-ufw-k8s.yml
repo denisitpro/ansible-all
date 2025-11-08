@@ -1,0 +1,67 @@
+---
+- name: normalize ipv4 sources to list - ufw-k8s-g1
+  ansible.builtin.set_fact:
+    ipv4_expanded_ufw_k8s_g1: >-
+      {{
+        (ipv4_expanded_ufw_k8s_g1 | default([]))
+        + [
+            item | combine({
+              'src_list':
+                (item.source is defined)
+                | ternary(
+                    (item.source is string) | ternary([item.source], item.source),
+                    ['0.0.0.0/0']
+                  )
+            })
+          ]
+      }}
+  loop: "{{ ufw_k8s_g1.ipv4 }}"
+  when: ufw_k8s_g1.ipv4 is defined
+
+- name: ipv4 ufw management rules - ufw-k8s-g1
+  community.general.ufw:
+    rule: "{{ item.0.rule | default('allow') }}"
+    proto: "{{ item.0.protocol }}"
+    src: "{{ item.1 }}"
+    port: "{{ item.0.port | default('') }}"
+    comment: "{{ item.0.name }}"
+    insert_relative_to: first-ipv4
+  loop: "{{ ipv4_expanded_ufw_k8s_g1 | subelements('src_list') }}"
+  when: ipv4_expanded_ufw_k8s_g1 is defined
+
+
+### ipv6 section
+- name: normalize ipv6 sources to list - ufw-k8s-g1
+  ansible.builtin.set_fact:
+    ipv6_expanded_tf_g2: >-
+      {{
+        (ipv6_expanded_tf_g2 | default([]))
+        + [
+            item | combine({
+              'src_list':
+                (item.source is defined)
+                | ternary(
+                    (item.source is string) | ternary([item.source], item.source),
+                    ['::/0']
+                  )
+            })
+          ]
+      }}
+  loop: "{{ ufw_k8s_g1.ipv6 }}"
+  when: ufw_k8s_g1.ipv6 is defined
+  tags:
+    - ufw-ipv6
+
+- name: ipv6 ufw management rules - ufw-k8s-g1
+  community.general.ufw:
+    rule: "{{ item.0.rule | default('allow') }}"
+    proto: "{{ item.0.protocol }}"
+    port: "{{ item.0.port | default('') }}"
+    direction: "{{ item.0.direction | default('in') }}"
+    from_ip: "{{ item.1 }}"
+    comment: "{{ item.0.name }}"
+    insert_relative_to: last-ipv6
+  loop: "{{ ipv6_expanded_tf_g2 | subelements('src_list') }}"
+  when: ipv6_expanded_tf_g2 is defined
+  tags:
+    - ufw-ipv6

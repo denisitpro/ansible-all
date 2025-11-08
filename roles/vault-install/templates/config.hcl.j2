@@ -23,12 +23,10 @@ storage "raft" {
 {% endif %}
 
 cluster_name = "{{vault_cluster_name}}"
-#cluster_addr = "https://{{ vault_cluster_addr }}:8201" # todo remove
 cluster_addr = "https://{{ vault_cluster_addr }}"
 api_addr         = "http://{{vault_bind_addr}}:8200"
 max_lease_ttl         = "{{ vault_max_lease_ttl | default("3650d") }}"
 default_lease_ttl    = "{{ vault_default_lease_ttl | default("10h") }}"
-cluster_name         = "vault"
 raw_storage_endpoint     = true
 disable_sealwrap     = true
 disable_printable_check = true

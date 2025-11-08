@@ -1,5 +1,5 @@
 ---
-vault_image_version: 1.20.2
+vault_image_version: 1.21.0
 
 vault_compose_path: /opt/docker/vault
 
@@ -35,9 +35,14 @@ vault_resolv_domain: example.com
 #   - "DNS:vault-02.example.com"
 #   - "DNS:vault-03.example.com"
 
-
 consul_vault_metrics_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default('set_me') }}"
 
 vault_metrics_tags:
   - "{{ stand_type }}"
   - "{{ vault_metrics_name | default('vault-metrics') }}"
+
+# mTLS certificates from Vault (similar to consul-docker-mtls-g2)
+# Override these variables in group_vars to provide actual certificates
+vault_mtls_server_cert: ""
+vault_mtls_server_key: ""
+vault_mtls_ca_cert: ""

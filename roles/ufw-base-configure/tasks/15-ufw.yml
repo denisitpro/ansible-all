@@ -35,16 +35,3 @@
     comment: "temporary ssh access - will be removed later"
   loop: "{{ ufw_ssh_allowlist | default(['0.0.0.0/0', '::/0']) }}"
   when: iptables.ipv4 is not defined
-
-# todo remove - if  Allow SSH from trusted ranges work perfectly
-# - name: allow ssh access default
-#   community.general.ufw:
-#     rule: "allow"
-#     proto: tcp
-#     src: "{{ item }}"
-#     port: "22"
-#     comment: "open default ssh access"
-#   when: iptables.ipv4 is not defined
-#   with_items:
-#     - "0.0.0.0/0"
-#     - "::/0"
