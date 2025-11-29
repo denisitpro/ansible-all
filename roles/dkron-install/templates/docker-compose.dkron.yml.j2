@@ -1,0 +1,20 @@
+{{ ansible_managed | comment }}
+
+services:
+  dkron:
+    image: {{ dkron_registry }}:{{ dkron_version }}{% if dkron_image_variant is defined %}-{{ dkron_image_variant }}{% endif %}
+
+    container_name: dkron
+    hostname: {{ ansible_fqdn }}
+    network_mode: host
+    command: agent --config /etc/dkron/dkron.yml
+    volumes:
+      - {{ dkron_data_path }}:/dkron.data
+      - {{ dkron_config_path }}:/etc/dkron:ro
+    restart: {{ dkron_restart | default('always')  }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '2'
+

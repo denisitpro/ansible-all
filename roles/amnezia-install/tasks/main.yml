@@ -1,0 +1,23 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - amnezia
+    - amnezia-prefly
+
+- ansible.builtin.import_tasks: 30-amnezia.yml
+  tags:
+    - amnezia
+    - amnezia-config
+
+- ansible.builtin.import_tasks: 40-generate-configs.yml
+  tags:
+    - amnezia
+    - amnezia-generate
+
+- ansible.builtin.import_tasks: 60-add-clients.yml
+  tags:
+    - amnezia
+    - amnezia-add-client
+
+# - ansible.builtin.import_tasks: 99-clean.yml
+#   tags: ['never', 'amnezia-clean']

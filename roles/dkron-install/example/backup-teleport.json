@@ -1,0 +1,19 @@
+{
+    "name": "backup-teleport",
+    "displayname": "Backup teleport",
+    "schedule": "0 35 3 * * *",
+    "timezone": "UTC",
+    "owner": "devops",
+    "owner_email": "devops@example.com",
+    "concurrency": "forbid",
+    "retries": 3,
+    "tags": {
+      "task_host": "teleport-host"
+    },
+    "executor": "shell",
+    "executor_config": {
+      "command": "bash -c '/opt/scripts/backup-directory.sh --source /opt/teleport/ --prefix teleport && /opt/scripts/backup-upload.sh --target wasabi-backup --remote-path backup-bucket-2025/backups/teleport-host/'",
+      "shell": "true"
+    },
+    "disabled": false
+  }

@@ -1,0 +1,51 @@
+{{ ansible_managed | comment }}
+
+# Server settings
+server: {{ dkron_server | default('false') | lower }}
+bootstrap-expect: {{ dkron_bootstrap_expect | default('0') }} # 1 for single server, 0 for agent
+data-dir: /dkron.data
+log-level: {{ dkron_log_level | default('info') }}
+
+# Network settings
+bind-addr: "{{ dkron_bind_addr | default('[::]:8946') }}"
+http-addr: "{{ dkron_http_addr | default('127.0.0.1:8080') }}"
+{% if  dkron_server_compose is not defined %}
+advertise-addr: "{{ dkron_advertise_addr | default(ansible_default_ipv6.address) }}"
+{% endif %}
+encrypt: "{{ dkron_encrypt }}"
+
+
+# Node identification
+node-name: "{{ dkron_node_name | default(inventory_hostname) }}"
+datacenter: "{{ dkron_datacenter | default('dc1') }}"
+region: "{{ dkron_region | default('global') }}"
+{% if dkron_tags is defined and dkron_tags | length > 0 %}
+
+
+# Clustering
+{% if dkron_retry_join is defined and dkron_retry_join | length > 0 %}
+retry-join:
+{% for node in dkron_retry_join %}
+  - "{{ node }}"
+{% endfor %}
+{% endif %}
+retry-interval: "{{ dkron_retry_interval  | default('30s') }}"
+raft-multiplier: {{ dkron_raft_multiplier | default('1') }}
+profile: "wan"
+
+{% if dkron_enable_prometheus is defined and dkron_enable_prometheus %}
+# Metrics
+enable-prometheus: {{ dkron_enable_prometheus | lower }}
+{% endif %}
+{% if dkron_statsd_addr is defined %}
+statsd-addr: "{{ dkron_statsd_addr }}"
+{% endif %}
+
+
+
+# Tags for node selection
+tags:
+{% for key, value in dkron_tags.items() %}
+  {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}

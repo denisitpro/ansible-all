@@ -1,0 +1,37 @@
+---
+# Phase 3: Install AmneziaWG and dependencies
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - software-properties-common
+      - python3-launchpadlib
+      - gnupg2
+      - linux-headers-generic
+      - qrencode
+    state: present
+    update_cache: true
+
+- name: Add Amnezia PPA repository
+  ansible.builtin.apt_repository:
+    repo: ppa:amnezia/ppa
+    state: present
+    update_cache: true
+
+- name: Install AmneziaWG package
+  ansible.builtin.apt:
+    name: amneziawg
+    state: present
+
+- name: Patch dkms.conf (remove deprecated REMAKE_INITRD)
+  ansible.builtin.lineinfile:
+    path: "/var/lib/dkms/amneziawg/1.0.0/source/dkms.conf"
+    regexp: '^REMAKE_INITRD.*'
+    state: absent
+  failed_when: false
+  notify: Rebuild AmneziaWG DKMS
+
+- name: Ensure AmneziaWG module is loaded
+  community.general.modprobe:
+    name: amneziawg
+    state: present

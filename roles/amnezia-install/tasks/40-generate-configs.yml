@@ -1,0 +1,79 @@
+---
+- name: Ensure config directory exists
+  ansible.builtin.file:
+    path: /etc/amnezia/amneziawg
+    state: directory
+    mode: '0700'
+
+- name: Check if server params exist
+  ansible.builtin.stat:
+    path: /etc/amnezia/amneziawg/server_params.yml
+  register: server_params_file
+
+- name: Generate Private Key
+  ansible.builtin.command: awg genkey
+  register: awg_private_key
+  changed_when: false
+  when: not server_params_file.stat.exists
+
+- name: Generate Public Key
+  ansible.builtin.shell: echo "{{ awg_private_key.stdout }}" | awg pubkey
+  register: awg_public_key
+  changed_when: false
+  when: not server_params_file.stat.exists
+
+- name: Generate Obfuscation Parameters
+  ansible.builtin.set_fact:
+    gen_jc: "{{ 3 + (127 - 3) | random }}"
+    gen_jmin: "{{ 3 + (700 - 3) | random }}"
+    gen_s1: "{{ 3 + (127 - 3) | random }}"
+    gen_s2: "{{ 3 + (127 - 3) | random }}"
+    gen_h1: "{{ 1000000000 | random }}"
+    gen_h2: "{{ 1000000000 | random }}"
+    gen_h3: "{{ 1000000000 | random }}"
+    gen_h4: "{{ 1000000000 | random }}"
+  when: not server_params_file.stat.exists
+
+- name: Calculate Jmax
+  ansible.builtin.set_fact:
+    gen_jmax: "{{ (gen_jmin | int) + 1 + (1270 - (gen_jmin | int) - 1) | random }}"
+  when: not server_params_file.stat.exists
+
+- name: Save server parameters
+  ansible.builtin.copy:
+    content: |
+      amneziawg_server_private_key: "{{ awg_private_key.stdout }}"
+      amneziawg_server_public_key: "{{ awg_public_key.stdout }}"
+      amneziawg_jc: {{ gen_jc }}
+      amneziawg_jmin: {{ gen_jmin }}
+      amneziawg_jmax: {{ gen_jmax }}
+      amneziawg_s1: {{ gen_s1 }}
+      amneziawg_s2: {{ gen_s2 }}
+      amneziawg_h1: {{ gen_h1 }}
+      amneziawg_h2: {{ gen_h2 }}
+      amneziawg_h3: {{ gen_h3 }}
+      amneziawg_h4: {{ gen_h4 }}
+    dest: /etc/amnezia/amneziawg/server_params.yml
+    mode: '0600'
+  when: not server_params_file.stat.exists
+
+- name: Read server parameters file
+  ansible.builtin.slurp:
+    src: /etc/amnezia/amneziawg/server_params.yml
+  register: server_params_file_content
+
+- name: Set server parameters variables
+  ansible.builtin.set_fact:
+    "{{ item.key }}": "{{ item.value }}"
+  loop: "{{ (server_params_file_content['content'] | b64decode | from_yaml) | dict2items }}"
+  no_log: true
+
+- name: Manage Clients
+  ansible.builtin.include_tasks: manage_clients.yml
+
+- name: Generate Server Config
+  ansible.builtin.template:
+    src: awg0.conf.j2
+    dest: /etc/amnezia/amneziawg/awg0.conf
+    mode: '0600'
+  notify: restart amneziawg

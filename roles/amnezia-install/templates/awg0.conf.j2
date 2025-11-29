@@ -1,0 +1,38 @@
+[Interface]
+PrivateKey = {{ amneziawg_server_private_key }}
+Address = {{ amneziawg_subnet }}, {{ amneziawg_ipv6_subnet }}
+ListenPort = {{ amneziawg_port }}
+Jc = {{ amneziawg_jc }}
+Jmin = {{ amneziawg_jmin }}
+Jmax = {{ amneziawg_jmax }}
+S1 = {{ amneziawg_s1 }}
+S2 = {{ amneziawg_s2 }}
+H1 = {{ amneziawg_h1 }}
+H2 = {{ amneziawg_h2 }}
+H3 = {{ amneziawg_h3 }}
+H4 = {{ amneziawg_h4 }}
+
+# Network Address Translation (NAT)
+PostUp = iptables -A INPUT -p udp --dport {{ amneziawg_port }} -m conntrack --ctstate NEW -j ACCEPT
+PostUp = iptables -A FORWARD -i {{ amneziawg_interface }} -o {{ amnezia_wan_interface }} -j ACCEPT
+PostUp = iptables -A FORWARD -i {{ amnezia_wan_interface }} -o {{ amneziawg_interface }} -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+PostUp = iptables -t nat -A POSTROUTING -o {{ amnezia_wan_interface }} -j MASQUERADE
+PostUp = ip6tables -A FORWARD -i {{ amneziawg_interface }} -o {{ amnezia_wan_interface }} -j ACCEPT
+PostUp = ip6tables -A FORWARD -i {{ amnezia_wan_interface }} -o {{ amneziawg_interface }} -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+PostUp = ip6tables -t nat -A POSTROUTING -o {{ amnezia_wan_interface }} -j MASQUERADE
+
+PostDown = iptables -D INPUT -p udp --dport {{ amneziawg_port }} -m conntrack --ctstate NEW -j ACCEPT
+PostDown = iptables -D FORWARD -i {{ amneziawg_interface }} -o {{ amnezia_wan_interface }} -j ACCEPT
+PostDown = iptables -D FORWARD -i {{ amnezia_wan_interface }} -o {{ amneziawg_interface }} -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+PostDown = iptables -D POSTROUTING -t nat -o {{ amnezia_wan_interface }} -j MASQUERADE
+PostDown = ip6tables -D FORWARD -i {{ amneziawg_interface }} -o {{ amnezia_wan_interface }} -j ACCEPT
+PostDown = ip6tables -D FORWARD -i {{ amnezia_wan_interface }} -o {{ amneziawg_interface }} -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+PostDown = ip6tables -D POSTROUTING -t nat -o {{ amnezia_wan_interface }} -j MASQUERADE
+
+{% for client in amneziawg_clients_data | default([]) %}
+[Peer]
+# Name = {{ client.name }}
+PublicKey = {{ client.public_key }}
+AllowedIPs = {{ client.ip }}{% if client.ipv6 is defined %}, {{ client.ipv6 }}{% endif %}
+
+{% endfor %}

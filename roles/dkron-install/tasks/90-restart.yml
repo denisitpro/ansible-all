@@ -1,0 +1,8 @@
+---
+- name: dkron unit enable
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: dkron
+    enabled: true
+    state: restarted
+  when: dkron_server_compose is not defined
