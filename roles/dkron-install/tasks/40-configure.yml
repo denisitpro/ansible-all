@@ -1,0 +1,20 @@
+---
+- name: copy dkron config file - docker
+  ansible.builtin.template:
+    src: "dkron.yml.j2"
+    dest: "{{ dkron_config_path }}/dkron.yml"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: restart-docker dkron
+  when: dkron_server_compose is defined
+
+- name: copy dkron config file - unut
+  ansible.builtin.template:
+    src: "dkron.yml.j2"
+    dest: "/etc/dkron/dkron.yml"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: restart-unit dkron
+  when: dkron_server_compose is not defined

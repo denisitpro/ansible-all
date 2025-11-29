@@ -1,0 +1,19 @@
+---
+
+amneziawg_interface: "awg0"
+amneziawg_port: 49666
+amneziawg_subnet: "10.9.9.1/24"
+amneziawg_ipv6_subnet: "fd00:9:9:9::1/64"
+amnezia_working_dir: "/opt/awg"
+amnezia_wan_interface: "{{ ansible_default_ipv4.interface }}"
+amnezia_endpoint_address: "{{ ansible_host }}"
+
+# List of clients.
+# Define this in your inventory or group_vars.
+# amneziawg_clients:
+#   - name: client1
+#     ip: 10.9.9.2/32
+#     ipv6: fd00:9:9:9::2/128
+#   - name: client2
+#     ip: 10.9.9.3/32
+amneziawg_clients: []

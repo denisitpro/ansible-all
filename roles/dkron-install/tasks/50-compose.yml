@@ -1,0 +1,10 @@
+---
+
+- name: copy compose-file - dkron
+  ansible.builtin.template:
+    src: "docker-compose.dkron.yml.j2"
+    dest: "{{ dkron_compose_path }}/docker-compose.yml"
+    mode: "0600"
+    owner: root
+    group: root
+  notify: recreate-docker dkron

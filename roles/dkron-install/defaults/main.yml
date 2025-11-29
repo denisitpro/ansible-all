@@ -1,0 +1,107 @@
+---
+# Dkron Docker image configuration
+dkron_registry: "dkron/dkron"
+dkron_version: "4.0.8"
+# dkron_image_variant: "light"  # Use 'light' for built-in executors or 'latest' for full version
+
+# Paths configuration
+dkron_compose_path: "/opt/docker/dkron"
+dkron_data_path: "/opt/dkron/data"
+dkron_config_path: "/opt/dkron/config"
+dkron_install_dir: "/usr/local/bin"
+dkron_temp_dir: "/tmp/dkron-install"
+
+# Architecture mapping
+dkron_arch_map:
+  i386: "386"
+  x86_64: "amd64"
+  aarch64: "arm64"
+  armv7l: "arm"
+  armv6l: "arm"
+
+# Resolved architecture for download URL
+dkron_arch: "{{ dkron_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+
+dkron_download_url: "https://github.com/distribworks/dkron/releases/download/v{{ dkron_version }}/dkron_{{ dkron_version }}_linux_{{ dkron_arch }}.tar.gz"
+
+# Binary files to install
+dkron_binaries:
+  - dkron
+  - dkron-executor-gcppubsub
+  - dkron-executor-grpc
+  - dkron-executor-kafka
+  - dkron-executor-nats
+  - dkron-executor-rabbitmq
+  - dkron-processor-files
+  - dkron-processor-fluent
+  - dkron-processor-log
+  - dkron-processor-syslog
+
+# Server settings
+# dkron_server: true
+# dkron_bootstrap_expect: 1  # Set to 3 for production cluster
+# dkron_log_level: "info"  # debug, info, warn, error
+
+# Node identification
+# dkron_node_name: "{{ ansible_hostname }}"
+# dkron_datacenter: "dc1"
+# dkron_region: "{{ ansible_hostname | regex_replace('^([a-z]+[0-9]+)-.*', '\\1') }}"  # Extract region from hostname
+
+# Network settings
+# dkron_bind_addr: "[{{ ansible_default_ipv6.address }}]:8946"
+# dkron_http_addr: "127.0.0.1:8080"
+# dkron_advertise_addr: "{{ ansible_default_ipv6.address }}"
+
+# Optional: encryption key (generate with 'dkron keygen')
+# dkron_encrypt: ""
+dkron_encrypt: "{{ vault_dict_users_secret_g2.dkron_encrypt_key.encrypt_key | default('set_me') }}"
+
+# Clustering
+# dkron_retry_join:
+#   - "10.0.1.10"
+#   - "10.0.1.11"
+#   - "10.0.1.12"
+# dkron_retry_interval: "30s"
+# dkron_raft_multiplier: 1
+
+# Optional: Prometheus metrics
+# dkron_enable_prometheus: false
+# dkron_statsd_addr: "localhost:8125"
+
+# Optional: Tags for node selection
+# dkron_tags:
+#   role: "backend"
+#   env: "production"
+
+# Restart policy
+dkron_restart: "always"
+
+# default tags
+dkron_tags:
+  launch_type: "{{ 'server' if dkron_server | default(false) | bool else 'agent' }}"
+  env: "{{ stand_type }}"
+  task_host: "{{ ansible_hostname }}"
+
+# Jobs configuration
+dkron_jobs: []
+# Example:
+# dkron_jobs:
+#   - name: "backup-teleport03"
+#     displayname: "Backup teleport-03"
+#     schedule: "0 35 3 * * *"
+#     timezone: "UTC"
+#     owner: "devops"
+#     owner_email: "devops@example.com"
+#     concurrency: "forbid"
+#     retries: 3
+#     tags:
+#       task_host: "hostname"
+#     executor: "shell"
+#     executor_config:
+#       command: "bash -c 'echo test'"
+#       shell: "true"
+#     disabled: false
+
+# Dkron API configuration
+dkron_api_url: "http://127.0.0.1:8080"
+dkron_jobs_temp_dir: "/tmp/dkron-jobs"

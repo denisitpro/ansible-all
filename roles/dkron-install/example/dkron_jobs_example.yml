@@ -1,0 +1,58 @@
+---
+# Example configuration for Dkron jobs
+# Place this in your group_vars or host_vars
+
+dkron_jobs:
+  # Example 1: Simple backup job
+  - name: "backup-service"
+    displayname: "Backup Service Data"
+    schedule: "0 30 2 * * *"  # Every day at 02:30 UTC
+    timezone: "UTC"
+    owner: "devops"
+    owner_email: "devops@example.com"
+    concurrency: "forbid"  # Don't allow concurrent runs
+    retries: 3
+    tags:
+      task_host: "hostname-01"
+      environment: "production"
+    executor: "shell"
+    executor_config:
+      command: "bash -c '/opt/scripts/backup.sh'"
+      shell: "true"
+    disabled: false
+
+  # Example 2: Database maintenance job
+  - name: "db-maintenance"
+    displayname: "Database Maintenance"
+    schedule: "0 0 4 * * 0"  # Every Sunday at 04:00 UTC
+    timezone: "UTC"
+    owner: "dba"
+    owner_email: "dba@example.com"
+    concurrency: "allow"
+    retries: 2
+    tags:
+      task_host: "db-server-01"
+      service: "postgresql"
+    executor: "shell"
+    executor_config:
+      command: "psql -U postgres -c 'VACUUM ANALYZE;'"
+      shell: "true"
+    disabled: false
+
+  # Example 3: Monitoring check job
+  - name: "health-check"
+    displayname: "Service Health Check"
+    schedule: "@every 5m"  # Every 5 minutes
+    timezone: "UTC"
+    owner: "monitoring"
+    owner_email: "monitoring@example.com"
+    concurrency: "allow"
+    retries: 1
+    tags:
+      task_host: "monitor-01"
+    executor: "shell"
+    executor_config:
+      command: "curl -f http://localhost:8080/health || exit 1"
+      shell: "true"
+    disabled: false
+

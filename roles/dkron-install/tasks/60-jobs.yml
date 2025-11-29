@@ -1,0 +1,40 @@
+---
+# Apply Dkron jobs via API
+- name: Create temporary directory for job files
+  ansible.builtin.file:
+    path: "{{ dkron_jobs_temp_dir }}"
+    state: directory
+    mode: '0755'
+  when: dkron_jobs | length > 0
+
+- name: Generate job configuration files
+  ansible.builtin.template:
+    src: job.json.j2
+    dest: "{{ dkron_jobs_temp_dir }}/{{ item.name }}.json"
+    mode: '0644'
+  loop: "{{ dkron_jobs }}"
+  when: dkron_jobs | length > 0
+
+- name: Apply Dkron jobs via API using curl
+  ansible.builtin.shell: |
+    curl -X POST {{ dkron_api_url }}/v1/jobs \
+      -H "Content-Type: application/json" \
+      -d @{{ dkron_jobs_temp_dir }}/{{ item.name }}.json
+  loop: "{{ dkron_jobs }}"
+  when: dkron_jobs | length > 0
+  register: dkron_job_result
+  changed_when: dkron_job_result.rc == 0
+
+- name: Display job application results
+  ansible.builtin.debug:
+    msg: "Job '{{ item.item.name }}' applied successfully"
+  loop: "{{ dkron_job_result.results }}"
+  when:
+    - dkron_jobs | length > 0
+    - dkron_job_result is defined
+
+- name: Remove temporary job files directory
+  ansible.builtin.file:
+    path: "{{ dkron_jobs_temp_dir }}"
+    state: absent
+  when: dkron_jobs | length > 0

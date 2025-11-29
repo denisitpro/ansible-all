@@ -1,0 +1,32 @@
+---
+- name: Update package cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Enable IP forwarding
+  ansible.builtin.sysctl:
+    name: "{{ item }}"
+    value: '1'
+    state: present
+    sysctl_file: /etc/sysctl.d/20-amnezia.conf
+    reload: true
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
+
+- name: Create working directory
+  ansible.builtin.file:
+    path: "{{ amnezia_working_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure AmneziaWG config directory exists
+  ansible.builtin.file:
+    path: /etc/amnezia/amneziawg
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'

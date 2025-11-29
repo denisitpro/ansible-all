@@ -1,0 +1,19 @@
+---
+- name: Check if docker-compose.yml exists
+  ansible.builtin.stat:
+    path: "{{ dkron_compose_path }}/docker-compose.yml"
+  register: compose_file
+
+- name: stop compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ dkron_compose_path }}"
+    state: absent
+  when: compose_file.stat.exists
+
+- name: Remove directory data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ dkron_data_path }}"
+    - "{{ dkron_config_path }}"

@@ -1,0 +1,55 @@
+---
+- name: Create temporary directory for dkron installation
+  ansible.builtin.file:
+    path: "{{ dkron_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Download dkron archive
+  ansible.builtin.get_url:
+    url: "{{ dkron_download_url }}"
+    dest: "{{ dkron_temp_dir }}/dkron.tar.gz"
+    mode: '0644'
+    timeout: 60
+  register: dkron_download
+
+- name: Extract dkron archive
+  ansible.builtin.unarchive:
+    src: "{{ dkron_temp_dir }}/dkron.tar.gz"
+    dest: "{{ dkron_temp_dir }}"
+    remote_src: true
+
+- name: Install dkron binaries
+  ansible.builtin.copy:
+    src: "{{ dkron_temp_dir }}/{{ item }}"
+    dest: "{{ dkron_install_dir }}/{{ item }}"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: true
+  loop: "{{ dkron_binaries }}"
+  notify: restart-unit dkron
+
+- name: Copy dkron systemd unit file
+  ansible.builtin.template:
+    src: dkron.service
+    dest: /etc/systemd/system/dkron.service
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart-unit dkron
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start dkron service
+  ansible.builtin.systemd:
+    name: dkron
+    enabled: true
+    state: started
+
+- name: Clean up temporary files
+  ansible.builtin.file:
+    path: "{{ dkron_temp_dir }}"
+    state: absent

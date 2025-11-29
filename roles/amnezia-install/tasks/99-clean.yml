@@ -1,0 +1,36 @@
+---
+# Phase 99: Clean AmneziaWG installation (reverse of all phases)
+# Run with -t amnezia-clean — removes everything: service, configs, directories.
+
+- name: Stop and disable AmneziaWG service
+  ansible.builtin.systemd:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: stopped
+    enabled: false
+  ignore_errors: true  # noqa: ignore-errors
+
+- name: Remove AmneziaWG directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/amnezia/amneziawg"
+    - "{{ amnezia_working_dir }}"
+
+- name: Remove sysctl configuration
+  ansible.builtin.file:
+    path: /etc/sysctl.d/20-amnezia.conf
+    state: absent
+
+- name: Reload sysctl after removing config
+  ansible.builtin.command: sysctl --system
+  changed_when: false
+  ignore_errors: true  # noqa: ignore-errors
+
+- name: Daemon reload after cleanup
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Debug cleanup complete
+  ansible.builtin.debug:
+    msg: "AmneziaWG fully cleaned: service stopped, configs and directories removed."

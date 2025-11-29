@@ -1,0 +1,14 @@
+[Unit]
+Description=Dkron Agent
+Documentation=https://dkron.io
+After=network.target
+
+[Service]
+User=root
+ExecStart=/usr/local/bin/dkron agent
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

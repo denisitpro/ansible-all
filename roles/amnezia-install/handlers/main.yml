@@ -1,0 +1,11 @@
+---
+- name: Rebuild AmneziaWG DKMS
+  ansible.builtin.command: dkms install amneziawg/1.0.0
+  register: dkms_result
+  changed_when: dkms_result.rc == 0
+  failed_when: dkms_result.rc != 0 and 'already installed' not in dkms_result.stdout
+
+- name: restart amneziawg
+  ansible.builtin.service:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: restarted

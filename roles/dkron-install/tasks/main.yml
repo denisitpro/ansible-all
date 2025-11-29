@@ -1,0 +1,39 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - dkron
+    - dkron-install
+
+- ansible.builtin.import_tasks: 40-configure.yml
+  tags:
+    - dkron
+    - dkron-config
+    - dkron-compose
+
+- ansible.builtin.import_tasks: 45-unit.yml
+  when: dkron_server_compose is not defined
+  tags:
+    - dkron
+    - dkron-unit
+    - dkron-compose
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  when: dkron_server_compose is defined
+  tags:
+    - dkron
+    - dkron-docker
+    - dkron-compose
+
+- ansible.builtin.import_tasks: 60-jobs.yml
+  when: dkron_server_compose is defined
+  tags:
+    - dkron
+    - dkron-jobs
+    - dkron-compose
+
+- ansible.builtin.import_tasks: 90-restart.yml
+  tags: ['never', 'dkron-restart']
+
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'dkron-clean']

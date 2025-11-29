@@ -1,0 +1,17 @@
+---
+- name: recreate-docker dkron
+  community.docker.docker_compose_v2:
+    project_src: "{{ dkron_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker dkron
+  community.docker.docker_compose_v2:
+    project_src: "{{ dkron_compose_path }}"
+    state: restarted
+
+- name: restart-unit dkron
+  ansible.builtin.systemd_service:
+    name: dkron
+    state: restarted

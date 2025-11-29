@@ -1,0 +1,15 @@
+{
+  "name": "{{ item.name }}",
+  "displayname": "{{ item.displayname }}",
+  "schedule": "{{ item.schedule }}",
+  "timezone": "{{ item.timezone | default('UTC') }}",
+  "owner": "{{ item.owner | default('devops') }}",
+  "owner_email": "{{ item.owner_email | default('devops@example.com') }}",
+  "concurrency": "{{ item.concurrency | default('forbid') }}",
+  "retries": {{ item.retries | default(3) }},
+  "tags": {{ item.tags | to_nice_json }},
+  "executor": "{{ item.executor }}",
+  "executor_config": {{ item.executor_config | to_nice_json }},
+  "disabled": {{ item.disabled | default(false) | lower }}
+}
+

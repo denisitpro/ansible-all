@@ -1,0 +1,44 @@
+---
+- name: Read server parameters file
+  ansible.builtin.slurp:
+    src: /etc/amnezia/amneziawg/server_params.yml
+  register: server_params_file_content
+
+- name: Set server parameters variables
+  ansible.builtin.set_fact:
+    "{{ item.key }}": "{{ item.value }}"
+  loop: "{{ (server_params_file_content['content'] | b64decode | from_yaml) | dict2items }}"
+  no_log: true
+
+- name: Manage Clients (ensure keys exist)
+  ansible.builtin.include_tasks: 80-manage-clients.yml
+
+- name: Generate Client Configs
+  ansible.builtin.template:
+    src: client.conf.j2
+    dest: "{{ amnezia_working_dir }}/{{ item.name }}.conf"
+    mode: '0600'
+  loop: "{{ amneziawg_clients_data }}"
+  vars:
+    client_private_key: "{{ item.private_key }}"
+    client_ip: "{{ item.ip }}"
+    client_ipv6: "{{ item.ipv6 | default(omit) }}"
+
+- name: Generate QR Codes
+  ansible.builtin.shell: |
+    qrencode -t PNG -o {{ amnezia_working_dir }}/{{ item.name }}.png < {{ amnezia_working_dir }}/{{ item.name }}.conf
+  loop: "{{ amneziawg_clients_data }}"
+  changed_when: false
+
+- name: Update Server Config
+  ansible.builtin.template:
+    src: awg0.conf.j2
+    dest: /etc/amnezia/amneziawg/awg0.conf
+    mode: '0600'
+  notify: restart amneziawg
+
+- name: Enable and start AmneziaWG service
+  ansible.builtin.service:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: started
+    enabled: true

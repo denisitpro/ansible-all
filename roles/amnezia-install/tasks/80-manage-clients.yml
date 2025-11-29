@@ -1,0 +1,32 @@
+---
+- name: Initialize client data list
+  ansible.builtin.set_fact:
+    amneziawg_clients_data: []
+
+- name: Ensure clients directory exists
+  ansible.builtin.file:
+    path: /etc/amnezia/amneziawg/clients
+    state: directory
+    mode: '0700'
+
+- name: Generate keys for new clients
+  ansible.builtin.shell: |
+    if [ ! -f /etc/amnezia/amneziawg/clients/{{ item.name }}.yml ]; then
+      PRIV=$(awg genkey)
+      PUB=$(echo "$PRIV" | awg pubkey)
+      echo "private_key: $PRIV" > /etc/amnezia/amneziawg/clients/{{ item.name }}.yml
+      echo "public_key: $PUB" >> /etc/amnezia/amneziawg/clients/{{ item.name }}.yml
+    fi
+  loop: "{{ amneziawg_clients }}"
+  changed_when: false
+
+- name: Load client keys
+  ansible.builtin.slurp:
+    src: "/etc/amnezia/amneziawg/clients/{{ item.name }}.yml"
+  register: client_key_files
+  loop: "{{ amneziawg_clients }}"
+
+- name: Combine client data
+  ansible.builtin.set_fact:
+    amneziawg_clients_data: "{{ amneziawg_clients_data | default([]) + [{'name': item.item.name, 'ip': item.item.ip, 'ipv6': item.item.ipv6 | default(omit), 'public_key': (item.content | b64decode | from_yaml).public_key, 'private_key': (item.content | b64decode | from_yaml).private_key}] }}"
+  loop: "{{ client_key_files.results }}"
