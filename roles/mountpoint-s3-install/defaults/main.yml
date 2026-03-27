@@ -1,0 +1,16 @@
+---
+# Mountpoint for Amazon S3 - https://github.com/awslabs/mountpoint-s3
+# FUSE-based file client for mounting S3 bucket as local filesystem
+mountpoint_s3_version: "1.22.0"
+mountpoint_s3_base_url: "https://s3.amazonaws.com/mountpoint-s3-release"
+
+# Architecture mapping (ansible_facts["architecture"] -> release arch)
+mountpoint_s3_arch_map:
+  x86_64: "x86_64"
+  aarch64: "arm64"
+
+mountpoint_s3_arch: "{{ mountpoint_s3_arch_map[ansible_facts['architecture']] | default('x86_64') }}"
+
+mountpoint_s3_package_deb: "mount-s3-{{ mountpoint_s3_version }}-{{ mountpoint_s3_arch }}.deb"
+mountpoint_s3_download_url_deb: "{{ mountpoint_s3_base_url }}/{{ mountpoint_s3_version }}/{{ mountpoint_s3_arch }}/{{ mountpoint_s3_package_deb }}"
+mountpoint_s3_temp_dir: "/tmp/mountpoint-s3-install"

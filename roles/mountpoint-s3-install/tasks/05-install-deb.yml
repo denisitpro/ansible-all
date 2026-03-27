@@ -1,0 +1,38 @@
+---
+- name: Ensure fuse is installed (Mountpoint S3 dependency)
+  ansible.builtin.apt:
+    name: libfuse2
+    state: present
+    update_cache: true
+
+- name: Create temporary directory for Mountpoint S3 installation
+  ansible.builtin.file:
+    path: "{{ mountpoint_s3_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Download Mountpoint S3 deb package
+  ansible.builtin.get_url:
+    url: "{{ mountpoint_s3_download_url_deb }}"
+    dest: "{{ mountpoint_s3_temp_dir }}/{{ mountpoint_s3_package_deb }}"
+    mode: '0644'
+    timeout: 60
+
+- name: Install Mountpoint S3 deb package
+  ansible.builtin.apt:
+    deb: "{{ mountpoint_s3_temp_dir }}/{{ mountpoint_s3_package_deb }}"
+    state: present
+
+- name: Verify mount-s3 installation
+  ansible.builtin.command: mount-s3 --version
+  register: mount_s3_version_check
+  changed_when: false
+
+- name: Display mount-s3 version
+  ansible.builtin.debug:
+    msg: "Installed mount-s3 version: {{ mount_s3_version_check.stdout }}"
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "{{ mountpoint_s3_temp_dir }}"
+    state: absent
