@@ -1,0 +1,41 @@
+---
+- name: Ensure fuse is installed (GeeseFS dependency)
+  ansible.builtin.apt:
+    name: libfuse2
+    state: present
+    update_cache: true
+
+- name: Create temporary directory for GeeseFS installation
+  ansible.builtin.file:
+    path: "{{ geesefs_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Download GeeseFS binary
+  ansible.builtin.get_url:
+    url: "{{ geesefs_download_url }}"
+    dest: "{{ geesefs_temp_dir }}/{{ geesefs_binary_name }}"
+    mode: '0755'
+    timeout: 60
+
+- name: Install GeeseFS binary
+  ansible.builtin.copy:
+    src: "{{ geesefs_temp_dir }}/{{ geesefs_binary_name }}"
+    dest: "{{ geesefs_install_path }}"
+    mode: '0755'
+    remote_src: true
+    force: true
+
+# - name: Verify geesefs installation
+#   ansible.builtin.command: "{{ geesefs_install_path }} -v"
+#   register: geesefs_version_check
+#   changed_when: false
+
+# - name: Display geesefs version
+#   ansible.builtin.debug:
+#     msg: "Installed geesefs version: {{ geesefs_version_check.stdout }}"
+
+- name: Cleanup temporary files
+  ansible.builtin.file:
+    path: "{{ geesefs_temp_dir }}"
+    state: absent

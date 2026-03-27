@@ -1,0 +1,16 @@
+---
+# GeeseFS - https://github.com/yandex-cloud/geesefs
+# FUSE-based S3 (Yandex, Amazon, etc.) filesystem
+geesefs_version: "0.43.3"
+geesefs_base_url: "https://github.com/yandex-cloud/geesefs/releases/download"
+
+# Architecture mapping (ansible_facts["architecture"] -> release arch)
+geesefs_arch_map:
+  x86_64: "amd64"
+  aarch64: "arm64"
+
+geesefs_arch: "{{ geesefs_arch_map[ansible_facts['architecture']] | default('amd64') }}"
+geesefs_binary_name: "geesefs-linux-{{ geesefs_arch }}"
+geesefs_download_url: "{{ geesefs_base_url }}/v{{ geesefs_version }}/{{ geesefs_binary_name }}"
+geesefs_temp_dir: "/tmp/geesefs-install"
+geesefs_install_path: "/usr/local/bin/geesefs"
