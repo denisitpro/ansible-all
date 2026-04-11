@@ -1,0 +1,54 @@
+## {{ ansible_managed }} ##
+
+services:
+  outline:
+    image: {{ outline_image }}:{{ outline_version }}
+    container_name: outline
+    restart: {{ outline_restart | default('always') }}
+    network_mode: host
+    volumes:
+      - {{ outline_storage_path }}:/var/lib/outline/data
+    environment:
+      NODE_ENV: {{ outline_node_env | default('production') }}
+      PORT: {{ outline_port | default('3000') }}
+
+      URL: {{ outline_url | default('https://outline.example.com') }}
+      FORCE_HTTPS: "{{ outline_force_https | default('false') }}"
+
+      DATABASE_URL: {{ outline_database_url | default('postgres://outline:outlinepass@127.0.0.1:5432/outline') }}
+
+      REDIS_URL: {{ outline_redis_url | default('redis://127.0.0.1:6379') }}
+      REDIS_COLLABORATION_URL: {{ outline_redis_collaboration_url | default('redis://127.0.0.1:6379') }}
+      {# SESSION_STORE: {{ outline_session_store | default('redis') }} #}
+
+      PGSSLMODE: {{ outline_pg_sslmode | default('disable') }}
+
+      # openssl rand -hex 32
+      SECRET_KEY: {{ outline_secret_key | default('changeme-outline-secret-key-32chars-min') }}
+      UTILS_SECRET: {{ outline_utils_secret | default('changeme-outline-utils-secret-32chars-min') }}
+
+{% if outline_google_client_id is defined and outline_google_client_secret is defined %}
+      GOOGLE_CLIENT_ID: {{ outline_google_client_id }}
+      GOOGLE_CLIENT_SECRET: {{ outline_google_client_secret }}
+{% endif %}
+{% if outline_authentication_method is defined %}
+      AUTHENTICATION_METHOD: {{ outline_authentication_method }}
+{% endif %}
+{% if outline_smtp_host is defined %}
+      SMTP_HOST: {{ outline_smtp_host }}
+      SMTP_PORT: {{ outline_smtp_port | default('25') }}
+      SMTP_FROM_EMAIL: {{ outline_smtp_from_email }}
+{% endif %}
+      FILE_STORAGE: {{ outline_file_storage | default('local') }}
+{% if outline_file_storage_workspace_import_max_size is defined %}
+      FILE_STORAGE_WORKSPACE_IMPORT_MAX_SIZE: {{ outline_file_storage_workspace_import_max_size }}
+{% endif %}
+      FILE_STORAGE_UPLOAD_MAX_SIZE: {{ outline_file_storage_upload_max_size | default('26214400') }}
+{% if outline_file_storage is defined and outline_file_storage == 's3' %}
+      AWS_REGION: {{ outline_s3_region | default('us-east-1') }}
+      AWS_S3_UPLOAD_BUCKET_NAME: {{ outline_s3_bucket_name | default('outline-example-bucket') }}
+      AWS_S3_UPLOAD_BUCKET_URL: {{ outline_s3_bucket_url | default('https://s3.eu-central-1.amazonaws.com') }}
+      AWS_S3_FORCE_PATH_STYLE: "{{ outline_s3_force_path_style | default('false') }}" 
+      AWS_ACCESS_KEY_ID: "{{ outline_aws_access_key_id | default('admin') }}"
+      AWS_SECRET_ACCESS_KEY: "{{ outline_aws_secret_access_key | default('admin') }}"
+{% endif %}

@@ -1,9 +1,11 @@
 ---
-- name: Create temporary directory for rage installation
-  ansible.builtin.file:
-    path: "{{ rage_temp_dir }}"
-    state: directory
-    mode: '0755'
+# no need step, default dir /tmp  always exists
+# permisiion 1755 need for corrected apt-update command - if enabled task
+# - name: Create temporary directory for rage installation
+#   ansible.builtin.file:
+#     path: "{{ rage_temp_dir }}"
+#     state: directory
+#     mode: '1755'
 
 - name: Download rage archive
   ansible.builtin.get_url:

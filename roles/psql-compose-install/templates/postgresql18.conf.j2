@@ -2,7 +2,6 @@
 
 listen_addresses = '{{psql_bind_addr}}'
 max_connections = {{ psql_max_connections | default('100') }}			# (change requires restart)
-reserved_connections = {{ psql_reserved_connections | default('16') }}		# (change requires restart)
 
 {% if psql_tls %}
 ssl = on
@@ -13,7 +12,6 @@ ssl_cert_file = '{{ psql_cert }}'
 {% if psql_tls and psql_privkey is defined %}
 ssl_key_file = '{{ psql_privkey }}'
 {% endif %}
-scram_iterations = {{ psql_scram_iterations | default('4096') }}
 
 shared_buffers = {{ psql_shared_buffers | default('128MB') }}			# min 128kB
 work_mem = {{ psql_work_mem | default('4MB') }}				# min 64kB

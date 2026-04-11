@@ -1,0 +1,25 @@
+---
+- name: Ensure scripts directory exists
+  ansible.builtin.file:
+    path: /opt/scripts
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Ensure rclone log directory exists for monthly backup
+  ansible.builtin.file:
+    path: "{{ monthly_backup_log_dir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Deploy monthly backup script
+  ansible.builtin.template:
+    src: monthly-backup.sh.j2
+    dest: /opt/scripts/monthly-backup.sh
+    mode: '0755'
+    owner: root
+    group: root
+

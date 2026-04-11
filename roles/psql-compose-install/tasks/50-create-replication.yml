@@ -1,0 +1,115 @@
+---
+- name: Replication - Check if PostgreSQL container is running
+  ansible.builtin.command: docker ps --filter "name={{ psql_docker_container_name }}" --filter "status=running" --format "{{ '{{' }}.Names{{ '}}' }}"
+  register: psql_container_status
+  failed_when: psql_container_status.stdout != psql_docker_container_name
+  changed_when: false
+
+- name: Replication - Verify PostgreSQL is accepting connections before creating replication
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} pg_isready -U {{ psql_default_db_user }} -h localhost
+  register: pg_connection_check
+  failed_when: pg_connection_check.rc != 0
+  changed_when: false
+
+- name: Check if PostgreSQL replication user already exists
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -tAc "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ item.name }}'"
+  loop: "{{ psql_users | selectattr('is_replication', 'defined') | selectattr('is_replication', 'equalto', true) | list }}"
+  register: user_exists_check
+  failed_when: false
+  changed_when: false
+  no_log: true
+  when: inventory_hostname == psql_master_node
+
+- name: Create PostgreSQL replication users
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -c "CREATE ROLE \"{{ item.item.name }}\" LOGIN REPLICATION PASSWORD '{{ item.item.password }}';"
+  loop: "{{ user_exists_check.results }}"
+  when:
+    - inventory_hostname == psql_master_node
+    - user_exists_check.results is defined
+    - item.stdout != "1"
+  no_log: true
+  register: create_user_result
+  failed_when:
+    - create_user_result.rc != 0
+    - "'already exists' not in create_user_result.stderr"
+
+- name: Check if replication is already configured on replica nodes
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -tAc "SELECT pg_is_in_recovery();"
+  register: replica_status_check
+  failed_when: false
+  changed_when: false
+  when: inventory_hostname in psql_replica_nodes
+
+- name: Stop PostgreSQL container on replica nodes for replication setup
+  ansible.builtin.command: docker stop {{ psql_docker_container_name }}
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_force_create_replica | default(false) or replica_status_check.stdout != "t"
+  register: replica_stop_result
+
+- name: Remove existing PostgreSQL data directory on replica nodes
+  ansible.builtin.file:
+    path: "{{ psql_node_data_path }}"
+    state: absent
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_force_create_replica | default(false) or replica_status_check.stdout != "t"
+
+- name: Create PostgreSQL data directory on replica nodes
+  ansible.builtin.file:
+    path: "{{ psql_node_data_path }}"
+    state: directory
+    mode: "0700"
+    owner: "{{ psql_docker_user_uid }}"
+    group: "{{ psql_docker_user_gid }}"
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_force_create_replica | default(false) or replica_status_check.stdout != "t"
+
+- name: Get replication user credentials
+  ansible.builtin.set_fact:
+    replication_user: "{{ psql_users | selectattr('is_replication', 'defined') | selectattr('is_replication', 'equalto', true) | map(attribute='name') | first }}"
+    replication_password: "{{ psql_users | selectattr('is_replication', 'defined') | selectattr('is_replication', 'equalto', true) | map(attribute='password') | first }}"
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_force_create_replica | default(false) or replica_status_check.stdout != "t"
+
+- name: Run pg_basebackup from master to replica nodes
+  ansible.builtin.shell: |
+    docker run --rm --name psql-repicator \
+      -v {{ psql_node_data_path }}:{{ psql_docker_data_path }} \
+      -e PGPASSWORD='{{ replication_password }}' \
+      {{ psql_image }}:{{ psql_version }} \
+      pg_basebackup -h {{ hostvars[psql_master_node]['ansible_host'] | default(psql_master_node) }} \
+      -p {{ psql_port }} \
+      -U {{ replication_user }} \
+      -D {{ psql_docker_data_path }} \
+      -Fp -Xs -P -R
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_force_create_replica | default(false) or replica_status_check.stdout != "t"
+  no_log: true
+
+- name: Start PostgreSQL container on replica nodes
+  ansible.builtin.command: docker start {{ psql_docker_container_name }}
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_force_create_replica | default(false) or replica_status_check.stdout != "t"
+
+- name: Wait for PostgreSQL to start on replica nodes
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} pg_isready -U {{ psql_default_db_user }} -h localhost
+  register: pg_replica_ready
+  until: pg_replica_ready.rc == 0
+  retries: 30
+  delay: 2
+  changed_when: false
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_force_create_replica | default(false) or replica_status_check.stdout != "t"
+
+- name: Verify replication status on replica nodes
+  ansible.builtin.command: docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }} -tAc "SELECT pg_is_in_recovery();"
+  register: final_replica_status
+  failed_when: final_replica_status.stdout != "t"
+  changed_when: false
+  when: inventory_hostname in psql_replica_nodes

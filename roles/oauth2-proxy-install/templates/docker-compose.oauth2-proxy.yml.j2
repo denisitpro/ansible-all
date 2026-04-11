@@ -1,0 +1,28 @@
+## {{ ansible_managed }} ##
+
+{% for item in oauth2_proxy_list %}
+services:
+  oauth2-proxy-{{ item.name }}:
+    image: quay.io/oauth2-proxy/oauth2-proxy:{{ oauth2_proxy_image }}
+    container_name: oauth2-proxy-{{ item.name }}
+    network_mode: host
+    environment:
+{% if item.provider == "google" %}
+      - OAUTH2_PROXY_PROVIDER=google
+      - OAUTH2_PROXY_CLIENT_ID={{ item.client_id }}
+      - OAUTH2_PROXY_CLIENT_SECRET={{ item.client_secret }}
+      - OAUTH2_PROXY_EMAIL_DOMAINS={{ item.email_domains | join(',') }}
+{% endif %}
+      - OAUTH2_PROXY_COOKIE_SECRET={{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') | b64encode }}
+      - OAUTH2_PROXY_COOKIE_DOMAIN={{ item.cookie_domain }}
+      - OAUTH2_PROXY_UPSTREAMS={{ item.upstreams | join(',') }}
+      - OAUTH2_PROXY_REDIRECT_URL={{ item.redirect_url }}
+      - OAUTH2_PROXY_HTTP_ADDRESS={{ item.http_address }}
+    restart: {{ oauth2_proxy_restart | default('always') }}
+    stop_grace_period: "{{ oauth2_proxy_stop_grace_period | default('10s') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endfor %}

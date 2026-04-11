@@ -1,0 +1,233 @@
+---
+# Weekly backup configuration
+weekly_backup_enabled: false
+weekly_backup_dry_run: false  # Keep dry-run enabled by default for safety
+
+# Logging defaults
+weekly_backup_log_dir: "/tmp/rclone"
+weekly_backup_log_level: "INFO"  # DEBUG, INFO, NOTICE, ERROR
+
+# Common rclone options for weekly backup
+# Optimized for 4 cores / 8GB RAM server (reliability over speed)
+weekly_backup_options:
+  max_age: "48h"
+  transfers: 4  # Parallel file transfers (match CPU cores)
+  checkers: 4  # Parallel metadata checks (match transfers)
+  buffer_size: "32M"  # Memory buffer per transfer (4 × 32M = 128MB total)
+  ignore_existing: true
+  fast_list: true
+  # Advanced options
+  retries: 3  # Number of retries on error
+  use_server_modtime: false  # Use server modified time instead of object metadata
+  checksum: false  # Verify checksums (slower but more reliable)
+  bwlimit: ""  # Bandwidth limit (e.g. "10M" for 10 MiB/s, empty for unlimited)
+  # S3 multipart upload optimization for large files
+  s3_chunk_size: "64M"  # Standard chunk size for multipart uploads
+  s3_upload_concurrency: 4  # Parallel chunks per file (match CPU cores)
+  multi_thread_streams: 2  # Threads per file (conservative for reliability)
+  # NOTE: s3_upload_cutoff managed per-remote in backup_rclone_targets (e.g. AWS needs upload_cutoff=0 for Object Lock)
+
+# Cron schedule for weekly backup
+weekly_backup_cron_enabled: false
+weekly_backup_cron_minute: "15"
+weekly_backup_cron_hour: "21"
+weekly_backup_cron_day: "*"
+weekly_backup_cron_month: "*"
+weekly_backup_cron_weekday: "2"  # Tuesday (0=Sunday, 3=Wednesday, 4=Thursday)
+
+# S3 options
+weekly_backup_s3_no_check_bucket: true  # Prevent CreateBucket attempts (useful for restricted IAM)
+
+# Weekly backup sources and destinations
+# Example structure:
+# weekly_backup_config:
+#   sources:
+#     - remote: "source-remote-1"
+#       bucket: "source-bucket-1"
+#     - remote: "source-remote-2"
+#       bucket: "source-bucket-2"
+#   destinations:
+#     - remote: "destination-remote"
+#       bucket: "destination-bucket"
+#       subdir_by_source: true  # Create subdirectory for each source bucket
+weekly_backup_config:
+  sources: []
+  destinations: []
+
+# State backup configuration (AWS S3 -> Local -> Encrypt -> Wasabi)
+state_backup_enabled: false
+state_backup_dry_run: false
+
+# Directories
+state_backup_download_dir: "/mnt/s3-state-backup"  # Download from AWS S3
+state_backup_log_dir: "/tmp/rclone"
+
+# Rclone options for state backup
+# Optimized for 4 cores / 8GB RAM server
+state_backup_rclone_options:
+  transfers: 4  # Match CPU cores
+  checkers: 4  # Match transfers
+  retries: 3
+
+# Cron schedule for state backup
+state_backup_cron_enabled: false
+state_backup_cron_minute: "10"
+state_backup_cron_hour: "20"
+state_backup_cron_day: "*"
+state_backup_cron_month: "*"
+state_backup_cron_weekday: "3"  # Thursday (0=Sunday, 3=Wednesday, 4=Thursday)
+
+# State backup configuration
+# Example:
+# state_backup_config:
+#   source_remote: "aws-state-buckets-ro"
+#   buckets:
+#     - "s3-backend-example-1"
+#     - "s3-backend-example-2"
+#   destination:
+#     remote: "wasabi-weekly-backup-c3-2025"
+#     bucket: "backup-bucket"
+#     path: "s3-state-backup"
+state_backup_config:
+  source_remote: ""
+  buckets: []
+  destination:
+    remote: ""
+    bucket: ""
+    path: ""
+
+# Video archive backup configuration (Dropbox -> Backblaze B2)
+# Optimized for ~10TB of photo/video files with Dropbox API constraints
+video_archive_backup_enabled: false
+video_archive_backup_dry_run: false
+
+# Logging defaults
+video_archive_backup_log_dir: "/tmp/rclone"
+video_archive_backup_log_level: "INFO"  # DEBUG, INFO, NOTICE, ERROR
+
+# Dropbox-optimized rclone options for video archive backup
+# Balanced for 4 cores / 8GB RAM with Dropbox API rate limits
+video_archive_backup_options:
+  # Dropbox API rate limiting (critical for large operations)
+  tpslimit: 8  # Transactions per second limit for Dropbox API
+  tpslimit_burst: 16  # Allow short bursts of API calls
+
+  # Transfer optimization (conservative for Dropbox API stability)
+  transfers: 2  # Lower than CPU cores due to Dropbox API limits
+  checkers: 3  # Metadata checks (slightly higher than transfers)
+
+  # Memory optimization for large video files
+  buffer_size: "128M"  # Larger buffer for video files (2 × 128M = 256MB total)
+  use_mmap: true  # Use memory-mapped I/O for better performance with large files
+
+  # Copy behavior (append-only mode)
+  ignore_existing: true  # Never overwrite existing files (append-only)
+  no_traverse: true  # Skip destination traversal (faster for large datasets)
+  no_check_dest: false  # Still check if file exists (prevent duplicates)
+
+  # Advanced options for reliability
+  retries: 5  # More retries for long-running operations
+  low_level_retries: 10  # Low-level network retries
+  timeout: "10m"  # Operation timeout (important for large files)
+
+  # Performance options
+  fast_list: true  # Use recursive list if available
+  use_server_modtime: true  # Use server modified time (more reliable for Dropbox)
+
+  # B2 multipart upload optimization for large video files
+  b2_chunk_size: "128M"  # Larger chunks for video files
+  b2_upload_concurrency: 2  # Conservative parallel chunks (match transfers)
+  multi_thread_streams: 4  # More threads per large file for faster upload
+
+  # Bandwidth and size controls
+  bwlimit: ""  # Bandwidth limit (e.g. "50M" for 50 MiB/s, empty for unlimited)
+  max_transfer: ""  # Max total transfer size per run (e.g. "100G", empty for unlimited)
+
+  # Dropbox-specific options
+  dropbox_batch_mode: "sync"  # Use sync mode for better reliability
+  dropbox_batch_size: 100  # Number of files per batch API call
+  dropbox_batch_timeout: "30s"  # Timeout for batch operations
+
+# Cron schedule for video archive backup
+video_archive_backup_cron_enabled: false
+video_archive_backup_cron_minute: "0"
+video_archive_backup_cron_hour: "2"  # 2 AM
+video_archive_backup_cron_day: "*"
+video_archive_backup_cron_month: "*"
+video_archive_backup_cron_weekday: "0"  # Sunday (0=Sunday, 6=Saturday)
+
+# Video archive backup configuration
+# Example:
+# video_archive_backup_config:
+#   sources:
+#     - remote: "dropbox-video-archive"
+#       path: "/Video team"  # Dropbox path
+#       dest_folder: "Video_team"  # Destination folder name in B2
+#     - remote: "dropbox-video-archive"
+#       path: "/Nick Vilson"  # Another Dropbox path
+#       dest_folder: "Nick_Vilson"  # Destination folder name in B2
+#   destination:
+#     remote: "b2-infra-video-archive-90d-inf"
+#     bucket: "video-archive-bucket"
+#     path: ""  # Optional subdirectory in bucket
+video_archive_backup_config:
+  sources: []
+  destination:
+    remote: ""
+    bucket: ""
+    path: ""
+
+# Monthly backup configuration (AWS Glacier Deep Archive for long-term storage)
+monthly_backup_enabled: false
+monthly_backup_dry_run: false
+
+# Logging defaults
+monthly_backup_log_dir: "/tmp/rclone"
+monthly_backup_log_level: "INFO"  # DEBUG, INFO, NOTICE, ERROR
+
+# Monthly backup rclone options
+# Optimized for 4 cores / 8GB RAM with AWS Glacier Deep Archive
+monthly_backup_options:
+  max_age: "48h"  # Copy files modified in last 35 days (covers full month)
+  transfers: 4  # Parallel file transfers (match CPU cores)
+  checkers: 4  # Parallel metadata checks (match transfers)
+  buffer_size: "32M"  # Memory buffer per transfer (4 × 32M = 128MB total)
+  ignore_existing: true
+  fast_list: true
+  # Advanced options
+  retries: 3  # Number of retries on error
+  use_server_modtime: false  # Use server modified time instead of object metadata
+  checksum: false  # Verify checksums (slower but more reliable)
+  bwlimit: ""  # Bandwidth limit (e.g. "10M" for 10 MiB/s, empty for unlimited)
+  # S3 options
+  s3_chunk_size: "64M"  # Standard chunk size for multipart uploads
+  s3_upload_concurrency: 4  # Parallel chunks per file (match CPU cores)
+  multi_thread_streams: 2  # Threads per file (conservative for reliability)
+  # NOTE: storage_class configured per-remote in backup_rclone_targets (e.g. DEEP_ARCHIVE)
+
+# Cron schedule for monthly backup
+monthly_backup_cron_enabled: false
+monthly_backup_cron_minute: "0"
+monthly_backup_cron_hour: "4"  # 4 AM
+monthly_backup_cron_day: "1"  # First day of month
+monthly_backup_cron_month: "*"
+monthly_backup_cron_weekday: "*"
+
+# S3 options
+monthly_backup_s3_no_check_bucket: true  # Prevent CreateBucket attempts (useful for restricted IAM)
+
+# Monthly backup sources and destinations
+# Example structure:
+# monthly_backup_config:
+#   sources:
+#     - remote: "source-remote-1"
+#       bucket: "source-bucket-1"
+#     - remote: "source-remote-2"
+#       bucket: "source-bucket-2"
+#   destinations:
+#     - remote: "destination-remote"
+#       bucket: "destination-bucket"
+#       subdir_by_source: true  # Create subdirectory for each source bucket
+monthly_backup_config:
+  sources: []
+  destinations: []

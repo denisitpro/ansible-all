@@ -2,8 +2,8 @@
 - name: download process exporter binary to local folder
   become: false
   ansible.builtin.get_url:
-    url: "https://github.com/ncabatoff/process-exporter/releases/download/v{{ process_exporter_version }}/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}.tar.gz"
-    dest: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    url: "https://github.com/ncabatoff/process-exporter/releases/download/v{{ process_exporter_version }}/process-exporter-{{ process_exporter_version }}.linux-{{ process_exporter_go_arch }}.tar.gz"
+    dest: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ process_exporter_go_arch }}.tar.gz"
     mode: "0644"
   register: _download_archive
   until: _download_archive is succeeded
@@ -13,14 +13,14 @@
 - name: unpack process-exporter binaries
   become: false
   ansible.builtin.unarchive:
-    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ process_exporter_go_arch }}.tar.gz"
     dest: "/tmp"
-    creates: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}"
+    creates: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ process_exporter_go_arch }}"
     remote_src: true
 
 - name: copy to /usr/loca/bin
   ansible.builtin.copy:
-    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch }}/{{ item }}"
+    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ process_exporter_go_arch }}/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     mode: "0755"
     owner: root

@@ -20,47 +20,56 @@
     - psql-docker
     - psql-init-check
 
-# todo need refactore
-# - name: Import ssl
-#  ansible.builtin.import_tasks: 12-copy-ssl.yml
-#  tags:
-#    - psql
-#    - psql-docker
-#    - psql-ssl
+- name: Import ssl
+  ansible.builtin.import_tasks: 20-copy-ssl.yml
+  tags:
+    - psql
+    - psql-docker
+    - psql-ssl
 
 # todo need refactore
 # - name: Import consul
-#   ansible.builtin.import_tasks: 15-consul.yml
+#   ansible.builtin.import_tasks: 30-consul.yml
 #   when: consul_service_reg is defined
 #   tags:
 #     - psql
 #     - psql-docker
 #     - psql-consul
 
-
 - name: Import compose
-  ansible.builtin.import_tasks: 20-compose.yml
+  ansible.builtin.import_tasks: 40-compose.yml
   tags:
     - psql
     - psql-docker
     - psql-compose
 
+- name: Import create replication
+  ansible.builtin.import_tasks: 50-create-replication.yml
+  when: psql_create_replica | default(false)
+  tags:
+    - psql
+    - psql-replication
+
 - name: Import create users
-  ansible.builtin.import_tasks: 25-create-users.yml
-  when: postgres_users is defined
+  ansible.builtin.import_tasks: 60-create-users.yml
+  when:
+    - psql_users is defined
+    - not psql_create_replica | default(false) or inventory_hostname == psql_master_node
   tags:
     - psql
     - psql-users
-    - psql-compose
+    - psql-users-dbs
 
 - name: Import create db
-  ansible.builtin.import_tasks: 30-create-db.yml
-  when: postgres_db is defined
+  ansible.builtin.import_tasks: 70-create-db.yml
+  when:
+    - psql_db is defined
+    - not psql_create_replica | default(false) or inventory_hostname == psql_master_node
   tags:
     - psql
     - psql-db
-    - psql-compose
+    - psql-users-dbs
 
 - name: Import cleanup
   ansible.builtin.import_tasks: 90-cleanup.yml
-  tags: ['never', 'psql-clean']
+  tags: ["never", "psql-clean"]

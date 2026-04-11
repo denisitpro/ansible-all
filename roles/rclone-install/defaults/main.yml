@@ -1,6 +1,6 @@
 ---
 # Rclone installation parameters
-rclone_version: "v1.71.0"
+rclone_version: "v1.72.1"
 rclone_base_url: "https://downloads.rclone.org"
 rclone_install_dir: "/usr/local/bin"
 

@@ -1,3 +1,6 @@
+## {{ ansible_managed }} ##
+
+{% if psql_hba_header is defined and psql_hba_header %}
 # PostgreSQL Client Authentication Configuration File
 # ===================================================
 #
@@ -82,7 +85,7 @@
 # the database superuser.  If you do not trust all your local users,
 # use another authentication method.
 
-
+{% endif %}
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
 
 # "local" is for Unix domain socket connections only
@@ -97,19 +100,39 @@ local   replication     all                                     trust
 host    replication     all             127.0.0.1/32            trust
 host    replication     all             ::1/128                 trust
 
-{% if postgres_hba_acl is defined %}
-{% for acl in postgres_hba_acl %}
-{{ acl.type }}    {{ acl.database }}      {{ acl.user }}      {{ acl.address }}      {{ acl.method }}
+# Allow connections from all addresses (if enabled)
+{% if psql_hba_acl_allow_all %}
+{% if psql_tls %}
+hostssl all             all             all                     scram-sha-256
+{% else %}
+host    all             all             all                     scram-sha-256
+{% endif %}
+{% endif %}
+
+# Replication section
+{% if psql_replication is defined and psql_replication_hosts is not defined %}
+host    replication     all             {{ psql_replication_net }}           scram-sha-256
+{% endif %}
+
+{% if psql_replication_hosts is defined and psql_replication_hosts | length > 0 %}
+{% for repl_host in psql_replication_hosts %}
+{% if psql_tls %}
+hostssl    replication     all             {{ repl_host }}           scram-sha-256
+{% else %}
+host    replication     all             {{ repl_host }}           scram-sha-256
+{% endif %}
 {% endfor %}
 {% endif %}
 
-{% if postgres_hba_acl_allow_all | default('true') %}
-host    all             all             all                     scram-sha-256
+# Users section
+{% if psql_hba_acl is defined %}
+{% for acl in psql_hba_acl %}
+{% if acl.address is string %}
+{{ acl.type | default('hostssl' if psql_tls else 'host') }}    {{ acl.database }}      {{ acl.user }}      {{ acl.address }}      {{ acl.method | default('scram-sha-256') }}
+{% else %}
+{% for addr in acl.address %}
+{{ acl.type | default('hostssl' if psql_tls else 'host') }}    {{ acl.database }}      {{ acl.user }}      {{ addr }}      {{ acl.method | default('scram-sha-256') }}
+{% endfor %}
 {% endif %}
-
-{% if postgres_tls %}
-hostssl all             all             all                     scram-sha-256
-{% endif %}
-{% if psql_replication is defined %}
-host    replication     all             {{ replication_net }}           md5
+{% endfor %}
 {% endif %}

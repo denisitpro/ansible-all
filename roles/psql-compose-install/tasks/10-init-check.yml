@@ -8,7 +8,7 @@
 
 - name: Check postgres init phase - look for PG_VERSION file
   ansible.builtin.stat:
-    path: "{{ postgres_init_path }}"
+    path: "{{ psql_init_path }}"
   register: postgres_init_result
   tags:
     - psql-compose

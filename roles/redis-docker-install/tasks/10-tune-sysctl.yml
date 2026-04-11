@@ -1,8 +1,0 @@
----
-- name: Redis sysctl settings
-  ansible.posix.sysctl:
-    name: "vm.overcommit_memory"
-    value: '1'
-    state: present
-    sysctl_set: true
-    reload: true

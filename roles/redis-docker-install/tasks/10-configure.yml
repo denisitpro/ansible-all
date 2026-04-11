@@ -1,0 +1,23 @@
+---
+# - name: Redis sysctl settings
+#   ansible.posix.sysctl:
+#     name: "vm.overcommit_memory"
+#     value: '1'
+#     state: present
+#     sysctl_set: true
+#     reload: true
+
+- name: Copy redis config
+  ansible.builtin.template:
+    src: "{{ redis_conf_name | default('redis-master.conf') }}.j2"
+    dest: "{{ redis_conf_path }}/redis.conf"
+    owner: "{{ redis_user_uid }}"
+    group: "{{ redis_user_gid }}"
+    mode: 0644
+
+- name: Copy compose-file - redis
+  ansible.builtin.template:
+    src: "docker-compose.redis.yml.j2"
+    dest: "{{ redis_compose_path }}/docker-compose.yml"
+    mode: 0600
+  notify: recreate-docker redis

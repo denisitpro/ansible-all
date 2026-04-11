@@ -1,26 +1,20 @@
 ---
-- ansible.builtin.import_tasks: 05-create-path.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - redis
+    - redis-prefly
 
-- ansible.builtin.import_tasks: 10-tune-sysctl.yml
-  tags:
-    - redis
-    - redis-tune
-
-- ansible.builtin.import_tasks: 15-config.yml
+- ansible.builtin.import_tasks: 10-configure.yml
   tags:
     - redis
     - redis-config
 
-#- ansible.builtin.import_tasks: 50-consul.yml
-#  tags:
-#    - consul-reg
-#    - redis-exporter
+# - ansible.builtin.import_tasks: 50-consul-reg.yml
+#   when: consul_monitoring_disable is not defined
+#   tags:
+#     - consul
+#     - redis
+#     - consul-reg
 
-- ansible.builtin.import_tasks: 90-lauch.yml
-  when: not_alone is not defined
-  tags:
-    - redis
-    - redis-exporter
-    - redis-compose
+- ansible.builtin.import_tasks: 90-restart.yml
+  tags: ['never', 'redis-restart']

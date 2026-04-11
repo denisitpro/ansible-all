@@ -1,0 +1,36 @@
+---
+- name: Ensure state backup download directory exists
+  ansible.builtin.file:
+    path: "{{ state_backup_download_dir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  when: state_backup_enabled | default(false)
+
+- name: Ensure backup destination directory exists
+  ansible.builtin.file:
+    path: "{{ backup_dest_dir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  when: state_backup_enabled | default(false)
+
+- name: Ensure state backup log directory exists
+  ansible.builtin.file:
+    path: "{{ state_backup_log_dir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  when: state_backup_enabled | default(false)
+
+- name: Deploy state backup script
+  ansible.builtin.template:
+    src: state-backup.sh.j2
+    dest: /opt/scripts/state-backup.sh
+    mode: '0755'
+    owner: root
+    group: root
+  when: state_backup_enabled | default(false)

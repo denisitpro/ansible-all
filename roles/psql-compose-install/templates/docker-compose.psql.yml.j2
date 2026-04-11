@@ -13,7 +13,7 @@ services:
       - {{ psql_node_data_conf }}/postgresql.conf:{{ psql_docker_conf_dir }}/postgresql.conf
       - {{ psql_node_data_conf }}/pg_hba.conf:{{ psql_docker_conf_dir }}/pg_hba.conf
 {% endif %}
-{% if postgres_tls %}
+{% if psql_tls %}
       - {{ psql_node_data_ssl }}:{{ psql_docker_ssl_dir }}
 {% endif %}
     environment:
@@ -25,7 +25,7 @@ services:
 {% endif %}
 {% if postgres_initialized == false and replica is defined %}
       - PGPASSWORD={{ psql_pgpassword }}
-    command: pg_basebackup -h {{ pg_master_host }} -D {{ psql_docker_data_path }} -U replication -w -P -v  -R -X stream -C -S {{ pg_replica_slot_name }}
+    command: pg_basebackup -h {{ pg_master_host }} -D {{ psql_docker_data_path }} -U replication -w -P -v  -R -X stream -C -S {{ psql_replica_slot_name }}
 {% else %}
     restart: {{ vm_restart | default('always') }}
 {% if psql_jira is not defined %}

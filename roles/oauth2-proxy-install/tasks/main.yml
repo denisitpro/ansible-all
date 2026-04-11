@@ -1,0 +1,22 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - oauth2
+    - oauth2-prefly
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - oauth2
+    - oauth2-docker
+    - oauth2-compose
+
+- ansible.builtin.import_tasks: 60-check-state.yml
+  tags:
+    - oauth2
+
+- ansible.builtin.import_tasks: 90-stop-start.yml
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - oauth2-clean

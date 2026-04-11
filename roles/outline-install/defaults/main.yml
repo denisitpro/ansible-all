@@ -1,0 +1,51 @@
+---
+outline_image: "docker.getoutline.com/outlinewiki/outline"
+outline_version: "1.1.0"
+
+outline_uid: 1001
+outline_gid: 1001
+
+outline_base_path: "/opt/outline"
+outline_storage_path: "{{ outline_base_path }}/storage-data"
+outline_compose_path: "/opt/docker/outline"
+
+
+# Secrets - should be overridden in group_vars or host_vars
+outline_secret_key: "{{ vault_dict_users_secret_g2.outline_secrets.outline_secret_key | default('changeme-outline-secret-key-32chars-min') }} "
+outline_utils_secret: "{{ vault_dict_users_secret_g2.outline_secrets.outline_utils_secret | default('changeme-outline-utils-secret-32chars-min') }}"
+outline_google_client_id: "{{ vault_dict_users_secret_g2.outline_secrets.outline_google_client_id | default('changeme-outline-google-client-id') }}"
+outline_google_client_secret: "{{ vault_dict_users_secret_g2.outline_secrets.outline_google_client_secret | default('changeme-outline-google-client-secret') }}"
+
+# Storage configuration
+# Default to local storage
+outline_use_local_storage: true
+outline_use_s3_storage: false
+
+# S3 configuration (required if outline_use_s3_storage is true)
+outline_s3_region: "us-east-1"
+outline_s3_bucket_name: "outline-example-bucket"
+outline_s3_bucket_url: "https://s3.us-east-1.amazonaws.com/outline-example-bucket"
+outline_aws_access_key_id: "changeme"
+outline_aws_secret_access_key: "changeme"
+outline_s3_force_path_style: "false"
+
+# Local file storage settings
+outline_file_storage_upload_max_size: "26214400"
+# outline_file_storage_import_max_size: ""
+# outline_file_storage_workspace_import_max_size: ""
+
+
+# Optional: Google OAuth authentication
+# outline_google_client_id: "your-google-client-id.apps.googleusercontent.com"
+# outline_google_client_secret: "your-google-client-secret"
+
+# Optional: Email authentication
+# outline_authentication_method: "email"
+# outline_smtp_host: "localhost"
+# outline_smtp_port: 25
+# outline_smtp_from_email: "outline@example.com"
+
+# Optional: Advanced settings (uncomment if need to override defaults)
+# outline_force_https: "false"
+# outline_redis_collaboration_url: "redis://127.0.0.1:6379"
+# outline_session_store: "redis"
