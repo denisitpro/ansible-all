@@ -1,0 +1,9 @@
+---
+- name: Template Consul service definition for elasticsearch-exporter
+  ansible.builtin.template:
+    src: elasticsearch-exporter.hcl.j2
+    dest: /etc/consul.d/elasticsearch-exporter.hcl
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload consul

@@ -1,0 +1,50 @@
+---
+- name: Create Graylog compose directory
+  ansible.builtin.file:
+    path: "{{ graylog_compose_path }}"
+    state: directory
+    mode: '0755'
+    owner: "root"
+    group: "root"
+
+- name: Create Graylog storage directory
+  ansible.builtin.file:
+    path: "{{ graylog_storage_path }}"
+    state: directory
+    mode: '0755'
+    owner: "root"
+    group: "root"
+
+- name: Create Graylog data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "1100"
+    group: "1100"
+  loop:
+    - "{{ graylog_data_path }}"
+    - "{{ graylog_journal_path }}"
+
+- name: Create MongoDB data directory
+  ansible.builtin.file:
+    path: "{{ mongodb_data_path }}"
+    state: directory
+    mode: '0755'
+    owner: "999"
+    group: "999"
+
+- name: Create OpenSearch data directory
+  ansible.builtin.file:
+    path: "{{ opensearch_data_path }}"
+    state: directory
+    mode: '0755'
+    owner: "1000"
+    group: "1000"
+
+- name: Set vm.max_map_count for OpenSearch
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: '262144'
+    state: present
+    reload: yes

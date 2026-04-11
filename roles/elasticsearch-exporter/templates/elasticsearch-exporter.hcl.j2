@@ -1,0 +1,22 @@
+{{ ansible_managed | comment }}
+service {
+  name = "{{ consul_elasticsearch_exporter_name }}"
+  port = {{ elasticsearch_exporter_bind_port }}
+  tags = [
+{% for tag in consul_elasticsearch_exporter_tags %}
+    "{{ tag }}",
+{% endfor %}
+  ]
+
+{% if consul_elasticsearch_exporter_token is defined %}
+  token = "{{ consul_elasticsearch_exporter_token }}"
+{% endif %}
+
+  check = {
+    id       = "elasticsearch-exporter-check"
+    name     = "Elasticsearch Exporter Health Check"
+    tcp      = "localhost:{{ elasticsearch_exporter_bind_port }}"
+    interval = "10s"
+    timeout  = "2s"
+  }
+}

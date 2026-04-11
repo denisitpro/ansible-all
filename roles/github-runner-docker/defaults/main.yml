@@ -1,0 +1,36 @@
+---
+# Docker-based GitHub Actions self-hosted runner(s)
+# Uses myoung34/github-runner image.
+
+# Image configuration
+github_runner_docker_image: "myoung34/github-runner"
+# Pin to a fixed upstream release tag (avoid :latest)
+# Upstream releases: https://github.com/myoung34/docker-github-actions-runner/releases
+github_runner_docker_tag: "2.331.0"
+
+# Paths configuration
+github_runner_compose_path: "/opt/docker/github-runner"
+github_runner_data_root: "/opt/github-runner"
+
+# Runner behavior
+# If true, runner will be registered as EPHEMERAL (recommended for autoscaling setups).
+# For classic long-lived VM runner keep false.
+github_runner_ephemeral: false
+
+# If true, disables runner auto-update inside the container.
+github_runner_disable_auto_update: true
+
+# If true, keeps runner registered on container stop.
+# Recommended when CONFIGURED_ACTIONS_RUNNER_FILES_DIR is persisted (runner reusage).
+github_runner_disable_automatic_deregistration: true
+
+# Runner list
+# Each item supports:
+# - name (string, required): unique name suffix for folders/service
+# - full_url (string, required): https://github.com/<org>/<repo> (or org URL)
+# - labels (list[string], optional)
+# - runner_token (string): short-lived registration token from repo Settings → Actions → Runners; used as RUNNER_TOKEN
+# - access_token (string): GitHub PAT; auto-fetches registration token on every container start; takes priority over runner_token
+# - scope (string, optional): repo|org|enterprise (defaults to repo)
+# - org_name / enterprise_name (optional): required for org/enterprise scopes when using access_token
+github_repos: []

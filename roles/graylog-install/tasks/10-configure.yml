@@ -1,0 +1,7 @@
+---
+- name: Template docker-compose file
+  ansible.builtin.template:
+    src: docker-compose.graylog.yml.j2
+    dest: "{{ graylog_compose_path }}/docker-compose.yml"
+    mode: '0644'
+

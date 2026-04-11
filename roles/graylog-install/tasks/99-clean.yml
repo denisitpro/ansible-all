@@ -1,0 +1,15 @@
+---
+- name: Stop Graylog stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ graylog_compose_path }}"
+    state: absent
+  ignore_errors: true
+
+- name: Remove Graylog directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ graylog_compose_path }}"
+    - "{{ graylog_storage_path }}"
+

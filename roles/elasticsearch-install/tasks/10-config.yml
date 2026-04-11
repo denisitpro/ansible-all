@@ -1,0 +1,8 @@
+---
+- name: copy elasticsearch config
+  ansible.builtin.template:
+    src: "elasticsearch.yml.j2"
+    dest: "{{ es_conf_path }}/elasticsearch.yml"
+    owner: "{{ es_uid }}"
+    group: "{{ es_gid }}"
+    mode: '0644'

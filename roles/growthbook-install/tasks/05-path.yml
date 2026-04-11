@@ -1,0 +1,23 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ growthbook_compose_path }}"
+
+- name: create data folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ growthbook_uid | default('root') }}"
+    group: "{{ growthbook_gid | default('root') }}"
+  with_items:
+    - "{{ growthbook_base_path }}"
+    - "{{ growthbook_mongo_data_path }}"
+    - "{{ growthbook_uploads_path }}"

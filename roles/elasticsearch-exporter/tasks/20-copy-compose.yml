@@ -1,0 +1,7 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.elasticsearch-exporter.yml.j2"
+    dest: "{{ elasticsearch_exporter_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker elasticsearch-exporter

@@ -1,0 +1,20 @@
+---
+- name: restart-docker growthbook
+  community.docker.docker_compose_v2:
+    project_src: "{{ growthbook_compose_path }}"
+    state: restarted
+  listen: "restart-docker growthbook"
+
+- name: reload-docker growthbook
+  community.docker.docker_compose_v2:
+    project_src: "{{ growthbook_compose_path }}"
+    state: present
+  listen: "reload-docker growthbook"
+
+- name: recreate-docker growthbook
+  community.docker.docker_compose_v2:
+    project_src: "{{ growthbook_compose_path }}"
+    state: present
+    recreate: always
+  listen: "recreate-docker growthbook"
+

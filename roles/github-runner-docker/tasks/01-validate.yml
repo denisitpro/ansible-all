@@ -1,0 +1,21 @@
+---
+- name: validate github_repos is defined and not empty
+  ansible.builtin.assert:
+    that:
+      - github_repos is defined
+      - (github_repos | length) > 0
+    fail_msg: "github_repos is empty/undefined. Define at least one repo in group_vars/<your_group>/github_runner.yml."
+
+- name: validate required keys for each runner
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - (item.name | string | length) > 0
+      - item.full_url is defined
+      - (item.full_url | string | length) > 0
+      - (item.access_token is defined) or (item.runner_token is defined)
+    fail_msg: "Invalid github_repos item: each entry must have name, full_url, and runner_token or access_token (PAT)."
+  loop: "{{ github_repos }}"
+  loop_control:
+    label: "{{ item.name | default('unknown') }}"
+  no_log: true

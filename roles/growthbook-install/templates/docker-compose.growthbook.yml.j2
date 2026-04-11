@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: {{ mongo_image }}:{{ mongo_version }}
+    container_name: growthbook-mongo
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - {{ growthbook_mongo_data_path }}:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME={{ growthbook_mongo_root_user }}
+      - MONGO_INITDB_ROOT_PASSWORD={{ growthbook_mongo_root_password }}
+
+  growthbook:
+    image: {{ growthbook_image }}:{{ growthbook_version }}
+    container_name: growthbook
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URI: mongodb://{{ growthbook_mongo_root_user }}:{{ growthbook_mongo_root_password }}@127.0.0.1:{{ growthbook_mongo_port }}/{{ growthbook_mongo_db }}?authSource=admin
+
+      ENCRYPTION_KEY: "{{ growthbook_encryption_key }}"
+      JWT_SECRET: "{{ growthbook_jwt_secret }}"
+      PROXY_API_REQUESTS: "{{ growthbook_proxy_api_requests }}"
+
+      API_HOST: "{{ growthbook_api_host }}"
+      APP_ORIGIN: "{{ growthbook_app_origin }}"
+      API_BASE_URL: "{{ growthbook_api_base_url }}"
+      NODE_ENV: "{{ growthbook_node_env }}"
+      
+    volumes:
+      - {{ growthbook_uploads_path }}:/uploads

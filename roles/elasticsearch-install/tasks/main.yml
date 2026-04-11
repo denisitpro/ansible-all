@@ -1,17 +1,15 @@
 ---
-- import_tasks: 00-install-openjdk.yml
-- import_tasks: 01-add-repo.yml
-- import_tasks: 02-es-install.yml
-- import_tasks: 03-es-single-configure.yml
+- ansible.builtin.import_tasks: 05-path.yml
   tags:
-    - reconfigure
-- import_tasks: 04-es-curator-install.yml
+    - es
+    - es-prefly
+
+- ansible.builtin.import_tasks: 10-config.yml
   tags:
-    - curator
-- import_tasks: 05-curator-conf-action.yml
+    - es
+    - es-config
+
+- ansible.builtin.import_tasks: 50-compose.yml
   tags:
-    - curator
-- import_tasks: 06-max-shards.yml
-  tags:
-    - max_shards
-    - curator
+    - es
+    - es-compose

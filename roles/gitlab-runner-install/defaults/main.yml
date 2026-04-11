@@ -1,6 +1,6 @@
 ---
 runner_registry: gitlab/gitlab-runner
-runner_version: "v18.4.0"
+runner_version: "v18.10.0"
 
 # Paths configuration
 runner_compose_path: "/opt/docker/runner"

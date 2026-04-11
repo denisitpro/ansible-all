@@ -2,3 +2,9 @@
 - ansible.builtin.import_tasks: 05-install.yml
   tags:
     - geesefs
+
+- ansible.builtin.import_tasks: 10-mount.yml
+  when: geesefs_manage_mounts | default(false) | bool
+  tags:
+    - geesefs
+    - geesefs-mount

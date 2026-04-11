@@ -1,0 +1,6 @@
+---
+- name: Start Graylog stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ graylog_compose_path }}"
+    state: present
+

@@ -1,0 +1,26 @@
+services:
+  elasticsearch:
+    image: {{ es_image_name }}
+    container_name: elasticsearch
+    network_mode: host
+    environment:
+      - ES_JAVA_OPTS={{ es_java_opts }}
+      - cluster.name={{ es_cluster_name }}
+      - node.name={{ es_node_name }}
+    volumes:
+      - {{ es_data_path }}:/usr/share/elasticsearch/data
+      - {{ es_conf_path }}/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - {{ es_log_path }}:/usr/share/elasticsearch/logs
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    restart: {{ es_restart }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

@@ -1,0 +1,59 @@
+
+services:
+  mongodb:
+    image: {{ mongodb_image }}:{{ mongodb_tag }}
+    container_name: mongodb
+    network_mode: host
+    volumes:
+      - {{ mongodb_data_path }}:/data/db
+    restart: always
+
+  opensearch:
+    image: {{ opensearch_image }}:{{ opensearch_tag }}
+    container_name: opensearch
+    network_mode: host
+    environment:
+      - "OPENSEARCH_JAVA_OPTS=-Xms{{ opensearch_heap_size }} -Xmx{{ opensearch_heap_size }}"
+      - "bootstrap.memory_lock=true"
+      - "discovery.type=single-node"
+      - "action.auto_create_index=false"
+      - "plugins.security.ssl.http.enabled=false"
+      - "DISABLE_SECURITY_PLUGIN=true"
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD={{ graylog_password_secret | default('StrongPassword123!@#') }}"
+      # Bind to localhost to limit exposure since we use host mode
+      - "network.host=127.0.0.1" 
+      - "http.port=9200"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - {{ opensearch_data_path }}:/usr/share/opensearch/data
+    restart: always
+
+  graylog:
+    image: {{ graylog_image }}:{{ graylog_tag }}
+    container_name: graylog
+    network_mode: host
+    # depends_on doesn't wait for ports in host mode, but helps startup order
+    depends_on:
+      - opensearch
+      - mongodb
+    entrypoint: /usr/bin/tini -- /docker-entrypoint.sh
+    environment:
+      - GRAYLOG_PASSWORD_SECRET={{ graylog_password_secret }}
+      - GRAYLOG_ROOT_PASSWORD_SHA2={{ graylog_root_password_sha2 }}
+      - GRAYLOG_HTTP_BIND_ADDRESS={{ graylog_http_bind_address }}:9000
+      - GRAYLOG_HTTP_EXTERNAL_URI={{ graylog_http_external_uri }}
+      # Point to localhost since we are sharing network namespace
+      - GRAYLOG_ELASTICSEARCH_HOSTS=http://127.0.0.1:9200
+      - GRAYLOG_MONGODB_URI=mongodb://127.0.0.1:27017/graylog
+      - GRAYLOG_ROOT_TIMEZONE={{ graylog_root_timezone }}
+      - GRAYLOG_SERVER_JAVA_OPTS=-Xms{{ graylog_heap_size }} -Xmx{{ graylog_heap_size }}
+    volumes:
+      - {{ graylog_data_path }}:/usr/share/graylog/data/data
+      - {{ graylog_journal_path }}:/usr/share/graylog/data/journal
+    restart: always

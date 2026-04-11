@@ -1,0 +1,130 @@
+#!/bin/bash
+# Export {{ graylog_exports_tag }} logs from OpenSearch (compressed)
+# Managed by Ansible graylog-exports role
+# Usage: ./{{ graylog_exports_tags_script_name }} <start> <end>
+# Example: ./{{ graylog_exports_tags_script_name }} "2026-01-20 14:00:00" "2026-01-20 15:00:00"
+
+set -e
+
+START_TIME=$(date +%s)
+
+START_TS="${1:-}"
+END_TS="${2:-}"
+
+ES_URL="{{ graylog_exports_es_url }}"
+INDEX="{{ graylog_exports_index }}"
+FILTER_FIELD="{{ graylog_exports_filter_field | default('tag') }}"
+TAG="{{ graylog_exports_tag }}"
+BATCH_SIZE={{ graylog_exports_batch_size }}
+SCROLL_TIME="{{ graylog_exports_scroll_time }}"
+OUTPUT_DIR="{{ graylog_exports_output_dir }}"
+
+# Validate arguments
+if [ -z "$START_TS" ] || [ -z "$END_TS" ]; then
+    echo "Usage: $0 <start> <end>"
+    echo "Example: $0 \"2026-01-20 14:00:00\" \"2026-01-20 15:00:00\""
+    exit 1
+fi
+
+# Append .000 if no milliseconds
+[[ "$START_TS" != *.* ]] && START_TS="${START_TS}.000"
+[[ "$END_TS" != *.* ]] && END_TS="${END_TS}.000"
+
+# Ensure output directory exists
+mkdir -p "$OUTPUT_DIR"
+
+# Build output filename in dedicated output dir
+START_SAFE=$(echo "$START_TS" | sed 's/[: .]/_/g' | cut -c1-16)
+END_SAFE=$(echo "$END_TS" | sed 's/[: .]/_/g' | cut -c12-16)
+OUTPUT_FILE="$OUTPUT_DIR/{{ graylog_exports_output_prefix }}_${START_SAFE}_${END_SAFE}.jsonl.gz"
+
+
+echo "=== Exporting {{ graylog_exports_tag }} logs ==="
+echo "Start: $(date)"
+echo "Period: $START_TS -> $END_TS"
+echo "Filter: $FILTER_FIELD=$TAG"
+echo "File:   $OUTPUT_FILE"
+echo ""
+
+# Count records
+echo "Counting records..."
+COUNT_RESPONSE=$(curl -s "$ES_URL/$INDEX/_count" -H "Content-Type: application/json" -d '{
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {"'"$FILTER_FIELD"'": "'"$TAG"'"}},
+        {"range": {"timestamp": {"gte": "'"$START_TS"'", "lt": "'"$END_TS"'"}}}
+      ]
+    }
+  }
+}')
+
+TOTAL_EXPECTED=$(echo "$COUNT_RESPONSE" | jq -r '.count')
+
+if [ "$TOTAL_EXPECTED" == "null" ] || [ "$TOTAL_EXPECTED" -eq 0 ]; then
+    echo "No records for the specified period"
+    exit 0
+fi
+
+echo "Expected records: $TOTAL_EXPECTED"
+echo ""
+
+# Open scroll
+echo "Exporting..."
+RESPONSE=$(curl -s "$ES_URL/$INDEX/_search?scroll=$SCROLL_TIME" -H "Content-Type: application/json" -d '{
+  "size": '"$BATCH_SIZE"',
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {"'"$FILTER_FIELD"'": "'"$TAG"'"}},
+        {"range": {"timestamp": {"gte": "'"$START_TS"'", "lt": "'"$END_TS"'"}}}
+      ]
+    }
+  },
+  "sort": [{"timestamp": "asc"}]
+}')
+
+if echo "$RESPONSE" | jq -e '.error' > /dev/null 2>&1; then
+    echo "ERROR: $(echo "$RESPONSE" | jq -r '.error.reason')"
+    exit 1
+fi
+
+SCROLL_ID=$(echo "$RESPONSE" | jq -r '._scroll_id')
+HITS=$(echo "$RESPONSE" | jq '.hits.hits | length')
+TOTAL=0
+
+# First batch — create file
+echo "$RESPONSE" | jq -c '.hits.hits[]._source' | gzip > "$OUTPUT_FILE"
+TOTAL=$((TOTAL + HITS))
+printf "  %d / %d (%.1f%%)\r" "$TOTAL" "$TOTAL_EXPECTED" "$(echo "scale=1; $TOTAL * 100 / $TOTAL_EXPECTED" | bc)"
+
+# Remaining batches — append
+while [ "$HITS" -gt 0 ]; do
+    RESPONSE=$(curl -s "$ES_URL/_search/scroll" -H "Content-Type: application/json" -d '{
+      "scroll": "'"$SCROLL_TIME"'",
+      "scroll_id": "'"$SCROLL_ID"'"
+    }')
+
+    HITS=$(echo "$RESPONSE" | jq '.hits.hits | length')
+
+    if [ "$HITS" -gt 0 ]; then
+        echo "$RESPONSE" | jq -c '.hits.hits[]._source' | gzip >> "$OUTPUT_FILE"
+        TOTAL=$((TOTAL + HITS))
+        printf "  %d / %d (%.1f%%)\r" "$TOTAL" "$TOTAL_EXPECTED" "$(echo "scale=1; $TOTAL * 100 / $TOTAL_EXPECTED" | bc)"
+    fi
+
+    SCROLL_ID=$(echo "$RESPONSE" | jq -r '._scroll_id')
+done
+
+curl -s -X DELETE "$ES_URL/_search/scroll" -H "Content-Type: application/json" -d '{"scroll_id": "'"$SCROLL_ID"'"}' > /dev/null
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+
+echo ""
+echo ""
+echo "=== Done ==="
+echo "Records: $TOTAL"
+echo "Time:   ${DURATION} sec"
+echo "End:   $(date)"
+ls -lah "$OUTPUT_FILE"

@@ -1,0 +1,15 @@
+---
+- name: Copy Graylog parser
+  ansible.builtin.copy:
+    src: parser.py
+    dest: "{{ graylog_parse_script_path }}/parser.py"
+    mode: '0644'
+
+- name: copy run-graylog-to-s3-parser.sh.j2
+  ansible.builtin.template:
+    src: run-graylog-to-s3-parser.sh.j2
+    dest: "{{ graylog_parse_script_path }}/run-graylog-to-s3-parser.sh"
+    mode: "0777"
+    owner: root
+    group: root
+    backup: true

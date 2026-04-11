@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e  # Остановка при ошибке
+
+# Переменные
+PARSER_SCRIPT="{{ graylog_parse_script_path }}/parser.py"
+OUTPUT_DIR="{{ graylog_parse_script_storage_path }}"
+RCLONE_DEST="auditors-logs-v1-rw:auditors-logs-v1/graylog/"
+
+# Получаем временные метки
+START_TIME=$(date -d '1 day ago' '+%Y-%m-%d %H:%M:%S')
+END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "=== Starting Graylog log parsing ==="
+echo "Time range: ${START_TIME} to ${END_TIME}"
+
+# 1. Парсим логи
+echo "Step 1: Parsing logs..."
+python3 "${PARSER_SCRIPT}" "${START_TIME}" "${END_TIME}" \
+    --tags "production.nginx" \
+    --index "graylog_*" \
+    --output-dir "${OUTPUT_DIR}" \
+    --tag-field "tag"
+
+# 2. Копируем в S3 через rclone
+echo "Step 2: Uploading to S3..."
+rclone copy "${OUTPUT_DIR}/" "${RCLONE_DEST}"
+
+# 3. Очищаем локальную папку
+echo "Step 3: Cleaning up local directory..."
+rm -rf "${OUTPUT_DIR}"/*
+
+echo "=== Completed successfully ==="

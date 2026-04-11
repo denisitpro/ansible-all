@@ -1,0 +1,13 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - growthbook
+    - growthbook-prefly
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - growthbook
+    - growthbook-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'growthbook-clean']

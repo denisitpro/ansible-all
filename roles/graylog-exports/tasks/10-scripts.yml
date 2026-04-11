@@ -1,0 +1,13 @@
+---
+- name: Deploy graylog-dump-tags script
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ graylog_exports_install_dir }}/{{ item }}"
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - "{{ graylog_exports_tags_script_name }}"
+    - "{{ old_graylog_exports_tags_script_name }}"
+    - "{{ graylog_exports_days_script_name }}"
+

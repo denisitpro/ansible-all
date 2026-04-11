@@ -1,0 +1,49 @@
+{#-
+  Render a single comma-separated `mount -o ...` / fstab `opts` string.
+  Expected variables:
+  - item: mount definition (name, endpoint/endpoint_url, region, uid/gid, modes, ...)
+  - geesefs_base_path, geesefs_creds_dir, geesefs_fstab_common_opts
+-#}
+
+{%- set endpoint = (
+      item.endpoint_url
+      | default( (item.endpoint is match('^https?://')) | ternary(item.endpoint, 'https://' ~ item.endpoint) )
+    )
+-%}
+
+{%- set endpoint_host = (endpoint | regex_replace('^https?://', '')) -%}
+{%- set region = (
+      item.region
+      | default(
+          (endpoint_host is match('^s3\\.[^.]+\\.backblazeb2\\.com$'))
+          | ternary(endpoint_host | regex_replace('^s3\\.|\\.backblazeb2\\.com$', ''), 'us-east-1')
+        )
+    )
+-%}
+
+{%- set base = (geesefs_fstab_common_opts | default('_netdev,nofail,allow_other')) -%}
+{%- set fuse_extra = (
+      ((item.fuse_options | default('') | string | length) > 0)
+      | ternary(',' ~ (item.fuse_options | string), '')
+    )
+-%}
+{%- set dbg = (
+      (item.debug | default(false) | bool)
+      | ternary(',--debug_s3,--debug_fuse,--log-file=' ~ (geesefs_base_path ~ '/geesefs-' ~ item.name ~ '.log'), '')
+    )
+-%}
+
+{{-
+  base
+  ~ fuse_extra
+  ~ dbg
+  ~ ',--endpoint=' ~ endpoint
+  ~ ',--region=' ~ region
+  ~ ',--shared-config=' ~ (geesefs_creds_dir ~ '/' ~ item.name ~ '.credentials')
+  ~ ',--list-type=' ~ (item.list_type | default(2) | string)
+  ~ ',--uid=' ~ (item.uid | default(0) | string)
+  ~ ',--gid=' ~ (item.gid | default(0) | string)
+  ~ ',--file-mode=' ~ (item.file_mode | default('0644') | string)
+  ~ ',--dir-mode=' ~ (item.dir_mode | default('0755') | string)
+-}}
+

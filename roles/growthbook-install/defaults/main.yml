@@ -1,0 +1,24 @@
+---
+growthbook_image: growthbook/growthbook
+growthbook_version: latest
+mongo_image: mongo
+mongo_version: 7-jammy
+
+growthbook_base_path: /opt/growthbook
+growthbook_data_path: "{{ growthbook_base_path }}/data"
+growthbook_mongo_data_path: "{{ growthbook_base_path }}/mongo"
+growthbook_uploads_path: "{{ growthbook_base_path }}/uploads"
+growthbook_compose_path: /opt/docker/growthbook
+
+growthbook_proxy_api_requests: "true"
+# Use inventory_hostname or variable for IP
+growthbook_api_host: "http://{{ ansible_host }}:3100"
+growthbook_app_origin: "http://{{ ansible_host }}:3000"
+growthbook_api_base_url: /api
+growthbook_node_env: production
+
+growthbook_mongo_port: 27017
+
+growthbook_uid: 1001
+growthbook_gid: 1001
+

@@ -1,0 +1,61 @@
+#!/bin/bash
+# Export logs by days (calls {{ graylog_exports_tags_script_name }} per day)
+# Managed by Ansible graylog-exports role
+# Usage: ./{{ graylog_exports_days_script_name }} <start_date> <end_date>
+# Example: ./{{ graylog_exports_days_script_name }} 2026-01-16 2026-01-20
+
+set -e
+
+START_DATE="${1:-}"
+END_DATE="${2:-}"
+
+if [ -z "$START_DATE" ] || [ -z "$END_DATE" ]; then
+    echo "Usage: $0 <start_date> <end_date>"
+    echo "Example: $0 2026-01-16 2026-01-20"
+    exit 1
+fi
+
+# Use Ansible-configured install directory (both scripts deployed here)
+TAGS_SCRIPT="{{ graylog_exports_install_dir }}/{{ graylog_exports_tags_script_name }}"
+OUTPUT_DIR="{{ graylog_exports_output_dir }}"
+
+if [ ! -x "$TAGS_SCRIPT" ]; then
+    echo "ERROR: Tags script not found or not executable: $TAGS_SCRIPT"
+    exit 1
+fi
+
+# Ensure output directory exists
+mkdir -p "$OUTPUT_DIR"
+
+TOTAL_START=$(date +%s)
+
+echo "=== Export by days ==="
+echo "Period: $START_DATE -> $END_DATE"
+echo "Start: $(date)"
+echo ""
+
+CURRENT="$START_DATE"
+DAY_NUM=0
+
+while [[ "$CURRENT" < "$END_DATE" || "$CURRENT" == "$END_DATE" ]]; do
+    DAY_NUM=$((DAY_NUM + 1))
+    NEXT=$(date -d "$CURRENT + 1 day" +%Y-%m-%d)
+
+    echo "--- Day $DAY_NUM: $CURRENT ---"
+
+    "$TAGS_SCRIPT" "$CURRENT 00:00:00" "$NEXT 00:00:00" || true
+
+    echo ""
+    CURRENT="$NEXT"
+done
+
+TOTAL_END=$(date +%s)
+TOTAL_DURATION=$((TOTAL_END - TOTAL_START))
+
+echo "=== All days completed ==="
+echo "Days: $DAY_NUM"
+echo "Total time: ${TOTAL_DURATION} sec"
+echo "End: $(date)"
+echo ""
+echo "Files:"
+ls -lah "$OUTPUT_DIR"/{{ graylog_exports_output_prefix }}_*.jsonl.gz 2>/dev/null || echo "No files"

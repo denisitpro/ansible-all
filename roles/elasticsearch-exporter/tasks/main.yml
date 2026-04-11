@@ -1,0 +1,19 @@
+---
+- ansible.builtin.import_tasks: 05-create-path.yml
+  tags:
+    - elasticsearch-exporter
+
+- ansible.builtin.import_tasks: 20-copy-compose.yml
+  tags:
+    - elasticsearch-exporter
+
+- ansible.builtin.import_tasks: 25-consul-reg.yml
+  when: consul_elasticsearch_exporter_enabled | default(true) | bool
+  tags:
+    - elasticsearch-exporter
+    - elasticsearch-exporter-consul
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - elasticsearch-exporter-clean
