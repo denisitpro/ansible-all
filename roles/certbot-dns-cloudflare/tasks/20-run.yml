@@ -1,0 +1,40 @@
+---
+- name: run certbot
+  ansible.builtin.shell: "docker compose up"
+  args:
+    chdir: "{{ certbot_compose_path }}"
+  register: certbot_result
+  failed_when: certbot_result.rc != 0
+
+- name: find all certificate directories
+  ansible.builtin.find:
+    paths: "{{ certbot_path }}/data/live"
+    file_type: directory
+  register: cert_directories
+
+- name: build domains list for verification
+  ansible.builtin.set_fact:
+    all_domains: "{{ certbot_domains | map(attribute='domains') | map('first') | map('regex_replace', '^\\*\\.', '') | list }}"
+
+- name: verify certificates exist for domains
+  ansible.builtin.stat:
+    path: "{{ certbot_path }}/data/live/{{ item }}/fullchain.pem"
+  register: cert_files
+  loop: "{{ all_domains }}"
+  failed_when: false
+
+- name: list missing certificates
+  ansible.builtin.set_fact:
+    missing_certs: "{{ cert_files.results | selectattr('stat.exists', 'equalto', false) | map(attribute='item') | list }}"
+
+- name: show certificate verification results
+  ansible.builtin.debug:
+    msg:
+      - "Found certificate directories: {{ cert_directories.files | map(attribute='path') | map('basename') | list }}"
+      - "Checked domains: {{ all_domains }}"
+      - "Missing certificates for: {{ missing_certs }}"
+
+- name: certificate verification
+  ansible.builtin.fail:
+    msg: "Certificates were not created successfully for domains: {{ missing_certs | join(', ') }}"
+  when: missing_certs | length > 0

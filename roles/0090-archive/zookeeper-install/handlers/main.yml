@@ -1,3 +1,0 @@
----
-- ansible.builtin.import_tasks: shared/handlers/zookeeper.yml
-- ansible.builtin.import_tasks: shared/handlers/consul.yml

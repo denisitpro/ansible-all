@@ -1,7 +1,17 @@
 ---
 - ansible.builtin.import_tasks: 05-prefly.yml
-  tags: ['never', 'certbot']
+  tags: ["certbot"]
 
+- ansible.builtin.import_tasks: 10-hooks.yml
+  when: certbot_system_pre_hook_command != "" or certbot_system_post_hook_command != ""
+  tags: ["certbot"]
 
 - ansible.builtin.import_tasks: 15-cerbot.yml
-  tags: ['never', 'certbot']
+  tags: ["certbot"]
+
+- ansible.builtin.import_tasks: 20-run.yml
+  tags: ["certbot", "certbot-run"]
+
+- ansible.builtin.import_tasks: 30-renewal.yml
+  when: certbot_renewal_cron is defined and certbot_renewal_cron
+  tags: ["certbot", "certbot-renewal"]

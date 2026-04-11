@@ -1,0 +1,32 @@
+---
+- name: create hooks directory
+  ansible.builtin.file:
+    path: "{{ certbot_hooks_path }}"
+    state: directory
+    mode: "0755"
+
+- name: create pre-hook script
+  ansible.builtin.template:
+    src: pre-hook.sh.j2
+    dest: "{{ certbot_hooks_path }}/pre-hook.sh"
+    mode: "0755"
+  when: certbot_system_pre_hook_command != ""
+
+- name: create post-hook script
+  ansible.builtin.template:
+    src: post-hook.sh.j2
+    dest: "{{ certbot_hooks_path }}/post-hook.sh"
+    mode: "0755"
+  when: certbot_system_post_hook_command != ""
+
+- name: remove pre-hook script if not needed
+  ansible.builtin.file:
+    path: "{{ certbot_hooks_path }}/pre-hook.sh"
+    state: absent
+  when: certbot_system_pre_hook_command == ""
+
+- name: remove post-hook script if not needed
+  ansible.builtin.file:
+    path: "{{ certbot_hooks_path }}/post-hook.sh"
+    state: absent
+  when: certbot_system_post_hook_command == ""

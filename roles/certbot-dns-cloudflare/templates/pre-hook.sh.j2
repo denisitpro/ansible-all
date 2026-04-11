@@ -1,0 +1,8 @@
+#!/bin/bash
+# Pre-hook script for certbot
+# This script is executed on the host system before certificate operations
+
+set -e
+
+echo "Executing pre-hook command: {{ certbot_system_pre_hook_command }}"
+{{ certbot_system_pre_hook_command }}

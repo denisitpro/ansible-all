@@ -6,8 +6,3 @@
     owner: root
     group: root
     mode: "0644"
-
-# - name: run restart compose
-#  shell: "docker-compose up -d"
-#  args:
-#    chdir: "{{ certbot_compose_path }}"

@@ -14,7 +14,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
     owner: root
     group: 1000
   with_items:
@@ -26,6 +26,6 @@
   ansible.builtin.template:
     src: "cloudflare.ini.j2"
     dest: "{{ certbot_path }}/conf/cloudflare.ini"
-    mode: "0644"
-  tags:
-    - certbot-token
+    mode: "0600"
+    owner: root
+    group: root

@@ -1,0 +1,8 @@
+#!/bin/bash
+# Post-hook script for certbot
+# This script is executed on the host system after certificate operations
+
+set -e
+
+echo "Executing post-hook command: {{ certbot_system_post_hook_command }}"
+{{ certbot_system_post_hook_command }}
