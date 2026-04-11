@@ -1,8 +1,8 @@
 #!/bin/bash
 # Usage:
-# DB_USER= DB_PASS='' ORIGINAL_DB=cointelegraph TABLES_TO_TRUNCATE="new_posts_history,failed_jobs" ./shrink-db.sh
+# DB_USER= DB_PASS='' ORIGINAL_DB=exampledb TABLES_TO_TRUNCATE="new_posts_history,failed_jobs" ./shrink-db.sh
 
-# DB_USER= DB_PASS='' ORIGINAL_DB=cointelegraph_stats TABLES_TO_TRUNCATE="facebook_stat, twitter_stat, linkedin_stat, reddit_stat, gplus_stat" ./shrink-db.sh
+# DB_USER= DB_PASS='' ORIGINAL_DB=exampledb_stats TABLES_TO_TRUNCATE="facebook_stat, twitter_stat, linkedin_stat, reddit_stat, gplus_stat" ./shrink-db.sh
 set -euo pipefail
 
 CONTAINER_NAME="mysql" 
