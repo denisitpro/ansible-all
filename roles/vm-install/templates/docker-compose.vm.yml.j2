@@ -2,13 +2,10 @@
 
 services:
   vm:
-{% if vm_enterprise is defined %}
-    image: victoriametrics/victoria-metrics:{{ vm_image }}-enterprise
-{% else %}
-    image: victoriametrics/victoria-metrics:{{ vm_image }}
-{% endif %}
+    image: victoriametrics/victoria-metrics:{{ vm_image }}{% if vm_enterprise is defined %}-enterprise{% endif %}
+
     container_name: vm
-    hostname: {{ansible_hostname}}
+    hostname: {{ ansible_facts['hostname'] }}
     network_mode: host
     volumes:
       - {{ vm_db_dir }}:{{ vm_db_dir }}:rw
@@ -17,8 +14,8 @@ services:
       - "--storageDataPath={{ vm_db_dir }}"
       - "--enableTCP6"
       - "--httpListenAddr={{ vm_http_listern_addr |default('') }}:8428"
-      - "--retentionPeriod={{vm_metrics_retention}}"
-      - "--dedup.minScrapeInterval=15s"
+      - "--retentionPeriod={{ vm_metrics_retention | default('90d')}}"
+      - "--dedup.minScrapeInterval={{ vm_deup_minScrapeInterval | default('60s') }}"
       - "--search.maxUniqueTimeseries={{vm_search_max_unique_timeseries}}"
       - "--search.maxQueryDuration=30s"
       - "--promscrape.config={{ vm_config_path }}/scrape.yaml"

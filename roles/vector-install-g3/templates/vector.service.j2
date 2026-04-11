@@ -1,0 +1,30 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Vector
+After=network-online.target
+Requires=network-online.target
+StartLimitInterval=0
+
+[Service]
+ExecStartPre={{ vector_binary_path }} validate -C {{ vector_conf_path }} 
+ExecStart={{ vector_binary_path }} -C {{ vector_conf_path }}
+ExecReload={{ vector_binary_path }} validate --no-environment -C {{ vector_conf_path }} 
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec={{ vector_unit_restart_sec | default(15) }}
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+{% if vector_unit_use_environment_file | default(false) %}
+EnvironmentFile=-{{ vector_environment_file }}
+{% endif %}
+{% if (vector_unit_start_limit_interval | default(none)) is not none %}
+StartLimitInterval={{ vector_unit_start_limit_interval }}
+{% endif %}
+{% if (vector_unit_start_limit_burst | default(none)) is not none %}
+StartLimitBurst={{ vector_unit_start_limit_burst }}
+{% endif %}
+StandardOutput=append:{{ vector_log_path }}/vector.log
+StandardError=append:{{ vector_log_path }}/vector.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,51 @@
+---
+- name: Create vector base path
+  ansible.builtin.file:
+    path: "{{ vector_base_path }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+
+- name: Create vector folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+  with_items:
+    - "{{ vector_conf_path }}"
+    - "{{ vector_data_path }}"
+
+- name: Create vector unit folders
+  when: vector_install_unit
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+  with_items:
+    - "{{ vector_log_path }}"
+
+- name: Create vector docker folders
+  when: vector_install_docker
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+  with_items:
+    - "{{ vector_compose_path }}"
+
+- name: Create mtls cert path
+  when: vector_mtls_enabled | default(false)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  with_items:
+    - "/opt/mtls"
+    - "{{ vector_mtls_cert_path }}"

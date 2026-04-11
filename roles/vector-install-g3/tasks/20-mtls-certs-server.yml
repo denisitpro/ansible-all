@@ -1,0 +1,33 @@
+---
+- name: Save CA certificate from vector
+  ansible.builtin.copy:
+    dest: "{{ vector_mtls_cert_path }}/ca.pem"
+    content: "{{ vector_mtls_ca_cert }}"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+    mode: '0644'
+  notify:
+    - restart-unit vector
+    - recreate-docker vector
+
+- name: Save server certificate from vector
+  ansible.builtin.copy:
+    dest: "{{ vector_mtls_cert_path }}/cert.pem"
+    content: "{{ vector_mtls_server_cert }}"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+    mode: '0644'
+  notify:
+    - restart-unit vector
+    - recreate-docker vector
+
+- name: Save server private key from vector
+  ansible.builtin.copy:
+    dest: "{{ vector_mtls_cert_path }}/key.pem"
+    content: "{{ vector_mtls_server_key }}"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+    mode: '0644'
+  notify:
+    - restart-unit vector
+    - recreate-docker vector

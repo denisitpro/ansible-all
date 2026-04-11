@@ -1,14 +1,38 @@
----
-- ansible.builtin.import_tasks: 10-prefly.yml
-  delegate_to: localhost
-  run_once: true
-  become: false
-  connection: local
-  tags: ['always', 'vault']
+# ---
+# - ansible.builtin.import_tasks: 10-prefly.yml
+#   delegate_to: localhost
+#   run_once: true
+#   become: false
+#   connection: local
+#   tags: ['always', 'vault']
 
-- ansible.builtin.import_tasks: 15-get-secrets-g2-curl.yml
-  delegate_to: localhost
+# - ansible.builtin.import_tasks: 12-check.yml
+#   delegate_to: localhost
+#   run_once: true
+#   become: false
+#   connection: local
+#   tags: ['always', 'vault']
+
+# - ansible.builtin.import_tasks: 15-get-secrets-g2-curl.yml
+#   delegate_to: localhost
+#   run_once: true
+#   connection: local
+#   become: false
+#   tags: ['always', 'vault']
+---
+- name: Vault secrets import block
   run_once: true
+  delegate_to: localhost
   connection: local
   become: false
-  tags: ['always', 'vault']
+  vars:
+    ansible_skip_facts: true
+  block:
+    - ansible.builtin.import_tasks: 10-prefly.yml
+      tags: ['always', 'vault']
+
+    - ansible.builtin.import_tasks: 12-check.yml
+      tags: ['always', 'vault', 'vault-check']
+
+    - ansible.builtin.import_tasks: 15-get-secrets-g2-curl.yml
+      tags: ['always', 'vault']

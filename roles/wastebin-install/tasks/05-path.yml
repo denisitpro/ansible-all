@@ -1,0 +1,22 @@
+---
+- name: create docker folders docker
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ wastebin_compose_path }}"
+
+- name: create docker folders for wastebin
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ wastebin_uid }}"
+    group: "{{ wastebin_gid }}"
+  with_items:
+    - "{{ wastebin_base_path }}"
+    - "{{ wastebin_data_path }}"

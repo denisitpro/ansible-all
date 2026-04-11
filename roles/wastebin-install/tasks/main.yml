@@ -1,0 +1,19 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - wastebin
+    - wastebin-prefly
+
+- ansible.builtin.import_tasks: 25-keys.yml
+  tags:
+    - wastebin
+    - wastebin-keys
+    - wastebin-compose
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - wastebin
+    - wastebin-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'wastebin-clean']

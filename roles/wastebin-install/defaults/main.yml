@@ -1,0 +1,29 @@
+---
+wastebin_image: "quxfoo/wastebin"
+wastebin_version: "3.3.0"
+
+wastebin_uid: 10001
+wastebin_gid: 10001
+
+wastebin_base_path: "/opt/wastebin"
+wastebin_data_path: "{{ wastebin_base_path }}/data"
+wastebin_compose_path: "/opt/docker/wastebin"
+
+# Network settings
+# wastebin_bind_address: "127.0.0.1"
+# wastebin_port: "8088"
+# wastebin_address_port: "{{ wastebin_bind_address }}:{{ wastebin_port }}"
+
+# Database settings
+# wastebin_database_path: "/data/state.db"
+
+# Optional: Additional environment variables
+# wastebin_base_url: ""
+# wastebin_cache_size: 128
+# wastebin_http_timeout: 5
+# wastebin_max_body_size: 1048576
+# wastebin_password_salt: "somesalt"
+# wastebin_signing_key: ""
+# wastebin_theme: "ayu"
+# wastebin_title: "wastebin"
+# wastebin_paste_expirations: ""

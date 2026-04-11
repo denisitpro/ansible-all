@@ -1,0 +1,40 @@
+---
+vector_version_global: "0.52.0"
+
+vector_install_unit: false
+vector_version_binary: "{{ vector_version_global }}"
+vector_download_url: "https://github.com/vectordotdev/vector/releases/download/v{{ vector_version_binary }}/vector-{{ vector_version_binary }}-{{ vector_go_arch }}-unknown-linux-gnu.tar.gz"
+
+vector_go_arch: "{{ vector_go_arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
+vector_go_arch_map:
+  i386: "386"
+  x86_64: "x86_64"
+  aarch64: "aarch64"
+  armv7l: "armv7"
+  armv6l: "armv6"
+
+vector_binary_path: "/usr/local/bin/vector"
+vector_log_path: "/var/log/vector"
+vector_environment_file: "/etc/default/vector"
+vector_unit_use_environment_file: false
+
+# Docker installation settings
+vector_install_docker: false
+vector_version_docker: "{{ vector_version_global }}"
+vector_compose_path: "/opt/docker/vector"
+vector_compose_environment_file: "{{ vector_compose_path }}/.env"
+
+# Common settings
+vector_base_path: "/opt/vector"
+vector_data_path: "{{ vector_base_path }}/data"
+vector_conf_path: "{{ vector_base_path }}/conf"
+vector_uid: root
+vector_gid: root
+
+# mTLS section
+vector_mtls_cert_path: "/opt/mtls/base100"
+vector_mtls_ca_cert: "{{ vault_dict_users_secret_g2.mtls_base100.mtls_ca | default('') }}"
+vector_mtls_server_cert: "{{ vault_dict_users_secret_g2.mtls_base100.mtls_cert | default('') }}"
+vector_mtls_server_key: "{{ vault_dict_users_secret_g2.mtls_base100.mtls_key | default('') }}"
+
+# See README.md for configuration examples

@@ -1,0 +1,11 @@
+---
+- name: stop wastebin docker compose project
+  community.docker.docker_compose_v2:
+    project_src: "{{ wastebin_compose_path }}"
+    state: absent
+  ignore_errors: true # noqa: ignore-errors
+
+- name: remove wastebin data directory
+  ansible.builtin.file:
+    path: "{{ wastebin_base_path }}"
+    state: absent

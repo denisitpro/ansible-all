@@ -1,0 +1,23 @@
+## {{ ansible_managed }} ##
+
+services:
+  wastebin:
+    image: {{ wastebin_image }}:{{ wastebin_version }}
+    container_name: wastebin
+    restart: {{ wastebin_restart | default('always') }}
+    network_mode: host
+    volumes:
+      - {{ wastebin_data_path }}:/data
+    environment:
+      WASTEBIN_BASE_URL: {{ wastebin_base_url | default('https://wastebin.example.com') }}
+      WASTEBIN_DATABASE_PATH: {{ wastebin_database_path | default('/data/state.db') }}
+      WASTEBIN_ADDRESS_PORT: {{ wastebin_address_port | default('127.0.0.1:8088') }}
+      WASTEBIN_PASSWORD_SALT: {{ wastebin_password_salt | default('changeme-wastebin-password-salt-32chars') }}
+      WASTEBIN_HTTP_TIMEOUT: {{ wastebin_http_timeout | default('2') }}
+      WASTEBIN_MAX_BODY_SIZE: {{ wastebin_max_body_size | default('10485760') }} # 10MB
+      WASTEBIN_SIGNING_KEY: {{ wastebin_signing_key | default('changeme-wastebin-signing-key-64bytes-min-128chars') }}
+      WASTEBIN_THEME: {{ wastebin_theme | default('catppuccin') }}
+      RUST_LOG: {{ wastebin_rust_log | default('info') }}
+#      WASTEBIN_TITLE: {{ wastebin_title | default('wastebin') }}
+#      WASTEBIN_PASTE_EXPIRATIONS: {{ wastebin_paste_expirations | default('1d') }}
+

@@ -1,0 +1,7 @@
+---
+- name: copy compose file - wastebin
+  ansible.builtin.template:
+    src: "docker-compose.wastebin.yml.j2"
+    dest: "{{ wastebin_compose_path }}/docker-compose.yml"
+    mode: "0640"
+  notify: recreate-docker wastebin
