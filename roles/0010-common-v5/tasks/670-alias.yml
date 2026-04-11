@@ -1,0 +1,10 @@
+---
+- name: Add alias 'jctl' for journalctl no-pager by user command
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    regexp: '^alias jctl='
+    line: "alias jctl='journalctl --no-pager -xeu'"
+    mode: "0644"
+    state: present
+    create: true
+    backup: true

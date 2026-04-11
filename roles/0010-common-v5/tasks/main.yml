@@ -29,14 +29,14 @@
     - update-os
 
 - ansible.builtin.import_tasks: 80-install-base-packages.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags:
     - base
     - common-base
     - base-packages
 
 - ansible.builtin.import_tasks: 85-disable-unattended-upgrades.yml
-  when: ansible_distribution == 'Ubuntu' and disable_unattended_upgrades is defined and disable_unattended_upgrades
+  when: ansible_facts['distribution'] == 'Ubuntu' and disable_unattended_upgrades is defined and disable_unattended_upgrades
   tags:
     - base
     - common-base
@@ -105,6 +105,11 @@
     - base
     - common-base
     - swap
+
+#- ansible.builtin.import_tasks: 670-alias.yml
+#  tags:
+#    - base
+#    - common-base
 
 - ansible.builtin.import_tasks: 900-reboot.yml
   tags: ["never", "reboot"]

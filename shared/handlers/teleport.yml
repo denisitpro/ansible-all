@@ -7,7 +7,7 @@
 - name: reload-unit teleport
   ansible.builtin.systemd_service:
     name: teleport
-    state: reloaded
+    state: restarted
 
 - name: restart-docker teleport
   community.docker.docker_compose_v2:

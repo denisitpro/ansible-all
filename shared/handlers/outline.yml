@@ -1,0 +1,7 @@
+---
+- name: recreate-docker outline
+  community.docker.docker_compose_v2:
+    project_src: "{{ outline_compose_path }}"
+    state: present
+    recreate: always
+    pull: always

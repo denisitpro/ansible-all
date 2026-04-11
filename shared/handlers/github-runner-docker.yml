@@ -1,7 +1,8 @@
 ---
-- name: recreate-docker gitlab
+- name: recreate-docker github-runner
   community.docker.docker_compose_v2:
-    project_src: "{{ gitlab_docker_compose_path }}"
+    project_src: "{{ github_runner_compose_path }}"
     state: present
     recreate: always
     pull: always
+

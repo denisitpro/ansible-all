@@ -6,6 +6,14 @@
     recreate: always
     pull: always
 
+- name: recreate-docker dkron-exporter
+  community.docker.docker_compose_v2:
+    project_src: "{{ dkron_exporter_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+  when: dkron_exporter_enabled | default(false)
+
 - name: restart-docker dkron
   community.docker.docker_compose_v2:
     project_src: "{{ dkron_compose_path }}"

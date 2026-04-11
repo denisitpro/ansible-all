@@ -1,0 +1,29 @@
+---
+# Main task file for k8s-hosts-by-tags role
+# Processes each tag configuration to create host lists with resolved IPs
+
+- name: Debug k8s_hosts_tag_configs variable
+  ansible.builtin.debug:
+    msg: "k8s_hosts_tag_configs is defined: {{ k8s_hosts_tag_configs is defined }}, length: {{ k8s_hosts_tag_configs | default([]) | length }}"
+  run_once: true
+  tags:
+    - ufw
+    - k8s-hosts-by-tags
+
+- name: Debug k8s_hosts_tag_configs content
+  ansible.builtin.debug:
+    var: k8s_hosts_tag_configs
+  run_once: true
+  tags:
+    - ufw
+    - k8s-hosts-by-tags
+
+- name: Process each tag configuration
+  ansible.builtin.include_tasks: 10-filter-hosts.yml
+  loop: "{{ k8s_hosts_tag_configs }}"
+  loop_control:
+    loop_var: tag_config
+  when: k8s_hosts_tag_configs | length > 0
+  tags:
+    - always
+    - k8s-hosts-by-tags

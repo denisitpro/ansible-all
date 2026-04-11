@@ -14,7 +14,7 @@
   ansible.builtin.file:
     path: "{{ angie_mtls_path }}/{{ item.name }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
     owner: "{{ angie_uid }}"
     group: "{{ angie_gid }}"
   with_items: "{{ vault_sum_g2 | selectattr('secret_type', 'defined') | selectattr('secret_type', 'equalto', 'angie_mtls') | list }}"
@@ -42,7 +42,26 @@
 
 - name: Save mtls issuing CA to file
   ansible.builtin.copy:
-    content: "{{ vault_dict_users_secret_g2[item.name].ca_root_cert }}"
+    content: "{{ vault_dict_users_secret_g2[item.name][angie_mtls_ca_root_cert_name | default('ca_root_cert')] }}"
     dest: "{{ angie_mtls_path }}/{{ item.name }}/ca.crt"
-    mode: '0644'
+    mode: "0644"
   with_items: "{{ vault_sum_g2 | selectattr('secret_type', 'defined') | selectattr('secret_type', 'equalto', 'angie_mtls') | list }}"
+
+### Comment if failing due to missing keys
+### Used in elk-g2-c1-infra for angie mtls certs
+- name: Save mtls issuing client cert to file
+  when: item['keys'] | length > 2
+  ansible.builtin.copy:
+    content: "{{ vault_dict_users_secret_g2[item.name][angie_mtls_cert_name | default('cert')] }}"
+    dest: "{{ angie_mtls_path }}/{{ item.name }}/cert.pem"
+    mode: "0644"
+  with_items: "{{ vault_sum_g2 | selectattr('secret_type', 'defined') | selectattr('secret_type', 'equalto', 'angie_mtls') | list }}"
+
+- name: Save mtls issuing client key to file
+  when: item['keys'] | length > 2
+  ansible.builtin.copy:
+    content: "{{ vault_dict_users_secret_g2[item.name][angie_mtls_key_name | default('key')] }}"
+    dest: "{{ angie_mtls_path }}/{{ item.name }}/key.pem"
+    mode: "0644"
+  with_items: "{{ vault_sum_g2 | selectattr('secret_type', 'defined') | selectattr('secret_type', 'equalto', 'angie_mtls') | list }}"
+### End comment if failing due to missing keys

@@ -1,0 +1,7 @@
+{{ ansible_managed | comment }}
+
+{% for entry in item.acl_list_generated %}
+allow {{ entry.ip }}; # {{ entry.comment | default('not set') }}
+{% endfor %}
+
+deny all;
