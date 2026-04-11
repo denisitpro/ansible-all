@@ -8,7 +8,7 @@
     - teleport-debug
 
 - ansible.builtin.import_tasks: 10-install.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags:
     - teleport
     - teleport-update

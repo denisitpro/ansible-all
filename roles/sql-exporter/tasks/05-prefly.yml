@@ -1,0 +1,23 @@
+---
+- name: Create sql-exporter group
+  group:
+    name: "{{ sql_exporter_group }}"
+    state: present
+    system: yes
+
+- name: Create sql-exporter user
+  user:
+    name: "{{ sql_exporter_user }}"
+    group: "{{ sql_exporter_group }}"
+    system: yes
+    shell: "/usr/sbin/nologin"
+    create_home: no
+
+- name: Create configuration directory
+  file:
+    path: "{{ sql_exporter_config_dir }}"
+    state: directory
+    owner: "{{ sql_exporter_user }}"
+    group: "{{ sql_exporter_group }}"
+    mode: '0755'
+

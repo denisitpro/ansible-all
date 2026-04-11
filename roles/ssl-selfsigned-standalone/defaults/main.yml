@@ -20,3 +20,8 @@ ssl_cert_not_after: "+3650d"  # 10 years
 ssl_cert_not_before: "-1d"
 ssl_privkey_type: "ECC"
 ssl_curve: secp256r1
+
+# Key type selector: "ecc" (default) or "rsa"
+ssl_selfsign_type: "ecc"
+# RSA key size, used only when ssl_selfsign_type == "rsa"
+ssl_privkey_size: 4096

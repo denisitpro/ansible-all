@@ -1,0 +1,41 @@
+---
+# --- Setup: подключение MySQL к Teleport ---
+- ansible.builtin.import_tasks: 05-install-teleport.yml
+  when: ansible_facts['distribution'] == 'Ubuntu'
+  tags:
+    - teleport-db
+    - teleport-db-install
+
+- ansible.builtin.import_tasks: 10-fetch-ca.yml
+  tags:
+    - teleport-db
+    - teleport-db-ssl
+
+- ansible.builtin.import_tasks: 15-ca-bundle.yml
+  tags:
+    - teleport-db
+    - teleport-db-ssl
+
+- ansible.builtin.import_tasks: 20-mysql-ssl-config.yml
+  tags:
+    - teleport-db
+    - teleport-db-ssl
+
+- ansible.builtin.import_tasks: 25-restart-mysql.yml
+  tags:
+    - teleport-db
+    - teleport-db-ssl
+
+- ansible.builtin.import_tasks: 30-create-admin-user.yml
+  tags:
+    - teleport-db
+    - teleport-db-user
+
+- ansible.builtin.import_tasks: 35-teleport-config.yml
+  tags:
+    - teleport-db
+    - teleport-db-config
+
+# --- Remove: отключение MySQL от Teleport ---
+- ansible.builtin.import_tasks: 90-remove.yml
+  tags: ['never', 'teleport-db-remove']

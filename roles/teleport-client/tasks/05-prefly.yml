@@ -1,4 +1,4 @@
 ---
 - name: debug info
   ansible.builtin.debug:
-    msg: "{{ ansible_distribution }} - {{ ansible_distribution_release }}"
+    msg: "{{ ansible_facts['distribution'] }} - {{ ansible_facts['distribution_release'] }}"

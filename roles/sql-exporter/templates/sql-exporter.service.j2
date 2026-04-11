@@ -1,0 +1,19 @@
+[Unit]
+Description=SQL Exporter
+Documentation=https://github.com/burningalchemist/sql_exporter
+After=network.target
+
+[Service]
+User={{ sql_exporter_user }}
+Group={{ sql_exporter_group }}
+Type=simple
+ExecStart={{ sql_exporter_binary_install_dir }}/sql_exporter \
+    -config.file={{ sql_exporter_config_file }} \
+    -web.listen-address={{ sql_exporter_web_listen_address }}
+
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+

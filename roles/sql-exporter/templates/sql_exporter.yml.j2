@@ -1,0 +1,37 @@
+global:
+  scrape_timeout_offset: {{ sql_exporter_scrape_timeout_offset }}
+  scrape_timeout: {{ sql_exporter_scrape_timeout }}
+
+target:
+  data_source_name: "{{ sql_exporter_target_dsn }}"
+  collectors: [sql_exporter_metrics]
+
+collectors:
+  - collector_name: sql_exporter_metrics
+    metrics:
+      - metric_name: mysql_slow_queries_total_latency
+        type: gauge
+        help: "Total latency of slow queries"
+        values: [ "total_latency" ]
+        key_labels: [ "query" ]
+        query: |
+          SELECT 
+            ROUND(SUM_TIMER_WAIT/1000000000000,2) AS total_latency,
+            DIGEST_TEXT AS query
+          FROM events_statements_summary_by_digest
+          ORDER BY SUM_TIMER_WAIT DESC
+          LIMIT 10;
+
+      - metric_name: mysql_slow_queries_exec_count
+        type: gauge
+        help: "Execution count of slow queries"
+        values: [ "exec_count" ]
+        key_labels: [ "query" ]
+        query: |
+          SELECT 
+            COUNT_STAR AS exec_count,
+            DIGEST_TEXT AS query
+          FROM events_statements_summary_by_digest
+          ORDER BY SUM_TIMER_WAIT DESC
+          LIMIT 10;
+
