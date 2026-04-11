@@ -43,6 +43,12 @@ blackbox_config:
         basic_auth:
           username: "{{ blackbox_http_200_auth_login | default('set_me_login') }}"
           password: "{{ blackbox_http_200_auth_pass | default('set_me_pass') }}"
+    http_301_module:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [301]
+        method: GET
     http_403_module:
       prober: http
       timeout: 5s
@@ -66,3 +72,33 @@ blackbox_config:
         basic_auth:
           username: "{{ blackbox_http_404_auth_login | default('set_me_login') }}"
           password: "{{ blackbox_http_404_auth_pass | default('set_me_pass') }}"
+    http_401_module:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [401]
+        method: GET
+    http_406_module:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [406]
+        method: GET
+    # robots.txt: expect 200 and body must look like robots.txt (contains User-agent)
+    http_robots_txt:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [200]
+        method: GET
+        fail_if_body_not_matches_regexp:
+          - '(?i)User-agent'
+    # robots.txt: fail if body contains "Disallow: /*" (non-standard; use for zoa)
+    http_robots_txt_standard_syntax:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: [200]
+        method: GET
+        fail_if_body_matches_regexp:
+          - 'Disallow:\s*/\*'
