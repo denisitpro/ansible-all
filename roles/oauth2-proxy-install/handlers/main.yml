@@ -1,0 +1,2 @@
+---
+- ansible.builtin.import_tasks: shared/handlers/oauth2-proxy.yml

@@ -1,0 +1,6 @@
+---
+- name: Restart redis
+  ansible.builtin.shell:
+    cmd: "docker compose down; docker compose up -d"
+  args:
+    chdir: "{{ redis_compose_path }}"

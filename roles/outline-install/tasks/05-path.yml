@@ -1,0 +1,23 @@
+---
+- name: create docker folders docekr
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ outline_compose_path }}"
+
+
+- name: create docker folders for outline
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ outline_uid }}"
+    group: "{{ outline_gid }}"
+  with_items:
+    - "{{ outline_base_path }}"
+    - "{{ outline_storage_path }}"

@@ -1,0 +1,7 @@
+---
+- name: Check if container exists
+  ansible.builtin.command: docker compose -f "{{ oauth2_proxy_compose_path }}/docker-compose.yml" ps -q
+  register: oauth2_proxy_container_exists
+  changed_when: false
+  failed_when: false
+

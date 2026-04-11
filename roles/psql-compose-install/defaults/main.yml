@@ -1,5 +1,5 @@
 ---
-psql_version: 17.6-alpine3.22
+psql_version: 18.1-alpine3.23
 psql_image: "postgres"
 
 psql_compose_path: "/opt/docker/psql"
@@ -11,21 +11,35 @@ psql_base_path: "/opt/psql"
 psql_node_data_path: "{{ psql_base_path }}/db"
 psql_node_data_conf: "{{ psql_base_path }}/conf"
 psql_node_data_ssl: "{{ psql_base_path }}/ssl"
+
+###
+# Important Change: the PGDATA environment variable of the image was changed to be version specific in PostgreSQL 18 and above. For 18 it is /var/lib/postgresql/18/docker. Later versions will replace 18 with their respective major version (e.g., /var/lib/postgresql/19/docker for PostgreSQL 19.x). The defined VOLUME was changed in 18 and above to /var/lib/postgresql. Mounts and volumes should be targeted at the updated location. This will allow users upgrading between PostgreSQL major releases to use the faster --link when running pg_upgrade and mounting /var/lib/postgresql.
+
+# Example update for PostgreSQL 18 and above:
+# psql_main_version: 18
+# psql_version: 18.1-alpine3.23
+# psql_node_data_path: "{{ psql_base_path }}/db/{{ psql_main_version }}"
+# psql_docker_data_path: "/var/lib/postgresql/{{ psql_main_version }}/docker"
+
 psql_docker_data_path: "/var/lib/postgresql/data"
+###
+
 psql_docker_conf_dir: "/etc/postgresql"
 
-postgres_tls: false
+psql_tls: false
+psql_domain: "selfsigned"
 psql_docker_ssl_dir: "{{ psql_docker_conf_dir }}/ssl"
 
-postgres_cert: "{{ psql_docker_conf_dir }}/ssl/fullchain.pem"
-postgres_privkey: "{{ psql_docker_conf_dir }}/ssl/privkey.pem"
+psql_cert: "{{ psql_docker_conf_dir }}/ssl/fullchain.pem"
+psql_privkey: "{{ psql_docker_conf_dir }}/ssl/privkey.pem"
 
-postgres_node_cert: "{{ psql_node_data_ssl }}/fullchain.pem"
-postgres_node_privkey: "{{ psql_node_data_ssl }}/privkey.pem"
+psql_node_cert: "{{ psql_node_data_ssl }}/fullchain.pem"
+psql_node_privkey: "{{ psql_node_data_ssl }}/privkey.pem"
 psql_backup_dir: "/mnt/pgbackup"
 
 bkp_user: "root"
 
+# For alpine images, the postgres user and group have UID and GID of 70
 psql_docker_user_uid: 999
 psql_docker_user_gid: 999
 
@@ -39,13 +53,22 @@ psql_docker_container_name: "psql"
 
 ### replication section
 # psql_replication: true # use host env only deploy cluster
-wal_level: "replica"
-max_wal_senders: 5
-max_replication_slots: 10
-hot_standby: "on"
-hot_standby_feedback: "on"
-replication_net: "10.120.5.0/16"
-postgres_init_path: "{{ psql_node_data_path }}/PG_VERSION"
-pg_replica_slot_name: "pgreplica_2"
+psql_create_replica: false
+psql_master_node: "psql-master"
+psql_replica_nodes:
+  - "psql-replica1"
+  - "psql-replica2"
 
-consul_postgres_token: "{{ vault_dict_users_secret[\"consul_\" + postgres_consul_service_name | default('postgres') + \"_token\"] }}"
+psql_wal_level: "replica"
+psql_max_wal_senders: 5
+psql_max_replication_slots: 10
+psql_hot_standby: "on"
+psql_hot_standby_feedback: "on"
+psql_replication_net: "10.120.5.0/16"
+psql_init_path: "{{ psql_node_data_path }}/PG_VERSION"
+psql_replica_slot_name: "pgreplica_2"
+
+consul_postgres_token: '{{ vault_dict_users_secret["consul_" + psql_consul_service_name | default(''postgres'') + "_token"] }}'
+
+# Insecure settings for testing only
+psql_hba_acl_allow_all: true

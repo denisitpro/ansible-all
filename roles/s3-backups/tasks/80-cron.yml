@@ -1,0 +1,52 @@
+---
+- name: Setup weekly backup cron job
+  ansible.builtin.cron:
+    name: "Weekly S3 backup to Wasabi"
+    minute: "{{ weekly_backup_cron_minute }}"
+    hour: "{{ weekly_backup_cron_hour }}"
+    day: "{{ weekly_backup_cron_day }}"
+    month: "{{ weekly_backup_cron_month }}"
+    weekday: "{{ weekly_backup_cron_weekday }}"
+    job: "bash /opt/scripts/weekly-backup.sh"
+    user: root
+    state: "{{ 'present' if weekly_backup_cron_enabled | default(false) else 'absent' }}"
+  when: weekly_backup_enabled | default(false)
+
+- name: Setup video archive backup cron job
+  ansible.builtin.cron:
+    name: "Video archive backup Dropbox to B2"
+    minute: "{{ video_archive_backup_cron_minute }}"
+    hour: "{{ video_archive_backup_cron_hour }}"
+    day: "{{ video_archive_backup_cron_day }}"
+    month: "{{ video_archive_backup_cron_month }}"
+    weekday: "{{ video_archive_backup_cron_weekday }}"
+    job: "bash /opt/scripts/video-archive-backup.sh"
+    user: root
+    state: "{{ 'present' if video_archive_backup_cron_enabled | default(false) else 'absent' }}"
+  when: video_archive_backup_enabled | default(false)
+
+- name: Setup monthly backup cron job
+  ansible.builtin.cron:
+    name: "Monthly S3 backup to AWS Glacier Deep Archive"
+    minute: "{{ monthly_backup_cron_minute }}"
+    hour: "{{ monthly_backup_cron_hour }}"
+    day: "{{ monthly_backup_cron_day }}"
+    month: "{{ monthly_backup_cron_month }}"
+    weekday: "{{ monthly_backup_cron_weekday }}"
+    job: "bash /opt/scripts/monthly-backup.sh"
+    user: root
+    state: "{{ 'present' if monthly_backup_cron_enabled | default(false) else 'absent' }}"
+  when: monthly_backup_enabled | default(false)
+
+- name: Setup state backup cron job
+  ansible.builtin.cron:
+    name: "AWS S3 State backup to Wasabi"
+    minute: "{{ state_backup_cron_minute }}"
+    hour: "{{ state_backup_cron_hour }}"
+    day: "{{ state_backup_cron_day }}"
+    month: "{{ state_backup_cron_month }}"
+    weekday: "{{ state_backup_cron_weekday }}"
+    job: "bash /opt/scripts/state-backup.sh"
+    user: root
+    state: "{{ 'present' if state_backup_cron_enabled | default(false) else 'absent' }}"
+  when: state_backup_enabled | default(false)

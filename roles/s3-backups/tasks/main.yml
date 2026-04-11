@@ -1,0 +1,34 @@
+---
+- ansible.builtin.import_tasks: 05-script.yml
+  when: weekly_backup_enabled | default(false)
+  tags:
+    - backup
+    - s3-backups
+
+- ansible.builtin.import_tasks: 06-video-archive-script.yml
+  when: video_archive_backup_enabled | default(false)
+  tags:
+    - backup
+    - s3-backups
+    - video-archive-backup
+
+- ansible.builtin.import_tasks: 07-monthly-script.yml
+  when: monthly_backup_enabled | default(false)
+  tags:
+    - backup
+    - s3-backups
+    - monthly-backup
+
+- ansible.builtin.import_tasks: 10-state-backup.yml
+  when: state_backup_enabled | default(false)
+  tags:
+    - backup
+    - s3-backups
+    - state-backup
+
+- ansible.builtin.import_tasks: 80-cron.yml
+  tags:
+    - backup
+    - s3-backups
+    - cron-weekly-backup
+    - cron-s3-backups

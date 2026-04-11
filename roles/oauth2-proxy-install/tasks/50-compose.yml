@@ -1,0 +1,7 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.oauth2-proxy.yml.j2"
+    dest: "{{ oauth2_proxy_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker oauth2-proxy

@@ -1,5 +1,5 @@
 services {
-  name = "{{ postgres_consul_service_name | default('postgres') }}",
+  name = "{{ psql_consul_service_name | default('postgres') }}",
   port = {{ psql_port | default('5432') }},
   tags = ["postgres", "{{ stand_type }}"],
   address = "{{ psql_bind_addr }}"
@@ -15,7 +15,7 @@ services {
   }
 }
 
-{% if postgres_tls %}
+{% if psql_tls %}
 services {
   name = "{{ postgrestls_consul_service_name | default('postgrestls') }}",
   port = {{ psql_tls_port | default('5432') }},

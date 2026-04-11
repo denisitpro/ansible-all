@@ -13,14 +13,14 @@ rage_arch_map:
   armv6l: "armv6"
 
 # Resolved architecture for download URL
-rage_arch: "{{ rage_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+rage_arch: "{{ rage_arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
 
 # OS mapping
 rage_os_map:
   Linux: "linux"
   Darwin: "darwin"
 
-rage_os: "{{ rage_os_map[ansible_system] | default('linux') }}"
+rage_os: "{{ rage_os_map[ansible_facts['system']] | default('linux') }}"
 
 # Download filename and URL
 rage_filename: "rage-{{ rage_version }}-{{ rage_arch }}-{{ rage_os }}"

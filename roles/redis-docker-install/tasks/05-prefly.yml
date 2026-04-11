@@ -1,0 +1,24 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ redis_compose_path }}"
+
+
+- name: Create folder redis-data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ redis_user_uid }}"
+    group: "{{ redis_user_gid }}"
+  with_items:
+    - "{{ redis_base_path }}"
+    - "{{ redis_data_path }}"
+    - "{{ redis_conf_path }}"

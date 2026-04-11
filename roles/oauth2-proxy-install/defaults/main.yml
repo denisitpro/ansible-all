@@ -1,0 +1,17 @@
+---
+oauth2_proxy_image: "v7.13.0-alpine"
+oauth2_proxy_compose_path: "/opt/docker/oauth2-proxy"
+
+# # Need to manually update Client ID for Web application in Google Cloud Console
+# oauth2_proxy_list:
+#   - name: example-app
+#     provider: "google"
+#     client_id: "your-client-id.apps.googleusercontent.com"
+#     client_secret: "your-client-secret"
+#     email_domains:
+#       - "example.com"
+#     cookie_domain: "example-app.example.com"
+#     upstreams:
+#       - "https://app.example.com"
+#     redirect_url: "https://example-app.example.com/oauth2/callback"
+#     http_address: ":8080"

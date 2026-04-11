@@ -9,5 +9,3 @@
   with_items:
     - postgresql.conf
     - pg_hba.conf
-  tags:
-    - psql-config
