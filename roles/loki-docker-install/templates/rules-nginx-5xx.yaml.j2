@@ -1,0 +1,23 @@
+groups:
+- name: nginx-5xx
+  rules:
+  - alert: NginxHigh500Rate
+    expr: |
+      sum by ({{ loki_nginx_alert_group_by | default('app') }}) (
+        count_over_time(
+          {{ loki_nginx_alert_selector | default('{app!=""}') }}
+          {{ loki_nginx_alert_filter | default(
+              '|~ "\\\"container_name\\\":\\\"' ~ (loki_nginx_alert_container_name_regex | default('(nginx|angie)')) ~ '\\\""'
+              ~ ' |= " ' ~ (loki_nginx_alert_http_code | default("500")) ~ ' "'
+          ) }}
+          [{{ loki_nginx_alert_window | default('5m') }}]
+        )
+      ) > {{ loki_nginx_alert_threshold | default(50) }}
+    for: {{ loki_nginx_alert_for | default('2m') }}
+    labels:
+      severity: warning
+      instance: "{{ '{{' }} $labels.hostname {{ '}}' }}"
+    annotations:
+      summary: "High rate of HTTP {{ loki_nginx_alert_http_code | default('500') }} from nginx"
+      description: "More than {{ loki_nginx_alert_threshold | default(50) }} HTTP {{ loki_nginx_alert_http_code | default('500') }} responses in {{ loki_nginx_alert_window | default('5m') }}"
+

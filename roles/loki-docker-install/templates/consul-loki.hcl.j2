@@ -1,0 +1,20 @@
+service {
+  name = "{{ loki_consul_service_name | default('loki') }}"
+  port = {{ loki_http_port | default(3100) }}
+  # With ACLs enabled (default_policy=deny), explicit token is needed to register service.
+  token = "{{ consul_loki_token }}"
+  tags = [
+    "loki",
+    "metrics",
+    "prometheus"
+  ]
+  check {
+    id       = "loki-http-check"
+    name     = "Loki HTTP Check"
+    http     = "http://127.0.0.1:{{ loki_http_port | default(3100) }}/metrics"
+    interval = "10s"
+    timeout  = "1s"
+  }
+}
+
+

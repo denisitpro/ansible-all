@@ -5,6 +5,14 @@
 skip-host-cache
 skip-name-resolve
 
+{% set _slow_log_enabled = mysql_slow_query_log_enabled | default(true) %}
+{% if _slow_log_enabled %}
+slow_query_log                 = 1
+slow_query_log_file            = {{ mysql_slow_query_log_file | default('/var/log/mysql/mysql-slow.log') }}
+long_query_time                = {{ mysql_long_query_time | default(1) }}
+log_output                     = {{ mysql_log_output | default('FILE') }}
+{% endif %}
+
 # SAFETY #
 max-allowed-packet             = 1024M
 max-connect-errors             = 1000000
@@ -59,3 +67,10 @@ performance_schema             = ON
 performance-schema-instrument  ='statement/%=ON'
 performance-schema-consumer-statements-digest = ON
 innodb_monitor_enable          = all
+
+{% if mysql_ssl_enabled | default(false) %}
+# SSL
+ssl-ca=/etc/mysql/ssl/ca.pem
+ssl-cert=/etc/mysql/ssl/server-cert.pem
+ssl-key=/etc/mysql/ssl/server-key.pem
+{% endif %}

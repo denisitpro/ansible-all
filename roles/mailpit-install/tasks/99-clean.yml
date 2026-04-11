@@ -1,0 +1,14 @@
+---
+- name: stop and remove docker containers
+  community.docker.docker_compose_v2:
+    project_src: "{{ mailpit_compose_path }}"
+    state: absent
+    remove_orphans: true
+
+- name: remove mailpit directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ mailpit_compose_path }}"
+    - "{{ mailpit_base_path }}"

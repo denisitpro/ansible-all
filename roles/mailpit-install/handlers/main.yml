@@ -1,0 +1,19 @@
+---
+- name: restart-docker mailpit
+  community.docker.docker_compose_v2:
+    project_src: "{{ mailpit_compose_path }}"
+    state: restarted
+  listen: "restart-docker mailpit"
+
+- name: reload-docker mailpit
+  community.docker.docker_compose_v2:
+    project_src: "{{ mailpit_compose_path }}"
+    state: present
+  listen: "reload-docker mailpit"
+
+- name: recreate-docker mailpit
+  community.docker.docker_compose_v2:
+    project_src: "{{ mailpit_compose_path }}"
+    state: present
+    recreate: always
+  listen: "recreate-docker mailpit"

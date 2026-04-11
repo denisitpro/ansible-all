@@ -1,0 +1,10 @@
+---
+# Docker Compose configuration for nginx-s3-gateway
+- name: Generate docker-compose.yml for nginx-s3-gateway
+  ansible.builtin.template:
+    src: docker-compose.nginx-s3.yml.j2
+    dest: "{{ nginx_s3_compose_path }}/docker-compose.yml"
+    mode: '0644'
+    owner: root
+    group: root
+  notify: recreate-docker nginx-s3-gateway

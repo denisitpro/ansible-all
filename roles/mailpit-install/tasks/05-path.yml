@@ -1,0 +1,22 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ mailpit_compose_path }}"
+
+- name: create data folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "{{ mailpit_base_path }}"
+    - "{{ mailpit_data_path }}"

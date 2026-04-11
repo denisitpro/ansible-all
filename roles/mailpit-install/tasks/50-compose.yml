@@ -1,0 +1,13 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.mailpit.yml.j2"
+    dest: "{{ mailpit_compose_path }}/docker-compose.yml"
+    mode: "0640"
+  notify: recreate-docker mailpit
+
+- name: run docker compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ mailpit_compose_path }}"
+    state: present
+    pull: always

@@ -3,17 +3,30 @@
   tags:
     - mysql
     - mysql-prefly
+    - mysql-ssl
 
 - ansible.builtin.import_tasks: 10-config.yml
   tags:
     - mysql
     - mysql-config
+    - mysql-ssl
 
+- ansible.builtin.import_tasks: 20-ssl.yml
+  tags:
+    - mysql
+    - mysql-ssl
 
 - ansible.builtin.import_tasks: 50-compose.yml
   tags:
     - mysql
     - mysql-compose
+    - mysql-ssl
 
-- ansible.builtin.import_tasks: 90-clean.yml
-  tags: ['never', 'mysql-clean']
+- ansible.builtin.import_tasks: 60-exporter-users.yml
+  tags:
+    - mysql
+    - mysql-exporter-users
+
+
+# - ansible.builtin.import_tasks: 90-clean.yml
+#   tags: ['never', 'mysql-clean']

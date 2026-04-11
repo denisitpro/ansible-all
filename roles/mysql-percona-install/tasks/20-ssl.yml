@@ -1,0 +1,63 @@
+---
+- name: Import ssl-selfsigned-cert role for MySQL SSL certificates
+  ansible.builtin.import_role:
+    name: ssl-selfsigned-cert
+  when: mysql_ssl_enabled | default(false)
+  tags:
+    - mysql
+    - mysql-ssl
+
+- name: Copy CA key from CA host to MySQL expected location
+  ansible.builtin.slurp:
+    src: "{{ ssl_ca_key_path }}"
+  register: slurped_ca_key
+  delegate_to: "{{ ssl_ca_init_host }}"
+  when: mysql_ssl_enabled | default(false)
+  tags:
+    - mysql
+    - mysql-ssl
+
+- name: Write CA key to MySQL expected location
+  ansible.builtin.copy:
+    dest: "{{ mysql_ssl_dir }}/ca-key.pem"
+    content: "{{ slurped_ca_key.content | b64decode }}"
+    owner: "{{ mysql_uid }}"
+    group: "{{ mysql_gid }}"
+    mode: '0600'
+  when:
+    - mysql_ssl_enabled | default(false)
+    - slurped_ca_key.content is defined
+  tags:
+    - mysql
+    - mysql-ssl
+
+- name: Copy server certificates to MySQL expected locations
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    owner: "{{ mysql_uid }}"
+    group: "{{ mysql_gid }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: "{{ mysql_ssl_dir }}/privkey.pem", dest: "{{ mysql_ssl_dir }}/server-key.pem", mode: '0600' }
+    - { src: "{{ mysql_ssl_dir }}/fullchain.pem", dest: "{{ mysql_ssl_dir }}/server-cert.pem", mode: '0644' }
+  notify: recreate-docker mysql
+  when: mysql_ssl_enabled | default(false)
+  tags:
+    - mysql
+    - mysql-ssl
+
+- name: Clean up intermediate SSL files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ mysql_ssl_dir }}/privkey.pem"
+    - "{{ mysql_ssl_dir }}/fullchain.pem"
+    - "{{ mysql_ssl_dir }}/ca"
+  when: mysql_ssl_enabled | default(false)
+  tags:
+    - mysql
+    - mysql-ssl
+

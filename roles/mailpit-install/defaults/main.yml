@@ -1,0 +1,7 @@
+---
+mailpit_image: axllent/mailpit
+mailpit_version: v1.29.4
+
+mailpit_base_path: /opt/mailpit
+mailpit_data_path: "{{ mailpit_base_path }}/data"
+mailpit_compose_path: /opt/docker/mailpit

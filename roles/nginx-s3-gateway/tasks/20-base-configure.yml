@@ -1,0 +1,14 @@
+---
+# Base configuration for nginx-s3-gateway
+# Official image is configured via environment variables only
+
+- name: Create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ nginx_s3_compose_path }}"

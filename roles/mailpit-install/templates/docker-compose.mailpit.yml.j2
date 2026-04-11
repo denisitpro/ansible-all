@@ -1,0 +1,17 @@
+{{ ansible_managed | comment }}
+
+services:
+  mailpit:
+    image: {{ mailpit_image }}:{{ mailpit_version }}
+    container_name: mailpit
+    restart: {{ mailpit_restart | default('always') }}
+    network_mode: host
+    volumes:
+      - {{ mailpit_data_path }}:/data
+    environment:
+      - MP_UI_BIND_ADDR=127.0.0.1:8025
+      - MP_SMTP_BIND_ADDR=0.0.0.0:1025
+      - MP_MAX_MESSAGES={{ mailpit_max_messages | default(5000) }}
+      - MP_DATABASE=/data/mailpit.db
+      - MP_SMTP_AUTH_ACCEPT_ANY={{ mailpit_smtp_auth_accept_any | default(1) }}
+      - MP_SMTP_AUTH_ALLOW_INSECURE={{ mailpit_smtp_auth_allow_insecure | default(1) }}

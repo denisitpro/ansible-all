@@ -22,6 +22,15 @@
     - "{{ mysql_data_path }}"
     - "{{ mysql_log_path }}"
 
+- name: create folder mysql-ssl
+  ansible.builtin.file:
+    path: "{{ mysql_ssl_dir }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ mysql_uid }}"
+    group: "{{ mysql_gid }}"
+  when: mysql_ssl_enabled | default(false)
+
 # - name: create folder mysql-conf
 #   ansible.builtin.file:
 #     path: "{{ item }}"

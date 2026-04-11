@@ -1,0 +1,26 @@
+---
+- name: Ensure script directory exists
+  ansible.builtin.file:
+    path: "{{ loki_dump_script_dir }}"
+    state: directory
+    owner: "{{ loki_dump_script_owner }}"
+    group: "{{ loki_dump_script_group }}"
+    mode: "0755"
+
+- name: Deploy loki-1h.sh script
+  ansible.builtin.template:
+    src: loki-1h.sh
+    dest: "{{ loki_dump_script_dir }}/loki-1h.sh"
+    owner: "{{ loki_dump_script_owner }}"
+    group: "{{ loki_dump_script_group }}"
+    mode: "{{ loki_dump_script_mode }}"
+  when: loki_dump_deploy_1h | bool
+
+- name: Deploy loki-dump.sh script
+  ansible.builtin.template:
+    src: loki-dump.sh
+    dest: "{{ loki_dump_script_dir }}/loki-dump.sh"
+    owner: "{{ loki_dump_script_owner }}"
+    group: "{{ loki_dump_script_group }}"
+    mode: "{{ loki_dump_script_mode }}"
+  when: loki_dump_deploy_full | bool

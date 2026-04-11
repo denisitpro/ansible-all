@@ -1,0 +1,52 @@
+---
+- name: Check consul directory is exists
+  ansible.builtin.stat:
+    path: "{{ consul_config_dir | default('/etc/consul.d') }}"
+  register: consul_config_dir_exists
+
+
+- name: create path
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ loki_user_id }}"
+    group: "{{ loki_group_id }}"
+  with_items:
+    - "{{ loki_data_path }}/rules"
+    - "{{ loki_data_path }}/rules/fake"
+    # Loki ruler scratch dir (must NOT be the same as /opt/loki/rules, otherwise Loki may wipe rule sources)
+    - "{{ loki_data_path }}/data/rules-tmp"
+
+
+# - name: Display consul_vault_metrics_token value
+#   ansible.builtin.debug:
+#     msg: "consul_vault_metrics_token: {{ consul_vault_metrics_token | default('NOT_DEFINED') }}"
+
+- name: Copy vault-metrics consul config - notify docker
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/consul.d/{{ item }}"
+    mode: "0644"
+  notify:
+    - restart consul
+    - restart-docker consul
+  with_items:
+    - consul-loki.hcl
+  when:
+    - consul_config_dir_exists.stat.exists
+
+
+### todo debu - hz work or not
+
+- name: Apply Loki config before copying rules (avoid rule_path cleanup deleting rules)
+  ansible.builtin.meta: flush_handlers
+
+- name: copy alert rules
+  ansible.builtin.template:
+    src: rules-nginx-5xx.yaml.j2
+    dest: "{{ loki_data_path }}/rules/fake/rules-nginx-5xx.yaml"
+    mode: '0644'
+    owner: "{{ loki_user_id }}"
+    group: "{{ loki_group_id }}"
+  notify: restart-docker loki

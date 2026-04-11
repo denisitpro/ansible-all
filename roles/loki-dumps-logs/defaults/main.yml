@@ -1,0 +1,16 @@
+---
+loki_dump_url: "http://127.0.0.1:3100"
+loki_dump_default_app: "nginx-prod"
+loki_dump_output_dir: "/tmp/loki-dump"
+loki_dump_interval_sec: 30
+loki_dump_limit: 50000
+
+# Destination path for scripts on remote host
+loki_dump_script_dir: "/usr/local/bin"
+loki_dump_script_owner: "root"
+loki_dump_script_group: "root"
+loki_dump_script_mode: "0755"
+
+# Deploy loki-1h.sh by default
+loki_dump_deploy_1h: true
+loki_dump_deploy_full: false

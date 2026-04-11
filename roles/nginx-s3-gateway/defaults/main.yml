@@ -1,0 +1,23 @@
+---
+# Docker compose configuration
+nginx_s3_compose_path: /opt/docker/nginx-s3-gateway
+
+# Official nginx-s3-gateway image
+nginx_s3_image: "nginxinc/nginx-s3-gateway:unprivileged-oss-20260105"
+
+# Base paths on host
+# nginx_s3_base_path: /opt/nginx-s3-gateway
+
+# Docker labels for monitoring
+nginx_s3_docker_labels:
+  app.name: "nginx-s3-gateway"
+  app.type: "nginx"
+  app.role: "s3-gateway"
+  app.environment: "{{ stand_type | default('unknown') }}"
+  app.hostname: "{{ ansible_facts['hostname'] }}"
+  app.tier: "web"
+
+# S3 Configuration (will be overridden in group_vars with Vault secrets)
+nginx_s3_access_key_id: "{{ vault_dict_users_secret_g2.wassabi_artifacts_ro.access_key_id | default('set_me') }}"
+nginx_s3_secret_key: "{{ vault_dict_users_secret_g2.wassabi_artifacts_ro.secret_access_key | default('set_me') }}"
+
