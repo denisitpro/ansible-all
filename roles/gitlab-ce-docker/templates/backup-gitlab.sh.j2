@@ -1,0 +1,128 @@
+#!/bin/bash
+
+# Prevent execution of script if one of the commands will fail
+set -xe
+
+# =============================================================================
+# CONFIGURATION VARIABLES
+# =============================================================================
+
+# Date timestamp for backup files
+DATE=$(date +%Y%m%d_%H%M%S)
+
+# Paths
+BACKUP_HOST_BACKUP_PATH="{{ gitlab_backup_path }}"
+GITLAB_CONFIG_PATH="{{ gitlab_data_path }}/conf"
+BACKUP_LOCAL_DIR="{{ gitlab_backup_local_dir | default('/mnt/gitlab-backup') }}"
+
+# GitLab backup skip items (can be overridden via ansible variable gitlab_skip_items)
+GITLAB_SKIP_ITEMS="{{ gitlab_skip_items | default('artifacts,registry,builds') }}"
+
+# Feature flags (can be overridden via ansible variables)
+BACKUP_ENCRYPT_ENABLED="{{ gitlab_backup_encrypt | default('false') | lower }}"
+BACKUP_S3_ENABLED="{{ gitlab_backup_s3_upload | default('false') | lower }}"
+
+# Encryption settings (used if BACKUP_ENCRYPT_ENABLED=true)
+{% if gitlab_backup_encrypt_dest is defined %}ENCRYPT_DEST="{{ gitlab_backup_encrypt_dest }}"{% else %}ENCRYPT_DEST="/mnt/backup"{% endif %}
+
+{% if gitlab_backup_encrypt_retention is defined %}ENCRYPT_RETENTION="{{ gitlab_backup_encrypt_retention }}"{% else %}ENCRYPT_RETENTION="3"{% endif %}
+
+# S3 upload settings (used if BACKUP_S3_ENABLED=true)
+{% if gitlab_backup_s3_target is defined %}S3_TARGET="{{ gitlab_backup_s3_target }}"{% else %}S3_TARGET="b2-backup"{% endif %}
+
+{% if gitlab_backup_s3_remote_path is defined %}S3_REMOTE_PATH="{{ gitlab_backup_s3_remote_path }}"{% else %}S3_REMOTE_PATH="gitlab/"{% endif %}
+
+# =============================================================================
+# LEVEL 1: CREATE GITLAB BACKUP
+# =============================================================================
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting GitLab backup process..."
+
+# Create GitLab backup using gitlab-backup command
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Creating GitLab backup (skipping: ${GITLAB_SKIP_ITEMS})..."
+docker exec -t gitlab gitlab-backup create SKIP="${GITLAB_SKIP_ITEMS}"
+
+# Prepare local backup directory
+mkdir -p "${BACKUP_LOCAL_DIR}"
+
+# Move backup archive to local directory
+# GitLab creates backup with timestamp in filename, no need to rename
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Moving backup files to local directory..."
+# Uncomment if additional gzip compression and renaming is needed:
+# gzip "${BACKUP_HOST_BACKUP_PATH}"/*.tar
+# mv "${BACKUP_HOST_BACKUP_PATH}"/*.tar.gz "${BACKUP_LOCAL_DIR}/gitlab_${DATE}.tar.gz"
+mv "${BACKUP_HOST_BACKUP_PATH}"/*.tar "${BACKUP_LOCAL_DIR}/"
+
+# Backup configuration files as archive
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Backing up configuration files..."
+tar -czf "${BACKUP_LOCAL_DIR}/gitlab_config_${DATE}.tar.gz" \
+    -C "${GITLAB_CONFIG_PATH}" \
+    gitlab.rb \
+    gitlab-secrets.json
+
+# Clean up host backup directory
+rm -rf "${BACKUP_HOST_BACKUP_PATH}"/*
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] GitLab backup created successfully"
+
+# =============================================================================
+# LEVEL 2: ENCRYPT BACKUP (OPTIONAL)
+# =============================================================================
+
+if [ "${BACKUP_ENCRYPT_ENABLED}" = "true" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Encrypting backup files..."
+    
+    # Encrypt files using backup-directory.sh script
+    /opt/scripts/backup-directory.sh \
+        --source "${BACKUP_LOCAL_DIR}/" \
+        --dest "${ENCRYPT_DEST}" \
+        --no-pack \
+        --retention "${ENCRYPT_RETENTION}"
+    
+    # Remove temporary unencrypted files
+    rm -rf "${BACKUP_LOCAL_DIR}"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Encryption completed, temporary files removed"
+    
+    # Update source directory for S3 upload if enabled
+    if [ "${BACKUP_S3_ENABLED}" = "true" ]; then
+        UPLOAD_SOURCE="${ENCRYPT_DEST}"
+    fi
+else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Encryption disabled, skipping..."
+    
+    # Set upload source to local directory if S3 enabled
+    if [ "${BACKUP_S3_ENABLED}" = "true" ]; then
+        UPLOAD_SOURCE="${BACKUP_LOCAL_DIR}/"
+    fi
+fi
+
+# =============================================================================
+# LEVEL 3: UPLOAD TO S3 (OPTIONAL)
+# =============================================================================
+
+if [ "${BACKUP_S3_ENABLED}" = "true" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Uploading backups to remote storage..."
+    
+    # Upload to S3 using backup-upload.sh script
+    /opt/scripts/backup-upload.sh \
+        --local-dir "${UPLOAD_SOURCE}" \
+        --target "${S3_TARGET}" \
+        --remote-path "${S3_REMOTE_PATH}"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Upload completed successfully"
+    
+    # Clean up local files if not encrypted
+    if [ "${BACKUP_ENCRYPT_ENABLED}" != "true" ]; then
+        rm -rf "${BACKUP_LOCAL_DIR}"
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Local files removed"
+    fi
+else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] S3 upload disabled, skipping..."
+fi
+
+# =============================================================================
+# COMPLETION
+# =============================================================================
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] GitLab backup process completed successfully"

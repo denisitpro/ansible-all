@@ -1,0 +1,36 @@
+---
+# Graylog Configuration
+graylog_image: "graylog/graylog"
+graylog_tag: "7.0.4"
+graylog_http_port: 9000
+graylog_http_bind_address: "0.0.0.0"
+graylog_http_external_uri: "https://{{ ansible_host }}:{{ graylog_http_port }}/"
+
+# OpenSearch Configuration
+opensearch_image: "opensearchproject/opensearch"
+opensearch_tag: "2.18.0"
+opensearch_http_port: 9200
+
+# MongoDB Configuration
+mongodb_image: "mongo"
+mongodb_tag: "7.0"
+
+# Paths
+graylog_compose_path: "/opt/docker/graylog"
+graylog_storage_path: "/opt/graylog"
+graylog_data_path: "{{ graylog_storage_path }}/graylog_data"
+graylog_journal_path: "{{ graylog_storage_path }}/graylog_journal"
+mongodb_data_path: "{{ graylog_storage_path }}/mongo_data"
+opensearch_data_path: "{{ graylog_storage_path }}/opensearch_data"
+
+# Secrets (MUST BE OVERRIDDEN IN PRODUCTION)
+# Use 'pwgen -N 1 -s 96' for secret
+graylog_password_secret: "somepasswordsecret1234567890change_me"
+# SHA256 of the admin password. Default is 'admin'
+# echo -n "admin" | sha256sum | cut -d" " -f1
+graylog_root_password_sha2: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+graylog_root_timezone: "UTC"
+
+# Memory settings
+graylog_heap_size: "24g"
+opensearch_heap_size: "24g"

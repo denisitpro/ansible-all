@@ -1,0 +1,16 @@
+services:
+  elasticsearch-exporter:
+    image: quay.io/prometheuscommunity/elasticsearch-exporter:{{ elasticsearch_exporter_version }}
+    container_name: elasticsearch-exporter
+    network_mode: host
+    restart: always
+    command:
+      - '--es.uri={{ elasticsearch_exporter_uri }}'
+      - '--web.listen-address=:{{ elasticsearch_exporter_bind_port }}'
+      - '--es.indices'
+      - '--es.shards'
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

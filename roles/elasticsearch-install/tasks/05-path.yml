@@ -1,0 +1,30 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ es_compose_path }}"
+
+- name: create elasticsearch data and log folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: "{{ es_uid }}"
+    group: "{{ es_gid }}"
+  with_items:
+    - "{{ es_data_path }}"
+    - "{{ es_log_path }}"
+
+- name: create elasticsearch config folder
+  ansible.builtin.file:
+    path: "{{ es_conf_path }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ es_uid }}"
+    group: "{{ es_gid }}"

@@ -1,0 +1,14 @@
+---
+- name: copy compose-file
+  ansible.builtin.template:
+    src: "docker-compose.elasticsearch.yml.j2"
+    dest: "{{ es_compose_path }}/docker-compose.yml"
+    mode: "0600"
+
+- name: Create and start
+  community.docker.docker_compose_v2:
+    remove_orphans: true
+    project_src: "{{ es_compose_path }}"
+    files:
+      - docker-compose.yml
+    timeout: 120

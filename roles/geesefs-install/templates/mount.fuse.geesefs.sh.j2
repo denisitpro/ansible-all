@@ -1,0 +1,87 @@
+{% raw %}#!/usr/bin/env bash
+set -euo pipefail
+
+# mount helper for /etc/fstab entries with fstype "fuse.geesefs"
+#
+# mount(8) typically calls this as:
+#   mount.fuse.geesefs <source> <target> -o <comma,separated,opts>
+#
+# geesefs expects:
+#   geesefs [geesefs opts] <bucket[:prefix]> <mountpoint>
+#
+# We map:
+# - opts starting with "--"  -> pass directly to geesefs (e.g. --endpoint=..., --region=..., --shared-config=...)
+# - other opts               -> treat as FUSE opts and pass via "-o <...>" (e.g. allow_other)
+# - systemd/fstab meta opts  -> ignore (_netdev, nofail, x-systemd.*)
+
+# capture original argv for debugging
+ORIG_ARGV=("$@")
+SRC="${1:-}"
+TGT="${2:-}"
+shift 2 || true
+
+OPTSTR=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -o)
+      OPTSTR="${2:-}"
+      shift 2
+      ;;
+    -o*)
+      OPTSTR="${1#-o}"
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+# lightweight debug log (helps when mount passes unexpected argv order)
+{
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  printf '%s argv0=%q orig_argv=' "${ts}" "$0"
+  printf '%q ' "${ORIG_ARGV[@]}"
+  printf '\n'
+  echo "${ts} parsed SRC=\"${SRC}\" TGT=\"${TGT}\" OPTSTR=\"${OPTSTR}\""
+} >> /tmp/mount.fuse.geesefs.debug.log 2>/dev/null || true
+
+# Some callers (notably systemd/mount wrappers) may pass a path-like SRC instead of bucket name.
+# If SRC looks like an absolute path, try to resolve the real source from /etc/fstab using TGT.
+if [[ "${SRC}" == /* ]] && [[ -r /etc/fstab ]]; then
+  looked="$(awk -v tgt="${TGT}" '$2==tgt {print $1; exit}' /etc/fstab 2>/dev/null || true)"
+  if [[ -n "${looked:-}" ]]; then
+    SRC="${looked}"
+    {
+      ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo "${ts} resolved SRC from fstab: ${SRC}"
+    } >> /tmp/mount.fuse.geesefs.debug.log 2>/dev/null || true
+  fi
+fi
+
+declare -a geesefs_args=()
+declare -a fuse_opts=()
+
+IFS=',' read -r -a parts <<< "${OPTSTR:-}"
+for p in "${parts[@]}"; do
+  [[ -z "${p}" ]] && continue
+  case "${p}" in
+    --*)
+      geesefs_args+=("${p}")
+      ;;
+    _netdev|nofail|defaults|x-systemd.*|comment=*|auto|noauto)
+      # ignore fstab/systemd meta options
+      ;;
+    *)
+      fuse_opts+=("${p}")
+      ;;
+  esac
+done
+
+if [[ ${#fuse_opts[@]} -gt 0 ]]; then
+  geesefs_args+=("-o" "$(IFS=','; echo "${fuse_opts[*]}")")
+fi
+
+exec {% endraw %}"{{ geesefs_install_path }}"{% raw %} "${geesefs_args[@]}" "${SRC}" "${TGT}"
+
+{% endraw %}

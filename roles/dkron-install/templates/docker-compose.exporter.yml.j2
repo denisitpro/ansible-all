@@ -1,7 +1,7 @@
 {% if dkron_exporter_enabled | default(false) %}
 services:
   dkron-exporter:
-    image: {{ dkron_exporter_image | default('c4telegraph/dkron-exporter:1.1.5') }}
+    image: {{ dkron_exporter_image | default('example/dkron-exporter:1.1.5') }}
     container_name: dkron-exporter
     network_mode: host
     environment:

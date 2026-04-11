@@ -1,0 +1,3 @@
+---
+graylog_parse_script_path: "/tmp/graylog_parser"
+graylog_parse_script_storage_path: "/tmp/graylog_parsed_logs"

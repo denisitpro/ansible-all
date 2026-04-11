@@ -14,3 +14,34 @@ geesefs_binary_name: "geesefs-linux-{{ geesefs_arch }}"
 geesefs_download_url: "{{ geesefs_base_url }}/v{{ geesefs_version }}/{{ geesefs_binary_name }}"
 geesefs_temp_dir: "/tmp/geesefs-install"
 geesefs_install_path: "/usr/local/bin/geesefs"
+
+# Optional mount management.
+geesefs_manage_mounts: false
+geesefs_mounts: []
+
+# Keep role data under /opt (project convention)
+geesefs_base_path: /opt/geesefs
+
+# Store credentials in explicit files and reference via `--shared-config=...`
+geesefs_creds_dir: "{{ geesefs_base_path }}/creds"
+
+# Base fstab options for fuse.geesefs mounts.
+# `_netdev` marks network dependency; `nofail` avoids boot failure.
+geesefs_fstab_common_opts: "_netdev,nofail,allow_other"
+
+
+
+# example mount
+# Mount B2 bucket for VictoriaMetrics backups / VM data.
+# geesefs_manage_mounts: true
+
+# geesefs_mounts:
+#   - name: example-bucket
+#     bucket: "example-bucket"
+#     endpoint: "https://s3.example.com"
+#     access_key_id: "example-access-key-id"
+#     secret_access_key: "example-secret-access-key"
+#     mount_point: /opt/geesefs/example-bucket
+#     uid: 0
+#     gid: 0
+#     file_mode: "0664"

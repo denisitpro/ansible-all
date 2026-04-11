@@ -1,20 +1,25 @@
 ---
-- import_tasks: 05-prefly.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - gitlab
 
-- import_tasks: 10-configure.yml
+- ansible.builtin.import_tasks: 10-configure.yml
   tags:
     - gitlab
     - gitlab-compose
 
-- import_tasks: 15-copy-ssl.yml
+- ansible.builtin.import_tasks: 15-copy-ssl.yml
   when: gitlab_support_ssl is defined
   tags:
     - gitlab
     - gitlab-ssl
 
-- import_tasks: 20-launch.yml
+- ansible.builtin.import_tasks: 85-backup-cron.yml
+  when: gitlab_backup_enabled | default(false)
   tags:
     - gitlab
-    - gitlab-compose
+    - gitlab-backup
+    - gitlab-backup-cron
+
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'gitlab-clean']

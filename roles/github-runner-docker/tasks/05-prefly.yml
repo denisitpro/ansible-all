@@ -1,0 +1,23 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  loop:
+    - "/opt/docker"
+    - "{{ github_runner_compose_path }}"
+
+- name: create folders for runner persistence
+  ansible.builtin.file:
+    path: "{{ github_runner_data_root }}/{{ item.0 }}/{{ item.1 }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop: "{{ (github_repos | default([]) | map(attribute='name') | list) | product(['data','work']) | list }}"
+  loop_control:
+    label: "{{ item.0 }}/{{ item.1 }}"
+  when: github_repos | length > 0

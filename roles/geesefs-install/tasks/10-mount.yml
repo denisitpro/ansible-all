@@ -1,0 +1,104 @@
+---
+- name: Ensure fuse allow_other is enabled
+  ansible.builtin.lineinfile:
+    path: /etc/fuse.conf
+    regexp: '^#?\s*user_allow_other\s*$'
+    line: user_allow_other
+    create: true
+    mode: '0644'
+  tags: ['geesefs', 'geesefs-mount']
+
+- name: Ensure GeeseFS base directory exists
+  ansible.builtin.file:
+    path: "{{ geesefs_base_path }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  tags: ['geesefs', 'geesefs-mount']
+
+- name: Ensure GeeseFS creds dir exists
+  ansible.builtin.file:
+    path: "{{ geesefs_creds_dir }}"
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+  tags: ['geesefs', 'geesefs-mount']
+
+- name: Check whether mount points are already mounted
+  ansible.builtin.command: "mountpoint -q {{ item.mount_point }}"
+  register: geesefs__mountpoint_checks
+  changed_when: false
+  failed_when: false
+  loop: "{{ geesefs_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: ['geesefs', 'geesefs-mount']
+
+- name: Ensure mount points exist (not mounted yet)
+  ansible.builtin.file:
+    path: "{{ item.item.mount_point }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop: "{{ geesefs__mountpoint_checks.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: item.rc != 0
+  tags: ['geesefs', 'geesefs-mount']
+
+- name: Ensure mount points exist (already mounted; don't touch mode/owner/group)
+  ansible.builtin.file:
+    path: "{{ item.item.mount_point }}"
+    state: directory
+  loop: "{{ geesefs__mountpoint_checks.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: item.rc == 0
+  tags: ['geesefs', 'geesefs-mount']
+
+- name: Write GeeseFS credentials files (--shared-config)
+  ansible.builtin.copy:
+    dest: "{{ geesefs_creds_dir }}/{{ item.name }}.credentials"
+    mode: '0600'
+    content: |
+      [default]
+      aws_access_key_id={{ item.access_key_id }}
+      aws_secret_access_key={{ item.secret_access_key }}
+  loop: "{{ geesefs_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+  tags: ['geesefs', 'geesefs-mount']
+
+# One place where we define how to build fstab/mount opts (rendered from template).
+- name: Ensure GeeseFS mounts are present in /etc/fstab
+  vars: &geesefs__fstab_vars
+    geesefs__opts: "{{ lookup('ansible.builtin.template', 'geesefs.fstab_opts.j2') | trim }}"
+  ansible.posix.mount:
+    path: "{{ item.mount_point }}"
+    src: "{{ item.bucket }}"
+    fstype: fuse.geesefs
+    backup: true
+    opts: "{{ geesefs__opts }}"
+    state: present
+  loop: "{{ geesefs_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: ['geesefs', 'geesefs-mount']
+
+- name: Mount GeeseFS mounts
+  vars: *geesefs__fstab_vars
+  ansible.posix.mount:
+    path: "{{ item.mount_point }}"
+    src: "{{ item.bucket }}"
+    fstype: fuse.geesefs
+    opts: "{{ geesefs__opts }}"
+    state: mounted
+  loop: "{{ geesefs_mounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: ['geesefs', 'geesefs-mount']
+

@@ -1,7 +1,9 @@
 ---
 - name: Ensure fuse is installed (GeeseFS dependency)
   ansible.builtin.apt:
-    name: libfuse2
+    name:
+      - libfuse2
+      - fuse
     state: present
     update_cache: true
 
@@ -25,6 +27,14 @@
     mode: '0755'
     remote_src: true
     force: true
+
+- name: Install mount helper for fstab (mount.fuse.geesefs wrapper)
+  ansible.builtin.template:
+    src: mount.fuse.geesefs.sh.j2
+    dest: /sbin/mount.fuse.geesefs
+    mode: '0755'
+    owner: root
+    group: root
 
 # - name: Verify geesefs installation
 #   ansible.builtin.command: "{{ geesefs_install_path }} -v"

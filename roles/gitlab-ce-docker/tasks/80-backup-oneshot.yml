@@ -1,0 +1,9 @@
+---
+- name: Create GitLab backup (SKIP=artifacts,registry)
+  community.docker.docker_container_exec:
+    container: "{{ gitlab_container_name | default('gitlab') }}"
+    command: gitlab-backup create
+    env:
+      SKIP: artifacts,registry
+    tty: true
+

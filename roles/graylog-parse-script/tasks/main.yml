@@ -1,0 +1,13 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - graylog-parse-script
+    - graylog-parse-script-prefly
+
+- ansible.builtin.import_tasks: 10-copy.yml
+  tags:
+    - graylog-parse-script
+    - graylog-parse-script-copy
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'graylog-parse-script-clean']

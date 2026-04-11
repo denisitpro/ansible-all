@@ -1,0 +1,18 @@
+---
+- ansible.builtin.import_tasks: 01-validate.yml
+  tags:
+    - github-runner
+    - github-runner-docker
+    - github-runner-validate
+
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - github-runner
+    - github-runner-docker
+    - github-runner-prefly
+
+- ansible.builtin.import_tasks: 30-configure.yml
+  tags:
+    - github-runner
+    - github-runner-docker
+    - github-runner-compose

@@ -1,0 +1,43 @@
+{{ ansible_managed | comment }}
+
+services:
+{% for r in (github_repos | default([])) %}
+  github-runner-{{ r.name }}:
+    image: "{{ github_runner_docker_image }}:{{ github_runner_docker_tag }}"
+    container_name: "github-runner-{{ r.name }}"
+    network_mode: host
+    environment:
+      RUNNER_SCOPE: "{{ r.scope | default('repo') }}"
+{% if (r.scope | default('repo')) == 'org' and r.org_name is defined %}
+      ORG_NAME: "{{ r.org_name }}"
+{% endif %}
+{% if (r.scope | default('repo')) == 'enterprise' and r.enterprise_name is defined %}
+      ENTERPRISE_NAME: "{{ r.enterprise_name }}"
+{% endif %}
+      REPO_URL: "{{ r.full_url }}"
+      RUNNER_NAME: "{{ inventory_hostname_short }}-{{ r.name }}"
+      RUNNER_WORKDIR: "{{ github_runner_data_root }}/{{ r.name }}/work"
+{% if r.labels is defined %}
+      LABELS: "{{ r.labels | join(',') }}"
+{% endif %}
+{% if github_runner_disable_auto_update %}
+      DISABLE_AUTO_UPDATE: "1"
+{% endif %}
+{% if github_runner_ephemeral %}
+      EPHEMERAL: "1"
+{% endif %}
+{% if github_runner_disable_automatic_deregistration %}
+      DISABLE_AUTOMATIC_DEREGISTRATION: "true"
+{% endif %}
+{% if r.access_token is defined %}
+      ACCESS_TOKEN: "{{ r.access_token }}"
+{% elif r.runner_token is defined %}
+      RUNNER_TOKEN: "{{ r.runner_token }}"
+{% endif %}
+      CONFIGURED_ACTIONS_RUNNER_FILES_DIR: "/runner/data"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "{{ github_runner_data_root }}/{{ r.name }}/data:/runner/data"
+      - "{{ github_runner_data_root }}/{{ r.name }}/work:{{ github_runner_data_root }}/{{ r.name }}/work"
+    restart: always
+{% endfor %}

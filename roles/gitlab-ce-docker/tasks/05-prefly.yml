@@ -1,12 +1,19 @@
 ---
-- import_tasks: shared/tasks/create-dir-docker-compose.yml
-- import_tasks: shared/tasks/copy-security-limits.yml
-- import_tasks: shared/tasks/create-backup-directory.yml
-- import_tasks: shared/tasks/create-script-path.yml
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ gitlab_docker_compose_path }}"
+
 
 - name: create folder gitlab
   ansible.builtin.file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
     owner: root
     group: root
@@ -16,15 +23,5 @@
     - "{{ gitlab_data_path }}/data"
     - "{{ gitlab_data_path }}/conf"
     - "{{ gitlab_data_path }}/logs"
-    - "{{ gitlab_docker_compose_path }}"
+    - "{{ gitlab_backup_path }}"
 
-- name: copy scripts for encrypt backup
-  template:
-    src: encrypt-backup.sh.j2
-    dest: "{{scripts_path}}/encrypt-backup.sh"
-    owner: root
-    group: root
-    mode: 0644
-  tags:
-    - backup-script
-  when: backup_encrypted is defined

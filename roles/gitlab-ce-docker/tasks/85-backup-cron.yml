@@ -1,0 +1,31 @@
+---
+- name: Ensure GitLab backup directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - "{{ gitlab_backup_local_dir | default('/mnt/gitlab-backup') }}"
+    - "{{ gitlab_backup_encrypt_dest | default('/mnt/backup') }}"
+
+- name: Deploy GitLab backup script
+  ansible.builtin.template:
+    src: backup-gitlab.sh.j2
+    dest: "{{ scripts_path | default('/opt/scripts') }}/backup-gitlab.sh"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Setup GitLab backup cron job
+  ansible.builtin.cron:
+    name: "GitLab backup (data + config)"
+    minute: "{{ gitlab_backup_cron_minute | default('0') }}"
+    hour: "{{ gitlab_backup_cron_hour | default('3') }}"
+    day: "{{ gitlab_backup_cron_day | default('*') }}"
+    month: "{{ gitlab_backup_cron_month | default('*') }}"
+    weekday: "{{ gitlab_backup_cron_weekday | default('*') }}"
+    job: "bash {{ scripts_path | default('/opt/scripts') }}/backup-gitlab.sh >> /var/log/gitlab-backup.log 2>&1"
+    user: root
+    state: "{{ 'present' if gitlab_backup_cron_enabled | default(false) | bool else 'absent' }}"

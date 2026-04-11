@@ -1,0 +1,16 @@
+---
+- name: Create Graylog parser  directory
+  ansible.builtin.file:
+    path: "{{ graylog_parse_script_path }}"
+    state: directory
+    mode: '0755'
+    owner: "root"
+    group: "root"
+
+- name: Create Graylog parser storage directory
+  ansible.builtin.file:
+    path: "{{ graylog_parse_script_storage_path }}"
+    state: directory
+    mode: '0755'
+    owner: "root"
+    group: "root"

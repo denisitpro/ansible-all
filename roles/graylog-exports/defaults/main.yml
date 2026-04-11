@@ -1,0 +1,23 @@
+---
+# Scripts install directory
+graylog_exports_install_dir: "/opt/scripts"
+
+# Output directory for dump files (created by role)
+graylog_exports_output_dir: "/tmp/graylog-dumps"
+
+# OpenSearch/Elasticsearch connection (logs export source)
+graylog_exports_es_url: "http://127.0.0.1:9200"
+graylog_exports_index: "graylog_*"
+# Field to filter by in OpenSearch: "tag" (default) or "source" (e.g. for dev1 where tag is null)
+graylog_exports_filter_field: "tag"
+graylog_exports_tag: "production.nginx"
+graylog_exports_batch_size: 5000
+graylog_exports_scroll_time: "5m"
+
+# Output filename prefix for tag dump (e.g. prod_nginx -> prod_nginx_2026-01-20_15_00.jsonl.gz)
+graylog_exports_output_prefix: "prod_nginx"
+
+# Script names
+graylog_exports_tags_script_name: "graylog-dump-tags.sh"
+graylog_exports_days_script_name: "graylog-dump-days.sh"
+old_graylog_exports_tags_script_name: "old-graylog-dump-tags.sh"

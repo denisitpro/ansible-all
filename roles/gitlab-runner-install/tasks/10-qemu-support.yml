@@ -1,7 +1,7 @@
 ---
 - name: Distribution major version
   ansible.builtin.debug:
-    msg: "{{ ansible_distribution_version }}"
+    msg: "{{ ansible_facts['distribution_version'] }}"
 
 - name: install base software - ubuntu all
   ansible.builtin.apt:

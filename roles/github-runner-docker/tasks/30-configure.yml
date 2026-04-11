@@ -1,0 +1,10 @@
+---
+- name: copy compose-file - github runner
+  ansible.builtin.template:
+    src: "docker-compose.github-runner.yml.j2"
+    dest: "{{ github_runner_compose_path }}/docker-compose.yml"
+    mode: "0600"
+    owner: root
+    group: root
+  no_log: true
+  notify: recreate-docker github-runner

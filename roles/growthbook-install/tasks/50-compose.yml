@@ -1,0 +1,16 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.growthbook.yml.j2"
+    dest: "{{ growthbook_compose_path }}/docker-compose.yml"
+    mode: "0640"
+  notify: recreate-docker growthbook
+
+- name: run docker compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ growthbook_compose_path }}"
+    state: present
+    pull: always
+  tags:
+    - growthbook-run
+

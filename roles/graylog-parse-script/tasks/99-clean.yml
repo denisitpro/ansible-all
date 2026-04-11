@@ -1,0 +1,9 @@
+---
+- name: Remove Graylog parser directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ graylog_parse_script_path }}"
+    - "{{ graylog_parse_script_storage_path }}"
+

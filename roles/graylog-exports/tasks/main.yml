@@ -1,0 +1,8 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - graylog-exports
+
+- ansible.builtin.import_tasks: 10-scripts.yml
+  tags:
+    - graylog-exports
