@@ -1,0 +1,12 @@
+---
+- name: recreate-docker oauth2-proxy
+  community.docker.docker_compose_v2:
+    project_src: "{{ oauth2_proxy_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker oauth2-proxy
+  community.docker.docker_compose_v2:
+    project_src: "{{ oauth2_proxy_compose_path }}"
+    state: restarted

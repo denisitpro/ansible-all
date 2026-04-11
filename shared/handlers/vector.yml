@@ -1,8 +1,23 @@
 ---
-- name: restart vector
+- name: restart-unit vector
+  when: vector_install_unit
   ansible.builtin.systemd:
     daemon_reload: true
     name: vector
     state: restarted
   tags:
     - vector-restart
+
+- name: recreate-docker vector
+  when: vector_install_docker
+  community.docker.docker_compose_v2:
+    project_src: "{{ vector_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker vector
+  when: vector_install_docker
+  community.docker.docker_compose_v2:
+    project_src: "{{ vector_compose_path }}"
+    state: restarted

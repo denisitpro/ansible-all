@@ -1,0 +1,20 @@
+---
+- name: recreate-docker nginx-s3-gateway
+  community.docker.docker_compose_v2:
+    project_src: "{{ nginx_s3_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart nginx-s3-gateway
+  community.docker.docker_compose_v2:
+    project_src: "{{ nginx_s3_compose_path }}"
+    services: "{{ item }}"
+    state: restarted
+  with_items:
+    - "nginx-s3-gateway"
+
+- name: reload nginx-s3-gateway
+  community.docker.docker_container_exec:
+    container: nginx-s3-gateway
+    command: "{{ nginx_s3_binary_name }} -s reload"

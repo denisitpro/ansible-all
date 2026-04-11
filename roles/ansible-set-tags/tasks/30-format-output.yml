@@ -1,0 +1,54 @@
+---
+# Format output data to match terraform-read-remote-state structure
+# Output format: [{ name: "hostname", ipv4: "x.x.x.x", ipv6: "xxxx::xxxx" }]
+
+- name: Debug starting output formatting
+  ansible.builtin.debug:
+    msg: "Starting output formatting for variable {{ tag_config.output_var_name }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Build host data structure with resolved IPs
+  ansible.builtin.set_fact:
+    temp_host_data: []
+  tags:
+    - always
+
+- name: Process each host and separate IPv4/IPv6
+  ansible.builtin.set_fact:
+    temp_host_data: "{{ temp_host_data + [host_entry] }}"
+  loop: "{{ host_ips_raw.results }}"
+  vars:
+    ipv4_addresses: "{{ item.stdout_lines | select('match', '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$') | list }}"
+    ipv6_addresses: "{{ item.stdout_lines | reject('match', '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$') | list }}"
+    host_entry:
+      name: "{{ item.item }}"
+      ipv4: "{{ ipv4_addresses[0] | default('') }}"
+      ipv6: "{{ ipv6_addresses[0] | default('') }}"
+  loop_control:
+    label: "{{ item.item }}"
+  tags:
+    - always
+
+- name: Set output variable with formatted data on all hosts
+  ansible.builtin.set_fact:
+    "{{ tag_config.output_var_name }}": "{{ temp_host_data }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ ansible_play_hosts_all }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Debug created variable
+  ansible.builtin.debug:
+    msg: "Created variable '{{ tag_config.output_var_name }}' with {{ temp_host_data | length }} hosts"
+  tags:
+    - always
+
+- name: Debug variable content
+  ansible.builtin.debug:
+    var: "{{ tag_config.output_var_name }}"
+  tags:
+    - always

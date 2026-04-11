@@ -1,0 +1,38 @@
+---
+angie_compose_path: /opt/docker/angie
+
+angie_version: 1.11.0
+
+angie_base_path: /opt/angie
+angie_mtls_path: /opt/mtls/angie
+angie_acl_conf_dir: "{{ angie_base_path }}/acl.d"
+
+angie_uid: 100
+angie_gid: 101
+
+# Docker labels for logging and monitoring
+angie_docker_labels:
+  app.name: "angie"
+  app.type: "nginx"
+  app.role: "web"
+  log_format: "angie_{{ angie_log_format_label }}"
+  app.environment: "{{ stand_type | default('unknown') }}"
+  app.version: "{{ angie_version }}"
+  app.hostname: "{{ ansible_facts['hostname'] }}"
+  app.tier: "web"
+
+# Set to "angie_extend_json" to enable JSON log parsing in Vector
+angie_log_format_label: "{{ nginx_access_log_format | default('extended') }}"
+
+# Default ports for default-deny configuration
+nginx_default_http_port: 80
+nginx_default_https_port: 443
+
+angie_ssl_path: "/opt/ssl"
+angie_ssl_privkey_path: "{{ ssl_path }}/privkey.pem"
+angie_ssl_cert_path: "{{ ssl_path }}/fullchain.pem"
+
+# cert name mTLS
+angie_mtls_ca_root_cert_name: "mtls_ca"
+angie_mtls_cert_name: "mtls_cert"
+angie_mtls_key_name: "mtls_key"

@@ -6,6 +6,12 @@ services:
 {% if angie_userns_host is defined %}
     userns_mode: host
 {% endif %}
+{% if angie_docker_labels is defined %}
+    labels:
+{% for key, value in angie_docker_labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
     volumes:
       - {{ angie_base_path }}:/etc/angie
       - {{ angie_base_path }}/logs:/var/log/angie

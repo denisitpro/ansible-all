@@ -1,0 +1,11 @@
+- name: clean ssl path
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/ssl"
+    - "{{ ssl_path }}"
+    - "{{ ssl_ca_path }}"

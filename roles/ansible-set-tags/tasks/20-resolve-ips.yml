@@ -1,0 +1,37 @@
+---
+# Resolve IP addresses for filtered hosts using ip-address-host-to-ip role
+
+- name: Debug starting IP resolution
+  ansible.builtin.debug:
+    msg: "Starting IP resolution for {{ filtered_hostnames | length }} hosts: {{ filtered_hostnames }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Resolve IP addresses for filtered hosts
+  ansible.builtin.shell: |
+    getent ahosts {{ item }} | awk '{print $1}' | sort -u
+  register: host_ips_raw
+  changed_when: false
+  loop: "{{ filtered_hostnames }}"
+  loop_control:
+    label: "{{ item }}"
+  delegate_to: "{{ k8s_hosts_resolution_host }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Debug raw IP resolution results
+  ansible.builtin.debug:
+    msg: "Resolved IPs for {{ item.item }}: {{ item.stdout_lines }}"
+  loop: "{{ host_ips_raw.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Include output formatting task
+  ansible.builtin.include_tasks: 30-format-output.yml
+  tags:
+    - always

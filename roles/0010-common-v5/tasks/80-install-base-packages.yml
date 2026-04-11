@@ -1,7 +1,7 @@
 ---
 - name: Distribution major version
   ansible.builtin.debug:
-    msg: "{{ ansible_distribution_version }}"
+    msg: "{{ ansible_facts['distribution_version'] }}"
 
 - name: install base software - ubuntu all
   ansible.builtin.apt:
@@ -36,15 +36,14 @@
     name:
       - netcat
     state: latest
-  when: ansible_distribution_version == '22.04'
+  when: ansible_facts['distribution_version'] == '22.04'
 
 - name: install base software - ubuntu 24.04
   ansible.builtin.apt:
     name:
       - netcat-traditional
     state: latest
-  when: ansible_distribution_version == '24.04'
-
+  when: ansible_facts['distribution_version'] == '24.04'
 
 - name: install base software - ubuntu addition debug
   ansible.builtin.apt:
@@ -53,6 +52,8 @@
       - mc
       - screen
       - ncdu
+      - iftop
+      - nload
   when: ubuntu_additional_package_install is defined
   tags:
     - ubuntu-additional-package

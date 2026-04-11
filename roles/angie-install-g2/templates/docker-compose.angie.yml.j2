@@ -1,0 +1,78 @@
+services:
+  angie:
+    image: {{ angie_image }}
+    container_name: angie
+    network_mode: host
+    command: ["{{ angie_binary_name }}", "-c", "{{ angie_inside_etc_path }}/angie.conf", "-g", "daemon off;"]
+{% if angie_userns_host is defined %}
+    userns_mode: host
+{% endif %}
+{% if angie_docker_labels is defined %}
+    labels:
+{% for key, value in angie_docker_labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+    volumes:
+      - {{ angie_base_path }}/angie.conf:{{ angie_inside_etc_path }}/angie.conf
+      - {{ angie_base_path }}/mime.types:{{ angie_inside_etc_path }}/mime.types
+      - {{ angie_base_path }}/fastcgi_params:{{ angie_inside_etc_path }}/fastcgi_params
+      - {{ angie_config_base_path }}:{{ angie_inside_base_path }}
+      - {{ angie_base_path }}/logs:{{ angie_inside_logs_path }}
+      - {{ angie_ssl_path | default('/opt/ssl/')}}:{{angie_ssl_path | default('/opt/ssl/')}}
+      - {{ angie_mtls_path | default('/opt/mtls/angie/')}}:{{angie_mtls_path | default('/opt/mtls/angie/')}}
+{% if certbot_cert_usage is defined %}
+      - {{certbot_path | default('/opt/certbot') }}/www:{{angie_certbot_path | default('/var/www/certbot')}}
+      - {{certbot_ssl_path |default('/opt/certbot/data')}}:{{angie_container_ssl_certbot_path| default('/opt/certbot/ssl')}}
+{% endif %}
+{% if angie_used_acme is defined %}
+      - {{ angie_base_path }}/acme:/var/lib/angie/acme
+{% endif %}
+{% if angine_artifacts_path is defined %}
+      - {{ angine_artifacts_path}}:/usr/share/nginx/artifacts
+{% endif %}
+{% if angie_static_volumes is defined %}
+{% for vol in angie_static_volumes %}
+      - {{ vol.host }}:{{ vol.container }}{% if vol.options is defined %}:{{ vol.options }}{% endif %}
+{% endfor %}
+{% endif %}
+
+    restart: {{ angie_restart | default('always') }}
+{% if angie_static_file is defined %}
+#      - {{angie_static_path}}:/var/www/html:ro
+{% endif %}
+    logging:
+{% if vector_server_fluent_address is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: {{vector_server_fluent_address | default('127.0.0.1')}}:{{ vector_server_fluent_port | default('24224') }}
+        tag: angie
+        fluentd-async: "{{fluent_async}}"
+        fluentd-buffer-limit: "{{fluendt_buffer_limit}}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+{% if angie_docker_sysctls is defined and angie_docker_network_mode is defined and angie_docker_network_mode != "host" %}
+    sysctls:
+{% if angie_docker_sysctls.net_core_somaxconn is defined %}
+      net.core.somaxconn: {{ angie_docker_sysctls.net_core_somaxconn }}
+{% endif %}
+{% endif %}
+{% if angie_docker_ulimits is defined %}
+    ulimits:
+{% if angie_docker_ulimits.nproc is defined %}
+      nproc: {{ angie_docker_ulimits.nproc }}
+{% endif %}
+{% if angie_docker_ulimits.nofile is defined %}
+      nofile:
+{% if angie_docker_ulimits.nofile.soft is defined %}
+        soft: {{ angie_docker_ulimits.nofile.soft }}
+{% endif %}
+{% if angie_docker_ulimits.nofile.hard is defined %}
+        hard: {{ angie_docker_ulimits.nofile.hard }}
+{% endif %}
+{% endif %}
+{% endif %}

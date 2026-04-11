@@ -1,0 +1,17 @@
+---
+- name: Render sysctl tuning configs
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/sysctl.d/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ sysctl_tuning_configs | default([]) }}"
+  register: sysctl_tuning_result
+
+- name: Apply sysctl tuning configs  # noqa: no-handler
+  ansible.builtin.command: "/sbin/sysctl -p /etc/sysctl.d/{{ item.item }}"
+  loop: "{{ sysctl_tuning_result.results }}"
+  when: item.changed
+  loop_control:
+    label: "{{ item.item }}"

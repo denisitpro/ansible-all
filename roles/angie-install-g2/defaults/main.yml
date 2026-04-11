@@ -1,0 +1,44 @@
+---
+angie_compose_path: /opt/docker/angie
+
+angie_version: 1.11.3
+angie_image: "docker.angie.software/angie:{{ angie_version }}"
+
+# Binary name inside container (nginx for nginx images, angie for angie images)
+angie_binary_name: angie
+
+angie_base_path: /opt/angie
+angie_config_base_path: "{{ angie_base_path }}/base"
+angie_mtls_path: /opt/mtls/angie
+angie_acl_conf_dir: "{{ angie_config_base_path }}/acl.d"
+
+# Paths inside container
+angie_inside_etc_path: /etc/angie
+angie_inside_logs_path: /var/log/angie
+angie_inside_base_path: "{{ angie_inside_etc_path }}/base"
+
+angie_uid: 100
+angie_gid: 101
+
+# Docker labels for logging and monitoring
+angie_docker_labels:
+  app.name: "angie"
+  app.type: "nginx"
+  app.role: "web"
+  app.environment: "{{ stand_type | default('unknown') }}"
+  app.version: "{{ angie_version }}"
+  app.hostname: "{{ ansible_facts['hostname'] }}"
+  app.tier: "web"
+
+# Default ports for default-deny configuration
+nginx_default_http_port: 80
+nginx_default_https_port: 443
+
+angie_ssl_path: "/opt/ssl"
+angie_ssl_privkey_path: "{{ ssl_path }}/privkey.pem"
+angie_ssl_cert_path: "{{ ssl_path }}/fullchain.pem"
+
+# cert name mTLS
+angie_mtls_ca_root_cert_name: "mtls_ca"
+angie_mtls_cert_name: "mtls_cert"
+angie_mtls_key_name: "mtls_key"

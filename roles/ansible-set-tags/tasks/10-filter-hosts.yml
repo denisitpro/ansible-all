@@ -1,0 +1,62 @@
+---
+# Filter hosts by tags from inventory
+
+- name: Debug tag configuration
+  ansible.builtin.debug:
+    msg: "Processing tag config: {{ tag_config }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Debug all hosts and their ansible_fw_role tags
+  ansible.builtin.debug:
+    msg: "Host {{ item }}: tags={{ hostvars[item] | dict2items | selectattr('key', 'in', tag_config.tags.keys()) | list }}"
+  loop: "{{ groups['all'] }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Debug what we are looking for
+  ansible.builtin.debug:
+    msg: "Looking for hosts with tags={{ tag_config.tags }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Initialize filtered hosts list
+  ansible.builtin.set_fact:
+    filtered_hostnames: []
+  run_once: true
+  tags:
+    - always
+
+- name: Filter hosts by checking tag values
+  ansible.builtin.set_fact:
+    filtered_hostnames: "{{ filtered_hostnames + [item] }}"
+  loop: "{{ groups['all'] }}"
+  when:
+    - hostvars[item] is defined
+    # Check if all key-value pairs in tag_config.tags exist in hostvars[item]
+    - tag_config.tags.items() | list | length == (tag_config.tags.items() | select('in', hostvars[item].items()) | list | length)
+  tags:
+    - always
+
+- name: Debug filtered hostnames
+  ansible.builtin.debug:
+    msg: "Filtered hosts for {{ tag_config.output_var_name }}: {{ filtered_hostnames }}"
+  run_once: true
+  tags:
+    - always
+
+- name: Debug filtered hostnames count
+  ansible.builtin.debug:
+    msg: "Found {{ filtered_hostnames | length }} hosts matching the tag"
+  run_once: true
+  tags:
+    - always
+
+- name: Include IP resolution task
+  ansible.builtin.include_tasks: 20-resolve-ips.yml
+  when: filtered_hostnames | length > 0
+  tags:
+    - always

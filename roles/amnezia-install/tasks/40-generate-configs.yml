@@ -68,8 +68,8 @@
   loop: "{{ (server_params_file_content['content'] | b64decode | from_yaml) | dict2items }}"
   no_log: true
 
-- name: Manage Clients
-  ansible.builtin.include_tasks: manage_clients.yml
+#- name: Manage Clients
+#  ansible.builtin.include_tasks: manage_clients.yml
 
 - name: Generate Server Config
   ansible.builtin.template:

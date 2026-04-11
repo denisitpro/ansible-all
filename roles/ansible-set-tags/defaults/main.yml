@@ -1,0 +1,20 @@
+---
+# Default configuration for k8s-hosts-by-tags role
+# This role filters hosts by tags and resolves their IP addresses
+
+# List of tag configurations to process
+# Each configuration will create a variable with resolved hosts
+k8s_hosts_tag_configs: []
+# Example:
+# k8s_hosts_tag_configs:
+#   - tags:
+#       k8s_role: master
+#       k8s_env: p2p
+#     output_var_name: k8s_master_p2p_nodes
+#   - tags:
+#       k8s_role: worker
+#       k8s_env: p2p
+#     output_var_name: k8s_worker_p2p_nodes
+
+# Host to delegate IP resolution tasks to
+k8s_hosts_resolution_host: "{{ ansible_play_hosts_all[0] }}"

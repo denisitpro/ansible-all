@@ -1,0 +1,12 @@
+---
+- name: recreate-docker envs-gitlab
+  community.docker.docker_compose_v2:
+    project_src: "{{ envs_gitlab_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker envs-gitlab
+  community.docker.docker_compose_v2:
+    project_src: "{{ envs_gitlab_compose_path }}"
+    state: restarted

@@ -1,0 +1,12 @@
+---
+- name: recreate-docker dragonfly
+  community.docker.docker_compose_v2:
+    project_src: "{{ dragonfly_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
+
+- name: restart-docker dragonfly
+  community.docker.docker_compose_v2:
+    project_src: "{{ dragonfly_compose_path }}"
+    state: restarted

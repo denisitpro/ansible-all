@@ -39,6 +39,7 @@
   when: swap_files.files | length > 0
 
 - name: Configure swap when swap_size is defined
+  when: swap_size is defined and swap_size != ""
   block:
     - name: Validate swap_size format
       ansible.builtin.assert:
@@ -97,6 +98,7 @@
     - name: Add swap file to /etc/fstab
       ansible.builtin.lineinfile:
         path: /etc/fstab
+        mode: "0644"
         line: "/swapfile none swap sw 0 0"
         create: true
         backup: true
@@ -128,8 +130,6 @@
     - name: Display final swap status
       ansible.builtin.debug:
         msg: "Final swap configuration: {{ final_swap.stdout }}"
-
-  when: swap_size is defined and swap_size != ""
 
 - name: Display swap disabled message
   ansible.builtin.debug:
