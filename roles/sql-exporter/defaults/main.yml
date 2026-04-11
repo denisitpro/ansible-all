@@ -1,0 +1,57 @@
+---
+sql_exporter_version: "0.18.0"
+sql_exporter_arch_map:
+  x86_64: "amd64"
+  aarch64: "arm64"
+sql_exporter_arch: "{{ sql_exporter_arch_map[ansible_architecture] | default('amd64') }}"
+
+sql_exporter_download_url: "https://github.com/burningalchemist/sql_exporter/releases/download/{{ sql_exporter_version }}/sql_exporter-{{ sql_exporter_version }}.linux-{{ sql_exporter_arch }}.tar.gz"
+sql_exporter_binary_install_dir: "/usr/local/bin"
+
+sql_exporter_user: "sql-exporter"
+sql_exporter_group: "sql-exporter"
+
+sql_exporter_config_dir: "/etc/sql_exporter"
+sql_exporter_config_file: "{{ sql_exporter_config_dir }}/sql_exporter.yml"
+
+# Service configuration
+sql_exporter_bind_address: "0.0.0.0"
+sql_exporter_bind_port: "9399"
+sql_exporter_web_listen_address: "{{ sql_exporter_bind_address }}:{{ sql_exporter_bind_port }}"
+
+# Configuration content
+sql_exporter_scrape_timeout_offset: "500ms"
+sql_exporter_scrape_timeout: "10s"
+
+# Target DB
+# format: user:password@(host:port)/dbname
+sql_exporter_target_dsn: "mysql://{{ sql_exporter_user }}:{{ sql_exporter_pass }}@localhost:3306/performance_schema"
+
+
+
+
+# Metrics definition
+sql_exporter_metrics:
+  - name: mysql_slow_queries_digest
+    help: "Top slow queries by total latency"
+    values: [ "total_latency", "exec_count", "query" ]
+    query: |
+      SELECT 
+        ROUND(SUM_TIMER_WAIT/1000000000000,2) AS total_latency,
+        COUNT_STAR AS exec_count,
+        DIGEST_TEXT AS query
+      FROM events_statements_summary_by_digest
+      ORDER BY SUM_TIMER_WAIT DESC
+      LIMIT 10;
+
+# Consul registration
+consul_sql_exporter_enabled: true
+consul_sql_exporter_name: "sql-exporter"
+consul_sql_exporter_tags:
+  - "prometheus"
+  - "exporter=sql-exporter"
+  - "stand={{ stand_type | default('undefined') }}"
+  - "dc={{ consul_dc_name | default('undefined') }}"
+consul_sql_exporter_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default(omit) }}"
+consul_config_dir: "/etc/consul.d"
+

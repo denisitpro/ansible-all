@@ -1,0 +1,21 @@
+---
+- name: set ssl-ca to ca-bundle.pem
+  ansible.builtin.lineinfile:
+    path: "{{ teleport_db_mysql_conf_path }}/{{ teleport_db_mysql_conf_file }}"
+    regexp: '^#?ssl-ca='
+    line: "ssl-ca=/etc/mysql/ssl/ca-bundle.pem"
+  register: _ssl_ca_result
+
+- name: ensure ssl-cert is enabled
+  ansible.builtin.lineinfile:
+    path: "{{ teleport_db_mysql_conf_path }}/{{ teleport_db_mysql_conf_file }}"
+    regexp: '^#?ssl-cert='
+    line: "ssl-cert=/etc/mysql/ssl/server-cert.pem"
+  register: _ssl_cert_result
+
+- name: ensure ssl-key is enabled
+  ansible.builtin.lineinfile:
+    path: "{{ teleport_db_mysql_conf_path }}/{{ teleport_db_mysql_conf_file }}"
+    regexp: '^#?ssl-key='
+    line: "ssl-key=/etc/mysql/ssl/server-key.pem"
+  register: _ssl_key_result

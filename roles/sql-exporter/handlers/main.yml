@@ -1,0 +1,10 @@
+---
+- name: restart sql-exporter
+  systemd:
+    name: sql-exporter
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+
+- import_tasks: shared/handlers/consul.yml
+

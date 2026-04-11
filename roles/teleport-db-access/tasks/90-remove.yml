@@ -1,0 +1,64 @@
+---
+# Отключение MySQL от Teleport
+# Запуск: ansible-playbook ... --tags teleport-db-remove
+
+- name: stop teleport service
+  ansible.builtin.systemd:
+    name: teleport
+    state: stopped
+    enabled: false
+  ignore_errors: true
+
+- name: remove teleport data
+  ansible.builtin.file:
+    path: /var/lib/teleport
+    state: absent
+
+- name: remove teleport config
+  ansible.builtin.file:
+    path: /etc/teleport.yaml
+    state: absent
+
+- name: drop teleport-admin MySQL user
+  community.mysql.mysql_user:
+    name: "{{ teleport_db_admin_user }}"
+    host: "%"
+    state: absent
+    login_user: "{{ teleport_db_mysql_login_user }}"
+    login_password: "{{ mysql_root_password }}"
+    login_host: "{{ teleport_db_mysql_login_host }}"
+    login_port: "{{ teleport_db_mysql_login_port }}"
+  ignore_errors: true
+
+- name: restore original ssl-ca in MySQL config
+  ansible.builtin.lineinfile:
+    path: "{{ teleport_db_mysql_conf_path }}/{{ teleport_db_mysql_conf_file }}"
+    regexp: '^ssl-ca='
+    line: "#ssl-ca=/etc/mysql/ssl/ca.pem"
+
+- name: comment out ssl-cert
+  ansible.builtin.lineinfile:
+    path: "{{ teleport_db_mysql_conf_path }}/{{ teleport_db_mysql_conf_file }}"
+    regexp: '^ssl-cert='
+    line: "#ssl-cert=/etc/mysql/ssl/server-cert.pem"
+
+- name: comment out ssl-key
+  ansible.builtin.lineinfile:
+    path: "{{ teleport_db_mysql_conf_path }}/{{ teleport_db_mysql_conf_file }}"
+    regexp: '^ssl-key='
+    line: "#ssl-key=/etc/mysql/ssl/server-key.pem"
+
+- name: remove teleport CA files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ teleport_db_ssl_dir }}/teleport-db-ca.crt"
+    - "{{ teleport_db_ssl_dir }}/ca-bundle.pem"
+
+- name: restart MySQL to apply config changes
+  community.docker.docker_compose_v2:
+    project_src: "{{ teleport_db_mysql_compose_path }}"
+    services:
+      - mysql
+    state: restarted

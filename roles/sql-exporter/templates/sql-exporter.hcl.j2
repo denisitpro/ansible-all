@@ -1,0 +1,22 @@
+service {
+  name = "{{ consul_sql_exporter_name }}"
+  port = {{ sql_exporter_bind_port }}
+  tags = [
+{% for tag in consul_sql_exporter_tags %}
+    "{{ tag }}",
+{% endfor %}
+  ]
+
+{% if consul_sql_exporter_token is defined %}
+  token = "{{ consul_sql_exporter_token }}"
+{% endif %}
+
+  check = {
+    id       = "sql-exporter-check"
+    name     = "SQL Exporter Health Check"
+    tcp      = "localhost:{{ sql_exporter_bind_port }}"
+    interval = "10s"
+    timeout  = "1s"
+  }
+}
+

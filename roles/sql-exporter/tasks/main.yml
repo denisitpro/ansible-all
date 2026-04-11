@@ -1,0 +1,23 @@
+---
+- import_tasks: 05-prefly.yml
+  tags:
+    - sql-exporter
+    - sql-exporter-prefly
+
+- import_tasks: 10-install.yml
+  tags:
+    - sql-exporter
+    - sql-exporter-install
+
+- import_tasks: 20-configure.yml
+  tags:
+    - sql-exporter
+    - sql-exporter-config
+
+- import_tasks: 25-consul-reg.yml
+  when: consul_monitoring_disable is not defined
+  tags:
+    - sql-exporter
+    - sql-exporter-consul
+    - consul
+    - consul-reg

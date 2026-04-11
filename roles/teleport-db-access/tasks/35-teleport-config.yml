@@ -1,0 +1,21 @@
+---
+- name: check if teleport config already exists
+  ansible.builtin.stat:
+    path: /etc/teleport.yaml
+  register: _teleport_config
+
+- name: generate teleport db_service config (only if no existing config)
+  ansible.builtin.template:
+    src: teleport-db.yaml.j2
+    dest: /etc/teleport.yaml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart-unit teleport
+  when: not _teleport_config.stat.exists
+
+- name: enable and start teleport
+  ansible.builtin.systemd:
+    name: teleport
+    state: started
+    enabled: true

@@ -1,0 +1,15 @@
+---
+- name: read existing MySQL CA
+  ansible.builtin.slurp:
+    src: "{{ teleport_db_ssl_dir }}/ca.pem"
+  register: _mysql_ca
+
+- name: create CA bundle (MySQL CA + Teleport CA)
+  ansible.builtin.copy:
+    content: |
+      {{ _mysql_ca.content | b64decode }}{{ _teleport_db_ca.content }}
+    dest: "{{ teleport_db_ssl_dir }}/ca-bundle.pem"
+    owner: "{{ teleport_db_ssl_owner }}"
+    group: "{{ teleport_db_ssl_group }}"
+    mode: '0644'
+  register: _ca_bundle_result

@@ -1,0 +1,18 @@
+---
+- name: install python3-pymysql
+  ansible.builtin.package:
+    name: python3-pymysql
+    state: present
+
+- name: create teleport-admin MySQL user with X509 and GRANT OPTION
+  community.mysql.mysql_user:
+    name: "{{ teleport_db_admin_user }}"
+    host: "%"
+    priv: "*.*:ALL PRIVILEGES,GRANT"
+    tls_requires:
+      x509:
+    state: present
+    login_user: "{{ teleport_db_mysql_login_user }}"
+    login_password: "{{ mysql_root_password }}"
+    login_host: "{{ teleport_db_mysql_login_host }}"
+    login_port: "{{ teleport_db_mysql_login_port }}"

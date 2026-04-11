@@ -1,0 +1,37 @@
+---
+# Teleport
+teleport_db_version: stable/v18
+teleport_db_proxy_host: "tp.example.com:443"
+teleport_db_node_name: "{{ inventory_hostname_short }}"
+teleport_db_join_token: "{{ teleport_join_token }}"
+
+# MySQL connection
+teleport_db_mysql_login_user: root
+teleport_db_mysql_login_host: "127.0.0.1"
+teleport_db_mysql_login_port: 3306
+
+# MySQL SSL paths (host side, mounted into container)
+teleport_db_ssl_dir: "{{ mysql_ssl_dir | default('/opt/mysql/ssl') }}"
+teleport_db_ssl_owner: "{{ mysql_uid | default(999) }}"
+teleport_db_ssl_group: "{{ mysql_gid | default(999) }}"
+
+# MySQL config (host side)
+teleport_db_mysql_conf_path: "{{ mysql_conf_path | default('/opt/mysql/conf') }}"
+teleport_db_mysql_conf_file: "mysql.c3-57.cnf"
+
+# Docker compose for MySQL restart
+teleport_db_mysql_compose_path: "{{ mysql_compose_path | default('/opt/docker/mysql') }}"
+
+# Teleport admin user (used by Teleport to manage per-user accounts in TF)
+teleport_db_admin_user: teleport-admin
+
+# Database definitions — override in group_vars
+# teleport_db_databases:
+#   - name: mysql-cis-27 (name in Teleport UI)
+#     description: ""
+#     protocol: mysql
+#     uri: "127.0.0.1:3306"
+#     labels:
+#       db_acl_level300: "300"
+#       env: "c3-dev"
+#       cluster: "c3-infra"

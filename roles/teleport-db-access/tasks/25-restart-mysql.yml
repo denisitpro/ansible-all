@@ -1,0 +1,24 @@
+---
+- name: restart MySQL container (only if config changed)
+  community.docker.docker_compose_v2:
+    project_src: "{{ teleport_db_mysql_compose_path }}"
+    services:
+      - mysql
+    state: restarted
+  when: >
+    (_ca_bundle_result is defined and _ca_bundle_result.changed) or
+    (_ssl_ca_result is defined and _ssl_ca_result.changed) or
+    (_ssl_cert_result is defined and _ssl_cert_result.changed) or
+    (_ssl_key_result is defined and _ssl_key_result.changed)
+
+- name: wait for MySQL to be ready
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ teleport_db_mysql_login_port }}"
+    delay: 5
+    timeout: 120
+  when: >
+    (_ca_bundle_result is defined and _ca_bundle_result.changed) or
+    (_ssl_ca_result is defined and _ssl_ca_result.changed) or
+    (_ssl_cert_result is defined and _ssl_cert_result.changed) or
+    (_ssl_key_result is defined and _ssl_key_result.changed)

@@ -1,0 +1,16 @@
+---
+- name: Template sql_exporter configuration
+  template:
+    src: sql_exporter.yml.j2
+    dest: "{{ sql_exporter_config_file }}"
+    owner: "{{ sql_exporter_user }}"
+    group: "{{ sql_exporter_group }}"
+    mode: '0640'
+  notify: restart sql-exporter
+
+- name: Template systemd service
+  template:
+    src: sql-exporter.service.j2
+    dest: /etc/systemd/system/sql-exporter.service
+    mode: '0644'
+  notify: restart sql-exporter

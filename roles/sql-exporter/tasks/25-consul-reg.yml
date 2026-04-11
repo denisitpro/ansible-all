@@ -1,0 +1,15 @@
+---
+- name: Check consul directory exists
+  stat:
+    path: "{{ consul_config_dir }}"
+  register: consul_config_dir_stat
+
+- name: Register sql-exporter service in Consul
+  template:
+    src: sql-exporter.hcl.j2
+    dest: "{{ consul_config_dir }}/sql-exporter.hcl"
+    mode: '0644'
+  when:
+    - consul_sql_exporter_enabled | bool
+    - consul_config_dir_stat.stat.exists
+  notify: reload consul

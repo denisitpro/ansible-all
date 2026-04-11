@@ -1,0 +1,45 @@
+## {{ ansible_managed }} ##
+version: v3
+teleport:
+  nodename: {{ teleport_db_node_name }}
+  data_dir: /var/lib/teleport
+  join_params:
+    token_name: "{{ teleport_db_join_token }}"
+    method: token
+  proxy_server: {{ teleport_db_proxy_host }}
+  log:
+    output: stderr
+    severity: INFO
+    format:
+      output: text
+  diag_addr: ""
+auth_service:
+  enabled: "no"
+ssh_service:
+  enabled: "no"
+proxy_service:
+  enabled: "no"
+  https_keypairs: []
+  https_keypairs_reload_interval: 0s
+  acme: {}
+db_service:
+  enabled: yes
+  databases:
+{% for db in teleport_db_databases %}
+    - name: "{{ db.name }}"
+      description: "{{ db.description | default(db.name) }}"
+      protocol: "{{ db.protocol | default('mysql') }}"
+      uri: "{{ db.uri | default('127.0.0.1:3306') }}"
+      tls:
+        mode: "{{ db.tls_mode | default('insecure') }}"
+{% if db.admin_user is defined %}
+      admin_user:
+        name: "{{ db.admin_user }}"
+{% endif %}
+{% if db.labels is defined %}
+      static_labels:
+{% for label_key, label_value in db.labels.items() %}
+        {{ label_key }}: "{{ label_value }}"
+{% endfor %}
+{% endif %}
+{% endfor %}

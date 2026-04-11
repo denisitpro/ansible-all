@@ -1,0 +1,15 @@
+---
+- name: fetch Teleport DB client CA
+  ansible.builtin.uri:
+    url: "https://{{ teleport_db_proxy_host | regex_replace(':.*$', '') }}/webapi/auth/export?type=db-client"
+    return_content: yes
+    validate_certs: yes
+  register: _teleport_db_ca
+
+- name: write Teleport CA to file
+  ansible.builtin.copy:
+    content: "{{ _teleport_db_ca.content }}"
+    dest: "{{ teleport_db_ssl_dir }}/teleport-db-ca.crt"
+    owner: "{{ teleport_db_ssl_owner }}"
+    group: "{{ teleport_db_ssl_group }}"
+    mode: '0644'
