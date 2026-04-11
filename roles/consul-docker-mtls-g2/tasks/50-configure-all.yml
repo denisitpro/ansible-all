@@ -1,4 +1,3 @@
----
 - name: Set retry_join for Consul server
   ansible.builtin.set_fact:
     consul_retry_join: "{{ consul_cls_servers | default([]) + [consul_cls_pub_name | default('consul.example.com')] }}"
@@ -21,7 +20,9 @@
   with_items:
     - consul-general.hcl
     - consul-mtls.hcl
-  notify: restart-docker consul
+  notify: 
+    - recreate-docker consul-compose
+    - restart-docker consul
   tags:
     - consul-import
     - consul-config

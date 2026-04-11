@@ -1,0 +1,58 @@
+- name: Set real device path from UUID
+  ansible.builtin.set_fact:
+    real_device: "/dev/disk/by-uuid/{{ item.uuid }}"
+    mount_src: "UUID={{ item.uuid }}"
+
+- name: Check if real device exists
+  ansible.builtin.stat:
+    path: "{{ real_device }}"
+  register: real_device_stat
+
+- name: Skip if real device is missing
+  ansible.builtin.debug:
+    msg: "Skipping disk with UUID={{ item.uuid }} — device not found."
+  when: not real_device_stat.stat.exists
+
+- name: Resize filesystem (ext2/3/4, xfs)
+  community.general.filesystem:
+    dev: "{{ real_device }}"
+    resizefs: true
+    fstype: "{{ item.fs }}"
+  when:
+    - real_device_stat.stat.exists
+
+- name: Set reserved block percentage if specified
+  ansible.builtin.command: tune2fs -m {{ item.reserved_block_percentage }} {{ real_device }}
+  when:
+    - real_device_stat.stat.exists
+    - item.fs is defined
+    - item.fs in ['ext2', 'ext3', 'ext4']
+    - item.reserved_block_percentage is defined
+    - item.reserved_block_percentage | int >= 0
+  register: set_reserved_blocks
+  changed_when: "'already' not in set_reserved_blocks.stdout"
+
+- name: Create mount point
+  ansible.builtin.file:
+    path: "{{ item.mount_point }}"
+    state: directory
+    mode: "0755"
+  when: real_device_stat.stat.exists
+
+- name: Mount the disk
+  ansible.posix.mount:
+    path: "{{ item.mount_point }}"
+    src: "{{ mount_src }}"
+    fstype: "{{ item.fs }}"
+    opts: "{{ item.opts | default('defaults') }}"
+    state: mounted
+  when: real_device_stat.stat.exists
+
+- name: Ensure the mount is present in fstab
+  ansible.posix.mount:
+    path: "{{ item.mount_point }}"
+    src: "{{ mount_src }}"
+    fstype: "{{ item.fs }}"
+    opts: "{{ item.opts | default('defaults') }}"
+    state: present
+  when: real_device_stat.stat.exists

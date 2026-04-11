@@ -1,0 +1,18 @@
+{% if dkron_exporter_enabled | default(false) %}
+services:
+  dkron-exporter:
+    image: {{ dkron_exporter_image | default('c4telegraph/dkron-exporter:1.1.5') }}
+    container_name: dkron-exporter
+    network_mode: host
+    environment:
+      - HTTP_SERVER_PORT={{ dkron_exporter_port | default('9118') }}
+      - DKRON_SERVER_URL={{ dkron_exporter_server_url | default('http://127.0.0.1:8080/v1/jobs') }}
+      - FETCH_INTERVAL={{ dkron_exporter_fetch_interval | default('60') }}
+    restart: {{ dkron_restart | default('always') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+

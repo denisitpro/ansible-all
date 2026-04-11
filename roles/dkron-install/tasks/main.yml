@@ -31,6 +31,19 @@
     - dkron-jobs
     - dkron-compose
 
+- ansible.builtin.import_tasks: 80-exporter.yml
+  when: dkron_server_compose is defined
+  tags:
+    - dkron
+    - dkron-exporter
+
+- ansible.builtin.import_tasks: 85-consul-reg.yml
+  when: dkron_server_compose is defined
+  tags:
+    - dkron
+    - dkron-exporter
+    - consul-reg
+
 - ansible.builtin.import_tasks: 90-restart.yml
   tags: ['never', 'dkron-restart']
 

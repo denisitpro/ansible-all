@@ -1,0 +1,19 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - dragonfly
+    - dragonfly-prefly
+
+# - ansible.builtin.import_tasks: 10-configure.yml
+#   tags:
+#     - dragonfly
+#     - dragonfly-config
+#     - dragonfly-configure
+
+- ansible.builtin.import_tasks: 20-compose.yml
+  tags:
+    - dragonfly
+    - dragonfly-compose
+
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'dragonfly-clean']

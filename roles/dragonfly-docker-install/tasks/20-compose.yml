@@ -1,0 +1,7 @@
+---
+- name: Copy compose-file - dragonfly
+  ansible.builtin.template:
+    src: docker-compose.dragonfly.yml.j2
+    dest: "{{ dragonfly_compose_path }}/docker-compose.yml"
+    mode: 0600
+  notify: recreate-docker dragonfly
