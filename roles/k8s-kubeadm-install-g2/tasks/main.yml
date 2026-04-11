@@ -1,6 +1,6 @@
 ---
 - ansible.builtin.import_tasks: 05-prerequisites.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags:
     - k8s
 
@@ -20,7 +20,7 @@
     - k8s
 
 - ansible.builtin.import_tasks: 25-prefly-k8s.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags:
     - k8s
     - k8s-repo
@@ -35,9 +35,10 @@
     - k8s-repo
     - cilium
     - cilium-cli
+    - k8s-cilium
 
 - ansible.builtin.import_tasks: 30-kube-services.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags:
     - k8s
     - k8s-components
@@ -60,13 +61,13 @@
     - k8s-join-worker-node
 
 
-- ansible.builtin.import_tasks: 55-label-worker-nodes.yml
-  when: k8s_master is not defined and k8s_node_labels is defined
+- ansible.builtin.import_tasks: 61-label-worker-nodes-from-ansible-tags.yml
+  when: k8s_label_nodes_from_tags is defined and k8s_label_nodes_from_tags | bool and k8s_master is not defined
   tags:
     - k8s
-    - k8s-worker-node
-    - k8s-reconfigure
     - k8s-label-nodes
+    - k8s-reconfigure
+    - k8s-label-nodes-tags
 
 
 - ansible.builtin.import_tasks: 65-kubelet-path.yml
@@ -84,14 +85,14 @@
     - k8s-reconfigure
     - cilium-sysctl
 
-# - ansible.builtin.import_tasks: 73-cni-cilium-helm.yml
-#   when: k8s_master is defined and k8s_cni_network == "cilium"  and cilium_install_mode == 'helm'
-#   delegate_to: "{{ k8s_master_init_host }}"
-#   run_once: true
-#   tags:
-#     - k8s
-#     - k8s-cilium
-#     - k8s-reconfigure
+- ansible.builtin.import_tasks: 73-cni-cilium-helm.yml
+  when: k8s_master is defined and k8s_cni_network == "cilium"  and cilium_install_mode == 'helm'
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  tags:
+    - k8s
+    - k8s-cilium
+    - k8s-reconfigure
 
 - ansible.builtin.import_tasks: 75-cni-cilium-cli.yml
   when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_install_mode == 'cli'
@@ -100,6 +101,7 @@
   tags:
     - k8s
     - k8s-cilium
+    - k8s-cilium-base
     - k8s-reconfigure
 
 - ansible.builtin.import_tasks: 80-get-admin-config.yml
@@ -111,6 +113,50 @@
     - k8s-reconfigure
     - k8s-get-config
     - k8s-cilium
+    - get-config
+
+
+- ansible.builtin.import_tasks: 92-cilium-enable-hostfw.yml
+  when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_host_firewall_enabled is defined
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  tags:
+    - k8s
+    - k8s-cilium
+    - k8s-cilium-fw
+    - k8s-reconfigure
+    - cilium-upgrade
+
+- ansible.builtin.import_tasks: 95-cilium-fw.yml
+  when: k8s_master is defined and k8s_cni_network == "cilium" and cilium_host_firewall_enabled is defined and cilium_host_firewall_enabled | bool
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  tags:
+    - k8s
+    - k8s-cilium
+    - k8s-cilium-fw
+    - cilium-fw
+    - k8s-reconfigure
+    - cilium-fw-generated-g1
+
+
+- ansible.builtin.import_tasks: 105-label-nodes-manual.yml
+  when: k8s_enable_manual_labels is defined and k8s_enable_manual_labels | bool
+  tags:
+    - k8s
+    - k8s-worker-node
+    - k8s-reconfigure
+    - k8s-label-nodes
+    - k8s-label-manual
+
+
+- ansible.builtin.import_tasks: 110-label-master-nodes-from-ansible-tags.yml
+  when: k8s_label_nodes_from_tags is defined and k8s_label_nodes_from_tags | bool and k8s_master is defined
+  tags:
+    - k8s
+    - k8s-label-nodes
+    - k8s-reconfigure
+    - k8s-label-nodes-tags
 
 - ansible.builtin.import_tasks: 190-reboot-k8s-cls.yml
   tags: ['never', 'k8s-reboot']

@@ -35,14 +35,15 @@ controller:
       https: "{{ nginx_ingress_host_https_port | default('443') }}"
 {% endif %}
   config:
-    proxy-body-size: "{{ nginx_ingress_proxy_body_size | default('500m') }}"
-{% if nginx_ingress_log_format_json is defined and nginx_ingress_log_format_json %}
-    # extend_json_g2 - unified JSON format for ingress-nginx and standalone angie
-    log-format-upstream: '{ "timestamp": "$time_iso8601", "remote_addr": "$remote_addr", "host": "$host", "server_name": "$server_name", "request_method": "$request_method", "request_id": "$request_id", "request_uri": "$request_uri", "uri": "$uri", "status": "$status", "body_bytes_sent": "$body_bytes_sent", "bytes_sent": "$bytes_sent", "http_referer": "$http_referer", "http_user_agent": "$http_user_agent", "http_x_forwarded_for": "$http_x_forwarded_for", "request_time": "$request_time", "upstream_addr": "$upstream_addr", "upstream_status": "$upstream_status", "upstream_response_time": "$upstream_response_time", "upstream_connect_time": "$upstream_connect_time", "scheme": "$scheme", "ssl_protocol": "$ssl_protocol", "server_protocol": "$server_protocol", "namespace": "$namespace", "ingress_name": "$ingress_name", "service_name": "$service_name", "service_port": "$service_port", "format": "extend_json_g2" }'
-    log-format-escape-json: "true"
-{% elif nginx_ingress_log_format_upstream is defined %}
-    # Legacy text format (deprecated, use nginx_ingress_log_format_json instead)
-    log-format-upstream: '[$time_local] CLIENT: $remote_addr | METHOD: $request_method | HOST: $host | URI: $request_uri | REWRITE_URI: $uri | STATUS: $status | UPSTREAM: $upstream_addr | UP_STATUS: $upstream_status | UP_TIME: ${upstream_response_time}s | REQ_TIME: ${request_time}s | INGRESS: $namespace/$ingress_name | SERVICE: $service_name:$service_port | REQ_ID: $request_id'
+    proxy-body-size: "{{ nginx_ingress_proxy_body_size | default('1m') }}"
+{% if nginx_ingress_log_format_upstream is defined %}
+    log-format-upstream: >
+      [$time_local] CLIENT: $remote_addr | METHOD: $request_method | 
+      HOST: $host | URI: $request_uri | REWRITE_URI: $uri | STATUS: $status | 
+      UPSTREAM: $upstream_addr | UP_STATUS: $upstream_status | 
+      UP_TIME: ${upstream_response_time}s | REQ_TIME: ${request_time}s | 
+      INGRESS: $namespace/$ingress_name | SERVICE: $service_name:$service_port | 
+      REQ_ID: $request_id
 {% endif %}
 {% if nginx_ingress_real_ip is defined %}
     use-forwarded-headers: "true"
@@ -67,11 +68,5 @@ controller:
   nodeSelector:
 {% for key, value in nginx_ingress_node_selector.items() %}
     {{ key }}: {{ value }}
-{% endfor %}
-{% endif %}
-{% if nginx_ingress_tcp_services is defined and nginx_ingress_tcp_services %}
-tcp:
-{% for port, target in nginx_ingress_tcp_services.items() %}
-  {{ port }}: "{{ target }}"
 {% endfor %}
 {% endif %}

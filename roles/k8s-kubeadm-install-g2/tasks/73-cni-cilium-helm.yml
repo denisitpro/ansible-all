@@ -48,3 +48,8 @@
     --force
     --values /tmp/cilium-values.yaml
   when: not skip_cilium_install
+
+- name: Wait for Cilium pods to start
+  ansible.builtin.pause:
+    seconds: 120
+  when: not skip_cilium_install

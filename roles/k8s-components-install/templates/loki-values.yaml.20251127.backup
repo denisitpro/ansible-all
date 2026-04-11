@@ -18,69 +18,14 @@ loki:
   pattern_ingester:
      enabled: true
   limits_config:
-    allow_structured_metadata: true
-    volume_enabled: true
-    retention_period: {{ k8s_loki_retention_period | default('168h') }}
-  compactor:
-    working_directory: /var/loki/compactor
-    compaction_interval: {{ k8s_loki_compaction_interval | default('10m') }}
-    retention_enabled: true
-    retention_delete_delay: {{ k8s_loki_retention_delete_delay | default('2h') }}
-    retention_delete_worker_count: {{ k8s_loki_retention_delete_worker_count | default(100) }}
-    delete_request_store: s3
-  # Common config with S3 storage
-  commonConfig:
-    path_prefix: /var/loki
-    replication_factor: {{ k8s_loki_replication_factor | default(2) }}
-    compactor_grpc_address: {% raw %}'{{ include "loki.compactorAddress" . }}'{% endraw %}
-
-{% if k8s_loki_s3_enabled | default(false) %}
-    storage:
-      s3:
-        endpoint: {{ k8s_loki_s3_endpoint }}
-        region: {{ k8s_loki_s3_region }}
-        bucketnames: {{ k8s_loki_s3_bucket_name }}
-        access_key_id: ${AWS_ACCESS_KEY_ID}
-        secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-        insecure: {{ k8s_loki_s3_insecure | default('false') }}
-        s3forcepathstyle: {{ k8s_loki_s3_force_path_style | default('true') }}
-{% endif %}
-  # Storage configuration for Helm chart
-  storage:
-{% if k8s_loki_s3_enabled | default(false) %}
-    type: s3
-    bucketNames:
-      chunks: {{ k8s_loki_s3_bucket_name | default('loki-chunks') }}
-      ruler: {{ k8s_loki_s3_bucket_name | default('loki-chunks') }}
-      admin: {{ k8s_loki_s3_bucket_name | default('loki-chunks') }}
-    s3:
-      endpoint: {{ k8s_loki_s3_endpoint }}
-      region: {{ k8s_loki_s3_region | default('us-east-1') }}
-      s3ForcePathStyle: {{ k8s_loki_s3_force_path_style | default('true') }}
-      insecure: {{ k8s_loki_s3_insecure | default('false') }}
-{% else %}
-    bucketNames:
-      chunks: chunks
-      ruler: ruler
-      admin: admin
-    type: s3
-{% endif %}
+     allow_structured_metadata: true
+     volume_enabled: true
 
 
 deploymentMode: Distributed
 
-{% if k8s_loki_s3_enabled | default(false) %}
-# Global configuration for S3 access
-global:
-  extraEnv:
-    - name: AWS_ACCESS_KEY_ID
-      value: "{{ k8s_loki_s3_access_key_id }}"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "{{ k8s_loki_s3_secret_access_key }}"
-{% endif %}
-
 ingester:
-  replicas: {{ k8s_loki_ingester_replicas | default(3) }} # To ensure data durability with replication
+  replicas: 3 # To ensure data durability with replication
   zoneAwareReplication:
      enabled: false
   persistence:
@@ -135,6 +80,9 @@ compactor:
   persistence:
     enabled: true
     size: {{ k8s_loki_compactor_pvc_size | default('2Gi') }}
+  # Retention settings belong to the component that does the work.
+  retention_enabled: true
+  retention_period: 24h
 {% if k8s_loki_monitoring_enabled is defined and k8s_loki_monitoring_enabled %}
   serviceMonitor:
     enabled: true
@@ -194,10 +142,6 @@ gateway:
 
 # Enable minio for storage
 minio:
-{% if k8s_loki_s3_enabled | default(false) %}
-  enabled: false
-{% else %}
   enabled: true
   persistence:
-    size: {{ k8s_loki_minio_pvc_size | default('20Gi') }}
-{% endif %} 
+    size: {{ k8s_loki_minio_pvc_size | default('20Gi') }} 

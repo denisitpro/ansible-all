@@ -1,0 +1,158 @@
+role: Agent
+
+customConfig:
+  api:
+    address: 0.0.0.0:8686
+    enabled: true
+    playground: false
+  
+  data_dir: /vector-data-dir
+  
+  sources:
+    kubernetes_logs:
+      type: "kubernetes_logs"
+      extra_label_selector: "vector.dev/exclude!=true"
+  
+  transforms:
+    remove_unnecessary_fields:
+      type: remap
+      inputs:
+        - kubernetes_logs
+      source: |
+        # Extract standard Helm labels
+        # .app_name = .kubernetes.pod_labels["app.kubernetes.io/name"]
+        .app_name = get(.kubernetes.pod_labels, ["app.kubernetes.io/name"]) ?? "unknown"
+        # .app_instance = .kubernetes.pod_labels["app.kubernetes.io/instance"]
+        .app_instance = get(.kubernetes.pod_labels, ["app.kubernetes.io/instance"]) ?? "unknown"
+        # .service_team = .kubernetes.pod_labels.service_team ?? "unknown"
+        .service_team = get(.kubernetes.pod_labels, ["service_team"]) ?? "unknown"
+        
+        # Extract node/cluster/region/zone - use get() for keys with dots
+        .k8s_node = .kubernetes.pod_node_name
+        .region = get(.kubernetes.node_labels, ["topology.kubernetes.io/region"]) ?? "unknown"
+        .zone = get(.kubernetes.node_labels, ["topology.kubernetes.io/zone"]) ?? "unknown"
+        
+        # Remove heavy kubernetes metadata
+        del(.file)
+        del(.stream)
+        del(.kubernetes.container_id)
+        del(.kubernetes.container_image_id)
+        del(.kubernetes.namespace_labels)
+        del(.kubernetes.node_labels)
+        del(.kubernetes.pod_labels)
+        del(.kubernetes.pod_annotations)
+        del(.kubernetes.pod_ip)
+        del(.kubernetes.pod_ips)
+        del(.kubernetes.pod_uid)
+        del(.kubernetes.pod_owner)
+        del(.source_type)
+    
+    parse_json:
+      type: remap
+      inputs:
+        - remove_unnecessary_fields
+      source: |
+        parsed, err = parse_json(.message)
+        if err == null {
+          .message = parsed
+          .json_parsed = true
+        } else {
+          .json_parsed = false
+        }
+  
+  sinks:
+    loki_sink:
+      type: "loki"
+      inputs:
+        - parse_json
+      endpoint: "http://loki-gateway.{{ helm_loki_namespace | default('loki') }}.svc.cluster.local"
+      
+      labels:
+        k8s_cluster: "{{ k8s_prom_cluster_id | default('unknown') }}"
+{% raw %}
+        container: '{{ "{{" }} .kubernetes.container_name {{ "}}" }}'
+        namespace: '{{ "{{" }} .kubernetes.pod_namespace {{ "}}" }}'
+        app: '{{ "{{" }} .app_name {{ "}}" }}'
+        app_instance: '{{ "{{" }} .app_instance {{ "}}" }}'
+        service_team: '{{ "{{" }} .service_team {{ "}}" }}'
+{% endraw %}
+        job: "vector"
+      
+      encoding:
+        codec: "json"
+      
+      batch:
+        max_bytes: 2097152
+        max_events: 20000
+        timeout_secs: 10
+      
+      buffer:
+        type: "disk"
+        max_size: 2147483648
+        when_full: "block"
+      
+      request:
+        timeout_secs: 60
+        retry_attempts: 10
+        retry_initial_backoff_secs: 1
+        retry_max_duration_secs: 900
+      
+      acknowledgements:
+        enabled: true
+
+    # Elasticsearch sink - ready for activation
+    # Uncomment and configure endpoint when needed
+    # elasticsearch_sink:
+    #   type: "elasticsearch"
+    #   inputs:
+    #     - parse_json
+    #   
+    #   # Configure your ES endpoint
+    #   endpoint: "http://elasticsearch.logging.svc.cluster.local:9200"
+    #   mode: "bulk"
+    #   api_version: "auto"
+    #   
+    #   # Dynamic index pattern by date and cluster
+    #   bulk:
+    #     index: "k8s-logs-{{ k8s_prom_cluster_id | default('unknown') }}-%Y.%m.%d"
+    #   
+    #   # Optional: authentication
+    #   # auth:
+    #   #   strategy: "basic"
+    #   #   user: "elastic"
+    #   #   password: "${ELASTICSEARCH_PASSWORD}"
+    #   
+    #   # Encoding - all fields in JSON
+    #   encoding:
+    #     codec: "json"
+    #   
+    #   # Batch settings optimized for ES bulk API
+    #   batch:
+    #     max_bytes: 10485760
+    #     max_events: 5000
+    #     timeout_secs: 30
+    #   
+    #   # Disk buffer - drop_newest to prevent blocking
+    #   buffer:
+    #     type: "disk"
+    #     max_size: 2147483648
+    #     when_full: "drop_newest"
+    #   
+    #   # Retry with backoff
+    #   request:
+    #     timeout_secs: 120
+    #     retry_attempts: 5
+    #     retry_initial_backoff_secs: 2
+    #     retry_max_duration_secs: 300
+    #   
+    #   # Health check
+    #   healthcheck:
+    #     enabled: true
+
+service:
+  enabled: true
+  ports:
+    - name: api
+      port: 8686
+      targetPort: 8686
+      protocol: TCP

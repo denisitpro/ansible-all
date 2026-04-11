@@ -14,7 +14,7 @@ labels:
 {% endfor %}
 {% endif %}
 
-insecureSkipProxyTLSVerify: true
+insecureSkipProxyTLSVerify: false
 kubernetesDiscovery:
 {% for rule in k8s_teleport_agent_kubernetes_discovery %}
   - types: {{ rule.types | to_json }}

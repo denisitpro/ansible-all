@@ -45,6 +45,24 @@
     --values /tmp/loki-values.yaml
   when: not skip_loki_install or loki_force_install is defined
 
+- name: Loki - Create ingress config from template
+  ansible.builtin.template:
+    src: "loki-ingress.yml"
+    dest: /tmp/loki-ingress.yml
+    mode: "0600"
+  when: k8s_loki_ingress_enabled | default(false)
+  tags:
+    - loki-ingress
+
+- name: Loki - Apply ingress
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/loki-ingress.yml
+    --namespace {{ helm_loki_namespace | default('loki') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: k8s_loki_ingress_enabled | default(false)
+  tags:
+    - loki-ingress
+
 # - name: remove /tmp/loki-values.yaml
 #   ansible.builtin.file:
 #     path: /tmp/loki-values.yaml

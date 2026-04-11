@@ -1,6 +1,21 @@
 
 # Instructions for Configuring Vault Secrets Operator
 
+# Lazy command
+```bash
+kubectl -n kube-system get configmap kube-root-ca.crt -o jsonpath='{.data.ca\.crt}' > k8s-ca.crt && \
+kubectl create sa vault-reviewer -n kube-system && \
+kubectl create clusterrolebinding vault-reviewer-binding \
+  --clusterrole=system:auth-delegator \
+  --serviceaccount=kube-system:vault-reviewer && \
+kubectl create token vault-reviewer --duration=8760h -n kube-system > reviewer.token && \
+echo -e "\n\n\n" && \
+cat k8s-ca.crt && \
+echo
+cat reviewer.token
+echo
+```
+
 ## Step 1: Extract Kubernetes CA Certificate
 ```bash
 kubectl -n kube-system get configmap kube-root-ca.crt -o jsonpath='{.data.ca\.crt}' > k8s-ca.crt

@@ -1,0 +1,72 @@
+---
+# Enable Cilium Host Firewall
+# This task enables host-level firewall protection using Cilium's Host Firewall feature
+# Documentation: https://docs.cilium.io/en/latest/security/host-firewall/
+
+- name: Resolve hosts by tags for Cilium Host Firewall rules
+  ansible.builtin.include_role:
+    name: ansible-set-tags
+  when: k8s_hosts_tag_configs is defined
+
+# ============================================================
+# Generate Cilium Host Firewall policies from templates
+# ============================================================
+
+- name: Generate Cilium Host Firewall policies
+  ansible.builtin.template:
+    src: "{{ item.template }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  with_items:
+    - { template: 'cilium-system-rules.yml.j2', dest: "{{ cilium_system_rules_file }}" }
+    - { template: 'cilium-worker-rules.yml.j2', dest: "{{ cilium_worker_rules_file }}" }
+    - { template: 'cilium-master-rules.yml.j2', dest: "{{ cilium_master_rules_file }}" }
+
+# ============================================================
+# Generate optional Cilium Host Firewall policies
+# ============================================================
+
+- name: Generate Cilium Host Firewall Generated G1 policy
+  ansible.builtin.template:
+    src: "cilium-generated-rules-g1.yml.j2"
+    dest: "{{ cilium_generated_rules_g1_file }}"
+    mode: '0644'
+  when: cilium_fw_generated_g1 is defined
+
+# - name: Generate Cilium Host Firewall Longhorn policy
+#   ansible.builtin.template:
+#     src: "cilium-fw-longhorn.yml.j2"
+#     dest: "{{ cilium_longhorn_rules_file }}"
+#     mode: '0644'
+#   when: cilium_fw_longhorn_enabled | default(false)
+
+# ============================================================
+# Apply Cilium Host Firewall policies
+# ============================================================
+
+- name: Apply Cilium Host Firewall policies
+  ansible.builtin.command: >
+    kubectl apply -f {{ item }}
+    --kubeconfig {{ k8s_config_path }}
+  with_items:
+    - "{{ cilium_system_rules_file }}"
+    - "{{ cilium_master_rules_file }}"
+    - "{{ cilium_worker_rules_file }}"
+  register: cilium_policy_apply
+  changed_when: "'created' in cilium_policy_apply.stdout or 'configured' in cilium_policy_apply.stdout"
+
+- name: Apply Cilium Host Firewall Generated G1 policy
+  ansible.builtin.command: >
+    kubectl apply -f {{ cilium_generated_rules_g1_file }}
+    --kubeconfig {{ k8s_config_path }}
+  register: cilium_generated_g1_policy_apply
+  changed_when: "'created' in cilium_generated_g1_policy_apply.stdout or 'configured' in cilium_generated_g1_policy_apply.stdout"
+  when: cilium_fw_generated_g1 is defined
+
+# - name: Apply Cilium Host Firewall Longhorn policy
+#   ansible.builtin.command: >
+#     kubectl apply -f {{ cilium_longhorn_rules_file }}
+#     --kubeconfig {{ k8s_config_path }}
+#   register: cilium_longhorn_policy_apply
+#   changed_when: "'created' in cilium_longhorn_policy_apply.stdout or 'configured' in cilium_longhorn_policy_apply.stdout"
+#   when: cilium_fw_longhorn_enabled | default(false)

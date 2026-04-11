@@ -1,0 +1,16 @@
+---
+- ansible.builtin.import_tasks: 05-create-users.yml
+  tags:
+   - create-users
+   - users
+
+# Temporary tasks for root sms/mps ci-cd
+- ansible.builtin.import_tasks: 15-root-ssh-keys.yml
+  when: root_user_authorized_keys is defined
+  tags:
+   - root-user
+   - users
+
+- ansible.builtin.import_tasks: 20-delete-users.yml
+  when: local_users_delete is defined and local_users_delete | length > 0
+  tags: ['never', 'delete-users']

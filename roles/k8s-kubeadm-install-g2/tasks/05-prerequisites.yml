@@ -50,7 +50,7 @@
 
 - name: Set a hostname
   ansible.builtin.hostname:
-    name: "{{ inventory_hostname }}"
+    name: "{{ k8s_server_hostname }}"
   when: k8s_hostname_force is defined
 
 # - name: install socat

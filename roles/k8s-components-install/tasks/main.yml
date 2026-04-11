@@ -1,10 +1,11 @@
 ---
-- ansible.builtin.import_tasks: 05-prefly.yml
-  delegate_to: "{{ k8s_master_init_host }}"
-  run_once: true
-  tags:
-    - k8s
-    - k8s-addition
+# set helm dedical role use playbook
+# - ansible.builtin.import_tasks: 05-prefly.yml
+#   delegate_to: "{{ k8s_master_init_host }}"
+#   run_once: true
+#   tags:
+#     - k8s
+#     - k8s-addition
 
 - ansible.builtin.import_tasks: 20-longhorn.yml
   delegate_to: "{{ k8s_master_init_host }}"
@@ -15,16 +16,20 @@
     - k8s-addition
     - k8s-longhorn
 
-- ansible.builtin.import_tasks: 25-set-ingress-label-from-tf.yml
+- ansible.builtin.import_tasks: 25-set-ingress-label-from-ansible.yml
   delegate_to: "{{ k8s_master_init_host }}"
-  when: k8s_ingress_nodes is defined and k8s_ingress_nodes | length > 0
   run_once: true
+  when: "'ingress-nginx' in helm_componets_list or 'traefik' in helm_componets_list"
   tags:
     - k8s
     - k8s-addition
     - k8s-label
     - k8s-node-label
+    - k8s-ingress
+    - k8s-ingress-nginx
     - k8s-ingress-label
+    - k8s-traefik
+    - k8s-traefik-label
 
 - ansible.builtin.import_tasks: 30-ingress-nginx.yml
   delegate_to: "{{ k8s_master_init_host }}"
@@ -35,7 +40,7 @@
     - k8s-addition
     - k8s-ingress
     - k8s-ingress-nginx
-
+    - k8s-ingress-nginx-install
 
 - ansible.builtin.import_tasks: 40-prom-stack.yml
   delegate_to: "{{ k8s_master_init_host }}"
@@ -61,7 +66,7 @@
   run_once: true
   when:
     - "'cert-manager' in helm_componets_list"
-    - k8s_cert_manager_condifured is defined
+    - k8s_cert_manager_configured is defined
   tags:
     - k8s
     - k8s-addition
@@ -76,6 +81,7 @@
     - k8s
     - k8s-addition
     - k8s-argocd
+    - argocd
 
 - ansible.builtin.import_tasks: 65-argocd-configure.yml
   delegate_to: "{{ k8s_master_init_host }}"
@@ -165,7 +171,6 @@
     - k8s-addition
     - k8s-ms
     - k8s-metrics-server
-
 # todo for future use
 # - ansible.builtin.import_tasks: 125-set-node-label.yml
 #   delegate_to: "{{ k8s_master_init_host }}"
@@ -185,3 +190,21 @@
 #     - k8s
 #     - k8s-addition
 #     - k8s-kong
+
+- ansible.builtin.import_tasks: 135-traefik.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'traefik' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-traefik
+
+- ansible.builtin.import_tasks: 140-cnpg.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'cnpg' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-cnpg

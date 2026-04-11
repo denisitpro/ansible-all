@@ -1,18 +1,20 @@
 ---
 # Helm chart versions for all components
 # Centralized version management for easier updates and overview
-helm_longhorn_version: "1.10.0"
-helm_ingress_nginx_version: "4.14.0"
-helm_prometheus_version: "79.0.0"
+helm_longhorn_version: "1.11.1"
+helm_ingress_nginx_version: "4.15.0"
+helm_prometheus_version: "80.8.0"
 helm_cert_manager_version: "1.19.0"
-helm_argocd_version: "9.0.5"
-helm_loki_version: "6.42.0"
-helm_vector_version: "0.46.0"
-helm_teleport_version: "18.2.10"
+helm_argocd_version: "9.4.17"
+helm_loki_version: "6.46.0"
+helm_vector_version: "0.51.0"
+helm_teleport_version: "18.4.1"
 helm_vso_version: "1.0.1"
 helm_vai_version: "0.31.0"
 metrics_server_helm_version: "3.12.1"
 helm_kong_version: "2.52.0"
+helm_traefik_version: "39.0.1"
+helm_cnpg_version: "0.28.0"
 
 helm_componets_list:
   - longhorn
@@ -25,8 +27,12 @@ helm_componets_list:
   - hubble-ui
   - metrics-server
   - loki
-  # - vector
+  - vector
+  # - cnpg
   # - kong
+
+k8s_cluster_id: "k8s-default-cls"
+k8s_prom_cluster_id: "{{ k8s_cluster_id }}-prom"
 
 argocd_github_client_id: "{{ vault_dict_users_secret_g2.argocd_github.client_id | default('set_me') }}"
 argocd_github_secret_id: "{{ vault_dict_users_secret_g2.argocd_github.secret_id | default('set_me') }}"
@@ -34,7 +40,7 @@ argocd_github_secret_id: "{{ vault_dict_users_secret_g2.argocd_github.secret_id 
 argocd_dockerhub_oci_name: "{{ vault_dict_users_secret_g2.argocd_dockerhub_oci_cred.helm_charts_v1_pull_login | default('dockerhub_org_name') }}"
 argocd_dockerhub_oci_pass: "{{ vault_dict_users_secret_g2.argocd_dockerhub_oci_cred.helm_charts_v1_pull_token | default('set_me') }}"
 
-teleport_k8s_agent_token: "{{ vault_dict_users_secret_g2.teleport_k8s_agent_token.value | default('set_me') }}"
+teleport_k8s_agent_token: "{{ vault_dict_users_secret_g2.teleport_tokens.teleport_k8s_agent_token | default('set_me') }}"
 
 # vault g1
 # k8s_cert_manager_cloudflare_token: "{{ vault_dict_users_secret.k8s_cert_manager_cloudflare_token | default('set_me') }}"
@@ -43,7 +49,7 @@ teleport_k8s_agent_token: "{{ vault_dict_users_secret_g2.teleport_k8s_agent_toke
 k8s_cert_manager_cloudflare_token: "{{ vault_dict_users_secret_g2.k8s_cert_manager_cloudflare_token.k8s_cert_manager_cloudflare_token | default('set_me') }}"
 
 # Cert-manager configuration
-k8s_cert_manager_type: "cloudflare"  # http or cloudflare
+k8s_cert_manager_type: "cloudflare" # http or cloudflare
 
 k8s_teleport_agent_kub_cluster_base_labels:
   region: "unknown"
@@ -62,7 +68,6 @@ k8s_teleport_agent_kubernetes_discovery:
 
 # Discovery group for unique identification of teleport agents
 k8s_teleport_agent_discovery_group: "{{ k8s_cls_name | default('k8s-example.example.com') }}"
-
 
 # argocd_policy_csv_admins:
 #   - org:team
@@ -110,7 +115,95 @@ k8s_pod_monitoring_config:
   # Monitor pods in ALL namespaces (dynamic discovery)
   namespaceSelector: {}
 
-# Ingress node labeling from Terraform state
-# These labels will be applied to nodes with role=ingress in Terraform
+# Ingress nginx mode configuration
+# Available modes:
+#   - network_mode: hostNetwork mode for direct host network binding (default, best performance)
+#   - node_port: NodePort service mode (for external load balancers)
+#   - host_port: hostPort mode for specific port binding via pod spec
+nginx_ingress_mode: "network_mode"
+
+# Ingress node labeling configuration
+# These labels will be applied to nodes with k8s_ingress=nginx tag in inventory
 k8s_ingress_label_key: "ingress.nginx/enabled"
 k8s_ingress_label_value: "enabled"
+
+# Traefik node labeling configuration
+# These labels are applied to nodes with k8s_ingress=traefik and can be used for Traefik nodeSelector
+k8s_traefik_inventory_tag_value: "traefik"
+k8s_traefik_label_key: "ingress.traefik/enabled"
+k8s_traefik_label_value: "enabled"
+traefik_auto_node_selector_from_inventory_tag: true
+# Traefik service exposure mode:
+# - node_port: exposes NodePort 32080/32443 (default)
+# - cluster_ip: ClusterIP only, no NodePort published on nodes
+# - host_port: binds host ports on node via pod hostPort settings
+# - network_mode: hostNetwork mode, Traefik listens on node ports directly (no hostPort NAT)
+traefik_service_mode: "node_port"
+# Traefik workload kind: Deployment or DaemonSet
+traefik_deployment_kind: "Deployment"
+# Traefik DaemonSet rolling update maxUnavailable (must be > 0 for hostNetwork)
+traefik_daemonset_max_unavailable: 1
+# Traefik DaemonSet rolling update maxSurge (must be 0 when maxUnavailable > 0)
+traefik_daemonset_max_surge: 0
+# Traefik metrics entrypoint port override for network_mode (avoid conflicts with node-exporter on 9100)
+traefik_network_mode_metrics_port: 9101
+# Expose Traefik dashboard (entrypoint traefik) as a Service port
+traefik_dashboard_service_expose: false
+traefik_dashboard_service_port: 8080
+
+# Configuration for ansible-set-tags role to discover ingress nodes
+# Searches for hosts with k8s_ingress: nginx tag and creates k8s_ingress_nodes_list variable
+k8s_hosts_tag_configs:
+  - tags:
+      k8s_ingress: nginx
+    output_var_name: k8s_ingress_nodes_list
+
+# compability for new logical dedical components
+# k8s group config
+k8s_master_group_name: k8s_master_example
+k8s_master_init_host: "{{ groups[k8s_master_group_name][0] }}"
+
+kubeadmin_config: /etc/kubernetes/admin.conf
+k8s_config_path: /etc/kubernetes/admin.conf
+
+# k8s_prometheus_external_labels:
+#   environment: "{{ ansible_facts.get('fqdn') | default(ansible_host) | default(inventory_hostname) }}"
+#   monitoring: monitoring
+#   cluster: k8s-prom-c1-p2p
+#   replica: k8s-prom-c1-p2p
+
+# Metric relabeling configuration for Prometheus scrape jobs
+# Used to drop or keep specific metrics based on labels
+# Example:
+# k8s_prom_metric_relabel_configs:
+#   - source_labels: [__name__]
+#     regex: unwanted_metric_.*
+#     action: drop
+k8s_prom_metric_relabel_configs: []
+
+# ServiceMonitor relabeling configuration
+# Applied to all ServiceMonitors discovered by Prometheus
+# Example:
+# k8s_prom_service_monitor_relabel_configs:
+#   - source_labels: [__name__]
+#     regex: unwanted_metric_.*
+#     action: drop
+k8s_prom_service_monitor_relabel_configs: []
+
+# Additional ServiceMonitors for custom application monitoring
+# Example:
+# k8s_prom_additional_service_monitors:
+#   - name: applications-monitor
+#     selector:
+#       matchLabels:
+#         prometheus.io/scrape: "true"
+#     namespaceSelector:
+#       any: true
+#     endpoints:
+#       - port: metrics
+#         interval: 30s
+#         metric_relabel_configs:
+#           - source_labels: [__name__]
+#             regex: unwanted_.*
+#             action: drop
+k8s_prom_additional_service_monitors: []
