@@ -1,0 +1,14 @@
+---
+
+- ansible.builtin.import_tasks: 20-base-configure.yml
+  tags:
+    - nginx-s3-gw
+    - nginx-s3-gw-configure
+
+- ansible.builtin.import_tasks: 35-compose.yml
+  tags:
+    - nginx-s3-gw
+    - nginx-s3-gw-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'nginx-s3-gw-clean']

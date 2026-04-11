@@ -1,6 +1,7 @@
 ---
 - name: copy conf file
-  template:
-    src: "local-config.yaml.j2"
-    dest: "{{loki_data_path}}/config/local-config.yaml"
+  ansible.builtin.template:
+    src: "{{ loki_config_file_name }}.j2"
+    dest: "{{ loki_data_path }}/config/config.yaml"
+    mode: '0644'
   notify: restart-docker loki

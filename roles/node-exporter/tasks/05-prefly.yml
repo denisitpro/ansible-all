@@ -1,33 +1,67 @@
 ---
-- name: Check if exporter-node configuration file exists
+- name: Assert usage of systemd as an init system
+  ansible.builtin.assert:
+    that: ansible_service_mgr == 'systemd'
+    msg: "This role only works with systemd"
+
+- name: Get systemd version
+  ansible.builtin.command: systemctl --version
+  changed_when: false
+  check_mode: false
+  register: __systemd_version
+  tags:
+    - skip_ansible_lint
+
+- name: Set systemd version fact
+  ansible.builtin.set_fact:
+    node_exporter_systemd_version: "{{ __systemd_version.stdout_lines[0] | regex_replace('^systemd\\s(\\d+).*$', '\\1') }}"
+
+- name: Assert collectors are not both disabled and enabled at the same time
+  ansible.builtin.assert:
+    that:
+      - "item not in node_exporter_enabled_collectors"
+  with_items: "{{ node_exporter_disabled_collectors }}"
+
+- when:
+    - node_exporter_tls_server_config is defined
+    - node_exporter_tls_server_config | length > 0
+  block:
+    - name: Assert that TLS key and cert path are set
+      ansible.builtin.assert:
+        that:
+          - "node_exporter_tls_server_config.cert_file is defined"
+          - "node_exporter_tls_server_config.key_file is defined"
+
+    - name: Check existence of TLS cert file
+      ansible.builtin.stat:
+        path: "{{ node_exporter_tls_server_config.cert_file }}"
+      register: __node_exporter_cert_file
+
+    - name: Check existence of TLS key file
+      ansible.builtin.stat:
+        path: "{{ node_exporter_tls_server_config.key_file }}"
+      register: __node_exporter_key_file
+
+    - name: Assert that TLS key and cert are present
+      ansible.builtin.assert:
+        that:
+          - "{{ __node_exporter_cert_file.stat.exists }}"
+          - "{{ __node_exporter_key_file.stat.exists }}"
+
+- name: Check if node_exporter is installed
   ansible.builtin.stat:
-    path: "{{ supervisor_conf }}"
-  register: exporter_conf_stat
+    path: "{{ node_exporter_binary_path }}"
+  register: __node_exporter_is_installed
+  check_mode: false
+  tags:
+    - node_exporter_install
 
-- name: Stop and remove exporter-node via Supervisor module if config exists
-  community.general.supervisorctl:
-    name: exporter-node
-    state: absent
-    stop_before_removing: true
-  when: exporter_conf_stat.stat.exists
-
-- name: Remove exporter-node from Supervisor configuration
-  community.general.supervisorctl:
-    name: exporter-node
-    state: absent
-  when: exporter_conf_stat.stat.exists
-
-- name: Copy exporter-node.conf to exporter-node.conf.disabled
-  ansible.builtin.copy:
-    src: "{{ supervisor_conf }}"
-    dest: "{{ supervisor_conf }}.disabled"
-    force: true
-    remote_src: true
-    mode: "0644"
-  when: exporter_conf_stat.stat.exists
-
-- name: Remove original exporter-node.conf
-  ansible.builtin.file:
-    path: "{{ supervisor_conf }}"
-    state: absent
-  when: exporter_conf_stat.stat.exists
+- name: Gather currently installed node_exporter version (if any)
+  ansible.builtin.command: "{{ node_exporter_binary_path }} --version"
+  changed_when: false
+  register: __node_exporter_current_version_output
+  check_mode: false
+  when: __node_exporter_is_installed.stat.exists
+  tags:
+    - node_exporter_install
+    - skip_ansible_lint

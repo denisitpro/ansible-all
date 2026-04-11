@@ -1,26 +1,34 @@
 ---
-- import_tasks: 05-prefly.yml
+- ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - loki
     - loki-prefly
 
-- import_tasks: 08-loki-ssl.yml
+- ansible.builtin.import_tasks: 08-loki-ssl.yml
   when: loki_ssl is defined
   tags:
     - loki
     - loki-ssl
 
-- import_tasks: 10-configure.yml
+- ansible.builtin.import_tasks: 10-configure.yml
   tags:
     - loki
     - loki-config
     - loki-configure
 
-- import_tasks: 20-compose.yml
+- ansible.builtin.import_tasks: 20-compose.yml
   tags:
     - loki
     - loki-compose
 
-- import_tasks: 90-launch.yml
+- ansible.builtin.import_tasks: 65-consul-reg.yml
+  when: (consul_monitoring_disable is not defined) and (loki_consul_discovery | bool)
   tags:
     - loki
+    - consul
+    - consul-reg
+    - consul-owner
+    - consul-loki
+
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'loki-clean']

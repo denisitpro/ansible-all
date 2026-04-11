@@ -3,14 +3,14 @@ node_exporter_version_binary: "1.10.0"
 node_exporter_bind_port: '9100'
 
 
-go_arch_map:
+node_exporter_go_arch_map:
   i386: '386'
   x86_64: 'amd64'
   aarch64: 'arm64'
   armv7l: 'armv7'
   armv6l: 'armv6'
 
-go_arch: "{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+node_exporter_go_arch: "{{ node_exporter_go_arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
 
 node_exporter_system_user: "node-exporter"
 node_exporter_system_group: "{{ node_exporter_system_user }}"
@@ -31,7 +31,7 @@ node_exporter_enabled_collectors:
 node_exporter_disabled_collectors:
   - ipvs
 
-node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version_binary }}/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
+node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version_binary }}/node_exporter-{{ node_exporter_version_binary }}.linux-{{ node_exporter_go_arch }}.tar.gz"
 
 # vault g1
 # consul_node_exporter_token: "{{ vault_dict_users_secret.consul_all_exporters_token | default('set_me') }}"
@@ -52,8 +52,9 @@ scripts_path: /opt/scripts
 #   - inotify-metrics.sh
 #  - ping-ipv4.sh
 
-supervisor_conf: /etc/supervisor/conf.d/exporter-node.conf
 
 
 # consul section
+# Consul installation mode: "docker" or "unit" (systemd)
+consul_install_mode: "docker"
 consul_compose_path: /opt/docker/consul

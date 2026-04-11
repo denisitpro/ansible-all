@@ -1,10 +1,10 @@
 auth_enabled: false
 
 server:
-  http_listen_address: {{loki_http_addr | default('') }}
+  http_listen_address: "{{ loki_http_addr | default('127.0.0.1') }}"
   http_listen_port: {{loki_http_port | default('3100')}}
-  grpc_listen_port: 9095
-  grpc_listen_address: {{loki_grpc_addr | default('127.0.0.1')}}
+  # grpc_listen_port: 9095
+  # grpc_listen_address: {{loki_grpc_addr | default('127.0.0.1')}}
 {% if loki_ssl is defined %}
   http_tls_config:
     cert_file: {{loki_data_path}}/ssl/{{loki_cert_name | default('fullchain.pem')}}
@@ -81,4 +81,14 @@ compactor:
   compaction_interval: 10m
 
 ruler:
-  alertmanager_url: http://localhost:9093
+  alertmanager_url: {{ loki_alertmanager_url | default('http://localhost:9093') }}
+  # Use Alertmanager v2 API (/api/v2/alerts). This is the default in modern AM deployments.
+  enable_alertmanager_v2: true
+  storage:
+    type: local
+    local:
+      directory: /opt/loki/rules
+  # IMPORTANT: rule_path is a scratch/mapped directory which Loki may wipe on startup.
+  # Do NOT point it to the same directory as storage.local.directory (where source rules live),
+  # otherwise Loki can delete your rule files.
+  rule_path: /opt/loki/rules-tmp

@@ -1,0 +1,56 @@
+---
+- name: Create MySQL exporter user
+  when: mysql_exporter_user | default(false) | bool
+  block:
+    - name: Install python3-pymysql
+      ansible.builtin.package:
+        name: python3-pymysql
+        state: present
+
+    - name: Create or update MySQL exporter user (remote access via %)
+      community.mysql.mysql_user:
+        name: "{{ sql_exporter_user }}"
+        password: "{{ sql_exporter_pass }}"
+        host: "%"
+        priv: "performance_schema.*:SELECT/*.*:PROCESS,REPLICATION CLIENT"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: 3306
+      register: mysql_user_remote
+
+    - name: Create or update MySQL exporter user (local access via localhost socket)
+      community.mysql.mysql_user:
+        name: "{{ sql_exporter_user }}"
+        password: "{{ sql_exporter_pass }}"
+        host: localhost
+        priv: "performance_schema.*:SELECT/*.*:PROCESS,REPLICATION CLIENT"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: 3306
+      register: mysql_user_local
+
+    - name: Create or update MySQL exporter user (local access via 127.0.0.1 TCP)
+      community.mysql.mysql_user:
+        name: "{{ sql_exporter_user }}"
+        password: "{{ sql_exporter_pass }}"
+        host: 127.0.0.1
+        priv: "performance_schema.*:SELECT/*.*:PROCESS,REPLICATION CLIENT"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: 3306
+      register: mysql_user_tcp_local
+
+    - name: Flush privileges
+      community.mysql.mysql_query:
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: 3306
+        query: FLUSH PRIVILEGES
+      when: mysql_user_remote.changed or mysql_user_local.changed or mysql_user_tcp_local.changed

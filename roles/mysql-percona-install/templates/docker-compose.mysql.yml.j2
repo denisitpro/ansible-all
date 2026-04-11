@@ -11,6 +11,9 @@ services:
       - {{ mysql_data_path }}:/var/lib/mysql
       - {{ mysql_conf_path }}:/etc/my.cnf.d
       - {{ mysql_log_path }}:/var/log/mysql
+{% if mysql_ssl_enabled | default(false) %}
+      - {{ mysql_ssl_dir }}:/etc/mysql/ssl
+{% endif %}
     restart: {{ mysql_restart | default('always') }}
     logging:
       driver: json-file

@@ -21,7 +21,7 @@
   become: false
   ansible.builtin.get_url:
     url: "{{ node_exporter_download_url }}"
-    dest: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ node_exporter_go_arch }}.tar.gz"
     mode: "0644"
   register: node_exporter_download_binary
   until: node_exporter_download_binary is succeeded
@@ -32,15 +32,15 @@
 - name: Unpack node_exporter binary
   become: false
   ansible.builtin.unarchive:
-    src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}.tar.gz"
+    src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ node_exporter_go_arch }}.tar.gz"
     dest: "/tmp"
-    creates: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}/node_exporter"
+    creates: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ node_exporter_go_arch }}/node_exporter"
     remote_src: true
   check_mode: false
 
 - name: Propagate node_exporter binaries
   ansible.builtin.copy:
-    src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ go_arch }}/node_exporter"
+    src: "/tmp/node_exporter-{{ node_exporter_version_binary }}.linux-{{ node_exporter_go_arch }}/node_exporter"
     dest: "{{ node_exporter_binary_path }}"
     mode: "0755"
     owner: root

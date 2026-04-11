@@ -2,7 +2,7 @@
 - ansible.builtin.import_tasks: 05-prefly.yml
   tags:
     - node-exporter
-    - node-exporter-rm-supervisor
+    - node-exporter-preflight
 
 - ansible.builtin.import_tasks: 10-install.yml
   tags:

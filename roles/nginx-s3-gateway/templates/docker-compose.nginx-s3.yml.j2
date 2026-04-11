@@ -1,0 +1,46 @@
+services:
+  nginx-s3-gateway:
+    image: {{ nginx_s3_image }}
+    container_name: nginx-s3-gateway
+{% if nginx_s3_bridge is defined %}
+    network_mode: host
+{% else %}
+    ports:
+      - "{{ nginx_s3_bridge_bind | default('127.0.0.1') }}:{{ nginx_s3_bridge_port | default('8080') }}:8080"
+{% endif %}
+{% if nginx_s3_docker_labels is defined %}
+    labels:
+{% for key, value in nginx_s3_docker_labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+    
+    # Official nginx-s3-gateway configuration via environment variables
+    environment:
+      # S3 Backend configuration
+      S3_BUCKET_NAME: "{{ nginx_s3_bucket_name }}"
+      S3_SERVER: "{{ nginx_s3_server | default('s3.amazonaws.com') }}"
+      S3_SERVER_PORT: "{{ nginx_s3_server_port | default('443') }}"
+      S3_SERVER_PROTO: "{{ nginx_s3_server_proto | default('https') }}"
+      S3_REGION: "{{ nginx_s3_region | default('eu-central-1') }}"
+      S3_STYLE: "{{ nginx_s3_style | default('path') }}"
+      
+      # AWS Credentials
+      AWS_ACCESS_KEY_ID: "{{ nginx_s3_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ nginx_s3_secret_key }}"
+      AWS_SIGS_VERSION: "{{ nginx_s3_aws_sigs_version | default('4') }}"
+      
+      # Gateway features
+      ALLOW_DIRECTORY_LIST: "{{ nginx_s3_allow_directory_list | default(true) | string | lower }}"
+      PROVIDE_INDEX_PAGE: "{{ nginx_s3_provide_index_page | default(false) | string | lower }}"
+      
+      # Debug
+      DEBUG: "{{ nginx_s3_debug | default(false) | string | lower }}"
+      PROXY_CACHE_VALID_OK: "{{ nginx_s3_proxy_cache_valid_ok | default('5s') }}"
+          
+    restart: {{ nginx_s3_restart | default('always') }}    
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

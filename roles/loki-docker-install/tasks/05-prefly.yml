@@ -1,26 +1,31 @@
 ---
-#- import_tasks: shared/tasks/create-dir-docker-compose.yml
 - name: create docker folder
   ansible.builtin.file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
     mode: '0775'
     owner: root
     group: root
   with_items:
     - "/opt/docker"
-    - "{{loki_compose_path}}"
+    - "{{ loki_compose_path }}"
 
 - name: create path
   ansible.builtin.file:
-    path: "{{item}}"
+    path: "{{ item }}"
     state: directory
-    mode: 0755
-    owner: "{{loki_user_id}}"
-    group: "{{loki_group_id}}"
+    mode: "0755"
+    owner: "{{ loki_user_id }}"
+    group: "{{ loki_group_id }}"
   with_items:
-    - "{{loki_data_path}}"
-    - "{{loki_data_path}}/config"
-    - "{{loki_data_path}}/data"
-    - "{{loki_data_path}}/ssl"
-
+    - "{{ loki_data_path }}"
+    - "{{ loki_data_path }}/config"
+    - "{{ loki_data_path }}/data"
+    - "{{ loki_data_path }}/ssl"
+    - "{{ loki_data_path }}/index"
+    - "{{ loki_data_path }}/index_cache"
+    - "{{ loki_data_path }}/compactor"
+    - "{{ loki_data_path }}/rules"
+    - "{{ loki_data_path }}/rules/fake"
+    # Loki ruler scratch dir (must NOT be the same as /opt/loki/rules, otherwise Loki may wipe rule sources)
+    - "{{ loki_data_path }}/data/rules-tmp"
