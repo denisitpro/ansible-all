@@ -1,0 +1,36 @@
+---
+- name: === Include os-config tasks only when tag is os-config ===
+  include_tasks: 
+    file: os-config.yml
+    apply:
+      tags: 'os-config'
+  tags:
+    - 'os-config'
+    - 'never'
+
+- name: === Include sv-config tasks only when tag is sv-config ===
+  include_tasks: 
+    file: sv-config.yml
+    apply:
+      tags: 'sv-config'
+  tags:
+    - 'sv-config'
+    - 'never'
+
+- name: === Include sysctl-config tasks only when tag is sysctl-config ===
+  include_tasks: 
+    file: sysctl-config.yml
+    apply:
+      tags: 'sysctl-config'
+  tags:
+    - 'sysctl-config'
+    - 'never'
+
+- name: === Include sysctl-v2 tasks only when tag is sysctl ===
+  include_tasks: 
+    file: sysctl-v2.yml
+    apply:
+      tags: 'sysctl'
+  tags:
+    - 'sysctl'
+    - 'never'

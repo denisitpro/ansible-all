@@ -1,0 +1,19 @@
+---
+- name: Add Cloudflare GPG key - Ubuntu
+  ansible.builtin.apt_key:
+    url: "{{ cloudflared_gpg_key_url }}"
+    keyring: "{{ cloudflared_gpg_key_path }}"
+
+- name: Add Cloudflare APT repository
+  ansible.builtin.apt_repository:
+    repo: "{{ cloudflared_repo_line }}"
+    filename: cloudflared
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install cloudflared package
+  ansible.builtin.apt:
+    name: "{{ cloudflared_package_name }}"
+    state: present

@@ -1,0 +1,34 @@
+[Unit]
+Description=SSH tunnel L{{ ssh_tunnel.local_port }}->{{ ssh_tunnel.remote_host }}:{{ ssh_tunnel.remote_port }}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+{% if ssh_tunnel_user is defined and ssh_tunnel_user != "root" %}
+User={{ ssh_tunnel_user }}
+{% endif %}
+ExecStart=/usr/bin/ssh \
+  -N -L {{ ssh_tunnel.local_port }}:localhost:{{ ssh_tunnel.remote_port }} \
+  {% if ssh_tunnel_user is defined %}{{ ssh_tunnel_user }}@{{ ssh_tunnel.remote_host }}{% else %}{{ ansible_user | default('root') }}@{{ ssh_tunnel.remote_host }}{% endif %} \
+  {% if ssh_tunnel_user is defined %}-i /home/{{ ssh_tunnel_user }}/.ssh/id_ed25519 \{% endif %}
+  -o ExitOnForwardFailure=yes \
+  -o Compression=no \
+  -o ServerAliveInterval={{ ssh_tunnel.server_alive_interval | default(30) }} \
+  -o ServerAliveCountMax={{ ssh_tunnel.server_alive_count_max | default(3) }} \
+  -o TCPKeepAlive={{ ssh_tunnel.tcp_keep_alive | default("no") }} \
+  -o ConnectTimeout={{ ssh_tunnel.connect_timeout | default(5) }} \
+  -o ConnectionAttempts={{ ssh_tunnel.connection_attempts | default(3) }} \
+  -o ControlMaster={{ ssh_tunnel.control_master | default("no") }} \
+  -o StrictHostKeyChecking=no
+
+ExecStop=/bin/kill -TERM $MAINPID
+KillMode=process
+Restart=always
+RestartSec=3
+
+LimitNOFILE=131072
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,37 @@
+---
+- name: Register WARP client
+  ansible.builtin.command: "warp-cli registration new"
+  register: warp_register
+  changed_when: true
+  failed_when: false
+
+- name: Set WARP mode
+  ansible.builtin.command: "warp-cli mode warp"
+  register: warp_mode_set
+  changed_when: true
+
+- name: Set Zero Trust organization
+  ansible.builtin.command: "warp-cli registration organization {{ warp_organization }}"
+  register: warp_org_set
+  changed_when: true
+  when: warp_organization != ""
+
+- name: Connect WARP
+  ansible.builtin.command: "warp-cli connect"
+  register: warp_connect
+  changed_when: true
+
+- name: Verify WARP connection
+  ansible.builtin.command: "curl -s https://www.cloudflare.com/cdn-cgi/trace/"
+  register: warp_trace
+  changed_when: false
+
+- name: Check if WARP is active
+  ansible.builtin.assert:
+    that: "'warp=on' in warp_trace.stdout"
+    fail_msg: "WARP connection verification failed"
+    success_msg: "WARP is successfully connected"
+
+- name: Display WARP connection status
+  ansible.builtin.debug:
+    msg: "WARP Status: {{ warp_trace.stdout_lines }}"

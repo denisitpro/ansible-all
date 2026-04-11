@@ -1,0 +1,37 @@
+---
+- name: Find existing SSH tunnel services
+  ansible.builtin.find:
+    paths: /etc/systemd/system/
+    patterns: "ssh-tunnel-*.service"
+  register: existing_tunnel_services
+
+- name: Get list of current tunnel ports
+  ansible.builtin.set_fact:
+    current_ports: "{{ ssh_tunnels | map(attribute='local_port') | map('string') | list }}"
+
+- name: Stop and disable old tunnel services
+  ansible.builtin.systemd:
+    name: "{{ item.path | basename }}"
+    state: stopped
+    enabled: false
+  loop: "{{ existing_tunnel_services.files }}"
+  when:
+    - item.path | basename | regex_replace('ssh-tunnel-([0-9]+)\\.service', '\\1') not in current_ports
+    - ssh_tunnel_cleanup_old | default(false)
+  register: cleanup_result
+  failed_when: false
+
+- name: Remove old tunnel service files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ existing_tunnel_services.files }}"
+  when:
+    - item.path | basename | regex_replace('ssh-tunnel-([0-9]+)\\.service', '\\1') not in current_ports
+    - ssh_tunnel_cleanup_old | default(false)
+  notify: Reload systemd
+
+- name: Display cleanup results
+  ansible.builtin.debug:
+    msg: "Cleaned up {{ cleanup_result.results | selectattr('changed') | list | length }} old tunnel services"
+  when: ssh_tunnel_cleanup_old | default(false)

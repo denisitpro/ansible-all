@@ -1,0 +1,10 @@
+---
+- ansible.builtin.import_tasks: 10-install-deb.yml
+  when: cloudflared_install_method == "deb"
+  tags:
+    - cloudflared
+
+# - ansible.builtin.import_tasks: 05-install.yml
+#   when: cloudflared_install_method == "binary"
+#   tags:
+#     - cloudflared

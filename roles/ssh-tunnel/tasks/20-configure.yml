@@ -1,0 +1,72 @@
+---
+- name: Create systemd service files for SSH tunnels
+  ansible.builtin.template:
+    src: ssh-tunnel.service.j2
+    dest: "/etc/systemd/system/ssh-tunnel-{{ item.local_port }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ ssh_tunnels }}"
+  loop_control:
+    label: "{{ item.local_port }}:{{ item.remote_host }}:{{ item.remote_port }}"
+  vars:
+    ssh_tunnel: "{{ item }}"
+  notify:
+    - Reload systemd
+    - Restart SSH tunnels
+
+- name: Create SSH config for tunnel user
+  ansible.builtin.template:
+    src: ssh_config.j2
+    dest: "/home/{{ ssh_tunnel_user }}/.ssh/config"
+    owner: "{{ ssh_tunnel_user }}"
+    group: "{{ ssh_tunnel_user }}"
+    mode: "0600"
+  when: ssh_tunnel_user is defined
+
+- name: Ensure systemd is reloaded
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start SSH tunnel services
+  ansible.builtin.systemd:
+    name: "ssh-tunnel-{{ item.local_port }}.service"
+    enabled: "{{ ssh_tunnel_enabled | default(true) }}"
+    state: "{{ ssh_tunnel_state | default('started') }}"
+  loop: "{{ ssh_tunnels }}"
+  loop_control:
+    label: "ssh-tunnel-{{ item.local_port }}"
+  register: tunnel_service_result
+
+- name: Check SSH tunnel service status
+  ansible.builtin.systemd:
+    name: "ssh-tunnel-{{ item.local_port }}.service"
+  register: tunnel_status
+  loop: "{{ ssh_tunnels }}"
+  loop_control:
+    label: "ssh-tunnel-{{ item.local_port }}"
+
+- name: Display tunnel service status
+  ansible.builtin.debug:
+    msg: "SSH tunnel {{ item.item.local_port }}: {{ item.status.ActiveState }}"
+  loop: "{{ tunnel_status.results }}"
+  loop_control:
+    label: "{{ item.item.local_port }}"
+
+- name: Test local tunnel connectivity
+  ansible.builtin.wait_for:
+    port: "{{ item.local_port }}"
+    host: localhost
+    timeout: 10
+  loop: "{{ ssh_tunnels }}"
+  loop_control:
+    label: "Port {{ item.local_port }}"
+  register: port_test
+  failed_when: false
+
+- name: Display port connectivity results
+  ansible.builtin.debug:
+    msg: "Local port {{ item.item.local_port }}: {{ 'LISTENING' if item.failed == false else 'NOT ACCESSIBLE' }}"
+  loop: "{{ port_test.results }}"
+  loop_control:
+    label: "{{ item.item.local_port }}"

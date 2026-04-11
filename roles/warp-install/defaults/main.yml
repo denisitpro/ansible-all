@@ -1,0 +1,6 @@
+---
+# Cloudflare WARP installation parameters for Ubuntu
+# WARP configuration
+warp_organization: ""  # Set your Cloudflare Zero Trust organization name
+warp_auto_connect: true
+warp_service_name: "warp-svc"

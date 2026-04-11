@@ -1,0 +1,3 @@
+---
+- name: apply netplan config
+  command: netplan apply

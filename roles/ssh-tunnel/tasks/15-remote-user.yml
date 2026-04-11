@@ -1,0 +1,80 @@
+---
+- name: Get unique remote hosts
+  ansible.builtin.set_fact:
+    unique_remote_hosts: "{{ ssh_tunnels | map(attribute='remote_host') | unique | list }}"
+
+- name: Check if SSH agent is available
+  ansible.builtin.shell: echo $SSH_AUTH_SOCK
+  register: ssh_auth_sock_check
+  failed_when: false
+  changed_when: false
+  delegate_to: localhost
+
+- name: Display SSH agent status
+  ansible.builtin.debug:
+    msg: "SSH Agent socket: {{ ssh_auth_sock_check.stdout | default('Not available') }}"
+
+- name: List keys in SSH agent
+  ansible.builtin.shell: ssh-add -l
+  register: ssh_agent_keys
+  failed_when: false
+  changed_when: false
+  delegate_to: localhost
+
+- name: Display SSH agent keys
+  ansible.builtin.debug:
+    msg: "SSH Agent keys: {{ ssh_agent_keys.stdout_lines | default(['No keys loaded']) }}"
+
+- name: Create SSH tunnel user on remote hosts
+  ansible.builtin.shell: |
+    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+    {{ ssh_remote_user | default(ansible_user) }}@{{ item }} \
+    "sudo useradd --system --no-create-home --shell /usr/sbin/nologin {{ ssh_tunnel_user }} 2>/dev/null || true"
+  loop: "{{ unique_remote_hosts }}"
+  register: remote_user_creation
+  failed_when: false
+  changed_when: remote_user_creation.rc == 0
+  delegate_to: localhost
+  when: ssh_tunnel_user is defined
+
+- name: Create SSH directory for tunnel user on remote hosts
+  ansible.builtin.shell: |
+    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+    {{ ssh_remote_user | default(ansible_user) }}@{{ item }} \
+    "sudo mkdir -p /home/{{ ssh_tunnel_user }}/.ssh && \
+     sudo chown {{ ssh_tunnel_user }}:{{ ssh_tunnel_user }} /home/{{ ssh_tunnel_user }}/.ssh && \
+     sudo chmod 700 /home/{{ ssh_tunnel_user }}/.ssh"
+  loop: "{{ unique_remote_hosts }}"
+  register: remote_ssh_dir_creation
+  failed_when: remote_ssh_dir_creation.rc != 0
+  delegate_to: localhost
+
+- name: Add authorized key on remote hosts with restrictions
+  ansible.builtin.shell: |
+    ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+    {{ ssh_remote_user | default(ansible_user) }}@{{ item }} \
+    'echo "command=\"echo Port forwarding only;exit\",no-agent-forwarding,no-pty,no-X11-forwarding {{ ssh_tunnel_public_key }}" | sudo tee /home/{{ ssh_tunnel_user }}/.ssh/authorized_keys && sudo chown {{ ssh_tunnel_user }}:{{ ssh_tunnel_user }} /home/{{ ssh_tunnel_user }}/.ssh/authorized_keys && sudo chmod 600 /home/{{ ssh_tunnel_user }}/.ssh/authorized_keys'
+  loop: "{{ unique_remote_hosts }}"
+  register: remote_key_addition
+  failed_when: remote_key_addition.rc != 0
+  delegate_to: localhost
+  when: ssh_tunnel_public_key is defined
+
+- name: Test SSH connection to remote hosts
+  ansible.builtin.shell: |
+    ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no \
+    -i /home/{{ ssh_tunnel_user }}/.ssh/id_ed25519 \
+    {{ ssh_tunnel_user }}@{{ item }} \
+    "echo 'Connection test successful'"
+  loop: "{{ unique_remote_hosts }}"
+  register: ssh_test_result
+  failed_when: false
+  changed_when: false
+  delegate_to: localhost
+
+- name: Display SSH test results
+  ansible.builtin.debug:
+    msg: "SSH connection to {{ item.item }}: {{ 'SUCCESS' if item.rc == 0 else 'FAILED' }}"
+  loop: "{{ ssh_test_result.results }}"
+  loop_control:
+    label: "{{ item.item }}"

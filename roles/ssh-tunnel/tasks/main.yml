@@ -1,0 +1,36 @@
+---
+- name: Include preflight checks
+  ansible.builtin.include_tasks: 05-preflight.yml
+  tags:
+    - ssh-tunnel
+    - ssh-tunnel-preflight
+
+- name: Include local user management
+  ansible.builtin.include_tasks: 10-local-user.yml
+  tags:
+    - ssh-tunnel
+    - ssh-tunnel-local-user
+    - ssh-tunnel-setup
+  when: ssh_tunnel_user is defined
+
+- name: Include remote user management
+  ansible.builtin.include_tasks: 15-remote-user.yml
+  tags:
+    - ssh-tunnel
+    - ssh-tunnel-remote-user
+    - ssh-tunnel-setup
+  when: ssh_tunnel_user is defined
+
+- name: Include tunnel configuration
+  ansible.builtin.include_tasks: 20-configure.yml
+  tags:
+    - ssh-tunnel
+    - ssh-tunnel-configure
+    - ssh-tunnel-tunnels
+
+- name: Include cleanup tasks
+  ansible.builtin.include_tasks: 25-cleanup.yml
+  tags:
+    - ssh-tunnel
+    - ssh-tunnel-cleanup
+  when: ssh_tunnel_cleanup_old | default(false)

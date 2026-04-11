@@ -1,0 +1,82 @@
+---
+- name: === os-config | sv-config | Ensure supervisor is installed ===
+  register: updatesys
+  apt:
+    update_cache: yes
+    name: "supervisor"
+    state: present
+
+- name: "Add minfds to supervisor"
+  lineinfile:
+    path: "/etc/supervisor/supervisord.conf"
+    insertafter: 'childlogdir' 
+    line: 'minfds=999999'
+    firstmatch: yes
+    state: present
+    backup: yes
+
+- name: "Add inet_http_server to supervisor"
+  lineinfile:
+    path: "/etc/supervisor/supervisord.conf"
+    insertafter: 'minfds=999999'
+    line: '[inet_http_server]'
+    firstmatch: yes
+    state: present
+    backup: yes
+
+- name: "Add inet_http_server to supervisor"
+  lineinfile:
+    path: "/etc/supervisor/supervisord.conf"
+    insertafter: '^\[inet_http_server\]'
+    line: 'port=127.0.0.1:9001'
+    firstmatch: yes
+    state: present
+    backup: yes
+
+- name: "Update supervisor service limits"
+  lineinfile:
+    path: "/lib/systemd/system/supervisor.service"
+    insertafter: "^RestartSec(.+)" 
+    line: 'LimitNOFILE=524280'
+    firstmatch: yes
+    state: present
+    backup: yes
+
+- name: "Update supervisor service limits"
+  lineinfile:
+    path: "/lib/systemd/system/supervisor.service"
+    insertafter: "^LimitNOFILE=(.+)" 
+    line: 'LimitNPROC=1031189'
+    firstmatch: yes
+    state: present
+    backup: yes
+
+- name: "Update supervisor service limits"
+  lineinfile:
+    path: "/lib/systemd/system/supervisor.service"
+    insertafter: "^LimitNPROC=(.+)" 
+    line: 'LimitMEMLOCK=16777216'
+    firstmatch: yes
+    state: present
+    backup: yes
+
+- name: "Update supervisor service limits"
+  lineinfile:
+    path: "/lib/systemd/system/supervisor.service"
+    insertafter: "^LimitMEMLOCK=(.+)" 
+    line: 'LimitSIGPENDING=1031189'
+    firstmatch: yes
+    state: present
+    backup: yes
+
+- name: "Restart supervisor service"
+  systemd:
+    name: supervisor
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+
+- name: Status supervisor
+  service:
+    name: supervisor
+    state: started

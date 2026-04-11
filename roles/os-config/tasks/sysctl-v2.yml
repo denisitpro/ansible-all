@@ -1,0 +1,12 @@
+---
+- name: Copy sysctl config files
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/sysctl.d/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ sysctl_profiles }}"
+
+- name: Apply sysctl settings
+  command: sysctl --system

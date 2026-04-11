@@ -1,0 +1,121 @@
+---
+- name: Check if ssh_tunnels is defined
+  ansible.builtin.assert:
+    that:
+      - ssh_tunnels is defined
+      - ssh_tunnels | length > 0
+    fail_msg: "ssh_tunnels must be defined and not empty"
+    success_msg: "ssh_tunnels is properly defined"
+
+- name: Validate SSH tunnel configuration
+  ansible.builtin.assert:
+    that:
+      - item.local_port is defined
+      - item.remote_host is defined
+      - item.remote_port is defined
+      - item.local_port | int > 0
+      - item.local_port | int < 65536
+      - item.remote_port | int > 0
+      - item.remote_port | int < 65536
+    fail_msg: "Invalid tunnel configuration for {{ item }}"
+    success_msg: "Tunnel configuration is valid"
+  loop: "{{ ssh_tunnels }}"
+  loop_control:
+    label: "{{ item.local_port }}:{{ item.remote_host }}:{{ item.remote_port }}"
+
+- name: Check for duplicate local ports
+  ansible.builtin.set_fact:
+    local_ports: "{{ ssh_tunnels | map(attribute='local_port') | list }}"
+
+- name: Fail if duplicate local ports found
+  ansible.builtin.fail:
+    msg: "Duplicate local ports found: {{ local_ports | select('==', item) | list | length }} instances of port {{ item }}"
+  loop: "{{ local_ports | unique }}"
+  when: (local_ports | select('==', item) | list | length) > 1
+
+- name: Check if local ports are already in use
+  ansible.builtin.wait_for:
+    port: "{{ item.local_port }}"
+    host: localhost
+    timeout: 1
+  loop: "{{ ssh_tunnels }}"
+  register: port_check
+  failed_when: false
+  changed_when: false
+
+- name: Warn about ports already in use
+  ansible.builtin.debug:
+    msg: "WARNING: Port {{ item.item.local_port }} is already in use"
+  loop: "{{ port_check.results }}"
+  loop_control:
+    label: "Port {{ item.item.local_port }}"
+  when: not item.failed
+
+- name: Check for required packages
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Ensure OpenSSH client is installed
+  ansible.builtin.package:
+    name: openssh-client
+    state: present
+  when: "'openssh-client' not in ansible_facts.packages"
+
+- name: Check if systemd is available
+  ansible.builtin.stat:
+    path: /bin/systemctl
+  register: systemctl_check
+
+- name: Fail if systemd is not available
+  ansible.builtin.fail:
+    msg: "This role requires systemd"
+  when: not systemctl_check.stat.exists
+
+- name: Get unique remote hosts for connectivity check
+  ansible.builtin.set_fact:
+    unique_remote_hosts: "{{ ssh_tunnels | map(attribute='remote_host') | unique | list }}"
+
+- name: Check SSH agent availability
+  ansible.builtin.shell: |
+    echo "SSH_AUTH_SOCK: $SSH_AUTH_SOCK"
+    ssh-add -l
+  register: ssh_agent_status
+  failed_when: false
+  changed_when: false
+  delegate_to: localhost
+
+- name: Display SSH agent status
+  ansible.builtin.debug:
+    msg: |
+      SSH Agent Status:
+      {{ ssh_agent_status.stdout_lines | join('\n') }}
+  when: ssh_agent_status.stdout_lines is defined
+
+- name: Test connectivity to remote hosts
+  ansible.builtin.shell: |
+    ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no \
+    {{ ssh_remote_user | default(ansible_user) }}@{{ item }} \
+    "echo 'Connectivity test successful'"
+  loop: "{{ unique_remote_hosts }}"
+  register: remote_connectivity_test
+  failed_when: false
+  changed_when: false
+  delegate_to: localhost
+  when: not (ssh_skip_connectivity_check | default(false))
+
+- name: Display remote hosts connectivity results
+  ansible.builtin.debug:
+    msg: "Remote host {{ item.item }}: {{ 'ACCESSIBLE' if item.rc == 0 else 'NOT ACCESSIBLE' }}"
+  loop: "{{ remote_connectivity_test.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Fail if any remote host is not accessible
+  ansible.builtin.fail:
+    msg: "Remote host {{ item.item }} is not accessible. Please check connectivity and credentials."
+  loop: "{{ remote_connectivity_test.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when:
+    - item.rc != 0
+    - not ssh_skip_connectivity_check | default(false)

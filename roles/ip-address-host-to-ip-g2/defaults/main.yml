@@ -1,0 +1,35 @@
+---
+# only for specific case - example
+# ip_hosts_group: example_group
+# ip_hosts_init_host: "{{ groups[ip_hosts_group][0] }}"
+
+# ip_hosts_use_localhost: true  - run DNS resolution on the Ansible controller (localhost)
+# ip_hosts_use_localhost: false - run DNS resolution on the first reachable host
+ip_hosts_use_localhost: true
+
+ip_hosts_init_host: "{{ 'localhost' if ip_hosts_use_localhost | bool else ansible_play_hosts[0] }}"
+# Example usage:
+# list_servers_resolved_g2:
+#   - name: k8s_masters
+#     hosts:
+#       - nbg1-k8s-10.example.com
+#       - fsn1-k8s-20.example.com
+#       - hel1-k8s-30.example.com
+#   - name: k8s_workers
+#     hosts:
+#       - nbg1-w-100.example.com
+#       - nbg1-i-150.example.com
+#       - fsn1-w-200.example.com
+#       - fsn1-i-250.example.com
+#
+# resolved_k8s_masters: "{{ resolved_addresses | selectattr('name', 'equalto', 'k8s_masters') | map(attribute='ip') | list }}"
+#
+# resolved_k8s_workers: "{{ resolved_addresses | selectattr('name', 'equalto', 'k8s_workers') | map(attribute='ip') | list }}"
+#
+# resolved_k8s_masters_ipv4: "{{ resolved_addresses_ipv4 | selectattr('name', 'equalto', 'k8s_masters') | map(attribute='ip') | list }}"
+#
+# resolved_k8s_workers_ipv4: "{{ resolved_addresses_ipv4 | selectattr('name', 'equalto', 'k8s_workers') | map(attribute='ip') | list }}"
+#
+# resolved_k8s_workers_ipv6: "{{ resolved_addresses_ipv6 | selectattr('name', 'equalto', 'k8s_workers') | map(attribute='ip') | list }}"
+#
+# resolved_k8s_masters_ipv6: "{{ resolved_addresses_ipv6 | selectattr('name', 'equalto', 'k8s_masters') | map(attribute='ip') | list }}"
