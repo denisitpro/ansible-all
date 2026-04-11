@@ -1,0 +1,562 @@
+data_dir = "{{ vector_data_path | default('/var/lib/vector') }}"
+
+# ------------ SOURCE SECTION ---------------
+{% for src in vector_sources %}
+{% if src.type == "file" %}
+[sources.{{ src.name }}]
+  type = "{{ src.type }}"
+  include = [ "{{ src.include }}" ]
+{% if src.exclude is defined %}
+  exclude = [ "{{ src.exclude }}" ]
+{% endif %}
+  ignore_older = 86400
+  max_line_bytes = 102400
+  file_key = "file"
+  host_key = "host"
+  oldest_first = false
+{% endif %}
+
+{% if src.type == "docker_logs" %}
+[sources.{{ src.name }}]
+  type = "docker_logs"
+  docker_host = "/var/run/docker.sock"
+  auto_partial_merge = true
+{% if src.containers.include is defined %}
+  include_containers = [ "{{ src.containers.include | join('", "') }}" ]
+{% elif src.containers.exclude is defined %}
+  exclude_containers = [ "{{ src.containers.exclude | join('", "') }}" ]
+{% endif %}
+  retry_backoff_secs = 1
+  host_key = "host"
+{% endif %}
+
+{% if src.type == "vector" %}
+[sources.{{ src.name }}]
+  type = "vector"
+  address = "{{ src.address }}"
+  version = "{{ src.version | default('2') }}"
+{% if src.tls.enabled | default(false) %}
+[sources.{{ src.name }}.tls]
+  enabled = true
+  ca_file = "{{ src.tls.ca_file if src.tls.ca_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/ca.pem') }}"
+  crt_file = "{{ src.tls.crt_file if src.tls.crt_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/cert.pem') }}"
+  key_file = "{{ src.tls.key_file if src.tls.key_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/key.pem') }}"
+  verify_certificate = {{ src.tls.verify_certificate | default(vector_tls_verify_certificate) | default(true) | lower }}
+  verify_hostname = {{ src.tls.verify_hostname | default(vector_tls_verify_hostname) | default(false) | lower }}
+  alpn_protocols = [ "vector" ]
+{% endif %}
+{% endif %}
+
+{% endfor %}
+
+# ------------ AUTO-ROUTE FOR DOCKER LOGS ---------------
+{% for src in vector_sources %}
+{% if src.type == "docker_logs" %}
+# Route docker logs based on container labels (label.log_format)
+# Supports any format name: angie_extend_json, roga_kopita, etc.
+[transforms.{{ src.name }}_label_check]
+  type = "remap"
+  inputs = [ "{{ src.name }}" ]
+  source = '''
+  # Extract log_format label value for routing
+  .log_format_type = get(.label, ["log_format"]) ?? "default"
+  '''
+
+[transforms.{{ src.name }}_route]
+  type = "route"
+  inputs = [ "{{ src.name }}_label_check" ]
+
+[transforms.{{ src.name }}_route.route]
+  angie_extend_json = '.log_format_type == "angie_extend_json"'
+  extend_json_g2 = '.log_format_type == "extend_json_g2"'
+  extend_json_legacy = '.log_format_type == "extend_json_legacy"'
+  # To add new format: add route rule here
+  # Example: roga_kopita = '.log_format_type == "roga_kopita"'
+
+{% endif %}
+{% endfor %}
+
+{% if vector_transforms is defined %}
+# ------------ TRANSFORM_SECTION ---------------
+{% for tr in vector_transforms %}
+{% if tr.name == "projects-json-transform-to-loki" %}
+[transforms.{{ tr.name }}]
+  type = "remap"
+  inputs = [ "{{ tr.inputs | join('", "') }}" ]
+  source = '''
+  del(.source_type)
+  .service = split!(split!(.file, "/")[-1], ".")[0]
+  del(.file)
+  .parsed_message, .err = parse_json(.message)
+  .message = if is_null(.parsed_message) { .message } else { .parsed_message }
+  . |= if is_null(.parsed_message) { . } else { flatten!(.message) }
+  del(.parsed_message)
+  del(.err)
+  '''
+{% endif %}
+
+{% if tr.name == "angie-extend-json-parser" %}
+# Parse Angie/Nginx extend_json log format from docker logs
+[transforms.{{ tr.name }}]
+  type = "remap"
+  inputs = [ "{{ tr.inputs | join('", "') }}" ]
+  source = '''
+  # Parse JSON message from Angie/Nginx extend_json log format
+  parsed, err = parse_json(.message)
+  
+  if err == null && parsed.format == "json" {
+    # Successfully parsed as extend_json format
+    .log_type = "angie_extend_json"
+    .parser_used = "angie_extend_json"
+    
+    # Timestamp and basic info
+    .timestamp = parsed.timestamp
+    .remote_addr = parsed.remote_addr
+    .remote_user = parsed.remote_user
+    .host = parsed.host
+    .server_name = parsed.server_name
+    .server_port = to_int(parsed.server_port) ?? 0
+    .hostname = parsed.hostname
+    
+    # Request info
+    .request_method = parsed.request_method
+    .request_uri = parsed.request_uri
+    .requestid = parsed.requestid
+    .scheme = parsed.scheme
+    .server_protocol = parsed.server_protocol
+    .http_version = parsed.http_version
+    .args = parsed.args
+    
+    # Response info - convert to numbers
+    .status = to_int(parsed.status) ?? 0
+    .body_bytes_sent = to_int(parsed.body_bytes_sent) ?? 0
+    
+    # Client info
+    .http_referer = parsed.http_referer
+    .http_user_agent = parsed.http_user_agent
+    .http_x_forwarded_for = parsed.http_x_forwarded_for
+    
+    # Timing info - convert to float
+    .request_time = to_float(parsed.request_time) ?? 0.0
+    .upstream_response_time = if parsed.upstream_response_time != "-" { to_float(parsed.upstream_response_time) ?? 0.0 } else { 0.0 }
+    .upstream_connect_time = if parsed.upstream_connect_time != "-" { to_float(parsed.upstream_connect_time) ?? 0.0 } else { 0.0 }
+    
+    # Upstream info
+    .upstream_addr = parsed.upstream_addr
+    .upstream_status = parsed.upstream_status
+    .upstream_cache_status = parsed.upstream_cache_status
+    
+    # SSL info
+    .ssl_protocol = parsed.ssl_protocol
+    .ssl_cipher = parsed.ssl_cipher
+    .ssl_early_data = parsed.ssl_early_data
+    .ssl_server_name = parsed.ssl_server_name
+    .ssl_session_id = parsed.ssl_session_id
+    
+    # Connection info
+    .connection_requests = parsed.connection_requests
+    .content_type = parsed.content_type
+    .pipe = parsed.pipe
+    
+    # Proxy info
+    .proxy_host = parsed.proxy_host
+    .proxy_add_x_forwarded_for = parsed.proxy_add_x_forwarded_for
+    
+    # UID tracking
+    .uid_got = parsed.uid_got
+    .uid_set = parsed.uid_set
+    
+    # Cloudflare
+    .http_cf_ray = parsed.http_cf_ray
+    
+    # Remove original message to save space
+    del(.message)
+    
+  } else if err == null {
+    # Parsed as JSON but not extend_json format
+    .log_type = "json"
+    .parser_used = "angie_extend_json"
+    .parsed = parsed
+  } else {
+    # Plain text log (errors, etc)
+    .log_type = "plain"
+    .parser_used = "angie_extend_json"
+  }
+  
+  # Common metadata cleanup
+  .service = .container_name
+  
+  del(.label)
+  del(.container_id)
+  del(.image)
+  del(.source_type)
+  del(.stream)
+  del(.log_format_type)
+  
+  .docker_platform = "{{ tr.docker_platform | default(ansible_facts['hostname']) }}"
+  '''
+{% endif %}
+
+{% if tr.name == "extend-json-g2-parser" %}
+# Parse extend_json_g2 log format (unified for ingress-nginx and standalone angie)
+# Includes k8s fields (namespace, ingress_name, service_name, service_port)
+[transforms.{{ tr.name }}]
+  type = "remap"
+  inputs = [ "{{ tr.inputs | join('", "') }}" ]
+  source = '''
+  # Parse JSON message from extend_json_g2 format
+  parsed, err = parse_json(.message)
+  
+  if err == null && parsed.format == "extend_json_g2" {
+    # Successfully parsed as extend_json_g2 format
+    .log_type = "extend_json_g2"
+    .parser_used = "extend_json_g2"
+    
+    # Timestamp and basic info
+    .timestamp = parsed.timestamp
+    .remote_addr = parsed.remote_addr
+    .host = parsed.host
+    .server_name = parsed.server_name
+    
+    # Request info
+    .request_method = parsed.request_method
+    .request_id = parsed.request_id
+    .request_uri = parsed.request_uri
+    .uri = parsed.uri
+    .scheme = parsed.scheme
+    .server_protocol = parsed.server_protocol
+    
+    # Response info - convert to numbers
+    .status = to_int(parsed.status) ?? 0
+    .body_bytes_sent = to_int(parsed.body_bytes_sent) ?? 0
+    .bytes_sent = to_int(parsed.bytes_sent) ?? 0
+    
+    # Client info
+    .http_referer = parsed.http_referer
+    .http_user_agent = parsed.http_user_agent
+    .http_x_forwarded_for = parsed.http_x_forwarded_for
+    
+    # Timing info - convert to float
+    .request_time = to_float(parsed.request_time) ?? 0.0
+    .upstream_response_time = if parsed.upstream_response_time != "-" && parsed.upstream_response_time != "" { to_float(parsed.upstream_response_time) ?? 0.0 } else { 0.0 }
+    .upstream_connect_time = if parsed.upstream_connect_time != "-" && parsed.upstream_connect_time != "" { to_float(parsed.upstream_connect_time) ?? 0.0 } else { 0.0 }
+    
+    # Upstream info
+    .upstream_addr = parsed.upstream_addr
+    .upstream_status = parsed.upstream_status
+    
+    # SSL info
+    .ssl_protocol = parsed.ssl_protocol
+    
+    # K8s specific fields (ingress-nginx)
+    .namespace = parsed.namespace
+    .ingress_name = parsed.ingress_name
+    .service_name = parsed.service_name
+    .service_port = parsed.service_port
+    
+    # Remove original message to save space
+    del(.message)
+    
+  } else if err == null {
+    # Parsed as JSON but not extend_json_g2 format
+    .log_type = "json"
+    .parser_used = "extend_json_g2"
+    .parsed = parsed
+  } else {
+    # Plain text log (errors, etc)
+    .log_type = "plain"
+    .parser_used = "extend_json_g2"
+  }
+  
+  # Common metadata cleanup
+  .service = .container_name
+  
+  del(.label)
+  del(.container_id)
+  del(.image)
+  del(.source_type)
+  del(.stream)
+  del(.log_format_type)
+  
+  .platform = "{{ tr.platform | default(ansible_facts['hostname']) }}"
+  '''
+{% endif %}
+
+{% if tr.name == "extend-json-legacy-parser" %}
+# Parse extend_json_g2 log format (unified for ingress-nginx and standalone angie)
+# Includes k8s fields (namespace, ingress_name, service_name, service_port)
+[transforms.{{ tr.name }}]
+  type = "remap"
+  inputs = [ "{{ tr.inputs | join('", "') }}" ]
+  source = '''
+  # Parse JSON message from extend_json_legacy format
+  parsed, err = parse_json(.message)
+
+  if err == null && parsed.format == "extend_json_legacy" {
+    # Successfully parsed as extend_json_legacy format
+    .log_type = "extend_json_legacy"
+    .parser_used = "extend_json_legacy"
+
+    # Timestamp and basic info
+    .timestamp = parsed.timestamp
+    .remote_addr = parsed.remote_addr
+    .host = parsed.host
+    .server_name = parsed.server_name
+
+    # Request info
+    .request_method = parsed.request_method
+    .request_uri = parsed.request_uri
+    .uri = parsed.uri
+    .scheme = parsed.scheme
+    .server_protocol = parsed.server_protocol
+
+    # Response info - convert to numbers
+    .status = to_int(parsed.status) ?? 0
+    .body_bytes_sent = to_int(parsed.body_bytes_sent) ?? 0
+    .bytes_sent = to_int(parsed.bytes_sent) ?? 0
+
+    # Client info
+    .http_referer = parsed.http_referer
+    .http_user_agent = parsed.http_user_agent
+    .http_x_forwarded_for = parsed.http_x_forwarded_for
+
+    # Timing info - convert to float
+    .request_time = to_float(parsed.request_time) ?? 0.0
+    .upstream_response_time = if parsed.upstream_response_time != "-" && parsed.upstream_response_time != "" { to_float(parsed.upstream_response_time) ?? 0.0 } else { 0.0 }
+    .upstream_connect_time = if parsed.upstream_connect_time != "-" && parsed.upstream_connect_time != "" { to_float(parsed.upstream_connect_time) ?? 0.0 } else { 0.0 }
+
+    # Upstream info
+    .upstream_addr = parsed.upstream_addr
+    .upstream_status = parsed.upstream_status
+
+    # SSL info
+    .ssl_protocol = parsed.ssl_protocol
+
+    # K8s specific fields (ingress-nginx)
+    .namespace = parsed.namespace
+    .ingress_name = parsed.ingress_name
+    .service_name = parsed.service_name
+    .service_port = parsed.service_port
+
+    # Remove original message to save space
+    del(.message)
+
+  } else if err == null {
+    # Parsed as JSON but not extend_json_legacy format
+    .log_type = "json"
+    .parser_used = "extend_json_legacy"
+    .parsed = parsed
+  } else {
+    # Plain text log (errors, etc)
+    .log_type = "plain"
+    .parser_used = "extend_json_legacy"
+  }
+
+  # Common metadata cleanup
+  .service = .container_name
+
+  del(.label)
+  del(.container_id)
+  del(.image)
+  del(.source_type)
+  del(.stream)
+  del(.log_format_type)
+
+  .platform = "{{ tr.platform | default(ansible_facts['hostname']) }}"
+  '''
+{% endif %}
+
+{% if tr.name == "docker-transform-to-json" %}
+[transforms.{{ tr.name }}]
+  type = "remap"
+  inputs = [ "{{ tr.inputs | join('", "') }}" ]
+  source = '''
+  . = map_keys(., recursive: true) -> |key| { replace(key, ".", "_") }
+  .service = .container_name
+  .log_type = "docker_default"
+  .parser_used = "docker_default"
+  del(.label)
+  del(.container_id)
+  del(.image)
+  del(.source_type)
+  del(.stream)
+  del(.log_format_type)
+  .parsed_message, .err = parse_json(.message)
+  .message = if is_null(.parsed_message) { .message } else { .parsed_message }
+  del(.parsed_message)
+  del(.err)
+  .docker_platform = "{{ tr.docker_platform | default(ansible_facts['hostname']) }}"
+  '''
+{% endif %}
+
+{% if tr.name == "pve-transform-to-elk" %}
+[transforms.{{ tr.name }}]
+  type   = "remap"
+  inputs = [ "{{ tr.inputs | join('", "') }}" ]
+  source = '''
+  if exists(.source_type) { del(.source_type) }
+  if exists(.file) {
+    _fname = split!(.file, "/")[-1]
+    .service = split!(_fname, ".")[0]
+    del(.file)
+  }
+  
+  .raw_message = .message
+  
+  .parsed_message, ._err_json = parse_json(.message)
+  if !is_null(.parsed_message) {
+    .message = .parsed_message
+    . |= flatten!(.message)
+    del(.parsed_message)
+    del(._err_json)
+  } else {
+    ._parsed, ._err_re = parse_regex(
+      .message,
+      r'^(?P<ip>(?:\:\:ffff\:)?[0-9A-Fa-f\.:]+)\s+(?P<ident>\S+)\s+(?P<user>\S+)\s+\[(?P<ts_raw>[^\]]+)\]\s+"(?P<method>[A-Z]+)\s+(?P<uri>\S+)\s+(?P<protocol>[^"]+)"\s+(?P<status>\d  {3})\s+(?P<bytes>\d+|-)$'
+    )
+  
+    if !is_null(._parsed) {
+      .client_ip_raw = string!(._parsed.ip)
+      .client_ip     = replace(.client_ip_raw, "::ffff:", "")
+  
+      .http.ident    = to_string(._parsed.ident)
+      .http.user     = to_string(._parsed.user)
+  
+      if .http.user != "-" && contains(.http.user, "@") {
+        _u = split(.http.user, "@")
+        .auth.user  = _u[0]
+        .auth.realm = _u[1]
+      }
+  
+      .http.method   = ._parsed.method
+      .http.protocol = ._parsed.protocol
+      .http.status   = to_int(._parsed.status) ?? 0
+      .http.bytes    = to_int(._parsed.bytes)  ?? 0
+  
+      .http.uri  = to_string(._parsed.uri)
+      _parts = split(.http.uri, "?")
+      .http.path = _parts[0]
+      if length(_parts) > 1 { .http.query = _parts[1] }
+  
+      .ts             = parse_timestamp!(._parsed.ts_raw, "%d/%m/%Y:%H:%M:%S %z")
+      .timestamp      = format_timestamp!(.ts, format: "%+")
+      .timestamp_unix = to_unix_timestamp(.ts)
+      ."@timestamp"  = .timestamp
+  
+      del(._parsed)
+      del(._err_re)
+    } else {
+      del(._err_re)
+    }
+  
+    del(._err_json)
+  }
+  '''
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+# ------------ SINK SECTION ---------------
+{% for sink in vector_sinks %}
+{% if sink.type == "loki" %}
+[sinks.{{ sink.name }}]
+  type = "loki"
+  inputs = [ "{{ sink.inputs | join('", "') }}" ]
+  endpoint = "{{ sink.endpoint }}"
+  encoding.codec = "json"
+  healthcheck = {{ sink.healthcheck | default(true) | lower }}
+{% if sink.labels is defined or sink.projects_default_labels is defined %}
+[sinks.{{ sink.name }}.labels]
+{% for key, value in sink.labels.items() %}
+  "{{ key }}" = "{{ value }}"
+{% endfor %}
+{% if sink.projects_default_labels is defined %}
+  "host" = "{{'{{'}} host {{'}}'}}"
+  "service" = "{{'{{'}} service {{'}}'}}"
+{% endif %}
+{% endif %}
+{% if sink.tls.enabled | default(false) %}
+[sinks.{{ sink.name }}.tls]
+  ca_file = "{{ sink.tls.ca_file if sink.tls.ca_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/base100') + '/ca.pem') }}"
+  crt_file = "{{ sink.tls.crt_file if sink.tls.crt_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/base100') + '/cert.pem') }}"
+  key_file = "{{ sink.tls.key_file if sink.tls.key_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/base100') + '/key.pem') }}"
+  verify_certificate = {{ sink.tls.verify_certificate | default(vector_tls_verify_certificate) | default(true) | lower }}
+  verify_hostname = {{ sink.tls.verify_hostname | default(vector_tls_verify_hostname) | default(true) | lower }}
+{% endif %}
+{% endif %}
+
+{% if sink.type == "vector" %}
+[sinks.{{ sink.name }}]
+  type = "vector"
+  inputs = [ "{{ sink.inputs | join('", "') }}" ]
+  address = "{{ sink.address }}"
+  version = "{{ sink.version | default('2') }}"
+  healthcheck = {{ sink.healthcheck | default(true) | lower }}
+{% if sink.tls.enabled | default(false) %}
+[sinks.{{ sink.name }}.tls]
+  enabled = true
+  ca_file = "{{ src.tls.ca_file if src.tls.ca_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/ca.pem') }}"
+  crt_file = "{{ src.tls.crt_file if src.tls.crt_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/cert.pem') }}"
+  key_file = "{{ src.tls.key_file if src.tls.key_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/key.pem') }}"
+  verify_certificate = {{ src.tls.verify_certificate | default(vector_tls_verify_certificate) | default(true) | lower }}
+  verify_hostname = {{ src.tls.verify_hostname | default(vector_tls_verify_hostname) | default(false) | lower }}
+  alpn_protocols = ["vector"]
+{% endif %}
+{% endif %}
+
+{% if sink.type == "file" %}
+[sinks.{{ sink.name }}]
+  type = "file"
+  inputs = [ "{{ sink.inputs | join('", "') }}" ]
+  path = "{{ sink.path }}"
+  encoding.codec = "text"
+  healthcheck = {{ sink.healthcheck | default(true) | lower }}
+  idle_timeout_secs = 10
+{% endif %}
+
+{% if sink.type == "syslog" %}
+[sinks.{{ sink.name }}]
+  type = "socket"
+  inputs = [ "{{ sink.inputs | join('", "') }}" ]
+  address = "{{ sink.address }}"
+  mode = "{{ sink.mode | default('udp') }}"
+  encoding.codec = "json"
+  healthcheck = {{ sink.healthcheck | default(true) | lower }}
+{% endif %}
+
+{% if sink.type == "elasticsearch" %}
+{% for es_input in sink.inputs %}
+{% set input_name = es_input.input if es_input.input is defined else es_input %}
+{% set sink_suffix = loop.index | string if sink.inputs | length > 1 else '' %}
+{% set transform_name = 'elk_add_timestamp_' + input_name %}
+[transforms.{{ transform_name }}]
+  type = "remap"
+  inputs = [ "{{ input_name }}" ]
+  source = 'if !exists(."@timestamp") { ."@timestamp" = if exists(.timestamp) { .timestamp } else if exists(.ts) { .ts } else { now() } }'
+
+[sinks.{{ sink.name }}{{ '-' + input_name if input_name else sink_suffix }}]
+  type = "elasticsearch"
+  inputs = [ "{{ transform_name }}" ]
+  endpoints = [ "{{ sink.endpoints | join('", "') }}" ]
+  healthcheck = {{ sink.healthcheck | default(true) | lower }}
+  mode = "{{ sink.mode | default("bulk") }}"
+  auth.strategy = "{{ sink.auth.strategy | default("basic") }}"
+  auth.user = "{{ sink.auth.user | default("elastic") }}"
+  auth.password = "{{ sink.auth.password | default("${ELASTIC_PASSWORD}") }}"
+  bulk.action = "create"
+  bulk.index = "{{ es_input.index_prefix if es_input.index_prefix is defined else (input_name ~ '-%Y.%m.%d') }}"
+{% if sink.tls.enabled | default(false) %}
+  [sinks.{{ sink.name }}{{ '-' + input_name if input_name else sink_suffix }}.tls]
+  ca_file = "{{ sink.tls.ca_file if sink.tls.ca_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/ca.pem') }}"
+{% if not sink.tls.crt_key_file_skip | default(false) %}
+  crt_file = "{{ sink.tls.crt_file if sink.tls.crt_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/cert.pem') }}"
+  key_file = "{{ sink.tls.key_file if sink.tls.key_file is defined else ((vector_mtls_cert_path if vector_mtls_cert_path is defined else '/opt/mtls/vector') + '/key.pem') }}"
+{% endif %}
+  verify_certificate = {{ sink.tls.verify_certificate | default(vector_tls_verify_certificate) | default(true) | lower }}
+  verify_hostname = {{ sink.tls.verify_hostname | default(vector_tls_verify_hostname) | default(false) | lower }}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+{% endfor %}

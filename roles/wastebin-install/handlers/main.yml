@@ -1,0 +1,7 @@
+---
+- name: recreate-docker wastebin
+  community.docker.docker_compose_v2:
+    project_src: "{{ wastebin_compose_path }}"
+    state: present
+    recreate: always
+  listen: "recreate-docker wastebin"

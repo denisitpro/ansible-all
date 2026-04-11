@@ -1,0 +1,36 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - vector
+    - vector-prefly
+    - vector-unit
+    - vector-docker
+
+- ansible.builtin.import_tasks: 10-install-unit.yml
+  when: vector_install_unit
+  tags:
+    - vector
+    - vector-unit
+
+- ansible.builtin.import_tasks: 11-install-docker.yml
+  when: vector_install_docker
+  tags:
+    - vector
+    - vector-docker
+
+- ansible.builtin.import_tasks: 20-mtls-certs-server.yml
+  when: vector_mtls_enabled | default(false)
+  tags:
+    - vector
+    - vector-mtls
+
+- ansible.builtin.import_tasks: 30-configure.yml
+  tags:
+    - vector
+    - vector-config
+    - vector-configure
+    - vector-unit
+    - vector-docker
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'vector-clean']

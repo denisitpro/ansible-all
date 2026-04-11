@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+{% if vector_environment is defined and vector_environment %}
+{% for key, value in vector_environment.items() %}
+{{ key }}={{ value }}
+{% endfor %}
+{% endif %}

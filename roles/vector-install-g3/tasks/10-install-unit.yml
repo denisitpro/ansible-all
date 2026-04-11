@@ -1,0 +1,76 @@
+---
+- name: Download vector binary - {{ vector_download_url }}
+  become: false
+  ansible.builtin.get_url:
+    url: "{{ vector_download_url }}"
+    dest: "/tmp/vector-{{ vector_version_binary }}-linux-{{ vector_go_arch }}.tar.gz"
+    mode: "0644"
+  register: vector_download_binary
+  until: vector_download_binary is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+
+- name: Unpack vector binary
+  become: false
+  ansible.builtin.unarchive:
+    src: "/tmp/vector-{{ vector_version_binary }}-linux-{{ vector_go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/vector-{{ vector_go_arch }}-unknown-linux-gnu/bin/vector"
+    remote_src: true
+  check_mode: false
+
+- name: Propagate vector binaries
+  ansible.builtin.copy:
+    src: "/tmp/vector-{{ vector_go_arch }}-unknown-linux-gnu/bin/vector"
+    dest: "{{ vector_binary_path }}"
+    mode: "0755"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+    remote_src: true
+  notify: restart-unit vector
+  when: not ansible_check_mode
+
+- name: Copy Vector environment file
+  when: vector_environment is defined
+  ansible.builtin.template:
+    src: "vector.environment.j2"
+    dest: "{{ vector_environment_file }}"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+    mode: "0600"
+  notify: restart-unit vector
+
+- name: Copy Vector systemd service file
+  ansible.builtin.template:
+    src: "vector.service.j2"
+    dest: "/etc/systemd/system/vector.service"
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+    mode: "0644"
+  notify: restart-unit vector
+
+- name: Create simple configure
+  when: vector_install_unit
+  ansible.builtin.copy:
+    dest: "{{ vector_conf_path }}/vector.toml"
+    content: |
+      [sources.demo_source]
+        type = "demo_logs"
+        format = "json"
+
+      [sinks.blackhole_sink]
+        type = "blackhole"
+        inputs = ["demo_source"]
+    owner: "{{ vector_uid }}"
+    group: "{{ vector_gid }}"
+    mode: "0644"
+  notify: restart-unit vector
+
+- name: Ensure Vector is enabled on boot
+  when: vector_install_unit
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: vector
+    enabled: true
+    # state: started

@@ -1,0 +1,22 @@
+---
+- name: generate random password salt
+  ansible.builtin.command: openssl rand -hex 16
+  register: wastebin_password_salt_generated
+  changed_when: false
+  when: wastebin_password_salt is not defined
+
+- name: set generated password salt
+  ansible.builtin.set_fact:
+    wastebin_password_salt: "{{ wastebin_password_salt_generated.stdout }}"
+  when: wastebin_password_salt is not defined
+
+- name: generate random signing key
+  ansible.builtin.command: openssl rand -hex 64
+  register: wastebin_signing_key_generated
+  changed_when: false
+  when: wastebin_signing_key is not defined
+
+- name: set generated signing key
+  ansible.builtin.set_fact:
+    wastebin_signing_key: "{{ wastebin_signing_key_generated.stdout }}"
+  when: wastebin_signing_key is not defined

@@ -1,0 +1,34 @@
+## {{ ansible_managed }} ##
+
+services:
+  vector:
+    image: timberio/vector:{{ vector_version_docker }}-alpine
+    container_name: vector
+    hostname: "{{ ansible_facts['fqdn'] }}{% if vector_internal_domain is defined %}.{{ vector_internal_domain }}{% endif %}"
+    network_mode: host
+    command: --config /etc/vector/vector.toml
+{% if vector_environment_compose is defined and vector_environment_compose %}
+    environment:
+{% for key, value in vector_environment_compose.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+    volumes:
+      - {{ vector_conf_path }}/vector.toml:/etc/vector/vector.toml:ro
+      - {{ vector_data_path }}:{{ vector_data_path }}
+      - /var/run/docker.sock:/var/run/docker.sock
+{% if vector_mtls_enabled | default(false) %}
+      - {{ vector_mtls_cert_path }}:{{ vector_mtls_cert_path }}:ro
+{% endif %}
+{% if vector_additional_mounts is defined %}
+{% for mount in vector_additional_mounts %}
+      - {{ mount.source }}:{{ mount.target }}{% if mount.mode is defined %}:{{ mount.mode }}{% endif %}
+{% endfor %}
+{% endif %}
+
+    restart: {{ vector_restart | default('always') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '2'

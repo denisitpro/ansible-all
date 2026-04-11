@@ -1,5 +1,5 @@
 ---
-vault_image_version: 1.21.0
+vault_image_version: 1.21.1
 
 vault_compose_path: /opt/docker/vault
 

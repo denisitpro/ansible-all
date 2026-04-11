@@ -1,11 +1,11 @@
 ---
 - ansible.builtin.import_tasks: 10-ufw.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags:
     - ufw
     - ufw-all
     - ufw-system
 
 - ansible.builtin.import_tasks: 90-reset.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags: ['never', 'ufw-reset', 'ufw-clean']
