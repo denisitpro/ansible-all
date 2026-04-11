@@ -1,0 +1,35 @@
+---
+# SSH tunnel user (if not defined, will use hostname of the tunnel server)
+# Format: tunnel-<hostname> (cleaned from special characters)
+ssh_tunnel_user: "tunnel-{{ inventory_hostname | regex_replace('[^a-zA-Z0-9]', '') | lower }}"
+
+# User for connecting to remote hosts from controller (defaults to ansible_user)
+ssh_remote_user: "{{ ansible_user | default('ubuntu') }}"
+
+# Skip connectivity check for remote hosts (useful for troubleshooting)
+ssh_skip_connectivity_check: false
+
+# SSH agent settings - use SSH agent from the controller
+ssh_use_ssh_agent: true
+
+# Tunnel management
+ssh_tunnel_state: started # started, stopped, restarted
+ssh_tunnel_enabled: true # enable/disable service autostart
+ssh_tunnel_cleanup_old: false # cleanup old tunnel services not in current config
+
+# SSH tunnel configurations
+ssh_tunnels:
+  - local_port: 8080
+    remote_host: example.com
+    remote_port: 80
+    # Optional parameters:
+    # server_alive_interval: 30
+    # server_alive_count_max: 3
+    # tcp_keep_alive: "no"
+    # connect_timeout: 5
+    # connection_attempts: 3
+    # control_master: "no"
+  - local_port: 8443
+    remote_host: example.com
+    remote_port: 443
+

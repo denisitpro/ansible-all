@@ -1,0 +1,70 @@
+---
+# TODO: separate file for route
+# network:
+#  version: 2
+#  ethernets:
+#    ens19:
+#      routes:
+#      - to: "10.0.0.0/8"
+#        via: "10.70.1.1"
+
+
+- name: read netplan config
+  slurp:
+    src: /etc/netplan/50-cloud-init.yaml
+  register: netplan_raw
+
+- name: parse netplan config
+  set_fact:
+    netplan_config: "{{ netplan_raw.content | b64decode | from_yaml }}"
+
+- name: find local interface
+  set_fact:
+    local_iface: "{{ item.key }}"
+  loop: "{{ netplan_config.network.ethernets | dict2items }}"
+  when: >
+    item.value.addresses is defined and
+    (item.value.addresses | select('match', '^10\\.') | list | length > 0)
+  run_once: true
+
+- name: get gateway from variables
+  set_fact:
+    gateway: "{{ lookup('vars', 'netplan_c1_' + pve_c1_location + '_' + pve_c1_server + '_pve_gw') }}"
+
+- name: check if route exist in {{ local_iface }}
+  set_fact:
+    route_exists: >-
+      {{
+         (netplan_config.network.ethernets[local_iface]['routes'] | default([]))
+         | selectattr('to', 'equalto', '10.0.0.0/8')
+         | selectattr('via', 'equalto', gateway)
+         | list | length > 0
+      }}
+
+- name: add route netplan config
+  set_fact:
+    updated_netplan_config: >-
+      {{
+         netplan_config | combine({
+            'network': netplan_config.network | combine({
+                'ethernets': netplan_config.network.ethernets | combine({
+                    local_iface: netplan_config.network.ethernets[local_iface] | combine({
+                        'routes': (netplan_config.network.ethernets[local_iface]['routes'] | default([]))
+                        + ( [] if route_exists else [{
+                            'to': '10.0.0.0/8',
+                            'via': gateway
+                        }])
+                    })
+                })
+            })
+         })
+      }}
+  when: not route_exists
+
+- name: write netplan config
+  ansible.builtin.copy:
+    content: "{{ updated_netplan_config | to_nice_yaml }}"
+    dest: /etc/netplan/50-cloud-init.yaml
+    backup: true
+  notify: apply netplan config
+  when: not route_exists

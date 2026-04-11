@@ -1,0 +1,100 @@
+# - name: Check if list_servers_resolved_g2 is empty
+#   ansible.builtin.debug:
+#     msg: "list_servers_resolved_g2 is empty, skipping DNS resolving steps"
+#   when: list_servers_resolved_g2 | default([]) | length == 0
+
+# - name: Skip resolving steps when list is empty
+#   ansible.builtin.meta: end_play
+#   when: list_servers_resolved_g2 | default([]) | length == 0
+
+- name: Set variable name for resolved addresses
+  ansible.builtin.set_fact:
+    resolved_var_name: "{{ resolved_var_name if resolved_var_name is defined else 'resolved_addresses' }}"
+
+- name: Init resolved_addresses
+  ansible.builtin.set_fact:
+    "{{ resolved_var_name }}": []
+    "{{ resolved_var_name }}_ipv4": []
+    "{{ resolved_var_name }}_ipv6": []
+
+- name: Flatten host list from all groups
+  ansible.builtin.set_fact:
+    flattened_hosts: "{{ list_servers_resolved_g2 | map(attribute='hosts') | flatten }}"
+
+- name: Create host to group names mapping
+  ansible.builtin.set_fact:
+    host_to_group_map: >-
+      {%- set ns = namespace(result={}) -%}
+      {%- for group in list_servers_resolved_g2 -%}
+        {%- for host in group.hosts -%}
+          {%- set existing = ns.result.get(host, []) -%}
+          {%- set updated = (existing + [group.name]) | unique -%}
+          {%- set _ = ns.result.update({host: updated}) -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ ns.result | to_json }}
+
+- name: Parse host to group mapping from JSON
+  ansible.builtin.set_fact:
+    host_to_group_map: "{{ host_to_group_map | from_json }}"
+
+# potential may be problem very big host list
+- name: Resolve each hostname to IPs
+  ansible.builtin.shell: |
+    getent ahosts {{ item }} | awk '{print $1}' | sort -u
+  register: host_ips
+  changed_when: false
+  become: false
+  loop: "{{ flattened_hosts }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Build resolved_addresses list
+  ansible.builtin.set_fact:
+    "{{ resolved_var_name }}": >-
+      {{ host_ips.results | map('community.general.dict_kv', 'stdout_lines') | 
+         map('zip_longest', host_ips.results | map(attribute='item'), fillvalue='') |
+         map('map', 'reverse') | flatten | 
+         selectattr('0') | 
+         map('community.general.dict_kv', 'ip') | 
+         map('combine', {'comment': ''}) | list }}
+  when: false
+
+- name: Build all resolved addresses in one pass
+  ansible.builtin.set_fact:
+    "{{ resolved_var_name }}": >-
+      {%- set ns = namespace(result=[]) -%}
+      {%- for result in host_ips.results -%}
+        {%- for ip in result.stdout_lines -%}
+          {%- for group_name in (host_to_group_map[result.item] | default([])) -%}
+            {%- set _ = ns.result.append({'name': group_name, 'comment': result.item, 'ip': ip}) -%}
+          {%- endfor -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ ns.result | to_json }}
+
+- name: Parse resolved addresses from JSON
+  ansible.builtin.set_fact:
+    "{{ resolved_var_name }}": "{{ vars[resolved_var_name] | from_json }}"
+
+- name: Deduplicate resolved_addresses
+  ansible.builtin.set_fact:
+    "{{ resolved_var_name }}": "{{ vars[resolved_var_name] | unique }}"
+
+- name: Build resolved_addresses_ipv4 list
+  ansible.builtin.set_fact:
+    "{{ resolved_var_name }}_ipv4": "{{ vars[resolved_var_name] | selectattr('ip', 'match', '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$') | list }}"
+
+- name: Build resolved_addresses_ipv6 list
+  ansible.builtin.set_fact:
+    "{{ resolved_var_name }}_ipv6": "{{ vars[resolved_var_name] | rejectattr('ip', 'match', '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$') | list }}"
+
+# - name: Display resolved addresses
+#   ansible.builtin.debug:
+#     msg: "{{ vars[resolved_var_name] }}"
+# - name: Display resolved IPv4 addresses
+#   ansible.builtin.debug:
+#     msg: "{{ vars[resolved_var_name + '_ipv4'] }}"
+# - name: Display resolved IPv6 addresses
+#   ansible.builtin.debug:
+#     msg: "{{ vars[resolved_var_name + '_ipv6'] }}"

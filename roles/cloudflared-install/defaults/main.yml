@@ -1,0 +1,32 @@
+---
+# cloudflared installation method
+cloudflared_install_method: "deb"  # deb or binary
+
+# cloudflared installation parameters (for deb method)
+cloudflared_package_name: "cloudflared"
+cloudflared_gpg_key_url: "https://pkg.cloudflare.com/cloudflare-main.gpg"
+cloudflared_gpg_key_path: "/usr/share/keyrings/cloudflare-main.gpg"
+cloudflared_repo_url: "https://pkg.cloudflare.com/cloudflared"
+cloudflared_repo_file: "/etc/apt/sources.list.d/cloudflared.list"
+cloudflared_repo_line: "deb [signed-by={{ cloudflared_gpg_key_path }}] {{ cloudflared_repo_url }} any main"
+
+# Binary installation parameters (commented out for deb method)
+# cloudflared_version: "2025.9.1"
+# cloudflared_install_dir: "/usr/local/bin"
+# cloudflared_binary_name: "cloudflared"
+
+# Architecture mapping (for binary method)
+# cloudflared_arch_map:
+#   x86_64: "amd64"
+#   aarch64: "arm64"
+#   armv7l: "arm"
+#   armv6l: "arm"
+
+# Resolved architecture for download URL (for binary method)
+# cloudflared_arch: "{{ cloudflared_arch_map[ansible_architecture] | default('amd64') }}"
+
+# Download URL for direct binary (for binary method)
+# cloudflared_download_url: "https://github.com/cloudflare/cloudflared/releases/download/{{ cloudflared_version }}/cloudflared-linux-{{ cloudflared_arch }}"
+
+# Temporary download directory (for binary method)
+# cloudflared_temp_dir: "/tmp/cloudflared-install"

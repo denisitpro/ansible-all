@@ -1,0 +1,20 @@
+---
+- name: Add Cloudflare GPG key
+  ansible.builtin.apt_key:
+    url: https://pkg.cloudflareclient.com/pubkey.gpg
+    keyring: /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+
+- name: Add Cloudflare WARP APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ {{ ansible_distribution_release }} main"
+    state: present
+    filename: cloudflare-client
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install Cloudflare WARP
+  ansible.builtin.apt:
+    name: cloudflare-warp
+    state: present

@@ -1,0 +1,43 @@
+#Include /etc/ssh/sshd_config.d/*.conf
+
+Port 22
+AddressFamily inet
+ListenAddress 0.0.0.0
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+RekeyLimit 256M
+
+SyslogFacility AUTH
+LogLevel INFO
+LoginGraceTime 15
+PermitRootLogin yes
+StrictModes yes
+MaxAuthTries 2
+MaxSessions 10
+PubkeyAuthentication yes
+AuthorizedKeysFile    .ssh/authorized_keys
+IgnoreRhosts yes
+PasswordAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+KerberosAuthentication no
+GSSAPIAuthentication no
+UsePAM yes
+X11Forwarding no
+PrintMotd no
+TCPKeepAlive yes
+ClientAliveInterval 1800
+ClientAliveCountMax 0
+UseDNS no
+PermitTunnel yes
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+
+AcceptEnv XMODIFIERS
+Subsystem    sftp    /usr/lib/sftp-server
+
+PubkeyAcceptedKeyTypes=+ssh-rsa

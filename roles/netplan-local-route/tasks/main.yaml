@@ -1,0 +1,5 @@
+---
+- ansible.builtin.import_tasks: 05-configure.yml
+  when: netplan_local_route
+  tags:
+    - netplan-local-route

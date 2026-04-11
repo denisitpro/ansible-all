@@ -1,0 +1,13 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart SSH tunnels
+  ansible.builtin.systemd:
+    name: "ssh-tunnel-{{ item.local_port }}.service"
+    state: restarted
+  loop: "{{ ssh_tunnels }}"
+  loop_control:
+    label: "ssh-tunnel-{{ item.local_port }}"
+  when: ssh_tunnels is defined

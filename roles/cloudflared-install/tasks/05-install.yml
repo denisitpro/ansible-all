@@ -1,0 +1,28 @@
+---
+- name: Create temporary directory for cloudflared installation
+  ansible.builtin.file:
+    path: "{{ cloudflared_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Download cloudflared binary
+  ansible.builtin.get_url:
+    url: "{{ cloudflared_download_url }}"
+    dest: "{{ cloudflared_temp_dir }}/{{ cloudflared_binary_name }}"
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Install cloudflared binary to system directory
+  ansible.builtin.copy:
+    src: "{{ cloudflared_temp_dir }}/{{ cloudflared_binary_name }}"
+    dest: "{{ cloudflared_install_dir }}/{{ cloudflared_binary_name }}"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: true
+
+- name: Clean up temporary directory
+  ansible.builtin.file:
+    path: "{{ cloudflared_temp_dir }}"
+    state: absent
