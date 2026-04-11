@@ -26,6 +26,8 @@ prometheus:
     retentionSize: 18GB
     enableFeatures: ["exemplar-storage"]
     serviceDiscoveryRole: "EndpointSlice"
+    scrapeInterval: {{ k8s_prometheus_scrape_interval | default('60s') }}
+    evaluationInterval: {{ k8s_prometheus_evaluation_interval | default(k8s_prometheus_scrape_interval | default('60s')) }}
 {% if k8s_prometheus_external_labels is defined %}
     externalLabels:
 {% for k, v in k8s_prometheus_external_labels.items() %}
@@ -101,6 +103,13 @@ prometheus:
 {% endif %}
     podMonitorSelector:
       matchLabels: {}
+    serviceMonitorSelector: {}
+{% if k8s_prom_service_monitor_relabel_configs is defined and k8s_prom_service_monitor_relabel_configs | length > 0 %}
+    serviceMonitorRelabelings:
+{% for relabel in k8s_prom_service_monitor_relabel_configs %}
+      - {{ relabel | to_nice_yaml(indent=2) | indent(8, False) }}
+{% endfor %}
+{% endif %}
     additionalScrapeConfigs:
       - job_name: 'applications-monitor'
         kubernetes_sd_configs:
@@ -142,8 +151,14 @@ prometheus:
           - target_label: cluster
             replacement: {{ k8s_prometheus_external_labels.cluster }}
 {% endif %}
-        scrape_interval: 30s
+        scrape_interval: {{ k8s_prometheus_scrape_interval | default('60s') }}
         scrape_timeout: 10s
+{% if k8s_prom_metric_relabel_configs is defined and k8s_prom_metric_relabel_configs | length > 0 %}
+        metric_relabel_configs:
+{% for relabel in k8s_prom_metric_relabel_configs %}
+          - {{ relabel | to_nice_yaml(indent=2) | indent(12, False) }}
+{% endfor %}
+{% endif %}
 {% if k8s_pod_monitoring_enabled is defined and k8s_pod_monitoring_enabled %}
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
@@ -203,8 +218,14 @@ prometheus:
           - target_label: cluster
             replacement: {{ k8s_prometheus_external_labels.cluster }}
 {% endif %}
-        scrape_interval: 30s
+        scrape_interval: {{ k8s_prometheus_scrape_interval | default('60s') }}
         scrape_timeout: 10s
+{% if k8s_prom_metric_relabel_configs is defined and k8s_prom_metric_relabel_configs | length > 0 %}
+        metric_relabel_configs:
+{% for relabel in k8s_prom_metric_relabel_configs %}
+          - {{ relabel | to_nice_yaml(indent=2) | indent(12, False) }}
+{% endfor %}
+{% endif %}
 {% endif %}
 
 
@@ -281,4 +302,30 @@ kubeScheduler:
 #     enabled: true
 #     port: 10259
 #   https:
-#     enabled: true 
+#     enabled: true
+{% if k8s_prom_additional_service_monitors is defined and k8s_prom_additional_service_monitors | length > 0 %}
+
+additionalServiceMonitors:
+{% for monitor in k8s_prom_additional_service_monitors %}
+  - name: {{ monitor.name }}
+    selector:
+      matchLabels:
+        {{ monitor.selector.matchLabels | to_nice_yaml(indent=2) | indent(8, False) }}
+    namespaceSelector:
+      {{ monitor.namespaceSelector | to_nice_yaml(indent=2) | indent(6, False) }}
+    endpoints:
+{% for endpoint in monitor.endpoints %}
+      - port: {{ endpoint.port }}
+        interval: {{ endpoint.interval | default("30s") }}
+{% if endpoint.path is defined %}
+        path: {{ endpoint.path }}
+{% endif %}
+{% if endpoint.metric_relabel_configs is defined and endpoint.metric_relabel_configs | length > 0 %}
+        metricRelabelings:
+{% for relabel in endpoint.metric_relabel_configs %}
+          - {{ relabel | to_nice_yaml(indent=2) | indent(12, False) }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endif %}

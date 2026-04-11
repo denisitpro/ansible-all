@@ -1,0 +1,141 @@
+---
+# Cilium Host Firewall Policy - Master Nodes Rules
+# This policy controls ingress traffic to master nodes
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: "host-firewall-master-nodes"
+spec:
+  description: "Host firewall policy for Kubernetes master nodes - use node selector"
+  nodeSelector:
+    matchLabels:
+      k8s-node-type: master
+  ingress:
+    # ============================================================
+    # ICMP - Basic connectivity
+    # ============================================================
+    # Allow ICMP from remote nodes and kube-apiserver (IPv4)
+    - fromEntities:
+        - remote-node
+        - kube-apiserver
+      icmps:
+        - fields:
+            - type: 8
+              family: IPv4
+    # Allow ICMP from remote nodes and kube-apiserver (IPv6)
+    - fromEntities:
+        - remote-node
+        - kube-apiserver
+      icmps:
+        - fields:
+            - type: 128
+              family: IPv6
+
+    # ============================================================
+    # MASTER <-> MASTER communication
+    # ============================================================
+    # NOTE: Cilium CNI ports and metrics are covered by remote-node entity below
+    # # Cilium CNI ports from master nodes (kube-apiserver identity)
+    # - fromEntities:
+    #     - kube-apiserver
+    #   toPorts:
+    #     - ports:
+    #         - port: "4000"
+    #           protocol: TCP
+    #         - port: "4240"
+    #           protocol: TCP
+    #         - port: "4244"
+    #           protocol: TCP
+    #         - port: "51871"
+    #           protocol: UDP
+    #         - port: "4789"
+    #           protocol: UDP
+    #         - port: "8472"
+    #           protocol: UDP
+    #         - port: "6081"
+    #           protocol: UDP
+    # # Cilium metrics from master nodes (kube-apiserver identity)
+    # - fromEntities:
+    #     - kube-apiserver
+    #   toPorts:
+    #     - ports:
+    #         - port: "9962"
+    #           endPort: 9965
+    #           protocol: TCP
+    # Kubernetes API server - allow from anywhere (like UFW config)
+    - fromCIDRSet:
+        - cidr: 0.0.0.0/0
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP
+    - fromCIDRSet:
+        - cidr: ::/0
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP
+    # Kubernetes API server - allow from cluster pods
+    - fromEntities:
+        - cluster
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP
+    # Kubelet, Hubble and metrics ports from cluster pods
+    - fromEntities:
+        - cluster
+      toPorts:
+        - ports:
+            - port: "4244"
+              protocol: TCP
+            - port: "10250"
+              protocol: TCP
+            - port: "9962"
+              endPort: 9965
+              protocol: TCP
+    # etcd and other Kubernetes ports from master nodes (kube-apiserver identity)
+    - fromEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "2379"
+              endPort: 2380
+              protocol: TCP
+            - port: "10250"
+              protocol: TCP
+            - port: "10257"
+              protocol: TCP
+            - port: "10259"
+              protocol: TCP
+
+    # ============================================================
+    # WORKER -> MASTER communication (and other nodes)
+    # ============================================================
+    # Cilium CNI ports from all remote nodes (Workers and other Masters)
+    - fromEntities:
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "4240"
+              protocol: TCP
+            - port: "4000"
+              protocol: TCP
+            - port: "4244"
+              protocol: TCP
+            - port: "51871"
+              protocol: UDP
+            - port: "4789"
+              protocol: UDP
+            - port: "8472"
+              protocol: UDP
+            - port: "6081"
+              protocol: UDP
+    # Cilium metrics from remote nodes
+    - fromEntities:
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "9962"
+              endPort: 9965
+              protocol: TCP

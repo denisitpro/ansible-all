@@ -31,6 +31,56 @@
   when: not skip_argocd_install
 
 
+### Whitelist workers in argocd
+### When argocd_workers_ingress_whitelist is set to true, gather IPs of all nodes in master and worker groups is
+
+- name: ArgoCD - Init resolved_addresses
+  ansible.builtin.set_fact:
+    resolved_addresses: []
+  when: not skip_argocd_install and argocd_workers_ingress_whitelist | default(false)
+
+- name: ArgoCD - Build hostname list from master and worker groups
+  ansible.builtin.set_fact:
+    argocd_hostnames: "{{ groups[k8s_master_group_name] + groups[k8s_worker_group_name] }}"
+  when: not skip_argocd_install and argocd_workers_ingress_whitelist | default(false)
+
+- name: ArgoCD - Resolve each hostname to IPs
+  ansible.builtin.shell: |
+    getent ahosts {{ item }} | awk '{print $1}' | sort -u
+  register: host_ips
+  changed_when: false
+  loop: "{{ argocd_hostnames }}"
+  loop_control:
+    label: "{{ item }}"
+  when: not skip_argocd_install and argocd_workers_ingress_whitelist | default(false)
+
+- name: ArgoCD - Build resolved_addresses list (with CIDR notation)
+  ansible.builtin.set_fact:
+    resolved_addresses: "{{ resolved_addresses + new_entries }}"
+  vars:
+    new_entries: >-
+      {{
+        item.stdout_lines
+        | map('regex_replace', '^(.*)$', '\1')
+        | map('regex_replace', '^(.*:.*)$', '\1/128')
+        | map('regex_replace', '^([0-9.]+)$', '\1/32')
+        | list
+      }}
+  loop: "{{ host_ips.results }}"
+  when: not skip_argocd_install and argocd_workers_ingress_whitelist | default(false)
+
+- name: ArgoCD - Merge with predefined argocd_ingress_whitelist
+  ansible.builtin.set_fact:
+    argocd_ingress_whitelist: "{{ (resolved_addresses + (argocd_ingress_whitelist | default([]))) | unique }}"
+  when: not skip_argocd_install and argocd_workers_ingress_whitelist | default(false)
+
+- name: ArgoCD - Show final whitelist
+  ansible.builtin.debug:
+    var: argocd_ingress_whitelist
+  when: not skip_argocd_install and argocd_workers_ingress_whitelist | default(false)
+
+### End whitelist workers in argocd
+
 - name: ArgoCD - Create values config from template
   ansible.builtin.template:
     src: "argocd-values.yaml.j2"

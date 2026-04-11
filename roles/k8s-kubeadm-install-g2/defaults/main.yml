@@ -1,14 +1,15 @@
 ---
 # need for upgrade cluster
-k8s_cluster_minor_version: v1.34
+k8s_cluster_minor_version: v1.35
+k8s_cls_version: "1.35.2"
 
 #### version for install k8s cluster
-k8s_cls_version: "1.34.1"
-containerd_version: 2.1.4
-runc_version: 1.3.2
+
+containerd_version: 2.2.1
+runc_version: 1.4.0
 containerd_plugin_cni_version: 1.8.0
-cilium_version: 1.18.2
-cilium_cli_version: 0.18.7
+cilium_version: 1.19.0
+cilium_cli_version: 0.19.0
 
 #### another
 k8s_local_config_path: ~/.kube/new-cluster.conf
@@ -36,6 +37,7 @@ k8s_master_init_host: "{{ groups[k8s_master_group_name][0] }}"
 kubelet_path: true
 
 k8s_net_cluster_pool: "10.125.0.0/16"
+k8s_net6_cluster_pool: "fd00::/104" # https://docs.cilium.io/en/stable/helm-reference/ ipam.operator.clusterPoolIPv6PodCIDRList
 
 dns_nameservers:
   - 1.1.1.1
@@ -48,4 +50,48 @@ k8s_go_arch_map:
   armv7l: 'armv7'
   armv6l: 'armv6'
 
-k8s_go_arch: "{{ k8s_go_arch_map[ansible_architecture] | default(ansible_architecture) }}"
+k8s_go_arch: "{{ k8s_go_arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
+
+# Cilium Host Firewall policy files
+cilium_system_rules_file: "/tmp/cilium-host-firewall-system.yml"
+cilium_worker_rules_file: "/tmp/cilium-host-firewall-worker.yml"
+cilium_master_rules_file: "/tmp/cilium-host-firewall-master.yml"
+cilium_generated_rules_g1_file: "/tmp/cilium-host-firewall-generated-g1.yml"
+cilium_longhorn_rules_file: "/tmp/cilium-host-firewall-longhorn.yml"
+
+# Cilium Host Firewall optional policies
+cilium_fw_longhorn_enabled: false
+
+# Base labels applied to all master nodes (always applied)
+k8s_master_node_labels_base:
+  - name: "k8s-fw-base"
+    value: "system-base-100"
+  - name: "k8s-node-type"
+    value: "master"
+
+# Additional labels for master nodes (can be overridden per environment)
+k8s_master_node_labels_extra: []
+
+# Base labels applied to all worker nodes (always applied)
+k8s_worker_node_labels_base:
+  - name: "k8s-fw-base"
+    value: "system-base-100"
+  - name: "k8s-node-type"
+    value: "worker"
+
+# Additional labels for worker nodes (can be overridden per environment)
+k8s_worker_node_labels_extra: []
+
+# Cilium Prometheus metrics configuration
+# By default metrics are enabled (Cilium default behavior)
+# Set to false to disable metrics collection
+# cilium_prometheus_enabled: false  # Disable cilium-agent metrics
+# cilium_operator_prometheus_enabled: false  # Disable cilium-operator metrics
+
+# Hubble metrics configuration
+# Specify list of metrics to enable for network observability
+# Available metrics: dns, drop, tcp, flow, port-distribution, icmp, httpV2
+# Example: cilium_hubble_metrics_enabled: ["dns", "drop", "tcp", "flow"]
+# cilium_hubble_metrics_enabled: []
+
+k8s_server_hostname: "{{ inventory_hostname_short | default(inventory_hostname.split('.')[0]) }}"

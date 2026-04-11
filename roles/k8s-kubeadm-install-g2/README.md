@@ -2,7 +2,104 @@
 * Role  install and configure k8s to ubuntu 24 - use kubeadm
 * need set variable `k8s_master_group_name` = out host group
 
+# Node Labeling
 
+The role supports two independent methods for applying labels to K8s nodes. Both can be used simultaneously or separately. By default, neither method is enabled.
+
+## Method 1: Manual Labels
+
+Apply labels from a manually defined list in group_vars.
+
+**Enable flag:** `k8s_enable_manual_labels: true`
+
+**Configuration example** (`group_vars/<group>/label-hands.yml`):
+```yaml
+k8s_enable_manual_labels: true
+
+k8s_node_labels_manual:
+  - name: "k8s-fw-base"
+    value: "system-base-100"
+  - name: "k8s-node-type"
+    value: "master"
+  - name: "location"
+    value: "eu-central"
+```
+
+**Ansible tags:** `k8s-label-nodes`, `k8s-label-manual`
+
+## Method 2: Labels from Ansible Tags (Dynamic)
+
+Apply labels based on host tags defined in the inventory file. Uses `ansible-set-tags` role to discover nodes dynamically.
+
+**Enable flag:** `k8s_label_nodes_from_tags: true`
+
+### Step 1: Add tags to inventory hosts
+
+In `hosts` file:
+```ini
+[k8s_master_c1_sigma]
+nbg1-c1-sigma-k8s-01.example.org k8s_role=master
+nbg1-c1-sigma-k8s-02.example.org k8s_role=master
+
+[k8s_worker_c1_sigma]
+nbg1-c1-sigma-w-01.example.org k8s_role=worker
+nbg1-c1-sigma-w-02.example.org k8s_role=ingress
+```
+
+### Step 2: Configure tag discovery
+
+In `group_vars/<group>/k8s-label.yml`:
+```yaml
+k8s_label_nodes_from_tags: true
+
+k8s_hosts_tag_configs:
+  - tags:
+      k8s_role: master
+    output_var_name: k8s_master_nodes_list
+  - tags:
+      k8s_role: worker
+    output_var_name: k8s_worker_nodes_list
+```
+
+### Step 3: (Optional) Customize labels
+
+Base labels are defined in role defaults and always applied:
+```yaml
+# Master nodes get:
+k8s_master_node_labels_base:
+  - name: "k8s-fw-base"
+    value: "system-base-100"
+  - name: "k8s-node-type"
+    value: "master"
+
+# Worker nodes get:
+k8s_worker_node_labels_base:
+  - name: "k8s-fw-base"
+    value: "system-base-100"
+  - name: "k8s-node-type"
+    value: "worker"
+```
+
+To add extra labels per environment:
+```yaml
+k8s_master_node_labels_extra:
+  - name: "cloud_provider"
+    value: "hetzner"
+  - name: "region"
+    value: "eu"
+
+k8s_worker_node_labels_extra:
+  - name: "gpu"
+    value: "nvidia"
+```
+
+**Ansible tags:** `k8s-label-nodes`, `k8s-label-nodes-tags`
+
+## Execution conditions
+
+- **Manual labels** (`55-label-nodes-manual.yml`): runs on any node when `k8s_enable_manual_labels` is defined
+- **Labels from tags - masters** (`60-label-master-nodes-from-ansible-tags.yml`): runs only on master nodes (`k8s_master is defined`)
+- **Labels from tags - workers** (`61-label-worker-nodes-from-ansible-tags.yml`): runs only on worker nodes (`k8s_master is not defined`)
 
 # Local ip address launch
 need set variable  for master node

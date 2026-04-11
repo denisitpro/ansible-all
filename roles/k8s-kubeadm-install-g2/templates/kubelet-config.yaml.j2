@@ -24,8 +24,15 @@ fileCheckFrequency: 0s
 healthzBindAddress: 127.0.0.1
 healthzPort: 10248
 httpCheckFrequency: 0s
+{% if k8s_kubelet_image_gc is defined and k8s_kubelet_image_gc %}
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 60
+imageMaximumGCAge: 168h
+imageMinimumGCAge: 2m
+{% else %}
 imageMaximumGCAge: 0s
 imageMinimumGCAge: 0s
+{% endif %}
 kind: KubeletConfiguration
 logging:
   flushFrequency: 0

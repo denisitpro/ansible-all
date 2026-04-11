@@ -1,5 +1,5 @@
 ---
-- name: ArgoCD - create hemm oci sercret
+- name: ArgoCD - create helm oci secret
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: /tmp/{{ item }}

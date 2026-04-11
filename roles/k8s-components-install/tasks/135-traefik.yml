@@ -1,0 +1,74 @@
+---
+- name: Traefik - Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: Traefik - Auto enable nodeSelector from inventory tags
+  ansible.builtin.set_fact:
+    traefik_use_node_selector: true
+  when:
+    - traefik_auto_node_selector_from_inventory_tag | default(true)
+    - traefik_use_node_selector is not defined
+    - k8s_traefik_nodes_hostnames is defined
+    - k8s_traefik_nodes_hostnames | length > 0
+
+- name: Traefik - Auto set nodeSelector from inventory tags
+  ansible.builtin.set_fact:
+    traefik_node_selector: >-
+      {{
+        {
+          (k8s_traefik_label_key | default('ingress.traefik/enabled', true)): (k8s_traefik_label_value | default('enabled', true))
+        }
+      }}
+  when:
+    - traefik_auto_node_selector_from_inventory_tag | default(true)
+    - traefik_use_node_selector | default(false)
+    - traefik_node_selector is not defined
+    - k8s_traefik_nodes_hostnames is defined
+    - k8s_traefik_nodes_hostnames | length > 0
+
+- name: Traefik - Check if traefik is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_traefik_namespace | default('traefik') }} --kubeconfig {{ k8s_config_path }} | grep -w traefik
+  register: traefik_installed
+  failed_when: false
+  changed_when: false
+
+- name: Traefik - Set fact whether to skip traefik install
+  ansible.builtin.set_fact:
+    skip_traefik_install: "{{ traefik_installed.rc == 0 and (not traefik_force_install | default(false)) }}"
+
+- name: Traefik - Add Helm repository
+  ansible.builtin.command: helm repo add traefik https://traefik.github.io/charts
+  register: helm_traefik_repo
+  changed_when: helm_traefik_repo.stdout is search('has been added')
+  when: not skip_traefik_install
+
+- name: Traefik - Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_traefik_install
+
+- name: Traefik - Create values config from template
+  ansible.builtin.template:
+    src: "traefik-values.yaml.j2"
+    dest: /tmp/traefik-values.yaml
+    mode: "0600"
+  when: not skip_traefik_install or traefik_force_install is defined
+  tags:
+    - traefik-value
+
+- name: Traefik - Install via Helm
+  ansible.builtin.command: >
+    helm upgrade --install traefik traefik/traefik
+    --namespace {{ helm_traefik_namespace | default('traefik') }}
+    --version {{ helm_traefik_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/traefik-values.yaml
+  when: not skip_traefik_install or traefik_force_install is defined
+# - name: remove /tmp/traefik-values.yaml
+#   ansible.builtin.file:
+#     path: /tmp/traefik-values.yaml
+#     state: absent

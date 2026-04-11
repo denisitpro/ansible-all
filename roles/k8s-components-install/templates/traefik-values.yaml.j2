@@ -1,0 +1,163 @@
+# https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
+# Traefik Ingress Controller
+
+{% set traefik_resolved_service_mode = traefik_service_mode | default('host_port' if (traefik_use_host_port is defined and traefik_use_host_port) else 'node_port') %}
+{% set traefik_resolved_deployment_kind = traefik_deployment_kind | default('Deployment') %}
+
+{% if traefik_use_node_selector is defined and traefik_use_node_selector %}
+nodeSelector:
+{% for key, value in traefik_node_selector.items() %}
+  "{{ key }}": "{{ value }}"
+{% endfor %}
+{% endif %}
+
+{% if traefik_resolved_service_mode == 'network_mode' %}
+hostNetwork: true
+{% endif %}
+
+# Deployment configuration
+deployment:
+  kind: {{ traefik_resolved_deployment_kind }}
+{% if traefik_resolved_deployment_kind | lower == 'deployment' %}
+  replicas: {{ traefik_replicas | default(2) }}
+{% endif %}
+{% if traefik_resolved_service_mode == 'network_mode' %}
+  dnsPolicy: ClusterFirstWithHostNet
+{% endif %}
+
+{% if traefik_resolved_service_mode == 'network_mode' and traefik_resolved_deployment_kind | lower == 'daemonset' %}
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: {{ traefik_daemonset_max_unavailable | default(1) }}
+    maxSurge: {{ traefik_daemonset_max_surge | default(0) }}
+{% endif %}
+
+{% if traefik_resolved_service_mode == 'network_mode' %}
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+  readOnlyRootFilesystem: true
+{% endif %}
+
+{% if traefik_resolved_service_mode == 'network_mode' %}
+podSecurityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+  runAsGroup: 0
+{% endif %}
+
+# IngressClass configuration
+ingressClass:
+  enabled: true
+  isDefaultClass: {{ traefik_ingress_class_is_default_class | default('false') }}
+
+# IngressRoute dashboard
+ingressRoute:
+  dashboard:
+    enabled: {{ traefik_dashboard_enabled | default('false') }}
+
+# Ports configuration
+ports:
+  traefik:
+    expose:
+      default: {{ traefik_dashboard_service_expose | default(false) }}
+    exposedPort: {{ traefik_dashboard_service_port | default(8080) }}
+{% if traefik_resolved_service_mode == 'network_mode' %}
+  metrics:
+    port: {{ traefik_network_mode_metrics_port | default(9101) }}
+{% endif %}
+  web:
+    port: {{ traefik_web_container_port | default('80' if traefik_resolved_service_mode == 'network_mode' else '8000') }}
+    exposedPort: 80
+{% if traefik_resolved_service_mode == 'host_port' %}
+    hostPort: {{ traefik_web_host_port | default('80') }}
+{% elif traefik_resolved_service_mode == 'node_port' %}
+    nodePort: {{ traefik_web_node_port | default('32080') }}
+{% endif %}
+{% if traefik_real_ip is defined %}
+    forwardedHeaders:
+      trustedIPs:
+{% for ip in traefik_real_ip.ipv4 %}
+        - {{ ip }}
+{% endfor %}
+{% if traefik_real_ip.ipv6 is defined %}
+{% for ip in traefik_real_ip.ipv6 %}
+        - {{ ip }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if traefik_proxy_protocol is defined %}
+    proxyProtocol:
+      trustedIPs:
+{% for ip in traefik_proxy_protocol.ipv4 %}
+        - {{ ip }}
+{% endfor %}
+{% if traefik_proxy_protocol.ipv6 is defined %}
+{% for ip in traefik_proxy_protocol.ipv6 %}
+        - {{ ip }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if traefik_body_size is defined %}
+    http:
+      maxHeaderBytes: {{ traefik_body_size }}
+{% endif %}
+  websecure:
+    port: {{ traefik_websecure_container_port | default('443' if traefik_resolved_service_mode == 'network_mode' else '8443') }}
+    exposedPort: 443
+{% if traefik_resolved_service_mode == 'host_port' %}
+    hostPort: {{ traefik_websecure_host_port | default('443') }}
+{% elif traefik_resolved_service_mode == 'node_port' %}
+    nodePort: {{ traefik_websecure_node_port | default('32443') }}
+{% endif %}
+{% if traefik_real_ip is defined %}
+    forwardedHeaders:
+      trustedIPs:
+{% for ip in traefik_real_ip.ipv4 %}
+        - {{ ip }}
+{% endfor %}
+{% if traefik_real_ip.ipv6 is defined %}
+{% for ip in traefik_real_ip.ipv6 %}
+        - {{ ip }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if traefik_proxy_protocol is defined %}
+    proxyProtocol:
+      trustedIPs:
+{% for ip in traefik_proxy_protocol.ipv4 %}
+        - {{ ip }}
+{% endfor %}
+{% if traefik_proxy_protocol.ipv6 is defined %}
+{% for ip in traefik_proxy_protocol.ipv6 %}
+        - {{ ip }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if traefik_body_size is defined %}
+    http:
+      maxHeaderBytes: {{ traefik_body_size }}
+{% endif %}
+
+# Service configuration
+service:
+{% if traefik_resolved_service_mode == 'node_port' %}
+  type: NodePort
+  externalTrafficPolicy: Local
+{% else %}
+  type: ClusterIP
+{% endif %}
+
+# Logs configuration
+logs:
+  general:
+    format: {{ traefik_log_format | default('"json"') }}
+    level: {{ traefik_log_level | default('INFO') }}
+  access:
+    enabled: {{ traefik_access_log_enabled | default('true') }}
+    format: {{ traefik_access_log_format | default('"json"') }}

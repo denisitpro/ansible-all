@@ -1,0 +1,17 @@
+---
+# Included per user (loop_var: user). Same logic as 15-root-ssh-keys: ensure .ssh dir, overwrite authorized_keys.
+- name: Ensure .ssh directory exists for user {{ user.name }}
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.ssh"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.group | default(user.name) }}"
+    mode: '0700'
+
+- name: Update authorized keys for user {{ user.name }} (overwrite)
+  ansible.builtin.copy:
+    dest: "/home/{{ user.name }}/.ssh/authorized_keys"
+    content: "{{ (user.public_keys | default([])) | join('\n') }}\n"
+    owner: "{{ user.name }}"
+    group: "{{ user.group | default(user.name) }}"
+    mode: '0600'

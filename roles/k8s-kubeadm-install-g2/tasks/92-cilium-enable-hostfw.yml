@@ -1,27 +1,12 @@
 ---
-- name: Check if Cilium namespace exists
-  ansible.builtin.command: kubectl get namespace {{ cilium_namespace | default('cilium') }} --kubeconfig {{ k8s_config_path }}
-  register: cilium_ns_check
-  failed_when: false
-  changed_when: false
+# Enable Cilium Host Firewall after policies are applied
+# This task enables Host Firewall feature after firewall rules are already in place
+# to prevent losing access to the host during activation
 
-- name: Create Cilium namespace if not exists
+
+- name: Enable Cilium Host Firewall via upgrade
   ansible.builtin.command: >
-    kubectl create namespace {{ cilium_namespace | default('cilium') }}
-    --kubeconfig {{ k8s_config_path }}
-  when: cilium_ns_check.rc != 0
-  register: cilium_ns_create
-  changed_when: "'created' in cilium_ns_create.stdout"
-
-- name: Remove existing Cilium CNI config if forced reinstall is requested
-  ansible.builtin.file:
-    path: /etc/cni/net.d/05-cilium.conflist
-    state: absent
-  when: cilium_force_install is defined
-
-- name: Install Cilium using cilium-cli
-  ansible.builtin.command: >
-    cilium install
+    cilium upgrade
     --version {{ cilium_version }}
     --kubeconfig {{ k8s_config_path }}
     --namespace {{ cilium_namespace | default('cilium') }}
@@ -38,7 +23,6 @@
     --set ipam.operator.clusterPoolIPv4MaskSize=24
     --set tunnelProtocol={{ cilium_tunnel_protocol | default('vxlan') }}
     --set routingMode={{ cilium_routing_mode | default('tunnel') }}
-    --set bpf.lbExternalClusterIP=true
     {% if cilium_prometheus_enabled is defined %}
     --set prometheus.enabled={{ cilium_prometheus_enabled | lower }}
     {% endif %}
@@ -59,8 +43,7 @@
     {% else %}
     --set ipv6.enabled=false
     {% endif %}
-  args:
-    creates: /etc/cni/net.d/05-cilium.conflist
+  when: cilium_force_install is defined
 
 - name: Wait for Cilium components to initialize - 2 minutes
   ansible.builtin.pause:

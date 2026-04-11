@@ -28,59 +28,19 @@ loki:
     retention_delete_delay: {{ k8s_loki_retention_delete_delay | default('2h') }}
     retention_delete_worker_count: {{ k8s_loki_retention_delete_worker_count | default(100) }}
     delete_request_store: s3
-  # Common config with S3 storage
-  commonConfig:
-    path_prefix: /var/loki
-    replication_factor: {{ k8s_loki_replication_factor | default(2) }}
-    compactor_grpc_address: {% raw %}'{{ include "loki.compactorAddress" . }}'{% endraw %}
-
-{% if k8s_loki_s3_enabled | default(false) %}
-    storage:
-      s3:
-        endpoint: {{ k8s_loki_s3_endpoint }}
-        region: {{ k8s_loki_s3_region }}
-        bucketnames: {{ k8s_loki_s3_bucket_name }}
-        access_key_id: ${AWS_ACCESS_KEY_ID}
-        secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-        insecure: {{ k8s_loki_s3_insecure | default('false') }}
-        s3forcepathstyle: {{ k8s_loki_s3_force_path_style | default('true') }}
-{% endif %}
-  # Storage configuration for Helm chart
+  # Storage configuration for MinIO buckets
   storage:
-{% if k8s_loki_s3_enabled | default(false) %}
-    type: s3
-    bucketNames:
-      chunks: {{ k8s_loki_s3_bucket_name | default('loki-chunks') }}
-      ruler: {{ k8s_loki_s3_bucket_name | default('loki-chunks') }}
-      admin: {{ k8s_loki_s3_bucket_name | default('loki-chunks') }}
-    s3:
-      endpoint: {{ k8s_loki_s3_endpoint }}
-      region: {{ k8s_loki_s3_region | default('us-east-1') }}
-      s3ForcePathStyle: {{ k8s_loki_s3_force_path_style | default('true') }}
-      insecure: {{ k8s_loki_s3_insecure | default('false') }}
-{% else %}
     bucketNames:
       chunks: chunks
       ruler: ruler
       admin: admin
     type: s3
-{% endif %}
 
 
 deploymentMode: Distributed
 
-{% if k8s_loki_s3_enabled | default(false) %}
-# Global configuration for S3 access
-global:
-  extraEnv:
-    - name: AWS_ACCESS_KEY_ID
-      value: "{{ k8s_loki_s3_access_key_id }}"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "{{ k8s_loki_s3_secret_access_key }}"
-{% endif %}
-
 ingester:
-  replicas: {{ k8s_loki_ingester_replicas | default(3) }} # To ensure data durability with replication
+  replicas: 3 # To ensure data durability with replication
   zoneAwareReplication:
      enabled: false
   persistence:
@@ -194,10 +154,6 @@ gateway:
 
 # Enable minio for storage
 minio:
-{% if k8s_loki_s3_enabled | default(false) %}
-  enabled: false
-{% else %}
   enabled: true
   persistence:
-    size: {{ k8s_loki_minio_pvc_size | default('20Gi') }}
-{% endif %} 
+    size: {{ k8s_loki_minio_pvc_size | default('20Gi') }} 

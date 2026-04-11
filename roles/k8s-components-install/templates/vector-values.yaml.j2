@@ -1,22 +1,73 @@
 role: Agent
+
+# Update strategy: restart all pods simultaneously
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: "100%"
+
 customConfig:
   api:
     address: 0.0.0.0:8686
     enabled: true
     playground: false
+  
   data_dir: /vector-data-dir
+  
   sources:
+{% if vector_k8s_sources is defined %}
+{% for src in vector_k8s_sources %}
+    {{ src.name }}:
+{% if src.type == "kubernetes_logs" %}
+      type: "kubernetes_logs"
+{% if src.extra_label_selector is defined %}
+      extra_label_selector: "{{ src.extra_label_selector }}"
+{% endif %}
+{% if src.extra_namespace_label_selector is defined %}
+      extra_namespace_label_selector: "{{ src.extra_namespace_label_selector }}"
+{% endif %}
+{% if src.self_node_name_only is defined %}
+      self_node_name_only: {{ src.self_node_name_only | lower }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% else %}
     kubernetes_logs:
       type: "kubernetes_logs"
-      # extra_label_selector: "vector.dev/incude=true"
-      # extra_namespace_label_selector: vector.dev/incude=true
+      extra_label_selector: "vector.dev/exclude!=true"
+{% endif %}
+  
   transforms:
+{% if vector_k8s_transforms is defined %}
+{% for tr in vector_k8s_transforms %}
+    {{ tr.name }}:
+      type: {{ tr.type }}
+      inputs:
+{% for input in tr.inputs %}
+        - {{ input }}
+{% endfor %}
+{% if tr.source is defined %}
+      source: |
+{{ tr.source | indent(8, first=True) }}
+{% endif %}
+{% endfor %}
+{% else %}
     remove_unnecessary_fields:
       type: remap
       inputs:
         - kubernetes_logs
       source: |
-        .service_team = .kubernetes.pod_labels.service_team
+        # Extract standard Helm labels
+        .app_name = get(.kubernetes.pod_labels, ["app.kubernetes.io/name"]) ?? "unknown"
+        .app_instance = get(.kubernetes.pod_labels, ["app.kubernetes.io/instance"]) ?? "unknown"
+        .service_team = get(.kubernetes.pod_labels, ["service_team"]) ?? "unknown"
+        
+        # Extract node/cluster/region/zone
+        .k8s_node = .kubernetes.pod_node_name
+        .region = get(.kubernetes.node_labels, ["topology.kubernetes.io/region"]) ?? "unknown"
+        .zone = get(.kubernetes.node_labels, ["topology.kubernetes.io/zone"]) ?? "unknown"
+        
+        # Remove heavy kubernetes metadata
         del(.file)
         del(.stream)
         del(.kubernetes.container_id)
@@ -26,77 +77,246 @@ customConfig:
         del(.kubernetes.pod_labels)
         del(.kubernetes.pod_annotations)
         del(.kubernetes.pod_ip)
-        del(.kubernetes.pod_owner)
-        del(.kubernetes.pod_uid)
         del(.kubernetes.pod_ips)
+        del(.kubernetes.pod_uid)
+        del(.kubernetes.pod_owner)
         del(.source_type)
-    convert_to_json:
+    
+    parse_json:
       type: remap
       inputs:
         - remove_unnecessary_fields
       source: |
-        .parsed_message, .err = parse_json(.message)
-        .message = if is_null(.parsed_message) { .message } else { .parsed_message }
-        del(.parsed_message)
-        del(.err)
-    # Преобразование для Loki
-    loki_transform:
-      type: "remap"
-      inputs:
-        - "kubernetes_logs"
-      source: |
-        .kubernetes.pod_labels.job = "vector"
-        .container = .kubernetes.container_name
-        .pod = .kubernetes.pod_name
-        .namespace = .kubernetes.pod_namespace
-        
-        # Convert the message to JSON if possible
-        .parsed_message, err = parse_json(.message)
+        parsed, err = parse_json(.message)
         if err == null {
-          .message = .parsed_message
+          .message = parsed
+          .json_parsed = true
+        } else {
+          .json_parsed = false
         }
-        del(.parsed_message)
-
+{% endif %}
+  
   sinks:
-    storage-server:
-      type: vector
+{% if vector_k8s_sinks is defined %}
+{% for sink in vector_k8s_sinks %}
+{% if sink.type == "loki" %}
+    {{ sink.name }}:
+      type: "loki"
       inputs:
-        - remove_unnecessary_fields
-      address: target.example.com:501
-      compression: true
-      healthcheck: true
+{% for input in sink.inputs %}
+        - {{ input }}
+{% endfor %}
+      endpoint: "{{ sink.endpoint }}"
+      
+{% if sink.labels is defined or sink.use_dynamic_labels is defined %}
+      labels:
+{% if sink.labels is defined %}
+{% for key, value in sink.labels.items() %}
+        {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+{% if sink.use_dynamic_labels | default(false) %}
+{% raw %}        container: '{{ "{{" }} .kubernetes.container_name {{ "}}" }}'
+        namespace: '{{ "{{" }} .kubernetes.pod_namespace {{ "}}" }}'
+        app: '{{ "{{" }} .app_name {{ "}}" }}'
+        app_instance: '{{ "{{" }} .app_instance {{ "}}" }}'
+        service_team: '{{ "{{" }} .service_team {{ "}}" }}'{% endraw %}
+
+{% endif %}
+{% endif %}
+      
+      encoding:
+        codec: "json"
+      
+      batch:
+        max_bytes: {{ sink.batch.max_bytes | default(2097152) }}
+        max_events: {{ sink.batch.max_events | default(20000) }}
+        timeout_secs: {{ sink.batch.timeout_secs | default(10) }}
+      
       buffer:
-        max_events: 16384
-    elk-01:
-      type: vector
+        type: "{{ sink.buffer.type | default('disk') }}"
+        max_size: {{ sink.buffer.max_size | default(2147483648) }}
+        when_full: "{{ sink.buffer.when_full | default('block') }}"
+      
+      request:
+        timeout_secs: {{ sink.request.timeout_secs | default(60) }}
+        retry_attempts: {{ sink.request.retry_attempts | default(10) }}
+        retry_initial_backoff_secs: {{ sink.request.retry_initial_backoff_secs | default(1) }}
+        retry_max_duration_secs: {{ sink.request.retry_max_duration_secs | default(900) }}
+      
+      acknowledgements:
+        enabled: {{ sink.acknowledgements.enabled | default(true) | lower }}
+{% if sink.tls is defined and sink.tls.enabled | default(false) %}
+      
+      tls:
+        verify_certificate: {{ sink.tls.verify_certificate | default(true) | lower }}
+        verify_hostname: {{ sink.tls.verify_hostname | default(true) | lower }}
+{% if sink.tls.ca_file is defined %}
+        ca_file: "{{ sink.tls.ca_file }}"
+{% endif %}
+{% if sink.tls.crt_file is defined %}
+        crt_file: "{{ sink.tls.crt_file }}"
+        key_file: "{{ sink.tls.key_file }}"
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% if sink.type == "elasticsearch" %}
+    {{ sink.name }}:
+      type: "elasticsearch"
       inputs:
-        - convert_to_json
-      address: elk.example.com:518
-      compression: true
-      healthcheck: true
+{% for input in sink.inputs %}
+        - {{ input }}
+{% endfor %}
+      
+      endpoint: "{{ sink.endpoint }}"
+      mode: "{{ sink.mode | default('bulk') }}"
+      api_version: "{{ sink.api_version | default('auto') }}"
+      
+{% if sink.bulk is defined %}
+      bulk:
+        index: "{{ sink.bulk.index }}"
+        action: "{{ sink.bulk.action | default('create') }}"
+{% endif %}
+      
+{% if sink.auth is defined %}
+      auth:
+        strategy: "{{ sink.auth.strategy | default('basic') }}"
+        user: "{{ sink.auth.user }}"
+        password: "{{ sink.auth.password }}"
+{% endif %}
+      
+      encoding:
+        codec: "json"
+      
+      batch:
+        max_bytes: {{ sink.batch.max_bytes | default(10485760) }}
+        max_events: {{ sink.batch.max_events | default(5000) }}
+        timeout_secs: {{ sink.batch.timeout_secs | default(30) }}
+      
       buffer:
-        max_events: 16384
+        type: "{{ sink.buffer.type | default('disk') }}"
+        max_size: {{ sink.buffer.max_size | default(2147483648) }}
+        when_full: "{{ sink.buffer.when_full | default('drop_newest') }}"
+      
+      request:
+        timeout_secs: {{ sink.request.timeout_secs | default(120) }}
+        retry_attempts: {{ sink.request.retry_attempts | default(5) }}
+        retry_initial_backoff_secs: {{ sink.request.retry_initial_backoff_secs | default(2) }}
+        retry_max_duration_secs: {{ sink.request.retry_max_duration_secs | default(300) }}
+      
+      healthcheck:
+        enabled: {{ sink.healthcheck | default(true) | lower }}
+{% endif %}
+
+{% if sink.type == "vector" %}
+    {{ sink.name }}:
+      type: "vector"
+      inputs:
+{% for input in sink.inputs %}
+        - {{ input }}
+{% endfor %}
+      address: "{{ sink.address }}"
+      version: "{{ sink.version | default('2') }}"
+      healthcheck: {{ sink.healthcheck | default(true) | lower }}
+{% if sink.compression is defined %}
+      compression: {{ sink.compression | lower }}
+{% endif %}
+{% if sink.buffer is defined %}
+      buffer:
+{% if sink.buffer.type is defined %}
+        type: "{{ sink.buffer.type }}"
+{% endif %}
+{% if sink.buffer.max_events is defined %}
+        max_events: {{ sink.buffer.max_events }}
+{% endif %}
+{% if sink.buffer.max_size is defined %}
+        max_size: {{ sink.buffer.max_size }}
+{% endif %}
+{% endif %}
+{% if sink.tls is defined and sink.tls.enabled | default(false) %}
+      
+      tls:
+        enabled: true
+        verify_certificate: {{ sink.tls.verify_certificate | default(true) | lower }}
+        verify_hostname: {{ sink.tls.verify_hostname | default(false) | lower }}
+{% if sink.tls.ca_file is defined %}
+        ca_file: "{{ sink.tls.ca_file }}"
+{% endif %}
+{% if sink.tls.crt_file is defined %}
+        crt_file: "{{ sink.tls.crt_file }}"
+        key_file: "{{ sink.tls.key_file }}"
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% if sink.type == "syslog" %}
+    {{ sink.name }}:
+      type: "socket"
+      inputs:
+{% for input in sink.inputs %}
+        - {{ input }}
+{% endfor %}
+      address: "{{ sink.address }}"
+      mode: "{{ sink.mode | default('udp') }}"
+      encoding:
+        codec: "json"
+      healthcheck: {{ sink.healthcheck | default(true) | lower }}
+{% endif %}
+{% endfor %}
+{% else %}
     loki_sink:
       type: "loki"
       inputs:
-        - "loki_transform"
-      endpoint: "http://loki-gateway.loki.svc.cluster.local"
+        - parse_json
+      endpoint: "http://loki-gateway.{{ helm_loki_namespace | default('loki') }}.svc.cluster.local"
+      
       labels:
         k8s_cluster: "{{ k8s_prom_cluster_id | default('unknown') }}"
 {% raw %}
-        pod: '{{ "{{" }} .kubernetes.pod_name {{ "}}" }}'
         container: '{{ "{{" }} .kubernetes.container_name {{ "}}" }}'
         namespace: '{{ "{{" }} .kubernetes.pod_namespace {{ "}}" }}'
-        app: '{{ "{{" }} .kubernetes.pod_labels.app {{ "}}" }}'
-        service_team: '{{ "{{" }}.kubernetes.pod_labels.service_team{{ "}}" }}'
+        app: '{{ "{{" }} .app_name {{ "}}" }}'
+        app_instance: '{{ "{{" }} .app_instance {{ "}}" }}'
+        service_team: '{{ "{{" }} .service_team {{ "}}" }}'
 {% endraw %}
+        job: "vector"
+      
       encoding:
         codec: "json"
+      
+      batch:
+        max_bytes: 2097152
+        max_events: 20000
+        timeout_secs: 10
+      
       buffer:
         type: "disk"
-        max_size: 1073741824 # 1 GB
+        max_size: 2147483648
         when_full: "block"
+      
+      request:
+        timeout_secs: 60
+        retry_attempts: 10
+        retry_initial_backoff_secs: 1
+        retry_max_duration_secs: 900
+      
+      acknowledgements:
+        enabled: true
+{% endif %}
 
+# Mount MTLS certificates for sinks if TLS is enabled
+{% if vector_k8s_sinks | default([]) | selectattr('tls', 'defined') | list | length > 0 %}
+extraVolumes:
+  - name: vector-mtls-secret
+    secret:
+      secretName: vector-mtls
+
+extraVolumeMounts:
+  - name: vector-mtls-secret
+    mountPath: /etc/vector/secrets/mtls
+    readOnly: true
+{% endif %}
 
 service:
   enabled: true

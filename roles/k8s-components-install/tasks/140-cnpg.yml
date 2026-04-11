@@ -1,0 +1,51 @@
+---
+- name: CNPG - Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: CNPG - Check if cnpg is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_cnpg_namespace | default('cnpg-system') }} --kubeconfig {{ k8s_config_path }} | grep -w cloudnative-pg
+  register: cnpg_installed
+  failed_when: false
+  changed_when: false
+
+- name: CNPG - Set fact whether to skip cnpg install
+  ansible.builtin.set_fact:
+    skip_cnpg_install: "{{ cnpg_installed.rc == 0 and (not cnpg_force_install | default(false)) }}"
+
+- name: CNPG - Add Helm repository
+  ansible.builtin.command: helm repo add cnpg https://cloudnative-pg.github.io/charts
+  register: helm_cnpg_repo
+  changed_when: '"has been added" in helm_cnpg_repo.stdout'
+  when: not skip_cnpg_install
+
+- name: CNPG - Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_cnpg_install
+
+- name: CNPG - Create values config from template
+  ansible.builtin.template:
+    src: cnpg-values.yaml.j2
+    dest: /tmp/cnpg-values.yaml
+    mode: "0600"
+  when: not skip_cnpg_install
+  tags:
+    - cnpg-values
+
+- name: CNPG - Install via Helm
+  ansible.builtin.command: >
+    helm upgrade --install cloudnative-pg cnpg/cloudnative-pg
+    --namespace {{ helm_cnpg_namespace | default('cnpg-system') }}
+    --version {{ helm_cnpg_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/cnpg-values.yaml
+  when: not skip_cnpg_install or cnpg_force_install | default(false)
+
+- name: CNPG - Remove values config
+  ansible.builtin.file:
+    path: /tmp/cnpg-values.yaml
+    state: absent

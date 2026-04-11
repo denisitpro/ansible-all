@@ -8,6 +8,7 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 
-{% if k8s_hostname_force is defined %}
-{{ ansible_default_ipv4.address }} {{ ansible_fqdn  }}
+{{ ansible_default_ipv4.address }} {{ k8s_server_hostname }}
+{% if ansible_default_ipv6 is defined and ansible_default_ipv6.address is defined %}
+{{ ansible_default_ipv6.address }} {{ k8s_server_hostname }}
 {% endif %}
