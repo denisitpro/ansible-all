@@ -105,3 +105,18 @@ dkron_jobs: []
 # Dkron API configuration
 dkron_api_url: "http://127.0.0.1:8080"
 dkron_jobs_temp_dir: "/tmp/dkron-jobs"
+
+dkron_exporter_compose_path: "/opt/docker/dkron-exporter"
+dkron_exporter_enabled: false
+dkron_exporter_port: 9118
+
+# Consul registration
+consul_dkron_exporter_enabled: true
+consul_dkron_exporter_name: "dkron-exporter"
+consul_dkron_exporter_tags:
+  - "prometheus"
+  - "exporter=dkron-exporter"
+  - "stand={{ stand_type | default('undefined') }}"
+  - "dc={{ consul_dc_name | default('undefined') }}"
+consul_dkron_exporter_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default(omit) }}"
+consul_config_dir: "/etc/consul.d"

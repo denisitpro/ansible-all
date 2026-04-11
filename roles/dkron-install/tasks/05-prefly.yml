@@ -10,6 +10,15 @@
     - "/opt/docker"
     - "{{ dkron_compose_path }}"
 
+- name: create exporter directory
+  ansible.builtin.file:
+    path: "{{ dkron_exporter_compose_path }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  when: dkron_exporter_enabled | default(false)
+
 - name: create dkron folders
   ansible.builtin.file:
     path: "{{ item }}"

@@ -1,0 +1,20 @@
+{{ ansible_managed | comment }}
+
+services:
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:{{ dragonfly_version }}
+    container_name: dragonfly
+    hostname: {{ ansible_facts['fqdn'] }}
+    network_mode: host
+    restart: {{ dragonfly_restart | default('always') }}
+    ulimits:
+      memlock: -1
+    command:
+      - "--default_lua_flags=allow-undeclared-keys"  # Allow Bull/BullMQ scripts to access dynamic keys
+      - "--bind={{ dragonfly_bind_address | default('127.0.0.1') }}"
+      - "--port={{ dragonfly_port | default(6379) }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

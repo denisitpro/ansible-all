@@ -1,0 +1,10 @@
+---
+- name: copy compose-file - exporter
+  ansible.builtin.template:
+    src: "docker-compose.exporter.yml.j2"
+    dest: "{{ dkron_exporter_compose_path }}/docker-compose.yml"
+    mode: "0600"
+    owner: root
+    group: root
+  notify: recreate-docker dkron-exporter
+  when: dkron_exporter_enabled | default(false)

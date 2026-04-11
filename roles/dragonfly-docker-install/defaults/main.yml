@@ -1,0 +1,5 @@
+---
+dragonfly_version: "v1.35.1"
+
+dragonfly_compose_path: /opt/docker/dragonfly
+# dragonfly_port: 6379

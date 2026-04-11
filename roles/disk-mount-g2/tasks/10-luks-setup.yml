@@ -1,0 +1,169 @@
+---
+# LUKS encryption setup for disk
+# This task file handles LUKS container creation and opening
+
+- name: Install cryptsetup package
+  ansible.builtin.package:
+    name: cryptsetup
+    state: present
+  when: item.luks_enabled | default(false) | bool
+
+- name: Check if device is already a LUKS container
+  ansible.builtin.command: cryptsetup isLuks {{ item.device }}
+  register: luks_check
+  ignore_errors: true
+  changed_when: false
+  failed_when: false
+  when: item.luks_enabled | default(false) | bool
+
+- name: Set LUKS facts
+  ansible.builtin.set_fact:
+    luks_is_formatted: "{{ luks_check.rc == 0 }}"
+    luks_mapper_name: "{{ item.luks_name | default('luks_' + (item.device | basename)) }}"
+    luks_mapper_device: "/dev/mapper/{{ item.luks_name | default('luks_' + (item.device | basename)) }}"
+  when: item.luks_enabled | default(false) | bool
+
+- name: Check if LUKS device is already open
+  ansible.builtin.stat:
+    path: "{{ luks_mapper_device }}"
+  register: luks_mapper_stat
+  when: item.luks_enabled | default(false) | bool
+
+# Create keyfile for LUKS if specified
+- name: Create LUKS keyfile directory
+  ansible.builtin.file:
+    path: "{{ item.luks_keyfile | dirname }}"
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is defined
+
+- name: Check if LUKS keyfile exists
+  ansible.builtin.stat:
+    path: "{{ item.luks_keyfile }}"
+  register: luks_keyfile_stat
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is defined
+
+- name: Generate LUKS keyfile if not exists
+  ansible.builtin.shell: |
+    dd if=/dev/urandom of={{ item.luks_keyfile }} bs=4096 count=1
+    chmod 400 {{ item.luks_keyfile }}
+  args:
+    creates: "{{ item.luks_keyfile }}"
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is defined
+    - item.luks_generate_keyfile | default(false) | bool
+    - not (luks_keyfile_stat.stat.exists | default(false))
+
+- name: Fail if keyfile is required but not found and not generated
+  ansible.builtin.fail:
+    msg: "LUKS keyfile {{ item.luks_keyfile }} not found. Set luks_generate_keyfile=true to auto-generate or provide the keyfile manually."
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is defined
+    - not (item.luks_generate_keyfile | default(false)) | bool
+    - not (luks_keyfile_stat.stat.exists | default(false))
+    - not (luks_is_formatted | default(false)) | bool
+
+# Format device with LUKS using keyfile
+- name: Format device with LUKS (keyfile)
+  community.crypto.luks_device:
+    device: "{{ item.device }}"
+    state: present
+    keyfile: "{{ item.luks_keyfile }}"
+    type: "{{ item.luks_type | default('luks2') }}"
+    cipher: "{{ item.luks_cipher | default(omit) }}"
+    hash: "{{ item.luks_hash | default(omit) }}"
+    sector_size: "{{ item.luks_sector_size | default(omit) }}"
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is defined
+    - not (luks_is_formatted | default(false)) | bool
+
+# Format device with LUKS using passphrase
+- name: Format device with LUKS (passphrase)
+  community.crypto.luks_device:
+    device: "{{ item.device }}"
+    state: present
+    passphrase: "{{ item.luks_passphrase }}"
+    type: "{{ item.luks_type | default('luks2') }}"
+    cipher: "{{ item.luks_cipher | default(omit) }}"
+    hash: "{{ item.luks_hash | default(omit) }}"
+    sector_size: "{{ item.luks_sector_size | default(omit) }}"
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - item.luks_passphrase is defined
+    - not (luks_is_formatted | default(false)) | bool
+  no_log: true
+
+# Open LUKS container using keyfile
+- name: Open LUKS container (keyfile)
+  community.crypto.luks_device:
+    device: "{{ item.device }}"
+    state: opened
+    name: "{{ luks_mapper_name }}"
+    keyfile: "{{ item.luks_keyfile }}"
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is defined
+    - not (luks_mapper_stat.stat.exists | default(false))
+
+# Open LUKS container using passphrase
+- name: Open LUKS container (passphrase)
+  community.crypto.luks_device:
+    device: "{{ item.device }}"
+    state: opened
+    name: "{{ luks_mapper_name }}"
+    passphrase: "{{ item.luks_passphrase }}"
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - item.luks_passphrase is defined
+    - not (luks_mapper_stat.stat.exists | default(false))
+  no_log: true
+
+# Configure crypttab for automatic unlock at boot (keyfile only)
+- name: Add LUKS device to crypttab (keyfile)
+  community.general.crypttab:
+    name: "{{ luks_mapper_name }}"
+    backing_device: "{{ item.device }}"
+    password: "{{ item.luks_keyfile }}"
+    opts: "{{ item.luks_crypttab_opts | default('luks') }}"
+    state: present
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is defined
+    - item.luks_auto_unlock | default(true) | bool
+
+# Configure crypttab for manual unlock at boot (no keyfile - requires passphrase)
+# By default, this is DISABLED to prevent boot-time password prompts
+# Set luks_add_to_crypttab: true to enable (use noauto,nofail to avoid blocking boot)
+- name: Add LUKS device to crypttab (manual unlock)
+  community.general.crypttab:
+    name: "{{ luks_mapper_name }}"
+    backing_device: "{{ item.device }}"
+    password: "none"
+    opts: "{{ item.luks_crypttab_opts | default('luks,noauto,nofail') }}"
+    state: present
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - item.luks_add_to_crypttab | default(false) | bool
+
+# Remove LUKS device from crypttab if auto unlock is disabled
+- name: Remove LUKS device from crypttab (if exists and auto unlock disabled)
+  community.general.crypttab:
+    name: "{{ luks_mapper_name }}"
+    state: absent
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - not (item.luks_add_to_crypttab | default(false)) | bool
+  ignore_errors: true

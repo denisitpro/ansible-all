@@ -1,0 +1,11 @@
+---
+- name: stop dragonfly compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ dragonfly_compose_path }}"
+    state: absent
+  ignore_errors: true  # noqa: ignore-errors
+
+- name: remove dragonfly compose file
+  ansible.builtin.file:
+    path: "{{ dragonfly_compose_path }}/docker-compose.yml"
+    state: absent

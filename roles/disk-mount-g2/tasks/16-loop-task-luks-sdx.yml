@@ -1,0 +1,142 @@
+---
+# Mount LUKS-encrypted disk by device path
+# This file handles filesystem creation and mounting for LUKS devices
+
+- name: Include LUKS setup tasks
+  ansible.builtin.include_tasks: 10-luks-setup.yml
+
+- name: Set device path for LUKS
+  ansible.builtin.set_fact:
+    actual_device: "{{ luks_mapper_device if (item.luks_enabled | default(false) | bool) else item.device | default('/dev/sdx') }}"
+
+- name: Check if filesystem exists on disk
+  ansible.builtin.command: blkid -o value -s TYPE {{ actual_device }}
+  register: blkid_output
+  ignore_errors: true
+  changed_when: false
+  failed_when: false
+
+- name: Set filesystem facts
+  ansible.builtin.set_fact:
+    current_fs: "{{ blkid_output.stdout | trim }}"
+    required_fs: "{{ item.fs | default('ext4') }}"
+    fs_exists: "{{ blkid_output.rc == 0 }}"
+
+- name: Unmount disk if filesystem type mismatch
+  ansible.posix.mount:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    state: unmounted
+  when:
+    - fs_exists | bool
+    - current_fs != required_fs
+  ignore_errors: true
+
+- name: Wipe filesystem if type mismatch (non-LUKS)
+  ansible.builtin.command: wipefs -a {{ actual_device }}
+  when:
+    - fs_exists | bool
+    - current_fs != required_fs
+    - not (item.luks_enabled | default(false) | bool)
+
+- name: Wipe filesystem if type mismatch (LUKS)
+  ansible.builtin.command: wipefs -a {{ actual_device }}
+  when:
+    - fs_exists | bool
+    - current_fs != required_fs
+    - item.luks_enabled | default(false) | bool
+
+- name: Create filesystem on the disk
+  community.general.filesystem:
+    fstype: "{{ required_fs }}"
+    dev: "{{ actual_device }}"
+  when: (not fs_exists | bool) or (current_fs != required_fs)
+
+- name: Create mount point
+  ansible.builtin.file:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    state: directory
+    mode: "0755"
+
+- name: Mount the disk
+  ansible.posix.mount:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    src: "{{ actual_device }}"
+    fstype: "{{ item.fs | default('ext4') }}"
+    opts: "{{ item.opts | default('defaults') }}"
+    state: mounted
+
+# For LUKS with passphrase (no keyfile): do NOT add to fstab by default
+# to prevent boot failures when LUKS is not yet unlocked
+- name: Ensure the mount is present in fstab (auto mount)
+  ansible.posix.mount:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    src: "{{ actual_device }}"
+    fstype: "{{ item.fs | default('ext4') }}"
+    opts: "{{ item.opts | default('defaults') }}"
+    state: present
+  when:
+    - item.mount_at_boot | default(true) | bool
+    - not (item.luks_enabled | default(false) | bool) or (item.luks_keyfile is defined)
+
+# For LUKS with passphrase without keyfile: add to fstab with noauto,nofail
+- name: Ensure the mount is present in fstab (LUKS manual mount - noauto)
+  ansible.posix.mount:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    src: "{{ actual_device }}"
+    fstype: "{{ item.fs | default('ext4') }}"
+    opts: "{{ item.opts | default('defaults') }},noauto,nofail"
+    state: present
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - item.add_to_fstab | default(false) | bool
+
+# Remove from fstab if manual LUKS and not requested
+- name: Remove LUKS mount from fstab (if not needed)
+  ansible.posix.mount:
+    path: "{{ item.mount_point | default('/mnt/diskX') }}"
+    state: absent_from_fstab
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - not (item.add_to_fstab | default(false)) | bool
+  ignore_errors: true
+
+# Create /opt/luks directory for helper scripts
+- name: Create /opt/luks directory
+  ansible.builtin.file:
+    path: /opt/luks
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - not (item.add_to_fstab | default(false)) | bool
+
+# Create helper script for manual LUKS unlock and mount
+- name: Create unlock-mount script for manual LUKS management
+  ansible.builtin.template:
+    src: unlock-mount.sh.j2
+    dest: "/opt/luks/unlock-mount_{{ luks_mapper_name }}.sh"
+    mode: "0700"
+    owner: root
+    group: root
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - not (item.add_to_fstab | default(false)) | bool
+
+# Create helper script for manual LUKS lock and unmount
+- name: Create lock-umount script for manual LUKS management
+  ansible.builtin.template:
+    src: lock-umount.sh.j2
+    dest: "/opt/luks/lock-umount_{{ luks_mapper_name }}.sh"
+    mode: "0700"
+    owner: root
+    group: root
+  when:
+    - item.luks_enabled | default(false) | bool
+    - item.luks_keyfile is not defined
+    - not (item.add_to_fstab | default(false)) | bool

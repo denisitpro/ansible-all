@@ -6,3 +6,9 @@
     enabled: true
     state: restarted
   when: dkron_server_compose is not defined
+
+- name: Restart dkron docker compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ dkron_compose_path }}"
+    state: restarted
+  when: dkron_server_compose is defined

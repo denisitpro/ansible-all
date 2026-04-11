@@ -1,0 +1,6 @@
+---
+- name: Mount disks
+  ansible.builtin.import_tasks: 05-mount.yml
+  tags:
+    - disk-mount
+  when: disk_mounts is defined and disk_mounts | length > 0

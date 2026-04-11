@@ -28,7 +28,7 @@ acl = {
 {% endif %}
 
 {% if consul_dns_suffix_disable is not  defined %}
-node_name = "{{ ansible_hostname }}.{{ consul_internal_domain | default('example.com')}}"
+node_name = "{{ ansible_facts['hostname'] }}.{{ consul_internal_domain | default('example.com')}}"
 {% endif %}
 
 performance {

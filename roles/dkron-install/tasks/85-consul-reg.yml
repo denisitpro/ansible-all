@@ -1,0 +1,17 @@
+---
+- name: Check consul directory exists
+  ansible.builtin.stat:
+    path: "{{ consul_config_dir }}"
+  register: consul_config_dir_stat
+
+- name: Register dkron-exporter service in Consul
+  ansible.builtin.template:
+    src: dkron-exporter.hcl.j2
+    dest: "{{ consul_config_dir }}/dkron-exporter.hcl"
+    mode: '0644'
+  when:
+    - dkron_exporter_enabled | bool
+    - consul_dkron_exporter_enabled | bool
+    - consul_config_dir_stat.stat.exists
+  notify: reload consul
+

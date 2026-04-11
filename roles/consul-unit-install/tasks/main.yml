@@ -22,7 +22,7 @@
   tags:
     - consul
     - consul-mtls
-    - consul-agent-cert
+    - consul-agett-cert
 
 - ansible.builtin.import_tasks: 40-configure-all.yml
   tags:
