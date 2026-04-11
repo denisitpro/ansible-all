@@ -1,0 +1,21 @@
+- name: remove legacy combined certbot renewal cron
+  ansible.builtin.cron:
+    name: "certbot renewal"
+    user: root
+    state: absent
+
+- name: setup certbot renewal cron per zone
+  ansible.builtin.cron:
+    name: "certbot renewal {{ zone_config.zone }}"
+    minute: "{{ certbot_renewal_minute | default('30') }}"
+    hour: "{{ certbot_renewal_hour | default('3') }}"
+    job: >-
+      cd {{ certbot_compose_path }} &&
+      docker compose run --rm certbot-{{ zone_config.zone | replace('.', '-') }} renew --quiet
+      {{- ' --pre-hook "nsenter -t 1 -m -u -i -n -p /hooks/pre-hook.sh"' if certbot_system_pre_hook_command != "" }}
+      {{- ' --post-hook "nsenter -t 1 -m -u -i -n -p /hooks/post-hook.sh"' if certbot_system_post_hook_command != "" }}
+    user: root
+    state: present
+  loop: "{{ certbot_domains }}"
+  loop_control:
+    loop_var: zone_config

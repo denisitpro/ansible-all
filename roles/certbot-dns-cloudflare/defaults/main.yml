@@ -1,11 +1,26 @@
 ---
 certbot_image: certbot/dns-cloudflare
-certbot_version: v4.2.0
+certbot_version: v5.0.0
 
 certbot_path: /opt/certbot
 certbot_compose_path: /opt/docker/certbot
+certbot_hooks_path: "{{ certbot_path }}/hooks"
 
 certbot_email: mail@example.com
-certbot_domain: domain1.example.com
+certbot_domains:
+  - zone: example.com
+    domains:
+      - domain1.example.com
+      - "*.domain1.example.com"
+  - zone: example.org
+    domains:
+      - domain2.example.org
+      - "*.domain2.example.org"
 
 certbot_cf_access_token: "{{ vault_dict_users_secret.certbot_token | default('set_me') }}"
+
+certbot_renewal_cron: false
+certbot_force_renewal: false
+
+certbot_system_pre_hook_command: ""
+certbot_system_post_hook_command: ""
