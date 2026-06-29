@@ -1,0 +1,13 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - tips-backend
+    - tips-backend-prefly
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - tips-backend
+    - tips-backend-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'tips-backend-clean']

@@ -1,0 +1,22 @@
+---
+- name: create docker folders for tips-backend
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ tips_backend_compose_path }}"
+
+- name: create data directories for tips-backend uploads and telegram data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ tips_backend_uid }}"
+    group: "{{ tips_backend_gid }}"
+  with_items:
+    - "{{ tips_backend_uploads_path }}"
+    - "{{ tips_backend_telegram_data_path }}"

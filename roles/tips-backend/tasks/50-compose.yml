@@ -1,0 +1,7 @@
+---
+- name: copy compose file - tips-backend
+  ansible.builtin.template:
+    src: "docker-compose.tips-backend.yml.j2"
+    dest: "{{ tips_backend_compose_path }}/docker-compose.yml"
+    mode: "0640"
+  notify: recreate-docker tips-backend
