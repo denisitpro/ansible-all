@@ -10,10 +10,11 @@ tips_migrate_image: "denisitpro/tips-migrate"
 tips_backend_uid: 1005
 tips_backend_gid: 1005
 
+tips_backend_base_path: "/opt/wastebin"
 tips_backend_compose_path: "/opt/docker/tips-backend"
 
-tips_backend_uploads_path: "{{ tips_backend_compose_path }}/uploads"
-tips_backend_telegram_data_path: "{{ tips_backend_compose_path }}/telegram-bot-data"
+tips_backend_uploads_path: "{{ tips_backend_base_path }}/uploads"
+tips_backend_telegram_data_path: "{{ tips_backend_base_path }}/telegram-bot-data"
 
 # Optional overrides (uncomment and set as needed)
 # tips_backend_restart: "always"
