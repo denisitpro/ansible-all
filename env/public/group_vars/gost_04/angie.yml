@@ -4,16 +4,23 @@ nginx_logs_disabled: true
 
 upstream_multi:
   upstream:
-    - {name: "backend", server: "127.0.0.1", port: 3000, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32}
+    - {name: "backend_beta", server: "127.0.0.1", port: 8787, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32}
+    - {name: "backend_heaven", server: "127.0.0.1", port: 18787, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32}
 
 nginx_access_log_format: extend_json
 nginx_logs_stdout: true
 
 nginx:
   vhosts:
+    - servername: "api-tips.beta-82.win"
+      domain: "selfsign"
+      config_file: "angie2-general-g4.conf.j2"
+      upstream_protocol: http
+      upstream_name: "backend_beta"
+      client_max_body_size: 50M
     - servername: "api.tips-flow.com"
       domain: "selfsign"
       config_file: "angie2-general-g4.conf.j2"
       upstream_protocol: http
-      upstream_name: "backend"
+      upstream_name: "backend_heaven"
       client_max_body_size: 50M

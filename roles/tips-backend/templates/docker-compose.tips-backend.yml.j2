@@ -1,0 +1,86 @@
+## {{ ansible_managed }} ##
+
+# Production-shape compose for crypto-tips on a single Linux VM.
+#
+# Frontend is deployed separately on Vercel — NOT part of this stack.
+# Stack: backend API + forwarder + watcher + telegram-bot.
+#
+# tips-back services use host networking — Linux only. macOS works for smoke tests
+# but the file is intended for the VM deploy. telegram-bot
+# uses bridge networking (polling only, no inbound port).
+#
+# ─── Release workflow ─────────────────────────────────────────────────────────
+#   Migrations (separate artifact):
+#     docker compose --profile tools run --rm migrate up
+#     docker compose --profile tools run --rm migrate reset
+#
+# ─── Env ──────────────────────────────────────────────────────────────────────
+#   tips-back (backend / forwarder / watcher): `backend.remote.env`
+#   telegram-bot: `telegram-bot.remote.env`
+#   Both sit next to this compose file on the VM (gitignored `*.env`).
+#   Required for tips-back: DATABASE_URL, JWT_SECRET, MASTER_KEY.
+#
+# ─── Files needed on the VM ───────────────────────────────────────────────────
+#   docker-compose.yml, backend.remote.env, telegram-bot.remote.env.
+
+services:
+  backend:
+    image: {{ tips_backend_image }}:{{ tips_backend_version }}
+    container_name: backend
+    restart: {{ tips_backend_restart | default('always') }}
+    network_mode: host
+    env_file:
+      - backend.remote.env
+    volumes:
+      - {{ tips_backend_uploads_path }}:/app/uploads
+
+  # Arc-native settlement: sweeps every payin EOA and forwards cleared tips through
+  # TipSplitter. Same image, different entrypoint.
+  forwarder:
+    image: {{ tips_backend_image }}:{{ tips_backend_version }}
+    container_name: forwarder
+    restart: {{ tips_backend_restart | default('always') }}
+    network_mode: host
+    env_file:
+      - backend.remote.env
+    command: ["node", "dist/forwarder/run.js"]
+
+  # Cross-chain accept side: per-network watchers.
+  # One watcher per network for isolation.
+  watcher:
+    image: {{ tips_backend_image }}:{{ tips_backend_version }}
+    container_name: watcher
+    restart: {{ tips_backend_restart | default('always') }}
+    network_mode: host
+    env_file:
+      - backend.remote.env
+    command: ["node", "dist/watcher/run.js"]
+    # Example: to run only one net:
+    # environment: [ "WATCHER_CHAINS=arbitrumSepolia" ]
+    # command: ["node", "dist/watcher/run.js"]
+
+  # Migration artifact (go-migrate + baked SQL files from /migrations).
+  # On the VM use --profile tools + run --rm, or direct docker run with --network host.
+  migrate:
+    image: {{ tips_migrate_image }}:{{ tips_backend_version }}
+    container_name: migrate
+    restart: "no"
+    network_mode: host
+    env_file:
+      - backend.remote.env
+    profiles:
+      - tools
+
+  # Standalone support bot (user ↔ admin relay via Telegram polling).
+  telegram-bot:
+    image: {{ tips_telegram_bot_image }}:{{ tips_telegram_bot_version }}
+    container_name: telegram-bot
+    restart: {{ tips_backend_restart | default('always') }}
+    env_file:
+      - telegram-bot.remote.env
+    environment:
+      DATA_FILE: /app/data/reply-map.json
+    volumes:
+      # Persist reply mappings across container re-creation / image bumps.
+      - {{ tips_backend_telegram_data_path }}:/app/data
+

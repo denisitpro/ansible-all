@@ -1,0 +1,18 @@
+---
+- name: stop tips-backend docker compose project
+  community.docker.docker_compose_v2:
+    project_src: "{{ tips_backend_compose_path }}"
+    state: absent
+  ignore_errors: true # noqa: ignore-errors
+
+# Note: data dirs (uploads/, telegram-bot-data/) live under compose_path.
+# Clean stops the project. By default only removes the compose file (data preserved).
+# Uncomment below for full dir removal (destructive).
+- name: remove generated compose file
+  ansible.builtin.file:
+    path: "{{ tips_backend_compose_path }}/docker-compose.yml"
+    state: absent
+# - name: remove tips-backend project dir (DESTRUCTIVE — deletes uploads & telegram data too)
+#   ansible.builtin.file:
+#     path: "{{ tips_backend_compose_path }}"
+#     state: absent

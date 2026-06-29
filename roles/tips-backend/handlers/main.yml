@@ -1,0 +1,7 @@
+---
+- name: recreate-docker tips-backend
+  community.docker.docker_compose_v2:
+    project_src: "{{ tips_backend_compose_path }}"
+    state: present
+    recreate: always
+  listen: "recreate-docker tips-backend"
