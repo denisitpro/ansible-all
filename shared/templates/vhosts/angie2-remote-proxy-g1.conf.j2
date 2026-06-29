@@ -1,0 +1,105 @@
+##### ANSIBLE generated config
+## {{ ansible_managed }} ##
+##### not change hands
+####  your changes will be lost
+#
+# Transparent HTTPS reverse-proxy to a remote host.
+# Required item fields:
+#   servername:   public hostname (Host: header from client)
+#   proxy_target: upstream hostname (used for SNI + Host header to upstream)
+# Optional:
+#   proxy_target_port (default 443)
+#   proxy_protocol (PROXY protocol on listener)
+#   client_max_body_size, proxy_*_timeout, proxy_buffer_*
+
+server {
+{% if nginx_bind_addr_ipv4 is defined %}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% else %}
+    listen {{ item.http_port | default("80") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("80") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% endif %}
+    server_name {{ item.servername }};
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+
+server {
+{% if nginx_bind_addr_ipv4 is defined %}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_ports | default("443") }} ssl {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% else %}
+    listen {{ item.https_ports | default("443") }} ssl {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.https_ports | default("443") }} ssl {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% endif %}
+    http2 on;
+    server_name {{ item.servername }};
+
+# log project use include
+{% if nginx_logs_disabled is defined %}
+    access_log off;
+    error_log /dev/stdout;
+{% elif nginx_logs_stdout is defined %}
+    access_log  /dev/stdout  {{ item.log_format | default(nginx_access_log_format | default("extended")) }};
+    error_log   /dev/stdout {{nginx_error_log_format | default('')}};
+{% else %}
+    access_log  {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ item.log_format | default(nginx_access_log_format | default("extend_json")) }};
+    error_log   {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-error.log {{nginx_error_log_format | default('')}};
+{% endif %}
+
+## include ssl certificate
+{% if item.domain is defined and item.domain == 'acme' %}
+    ssl_certificate     $acme_cert_{{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+    ssl_certificate_key $acme_cert_key_{{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+    acme {{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+{% else %}
+    ssl_certificate     {{ item.ssl_path | default("/opt/ssl") }}/{{ item.domain | default(nginx_default_domain | default('selfsign')) }}/{{ item.certname | default("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path | default("/opt/ssl") }}/{{ item.domain | default(nginx_default_domain | default('selfsign')) }}/{{ item.privkey | default("privkey.pem") }};
+{% endif %}
+
+{% if item.client_max_body_size is defined %}
+    client_max_body_size  {{ item.client_max_body_size }};
+{% endif %}
+
+    # dynamic resolution — upstream is behind a CDN whose IPs rotate
+    resolver {{ item.proxy_resolver | default('1.1.1.1 8.8.8.8') }} valid={{ item.proxy_resolver_ttl | default('60s') }} ipv6=off;
+    resolver_timeout {{ item.proxy_resolver_timeout | default('5s') }};
+
+    location / {
+{% if item.client_max_body_size is defined %}
+        client_max_body_size  {{ item.client_max_body_size }};
+{% endif %}
+{% if item.proxy_buffers_count is defined and item.proxy_buffers_size is defined %}
+        proxy_buffers   {{ item.proxy_buffers_count }}  {{ item.proxy_buffers_size }};
+{% endif %}
+{% if item.proxy_busy_buffers_size is defined %}
+        proxy_busy_buffers_size {{ item.proxy_busy_buffers_size }};
+{% endif %}
+{% if item.proxy_buffer_size is defined %}
+        proxy_buffer_size       {{ item.proxy_buffer_size }};
+{% endif %}
+
+        set $remote_proxy_target {{ item.proxy_target }};
+
+        proxy_http_version 1.1;
+        proxy_set_header Host {{ item.proxy_target }};
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header Accept-Encoding "";
+
+        proxy_ssl_server_name on;
+        proxy_ssl_name {{ item.proxy_target }};
+        proxy_ssl_protocols {{ item.proxy_ssl_protocols | default('TLSv1.2 TLSv1.3') }};
+
+        proxy_read_timeout      {{ item.proxy_read_timeout | default('60s') }};
+        proxy_connect_timeout   {{ item.proxy_connect_timeout | default('10s') }};
+        proxy_send_timeout      {{ item.proxy_send_timeout | default('60s') }};
+
+        proxy_pass https://$remote_proxy_target:{{ item.proxy_target_port | default('443') }}$request_uri;
+    }
+}
+
+
+### end generate config

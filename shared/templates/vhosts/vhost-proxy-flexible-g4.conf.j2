@@ -74,23 +74,15 @@ server {
     ssl_certificate_key {{ item.ssl_path| default ("/opt/certbot/ssl/live")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% else %}
 {% if item.domain == 'acme' %}
-    ssl_certificate $acme_cert_angie_acme_http;
-    ssl_certificate_key $acme_cert_key_angie_acme_http;
-    acme angie_acme_http;
+    ssl_certificate $acme_cert_{{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+    ssl_certificate_key $acme_cert_key_{{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+    acme {{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
 {% else %}
     ssl_certificate     {{  item.ssl_path | default ("/opt/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
     ssl_certificate_key {{ item.ssl_path| default ("/opt/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
 {% endif %}
 {% endif %}
-{% if item.mtls is defined %}
-    # mTLS: Require client certificate issued by trusted CA (CN/SAN not verified)
-    # Require client certificate issued by trusted CA (CN not verified)
-    ssl_verify_client on;
-    ssl_client_certificate {{ angie_mtls_path }}/{{ item.ca_mtls | default('selfsign') }}/ca.crt;
-    ssl_verify_depth 2;
 {% endif %}
-{% endif %}
-
 
 {% for included in  nginx.include | default([]) %}
     include  {{ included }};
@@ -118,7 +110,7 @@ server {
         proxy_set_header Host $http_host;
         proxy_set_header X-Forwarded-Proto $scheme;
         rewrite /metrics(/.*)$ $1 break;
-        proxy_pass  {% if item.metrics_protocol is defined %}{{ item.metrics_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_metrics is defined %}{{ item.upstream_metrics }}{% else %}{{ item.upstream_name }}{% endif %};
+        proxy_pass  {% if item.metrics_protocol is defined %}{{ item.metrics_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_metrics is defined %}{{ item.upstream_metrics }}{% else %}{% if item.upstream_host is defined %}{{ item.upstream_host }}{% else %}{{ item.upstream_name }}{% endif %}{% endif %};
    }
 {% endif %}
 {% if vhosts_hc is defined %}
@@ -138,7 +130,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header Host $http_host;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_pass  {% if item.hc_protocol is defined %}{{ item.hc_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_hc is defined %}{{ item.upstream_hc }}{% else %}{{ item.upstream_name }}{% endif %};
+        proxy_pass  {% if item.hc_protocol is defined %}{{ item.hc_protocol }}{% else %}{{ item.upstream_protocol | default('https') }}{% endif %}://{% if item.upstream_hc is defined %}{{ item.upstream_hc }}{% else %}{% if item.upstream_host is defined %}{{ item.upstream_host }}{% else %}{{ item.upstream_name }}{% endif %}{% endif %};
     }
 {% endif %}
 
@@ -147,6 +139,12 @@ server {
 {% for acl_file in item.acl %}
     include /etc/angie/acl.d/{{ acl_file }};
 {% endfor %}
+{% endif %}
+
+{% if item.auth_basic is defined %}
+## Basic Authentication
+    auth_basic "{{ item.auth_basic }}";
+    auth_basic_user_file {{ item.auth_basic_user_file | default('/etc/angie/conf.d/.htpasswd') }};
 {% endif %}
 
     location / {
@@ -171,18 +169,93 @@ server {
 {% if item.proxy_ssl_ciphers is defined %}
         proxy_ssl_ciphers       {{ item.proxy_ssl_ciphers }};
 {% endif %}
+{% if item.oauth2_proxy is defined and item.oauth2_proxy.enabled %}
+        auth_request /oauth2/auth;
+        auth_request_set $auth_resp_x_email $upstream_http_x_auth_request_email;
+        auth_request_set $auth_resp_x_user $upstream_http_x_auth_request_user;
+        error_page 401 = /oauth2/sign_in;
+        proxy_http_version 1.1;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Auth-Request-Email $auth_resp_x_email;
+        proxy_set_header X-Auth-Request-User $auth_resp_x_user;
+{% if item.oauth2_proxy.proxy_ssl_name is defined %}
+        proxy_ssl_server_name on;
+        proxy_ssl_name {{ item.oauth2_proxy.proxy_ssl_name }};
+        proxy_set_header Host {{ item.oauth2_proxy.proxy_ssl_name }};
+{% endif %}
+{% endif %}
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Real-IP $remote_addr;
+{% if item.oauth2_proxy is not defined or item.oauth2_proxy.proxy_ssl_name is not defined %}
+        proxy_set_header Host $http_host;
+{% endif %}
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout      {{ item.proxy_read_timeout | default('60s') }};
+        proxy_connect_timeout   {{ item.proxy_connect_timeout | default('60s') }};
+        proxy_send_timeout      {{ item.proxy_send_timeout | default('60s') }};
+        proxy_pass {{ item.upstream_protocol | default('https') }}://{% if item.upstream_host is defined %}{{ item.upstream_host }}{% else %}{{ item.upstream_name }}{% endif %};
+##        allow all;
+    }
+
+{% if item.oauth2_proxy is defined and item.oauth2_proxy.enabled and item.oauth2_proxy.proxy_pass is defined %}
+    location = /oauth2/auth {
+        proxy_pass       {{ item.oauth2_proxy.proxy_pass }}/oauth2/auth;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header Content-Length "";
+        proxy_pass_request_body off;
+    }
+
+    location /oauth2/ {
+        proxy_pass       {{ item.oauth2_proxy.proxy_pass }};
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+    }
+{% endif %}
+
+{% if item.locations is defined %}
+{% for loc in item.locations %}
+    location {{ loc.location }} {
+{% if loc.client_max_body_size is defined %}
+        client_max_body_size  {{ loc.client_max_body_size }};
+{% endif %}
+{% if loc.noindex is defined %}
+        add_header  X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+{% endif %}
+{% if loc.proxy_buffers_count is defined and loc.proxy_buffers_size is defined %}
+        proxy_buffers   {{ loc.proxy_buffers_count }}  {{ loc.proxy_buffers_size }};
+{% endif %}
+{% if loc.proxy_busy_buffers_size is defined %}
+        proxy_busy_buffers_size {{ loc.proxy_busy_buffers_size }};
+{% endif %}
+{% if loc.proxy_buffer_size is defined %}
+        proxy_buffer_size       {{ loc.proxy_buffer_size }};
+{% endif %}
+{% if loc.proxy_ssl_protocols is defined %}
+        proxy_ssl_protocols {{ loc.proxy_ssl_protocols }};
+{% endif %}
+{% if loc.proxy_ssl_ciphers is defined %}
+        proxy_ssl_ciphers       {{ loc.proxy_ssl_ciphers }};
+{% endif %}
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Server $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header Host $http_host;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout      {{ item.proxy_read_timeout | default('60s') }};
-        proxy_connect_timeout   {{ item.proxy_connect_timeout | default('60s') }};
-        proxy_send_timeout      {{ item.proxy_send_timeout | default('60s') }};
-        proxy_pass {{ item.upstream_protocol | default('https') }}://{{ item.upstream_name }};
-##        allow all;
+        proxy_read_timeout      {{ loc.proxy_read_timeout | default('60s') }};
+        proxy_connect_timeout   {{ loc.proxy_connect_timeout | default('60s') }};
+        proxy_send_timeout      {{ loc.proxy_send_timeout | default('60s') }};
+        proxy_pass {{ loc.upstream_protocol | default('https') }}://{{ loc.upstream_name | default(item.upstream_name) }};
     }
+{% endfor %}
+{% endif %}
 }
 
 

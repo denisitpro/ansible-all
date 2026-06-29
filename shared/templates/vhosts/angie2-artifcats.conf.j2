@@ -1,0 +1,140 @@
+##### ANSIBLE generated config
+## {{ ansible_managed }} ##
+##### not change hands
+####  your changes will be lost
+
+server {
+{% if nginx_bind_addr_ipv4  is defined%}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.http_port | default("80") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% else %}
+    listen {{ item.http_port | default("80") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.http_port | default("80") }} {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% endif %}
+    server_name {{ item.servername }};
+{% if item.acme is defined %}
+    location /.well-known/acme-challenge/ {
+        root {{nginx_certbot_path | default('/var/www/certbot')}};
+    }
+{% endif %}
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+
+
+server {
+{% if nginx_bind_addr_ipv4  is defined%}
+    listen {{ nginx_bind_addr_ipv4 }}:{{ item.https_ports | default("443") }} ssl {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% else %}
+    listen {{ item.https_ports | default("443") }} ssl {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+    listen {{ nginx_bind_addr_ipv6 | default('[::]') }}:{{ item.https_ports | default("443") }} ssl {% if item.proxy_protocol is defined and item.proxy_protocol %}proxy_protocol{% endif %};
+{% endif %}
+    http2 on;
+    server_name {{ item.servername }};
+    absolute_redirect {{ item.absolute_redirect | default('off') }};
+    port_in_redirect {{ item.port_in_redirect | default('off') }};
+
+# confugre support real IP
+{% if item.proxy_protocol is defined and item.proxy_protocol %}
+    real_ip_header proxy_protocol;
+{% else %}
+    real_ip_header CF-Connecting-IP;
+{% endif %}
+{% if angie_ingress_real_ip is defined %}
+{% if angie_ingress_real_ip.ipv4 is defined and angie_ingress_real_ip.ipv4 | length > 0 %}
+{% for cidr in angie_ingress_real_ip.ipv4 %}
+    set_real_ip_from {{ cidr }};
+{% endfor -%}
+{% endif -%}
+{% if angie_ingress_real_ip.ipv6 is defined and angie_ingress_real_ip.ipv6 | length > 0 %}
+{% for cidr in angie_ingress_real_ip.ipv6 %}
+    set_real_ip_from {{ cidr }};
+{% endfor %}
+{% endif %}
+{% endif -%}
+
+
+
+# log project use include
+{% if nginx_logs_disabled is defined %}
+    access_log off;
+    error_log /dev/stdout;
+{% elif nginx_logs_stdout is defined %}
+    access_log  /dev/stdout  {{ item.log_format | default(nginx_access_log_format | default("extended")) }};
+    error_log   /dev/stdout {{nginx_error_log_format | default('')}};
+{% else %}
+    access_log  {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-access.log  {{ item.log_format | default(nginx_access_log_format | default("extend_json")) }};
+    error_log   {{ nginx_log_path | default('/var/log/angie') }}/{{ item.servername.split(' ')[0] }}-error.log {{nginx_error_log_format | default('')}};
+{% endif %}
+
+
+## include ssl certificate
+{% if nginx.vhosts %}
+{% if item.acme is defined %}
+    ssl_certificate     {{  item.ssl_path | default ("/opt/certbot/ssl/live") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path| default ("/opt/certbot/ssl/live")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% else %}
+{% if item.domain == 'acme' %}
+    ssl_certificate $acme_cert_{{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+    ssl_certificate_key $acme_cert_key_{{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+    acme {{ item.servername.split(' ')[0] | replace('.', '_') | replace('-', '_') }};
+{% else %}
+    ssl_certificate     {{  item.ssl_path | default ("/opt/ssl") }}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.certname | default ("fullchain.pem") }};
+    ssl_certificate_key {{ item.ssl_path| default ("/opt/ssl")}}/{% if item.domain is defined %}{{ item.domain }}{% else %}{{ nginx_default_domain |default('selfsign') }}{% endif %}/{{ item.privkey | default ("privkey.pem") }};
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% for included in  nginx.include | default([]) %}
+    include  {{ included }};
+{% endfor %}
+
+    root {{ item.root | default('/usr/share/nginx/html') }};
+
+{% if item.acl is defined and item.acl | length > 0 %}
+## Include ACL config(s)
+{% for acl_file in item.acl %}
+    include {{ angie_inside_base_path }}/acl.d/{{ acl_file }};
+{% endfor %}
+{% endif %}
+
+{% if item.cors_origins is defined and item.cors_origins | length > 0 %}
+## CORS: validate allowed origins
+    set $cors_origin "";
+{% for origin in item.cors_origins %}
+    if ($http_origin = "{{ origin }}") {
+        set $cors_origin $http_origin;
+    }
+{% endfor %}
+{% endif %}
+
+    location / {
+{% if item.cors_origins is defined and item.cors_origins | length > 0 %}
+        # Handle CORS preflight OPTIONS request
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' $cors_origin always;
+            add_header 'Access-Control-Allow-Methods' '{{ item.cors_methods | default("GET, HEAD, OPTIONS") }}';
+            add_header 'Access-Control-Allow-Headers' '{{ item.cors_headers | default("DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range") }}';
+            add_header 'Access-Control-Expose-Headers' '{{ item.cors_expose_headers | default("Content-Length,Content-Range") }}';
+            add_header 'Access-Control-Max-Age' {{ item.cors_max_age | default(1728000) }};
+            add_header 'Content-Type' 'text/plain; charset=utf-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+        # CORS headers for regular requests
+        add_header 'Access-Control-Allow-Origin' $cors_origin always;
+        add_header 'Access-Control-Allow-Methods' '{{ item.cors_methods | default("GET, HEAD, OPTIONS") }}';
+        add_header 'Access-Control-Allow-Headers' '{{ item.cors_headers | default("DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range") }}';
+        add_header 'Access-Control-Expose-Headers' '{{ item.cors_expose_headers | default("Content-Length,Content-Range") }}';
+{% endif %}
+        autoindex {{ item.autoindex | default('on') }};
+        expires {{ item.expires | default('1y') }};
+        etag {{ item.etag | default('on') }};
+        add_header Cache-Control "{{ item.cache_control | default('public, max-age=3600') }}";
+        try_files {{ item.try_files | default('$uri $uri/ /index.html') }};
+    }
+}
+
+
+### end generate config

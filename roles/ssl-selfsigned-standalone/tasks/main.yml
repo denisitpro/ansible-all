@@ -12,8 +12,14 @@
   tags:
     - cert
 
-- name: Generate self-signed certificate
+- name: Generate self-signed certificate (ECC)
   ansible.builtin.import_tasks: 20-generate-selfsigned.yml
-  when: not file_check.stat.exists or ssl_selfsign_recreate_force is defined
+  when: (not file_check.stat.exists or ssl_selfsign_recreate_force is defined) and ssl_selfsign_type == 'ecc'
+  tags:
+    - cert
+
+- name: Generate self-signed certificate (RSA)
+  ansible.builtin.import_tasks: 20-generate-selfsigned-rsa.yml
+  when: (not file_check.stat.exists or ssl_selfsign_recreate_force is defined) and ssl_selfsign_type == 'rsa'
   tags:
     - cert
