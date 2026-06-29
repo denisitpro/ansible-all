@@ -1,0 +1,26 @@
+---
+- name: Download and install NVIDIA Container Toolkit GPG key
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /tmp/nvidia-container-toolkit-keyring.asc
+    mode: "0644"
+
+- name: Convert GPG key to dearmored format
+  ansible.builtin.shell: |
+    gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg < /tmp/nvidia-container-toolkit-keyring.asc
+  args:
+    creates: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+- name: Add NVIDIA Container Toolkit repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
+    filename: nvidia-container-toolkit
+    state: present
+    update_cache: true
+
+- name: Install NVIDIA Container Toolkit
+  ansible.builtin.apt:
+    name: nvidia-container-toolkit
+    state: present
+    update_cache: true
+  notify: restart docker

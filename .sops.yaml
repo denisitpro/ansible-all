@@ -1,5 +1,4 @@
-# example .sops.yaml encrypted _password, _secret, _key
+# example .sops.yaml encrypted hosts, vault, secret
 creation_rules:
-  - path_regex: '.*\.yml$' # Apply all .yml files
-    pgp: 'FB4FFF222621D8693E012824C88763C7057C4E66'
-    encrypted_regex: '^(.*_password|.*_secret|.*_key)$'
+  - path_regex: .*(hosts|vault|secret|credentials|env).*
+    age: age1presazfjgqzg7wwa08lr4ze9htd2m42th9hvnhffvp8rsy9hcu2qtgw6tg
