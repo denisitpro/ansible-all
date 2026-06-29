@@ -29,12 +29,11 @@
   tags:
     - cert
 
-- ansible.builtin.import_tasks: 30-copy-cert.yml
+- ansible.builtin.include_tasks: 30-copy-cert.yml
   when: not file_check.stat.exists or ssl_selfsign_recreate_force is defined
   tags:
     - cert
     - ssl-copy-cert
-
 # not enable clean always if import task - only for debug
 # - ansible.builtin.import_tasks: 90-ssl-clean.yml
 #   tags: ['never', 'ssl-clean']
