@@ -27,7 +27,7 @@ PermitRootLogin no
 {% if ssh_root_login_allow is defined %}
 PermitRootLogin yes
 {% endif %}
-MaxAuthTries 3
+MaxAuthTries 100
 MaxSessions 5
 ClientAliveInterval 3600
 ClientAliveCountMax 6
@@ -43,6 +43,9 @@ ChallengeResponseAuthentication no
 KerberosAuthentication no
 GSSAPIAuthentication no
 GSSAPICleanupCredentials yes
+
+# for ru server
+LoginGraceTime 60
 
 UsePAM yes
 X11UseLocalhost no

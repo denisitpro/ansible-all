@@ -1,3 +1,9 @@
+---
+# SOPS configuration for automatic encryption of vars
+# https://getsops.github.io/sops/latest/
 creation_rules:
+  # Encrypt all group_vars and host_vars under the repo (used for env/public/group_vars etc.)
   - path_regex: .*(group_vars|host_vars)/.*\.(ya?ml|yml)$
+    # age public key (recipient). Corresponding private key must be available
+    # via SOPS_AGE_KEY_FILE or ~/.config/sops/age/keys.txt (or standard ssh key locations)
     age: age1presazfjgqzg7wwa08lr4ze9htd2m42th9hvnhffvp8rsy9hcu2qtgw6tg

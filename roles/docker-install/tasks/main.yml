@@ -1,36 +1,31 @@
 ---
 # - ansible.builtin.import_tasks: 03-arch.yml
-#   when: ansible_facts['distribution'] == 'Ubuntu'
+#   when: ansible_distribution == 'Ubuntu'
 #   tags:
 #     - docker
 
 - ansible.builtin.import_tasks: 05-add-repo.yml
-  when: ansible_facts['distribution'] == 'Ubuntu'
+  when: ansible_facts["distribution"] == "Ubuntu"
   tags:
     - docker
 
 - ansible.builtin.import_tasks: 10-install-docker.yml
-  when: ansible_facts['distribution'] == 'Ubuntu'
+  when: ansible_facts["distribution"] == "Ubuntu"
   tags:
     - docker
 
 - ansible.builtin.import_tasks: 20-configure-docker.yml
   tags:
     - docker
-# - ansible.builtin.import_tasks: 30-daemon-configure.yml
-#   when: docker_daemon_conf is defined
-#   tags:
-#     - docker
-#     - docker-daemon
 
-# - ansible.builtin.import_tasks: 40-alias.yml
-#   when: docker_alias is defined
-#   tags:
-#     - docker
-#     - docker-alias
+- ansible.builtin.import_tasks: 30-daemon-configure.yml
+  when: docker_daemon_conf is defined
+  tags:
+    - docker
+    - docker-daemon
 
-# - ansible.builtin.import_tasks: 80-install-nvidia-toolkit.yml
-#   when: docker_nvidia_container_toolkit is defined and docker_nvidia_container_toolkit
-#   tags:
-#     - docker
-#     - docker-nvidia
+- ansible.builtin.import_tasks: 40-alias.yml
+  when: docker_alias is defined
+  tags:
+    - docker
+    - docker-alias

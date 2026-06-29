@@ -147,6 +147,11 @@ http {
 
 
 {% if angie_used_acme is defined %}
+    # ACME auto-cert variables ($acme_cert_<name> / $acme_cert_key_<name>) embed the
+    # full server name. For long FQDNs (e.g. s3-images-ru.cointelegraph-ru.com) the
+    # variable name overflows the default 64-byte hash bucket and angie aborts with
+    # "could not build variables_hash, increase variables_hash_bucket_size". Raise it.
+    variables_hash_bucket_size {{ angie_variables_hash_bucket_size | default(128) }};
     resolver {{angie_acme_resolver | default('1.1.1.1') }}; # Required for the 'acme_client' directive
 {% for vhost in nginx.vhosts | default([]) %}
 {% if vhost.domain is defined and vhost.domain == 'acme' %}
