@@ -29,3 +29,9 @@
   tags:
     - docker
     - docker-alias
+
+- ansible.builtin.import_tasks: 80-install-nvidia-toolkit.yml
+  when: docker_nvidia_container_toolkit is defined and docker_nvidia_container_toolkit
+  tags:
+    - docker
+    - docker-nvidia

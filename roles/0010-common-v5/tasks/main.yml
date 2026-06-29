@@ -106,10 +106,10 @@
     - common-base
     - swap
 
-- ansible.builtin.import_tasks: 670-alias.yml
-  tags:
-    - base
-    - common-base
+# - ansible.builtin.import_tasks: 670-alias.yml
+#   tags:
+#     - base
+#     - common-base
 
 - ansible.builtin.import_tasks: 900-reboot.yml
   tags: ["never", "reboot"]
