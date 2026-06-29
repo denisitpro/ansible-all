@@ -11,7 +11,6 @@
   community.crypto.openssl_csr_pipe:
     privatekey_path: "{{ ssl_ca_generated_key_path }}"
     subject_alt_name: "{{ ssl_subject_alt_name }}"
-    subject_alt_name_critical: "{{ ssl_subject_alt_name_critical | default(false) }}"
   register: csr
 
 - name: Check whether certificate exists

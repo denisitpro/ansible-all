@@ -40,7 +40,7 @@
     content: "{{ slurped_ca_key.content | b64decode }}"
     owner: "{{ ssl_user }}"
     group: "{{ ssl_group }}"
-    mode: "{{ ssl_privkey_mode | default('644') }}"
+    mode: "{{ ssl_privkey_mode | default('0644') }}"
 
 - name: Write ca.pem to each server
   ansible.builtin.copy:

@@ -169,18 +169,55 @@ server {
 {% if item.proxy_ssl_ciphers is defined %}
         proxy_ssl_ciphers       {{ item.proxy_ssl_ciphers }};
 {% endif %}
+{% if item.oauth2_proxy is defined and item.oauth2_proxy.enabled %}
+        auth_request /oauth2/auth;
+        auth_request_set $auth_resp_x_email $upstream_http_x_auth_request_email;
+        auth_request_set $auth_resp_x_user $upstream_http_x_auth_request_user;
+        error_page 401 = /oauth2/sign_in;
+        proxy_http_version 1.1;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Auth-Request-Email $auth_resp_x_email;
+        proxy_set_header X-Auth-Request-User $auth_resp_x_user;
+{% if item.oauth2_proxy.proxy_ssl_name is defined %}
+        proxy_ssl_server_name on;
+        proxy_ssl_name {{ item.oauth2_proxy.proxy_ssl_name }};
+        proxy_set_header Host {{ item.oauth2_proxy.proxy_ssl_name }};
+{% endif %}
+{% endif %}
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Server $host;
         proxy_set_header X-Real-IP $remote_addr;
+{% if item.oauth2_proxy is not defined or item.oauth2_proxy.proxy_ssl_name is not defined %}
         proxy_set_header Host $http_host;
+{% endif %}
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
         proxy_read_timeout      {{ item.proxy_read_timeout | default('60s') }};
         proxy_connect_timeout   {{ item.proxy_connect_timeout | default('60s') }};
         proxy_send_timeout      {{ item.proxy_send_timeout | default('60s') }};
         proxy_pass {{ item.upstream_protocol | default('https') }}://{{ item.upstream_name }};
 ##        allow all;
     }
+
+{% if item.oauth2_proxy is defined and item.oauth2_proxy.enabled and item.oauth2_proxy.proxy_pass is defined %}
+    location = /oauth2/auth {
+        proxy_pass       {{ item.oauth2_proxy.proxy_pass }}/oauth2/auth;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header Content-Length "";
+        proxy_pass_request_body off;
+    }
+
+    location /oauth2/ {
+        proxy_pass       {{ item.oauth2_proxy.proxy_pass }};
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+    }
+{% endif %}
 
 {% if item.locations is defined %}
 {% for loc in item.locations %}
@@ -190,6 +227,11 @@ server {
 {% endif %}
 {% if loc.noindex is defined %}
         add_header  X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+{% endif %}
+{% if loc.custom_headers is defined %}
+{% for header in loc.custom_headers %}
+        add_header '{{ header.name }}' '{{ header.value }}' always;
+{% endfor %}
 {% endif %}
 {% if loc.proxy_buffers_count is defined and loc.proxy_buffers_size is defined %}
         proxy_buffers   {{ loc.proxy_buffers_count }}  {{ loc.proxy_buffers_size }};

@@ -1,38 +1,21 @@
-nginx_logs_disabled: ENC[AES256_GCM,data:fBr1/A==,iv:Yujx29hc8b4ZGjyfYa6/EqDSrj2FIlaq26yPweBbNx4=,tag:6tWJkTm3eI/NxyYdrq1fAw==,type:bool]
+---
+ssl_selfsign_type: "rsa"
+nginx_logs_disabled: true
+
 upstream_multi:
-    upstream:
-        - name: ENC[AES256_GCM,data:PkUiONA71g==,iv:LmVoy84wNcVwD9AlpTSLIrq0yuLXyhPjMwGodt6r7nQ=,tag:G3zBGBdqrRH7b/3atYSYwg==,type:str]
-          server: ENC[AES256_GCM,data:TLRLx/jwgMdi,iv:K0+y0Kk9F9YR0bpJacmfLA7RjLDyi8RCkZEy7FSU8X0=,tag:uT8E16Dxxd1x0I3eEyVDow==,type:str]
-          port: ENC[AES256_GCM,data:CkccnA==,iv:Od81MBgjdXPiGWz/ISF6NCAeeM7+Q6z0skCm19j1hBU=,tag:kUlozjA5qTwbK58CfqWIeQ==,type:int]
-          fail_timeout: ENC[AES256_GCM,data:w7U=,iv:DxIHgNpFpMhSOjAl30Tlhz9Sphi3pVlU9QR7msRybzQ=,tag:tjXyjFov80LTG9Xd4J7N8g==,type:int]
-          max_fails: ENC[AES256_GCM,data:Ego=,iv:vE0HYO/7e2cAgVQx6p7byHg/pJ1lCOfSiVOGO17pr+Q=,tag:d2rAygb0L0z6WivAm9Cxkg==,type:int]
-          conf: ENC[AES256_GCM,data:CLQJky09PJ2xyZ/MrxdWDAS/z2z6jw==,iv:zu5rRohN6zCgEI2hJ994VuuYfTwgq6lzVyuVeipvfKo=,tag:VMvhg4koae1NOhiG0axF1g==,type:str]
-nginx_access_log_format: ENC[AES256_GCM,data:LJIgA3UKZhzP89Q=,iv:tXSgFH6c6w6SLTUjgbb8IEsqCLLFZgiiUM9RuHf5rBU=,tag:kyhjXEkvUK+B60WJhJKt1A==,type:str]
-#ENC[AES256_GCM,data:FZArrM54bu202bHrtVbiEY9HsEIyjU0GRewC5r0=,iv:CYMudy6Jvm80ORRxoOCBdcmyrrot9ALsEPK0RAQvRME=,tag:s42tk8A+MnQyjHBgWLS/xg==,type:comment]
-angie_mtls_support: ENC[AES256_GCM,data:IWnugQ==,iv:oFVhw15THC+pYPLKDz3WU1v3jVdrCYMM9wJgux8K/9c=,tag:4V3OURCx88PKjerA+/MzyQ==,type:bool]
-nginx_logs_stdout: ENC[AES256_GCM,data:Lp9qzw==,iv:RXiZGHssVNOfB5WRLQ3gVlmFdGnlaIyuflcNuElqer8=,tag:4Z1sx8Po+h0xw1Wz+n6wDQ==,type:bool]
+  upstream:
+    - {name: "backend", server: "127.0.0.1", port: 3000, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32}
+
+nginx_access_log_format: extend_json
+# nginx_error_log_format: warn
+angie_mtls_support: true
+nginx_logs_stdout: true
+
 nginx:
-    vhosts:
-        - servername: ENC[AES256_GCM,data:cJI5QLN1/84R8Qc=,iv:asv54ApLMcmtDs1UwZxi3/Dvein9Jh9oG57BbpNsDdU=,tag:tkltVaTghnZJpZwEqHw9ng==,type:str]
-          domain: ENC[AES256_GCM,data:tEpTZlsZbig=,iv:fIPqXJRQIBlO2dIt3WjjSdyG/pw9O9Ozg0eF/asmOeo=,tag:ALpBqtmhu0PWNjlNsmj74w==,type:str]
-          config_file: ENC[AES256_GCM,data:tvirUalRaBI6pyKYWzphLhDs3i0DOBKFWw==,iv:5yMgpqsizhXBr6K1aNhUveQakd0dUf4lAQwUmyNJnUU=,tag:HDm9iPNePDpbir1aIsOKAg==,type:str]
-          upstream_protocol: ENC[AES256_GCM,data:jSWVhA==,iv:pVQP9nnaKR/cKPtPNgIyM67IUeH+hsT7OuEThzNHg2I=,tag:ggZzOzZTUUjkoIslZtIC1w==,type:str]
-          upstream_name: ENC[AES256_GCM,data:AgvSIGQGIg==,iv:+iTDJZnhTEWX5feyEyLi2cBr1I4ukWaE6s9IfsqHPDU=,tag:j0rsDm4fNVZQULtUHk6X7w==,type:str]
-          mtls: ENC[AES256_GCM,data:myuIDQ==,iv:GVQxhAmsT/l1MgSNaU3XNna7ABC6zXk0guK8/8Ty+Ag=,tag:MHfDKUPjXPxJdyfIyxh5aA==,type:bool]
-          ca_mtls: ENC[AES256_GCM,data:fypGJBqRxJo+X6Ka,iv:Cb8o8OGi7Kr4yOl5Xl6qQDU4aC55bKJdrAYk4qiNK7A=,tag:RX1i/KrURqZJ2zPdv8Tppg==,type:str]
-          client_max_body_size: ENC[AES256_GCM,data:naYl,iv:ycuPYJVqOXxlkuSxXkaFUkfCW/dynQs87x+Ypd9zEzA=,tag:XyS3J+GD3bB8HEHZk0jlPg==,type:str]
-sops:
-    age:
-        - enc: |
-            -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkV0tTeDJBVWRWQVA1K0lW
-            ZmVNTXdzNHc0ekJhQ2JDUlBqUVZONEhZWWhZCk1vUjhadXJoMjJXKzllZklQNGk5
-            M1IyYU05WFRBU0FPV3VVQTRnUUxOVDQKLS0tIFVRM0xreWJoK3dVbDVkNUloc3pC
-            SThlUklsWlorR1ZEVjZQRUZTb0kvb3cKfvAtx6pUFnzznW+pGqTobSIoWe70uPeG
-            LSdsG58IO5xjaTnelZYFUKK64fGM/+ERNSu4kfceEGvTLZUiWA2QCw==
-            -----END AGE ENCRYPTED FILE-----
-          recipient: age1presazfjgqzg7wwa08lr4ze9htd2m42th9hvnhffvp8rsy9hcu2qtgw6tg
-    lastmodified: "2026-06-29T04:52:22Z"
-    mac: ENC[AES256_GCM,data:HOkfXIh9MVME5oefOlMGVWBjj8sSvJBlIIN8qC2a/PvDct5vKQulnvj6fROjefAK8oHYrc75xmEHfnPveh1PQ4bVCrr3ObPzWRfOUtbWsdvdBPAwWDqjeGKPT1G9kqznFzUfDnjhLt9bGfyrNfIOMN0v+FKCi1VKhADt4msh3P0=,iv:ayy+juiitZnOWKOHowW7PwkzuqBGi15GOdUdCYRny+A=,tag:q+7EEPAId8sDmhb5aBeKGQ==,type:str]
-    unencrypted_suffix: _unencrypted
-    version: 3.13.1
+  vhosts:
+    - servername: "api.tips-flow.com"
+      domain: "selfsign"
+      config_file: "angie2-general-g4.conf.j2"
+      upstream_protocol: http
+      upstream_name: "backend"
+      client_max_body_size: 50M
