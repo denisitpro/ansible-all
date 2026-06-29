@@ -1,15 +1,4 @@
 ---
-- name: Install prerequisites - Ubuntu
-  ansible.builtin.apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg2
-      - software-properties-common
-    update_cache: true
-
-
 - name: Install Docker - components Ubuntu
   ansible.builtin.apt:
     name:

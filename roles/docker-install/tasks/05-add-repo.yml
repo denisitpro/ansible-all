@@ -3,12 +3,37 @@
   ansible.builtin.debug:
     msg: "Docker architecture is: {{ go_arch }}"
 
-- name: Add Docker GPG key - Ubuntu
-  ansible.builtin.apt_key:
+- name: Install prerequisites for Docker APT repository
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    update_cache: true
+
+- name: Ensure /etc/apt/keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Download Docker GPG key
+  ansible.builtin.get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
-    keyring: /etc/apt/trusted.gpg.d/docker.gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+    owner: root
+    group: root
 
 
 - name: Add Docker APT repository - Ubuntu
   ansible.builtin.apt_repository:
-    repo: deb [arch={{ go_arch }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+    repo: >-
+      deb [arch={{ go_arch }} signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}
+      {{ ansible_facts['distribution_release'] }} stable
+    filename: docker
+    state: present
+    update_cache: true

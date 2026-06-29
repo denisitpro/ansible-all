@@ -1,4 +1,3 @@
-# example .sops.yaml encrypted hosts, vault, secret
 creation_rules:
-  - path_regex: .*(hosts|vault|secret|credentials|env).*
+  - path_regex: .*(group_vars|host_vars)/.*\.(ya?ml|yml)$
     age: age1presazfjgqzg7wwa08lr4ze9htd2m42th9hvnhffvp8rsy9hcu2qtgw6tg
