@@ -1,9 +1,0 @@
----
-- hosts: teleport
-  become: true
-  roles:
-    - 0010-common-v4
-    - docker-install
-    - teleport-server
-    - ufw-base-configure
-    - ufw-management
