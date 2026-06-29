@@ -18,5 +18,6 @@
     owner: "{{ tips_backend_uid }}"
     group: "{{ tips_backend_gid }}"
   with_items:
+    - "{{ tips_backend_base_path }}"
     - "{{ tips_backend_uploads_path }}"
     - "{{ tips_backend_telegram_data_path }}"
