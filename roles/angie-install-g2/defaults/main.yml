@@ -1,7 +1,7 @@
 ---
 angie_compose_path: /opt/docker/angie
 
-angie_version: 1.11.3
+angie_version: 1.11.0
 angie_image: "docker.angie.software/angie:{{ angie_version }}"
 
 # Binary name inside container (nginx for nginx images, angie for angie images)
