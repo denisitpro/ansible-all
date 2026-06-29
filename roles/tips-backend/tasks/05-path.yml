@@ -1,23 +1,60 @@
 ---
-- name: create docker folders for tips-backend
+- name: ensure /opt/docker exists
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: /opt/docker
     state: directory
     mode: '0755'
     owner: root
     group: root
-  with_items:
-    - "/opt/docker"
-    - "{{ tips_backend_compose_path }}"
 
-- name: create data directories for tips-backend uploads and telegram data
+- name: create compose directory for each tips-backend instance
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ _compose_path }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop: "{{ tips_backend_instances | default([{'name': 'tips-backend'}]) }}"
+  loop_control:
+    loop_var: tip
+  vars:
+    _compose_path: "{{ tip.compose_path | default('/opt/docker/' + tip.name) }}"
+
+- name: create base data directory for each tips-backend instance
+  ansible.builtin.file:
+    path: "{{ _base_path }}"
     state: directory
     mode: '0755'
     owner: "{{ tips_backend_uid }}"
     group: "{{ tips_backend_gid }}"
-  with_items:
-    - "{{ tips_backend_base_path }}"
-    - "{{ tips_backend_uploads_path }}"
-    - "{{ tips_backend_telegram_data_path }}"
+  loop: "{{ tips_backend_instances | default([{'name': 'tips-backend'}]) }}"
+  loop_control:
+    loop_var: tip
+  vars:
+    _base_path: "{{ tip.base_path | default('/opt/' + tip.name) }}"
+
+- name: create uploads directory for each instance
+  ansible.builtin.file:
+    path: "{{ _base_path }}/uploads"
+    state: directory
+    mode: '0755'
+    owner: "{{ tips_backend_uid }}"
+    group: "{{ tips_backend_gid }}"
+  loop: "{{ tips_backend_instances | default([{'name': 'tips-backend'}]) }}"
+  loop_control:
+    loop_var: tip
+  vars:
+    _base_path: "{{ tip.base_path | default('/opt/' + tip.name) }}"
+
+- name: create telegram-bot-data directory for each instance
+  ansible.builtin.file:
+    path: "{{ _base_path }}/telegram-bot-data"
+    state: directory
+    mode: '0755'
+    owner: "{{ tips_backend_uid }}"
+    group: "{{ tips_backend_gid }}"
+  loop: "{{ tips_backend_instances | default([{'name': 'tips-backend'}]) }}"
+  loop_control:
+    loop_var: tip
+  vars:
+    _base_path: "{{ tip.base_path | default('/opt/' + tip.name) }}"

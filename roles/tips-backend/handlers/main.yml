@@ -1,7 +1,12 @@
 ---
-- name: recreate-docker tips-backend
+# NOTE: With multi-instance support (tips_backend_instances list),
+# compose (re)start is handled directly inside tasks/50-compose.yml.
+# This handler is kept only for backward compatibility with old single-mode notify.
+# It will only work correctly when the legacy single path vars are still in effect.
+
+- name: recreate-docker tips-backend (legacy single)
   community.docker.docker_compose_v2:
-    project_src: "{{ tips_backend_compose_path }}"
+    project_src: "{{ tips_backend_compose_path | default('/opt/docker/tips-backend') }}"
     state: present
     recreate: always
   listen: "recreate-docker tips-backend"
