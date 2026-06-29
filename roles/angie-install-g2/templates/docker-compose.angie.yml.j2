@@ -31,6 +31,12 @@ services:
 {% if angine_artifacts_path is defined %}
       - {{ angine_artifacts_path}}:/usr/share/nginx/artifacts
 {% endif %}
+{% if angie_static_volumes is defined %}
+{% for vol in angie_static_volumes %}
+      - {{ vol.host }}:{{ vol.container }}{% if vol.options is defined %}:{{ vol.options }}{% endif %}
+{% endfor %}
+{% endif %}
+
     restart: {{ angie_restart | default('always') }}
 {% if angie_static_file is defined %}
 #      - {{angie_static_path}}:/var/www/html:ro

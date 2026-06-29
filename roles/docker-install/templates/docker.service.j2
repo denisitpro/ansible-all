@@ -15,11 +15,6 @@ ExecReload=/bin/kill -s HUP $MAINPID
 TimeoutStartSec=0
 RestartSec=2
 Restart=always
-{$if docker_proxy is defined and docker_proxy != "" %}
-Environment="HTTP_PROXY={{ docker_proxy }}"
-Environment="HTTPS_PROXY={{ docker_proxy }}"
-Environment="NO_PROXY=localhost,127.0.0.1,::1,.local,.svc,registry.local,10.0.0.0/8,192.168.0.0/16"
-{$endif}
 
 # Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
 # Both the old, and new location are accepted by systemd 229 and up, so using the old location

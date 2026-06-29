@@ -1,11 +1,5 @@
 {
-  "iptables": {{docker_iptables_management| default('true') | lower}},
-  "ip6tables": {{docker_iptables_management| default('true') | lower}}{% if docker_nvidia_container_toolkit is defined and docker_nvidia_container_toolkit %},
-  "runtimes": {
-    "nvidia": {
-      "args": [],
-        "path": "nvidia-container-runtime"
-      }
-  }{% endif %}
+  "iptables":{{docker_iptables_management| default('true')}}{% if docker_daemon_ipv6 is defined %},
+  "ipv6":{{ docker_daemon_ipv6 | to_json }}{% endif %}
 
 }
