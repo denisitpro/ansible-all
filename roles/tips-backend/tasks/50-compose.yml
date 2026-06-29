@@ -1,7 +1,41 @@
 ---
-- name: copy compose file - tips-backend
+- name: copy compose file for tips-backend instance
   ansible.builtin.template:
     src: "docker-compose.tips-backend.yml.j2"
-    dest: "{{ tips_backend_compose_path }}/docker-compose.yml"
+    dest: "{{ _compose_path }}/docker-compose.yml"
     mode: "0640"
-  notify: recreate-docker tips-backend
+  loop: "{{ tips_backend_instances | default([{'name': 'tips-backend'}]) }}"
+  loop_control:
+    loop_var: tip
+  vars:
+    _name: "{{ tip.name }}"
+    _compose_path: "{{ tip.compose_path | default('/opt/docker/' + tip.name) }}"
+    _base_path: "{{ tip.base_path | default('/opt/' + tip.name) }}"
+    _image: "{{ tip.tips_backend_image | default(tips_backend_image) }}"
+    _version: "{{ tip.tips_backend_version | default(tips_backend_version) }}"
+    _telegram_image: "{{ tip.tips_telegram_bot_image | default(tips_telegram_bot_image) }}"
+    _telegram_version: "{{ tip.tips_telegram_bot_version | default(tips_telegram_bot_version) }}"
+    _migrate_image: "{{ tip.tips_migrate_image | default(tips_migrate_image) }}"
+    _restart: "{{ tip.tips_backend_restart | default('always') }}"
+    _uploads_path: "{{ _base_path }}/uploads"
+    _telegram_data_path: "{{ _base_path }}/telegram-bot-data"
+  register: _compose_template
+
+- name: ensure compose project is up (recreate only when compose file changed)
+  community.docker.docker_compose_v2:
+    project_src: "{{ item.item.compose_path | default('/opt/docker/' + item.item.name) }}"
+    state: present
+    recreate: always
+  loop: "{{ _compose_template.results }}"
+  when: item.changed
+  # noqa: no-handler  # intentional: per-instance conditional recreate after template change
+
+- name: ensure compose project is present and running
+  community.docker.docker_compose_v2:
+    project_src: "{{ _compose_path }}"
+    state: present
+  loop: "{{ tips_backend_instances | default([{'name': 'tips-backend'}]) }}"
+  loop_control:
+    loop_var: tip
+  vars:
+    _compose_path: "{{ tip.compose_path | default('/opt/docker/' + tip.name) }}"

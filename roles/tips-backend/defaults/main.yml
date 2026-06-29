@@ -10,14 +10,31 @@ tips_migrate_image: "denisitpro/tips-migrate"
 tips_backend_uid: 1005
 tips_backend_gid: 1005
 
-tips_backend_base_path: "/opt/wastebin"
-tips_backend_compose_path: "/opt/docker/tips-backend"
+# Multi-instance support.
+# Define one or more named deployments. Each gets its own:
+#   /opt/<name>/                 (data: uploads/, telegram-bot-data/)
+#   /opt/docker/<name>/          (docker-compose.yml + your *.remote.env files)
+#
+# The 'name' is fully controlled by you (e.g. tips_backend_1, tips_backend_prod etc).
+tips_backend_instances: []
+# Example:
+# tips_backend_instances:
+#   - name: tips_backend_1
+#     # tips_backend_version: "0.9.2"          # optional override
+#     # tips_backend_image: "denisitpro/tips-back"
+#     # tips_backend_restart: "always"
+#   - name: tips_backend_2
+#     tips_backend_version: "0.9.3"
 
-tips_backend_uploads_path: "{{ tips_backend_base_path }}/uploads"
-tips_backend_telegram_data_path: "{{ tips_backend_base_path }}/telegram-bot-data"
+# Legacy single-instance paths (kept for backward compatibility).
+# When tips_backend_instances is empty, the role synthesizes one instance
+# using name "tips-backend" which resolves to these locations.
+tips_backend_base_path: "/opt/tips-backend"
+tips_backend_compose_path: "/opt/docker/tips-backend"
 
 # Optional overrides (uncomment and set as needed)
 # tips_backend_restart: "always"
 
 # Backend env is provided via backend.remote.env (placed next to compose)
 # Telegram bot env via telegram-bot.remote.env
+# You place the env files yourself per instance directory.

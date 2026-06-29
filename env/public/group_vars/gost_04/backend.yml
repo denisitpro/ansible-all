@@ -1,0 +1,4 @@
+tips_backend_instances:
+  - name: tips-beta
+  - name: tips-heaven8
+    tips_backend_version: "0.9.2"
