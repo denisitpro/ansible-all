@@ -23,7 +23,7 @@
 
 - name: ensure compose project is up (recreate only when compose file changed)
   community.docker.docker_compose_v2:
-    project_src: "{{ item.item.compose_path | default('/opt/docker/' + item.item.name) }}"
+    project_src: "{{ item.tip.compose_path | default('/opt/docker/' + item.tip.name) }}"
     state: present
     recreate: always
   loop: "{{ _compose_template.results }}"
