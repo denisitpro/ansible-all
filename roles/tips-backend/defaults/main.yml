@@ -3,7 +3,7 @@ tips_backend_image: "denisitpro/tips-back"
 tips_backend_version: "0.9.2"
 
 tips_telegram_bot_image: "denisitpro/tips-telegram-bot"
-tips_telegram_bot_version: "{{ tips_backend_version }}"
+tips_telegram_bot_version: "latest"
 
 tips_migrate_image: "denisitpro/tips-migrate"
 
