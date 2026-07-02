@@ -1,6 +1,6 @@
 ---
 kora_image: "ghcr.io/solana-foundation/kora"
-kora_version: "v2.0.5"
+kora_version: "v2.2.0-beta.7"
 
 kora_rust_log: "info"
 kora_restart: "unless-stopped"

@@ -23,26 +23,37 @@ get_config = true
 max_allowed_lamports = 10000000
 max_signatures = 10
 price_source = "Mock"
+# price_source = "Jupiter"
+
+
 allow_durable_transactions = false
 cross_cluster_check = false
 
+
+# All 5 base programs + both CCTP v2 IDs are the SAME address on devnet and mainnet-beta,
+# so this list is cluster-agnostic (only the token mints below differ per cluster).
 allowed_programs = [
-    "11111111111111111111111111111111",              # System Program
-    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",   # SPL Token Program
-    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",  # Associated Token Account Program
-    "ComputeBudget111111111111111111111111111111",   # Compute Budget
-    "AddressLookupTab1e1111111111111111111111111",   # Address Lookup Table
+    "11111111111111111111111111111111",              # System Program                  (all clusters)
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",   # SPL Token Program                (all clusters)
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",  # Associated Token Account Program (all clusters)
+    "ComputeBudget111111111111111111111111111111",   # Compute Budget                   (all clusters)
+    "AddressLookupTab1e1111111111111111111111111",   # Address Lookup Table (if used)   (all clusters)
+    # CCTP v2 — required for the gasless sol→EVM burn (issue #145). Same IDs devnet + mainnet.
+    "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",  # CCTP v2 TokenMessengerMinterV2 (depositForBurn)
+    "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",  # CCTP v2 MessageTransmitterV2  (CPI target of the burn)
 ]
 
+# Token mints are PER-CLUSTER — pick the set for the cluster this relayer serves:
+#   DEVNET  USDC = 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU  (6 dec)
+#   MAINNET USDC = EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v  (6 dec)
 allowed_tokens = [
-    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # Devnet USDC (Circle)
-    "4CW8GBPFoBbm6DuX4tKg5xv9TYRPQgpfjPwCp3NfeB3S",  # Local mock 6-dec token (Phase-0 testing only)
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # DEVNET USDC (swap for mainnet mint in prod)
 ]
 
 allowed_spl_paid_tokens = [
-    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
-    "4CW8GBPFoBbm6DuX4tKg5xv9TYRPQgpfjPwCp3NfeB3S",
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # DEVNET USDC (swap for mainnet mint in prod)
 ]
+
 
 disallowed_accounts = []
 
@@ -54,7 +65,7 @@ allow_allocate = true
 
 [validation.fee_payer_policy.spl_token]
 allow_transfer = true
-allow_burn = false
+allow_burn = true # allow burn for gasless
 allow_close_account = true
 allow_approve = false
 allow_revoke = false
@@ -66,9 +77,17 @@ allow_initialize_multisig = false
 allow_freeze_account = false
 allow_thaw_account = false
 
+# originam
+# [validation.price]
+# type = "margin"
+# margin = 0.05
+#
+# # kotili
 [validation.price]
-type = "margin"
-margin = 0.05
+type = "fixed"
+amount = 20000                                          # 0.02 USDC (6 знаков → 0.02 × 10^6)
+token = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"  # devnet USDC mint
+strict = false
 
 [metrics]
 enabled = true
