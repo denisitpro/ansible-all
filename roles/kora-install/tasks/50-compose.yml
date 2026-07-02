@@ -4,8 +4,6 @@
     src: "{{ _config_template }}"
     dest: "{{ _config_path }}/kora.toml"
     mode: "0640"
-    owner: "{{ kora_uid }}"
-    group: "{{ kora_gid }}"
   loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
   loop_control:
     loop_var: kora
@@ -31,8 +29,6 @@
     _version: "{{ kora.kora_version | default(kora_version) }}"
     _restart: "{{ kora.kora_restart | default(kora_restart) }}"
     _rust_log: "{{ kora.kora_rust_log | default(kora_rust_log) }}"
-    _bind_host: "{{ kora.kora_bind_host | default(kora_bind_host) }}"
-    _port: "{{ kora.kora_port | default(kora_port) }}"
     _config_path: "{{ _base_path }}/config"
     _keys_path: "{{ _base_path }}/keys"
   register: _compose_template

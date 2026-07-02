@@ -25,8 +25,8 @@
     path: "{{ _base_path }}"
     state: directory
     mode: '0755'
-    owner: "{{ kora_uid }}"
-    group: "{{ kora_gid }}"
+    owner: root
+    group: root
   loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
   loop_control:
     loop_var: kora
@@ -38,8 +38,8 @@
     path: "{{ _base_path }}/config"
     state: directory
     mode: '0755'
-    owner: "{{ kora_uid }}"
-    group: "{{ kora_gid }}"
+    owner: root
+    group: root
   loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
   loop_control:
     loop_var: kora
@@ -51,8 +51,8 @@
     path: "{{ _base_path }}/keys"
     state: directory
     mode: '0700'
-    owner: "{{ kora_uid }}"
-    group: "{{ kora_gid }}"
+    owner: root
+    group: root
   loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
   loop_control:
     loop_var: kora
