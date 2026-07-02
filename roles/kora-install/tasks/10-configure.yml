@@ -1,0 +1,14 @@
+---
+- name: copy signers config for instance
+  ansible.builtin.template:
+    src: "{{ _signers_template }}"
+    dest: "{{ _keys_path }}/signers.toml"
+    mode: "0644"
+  loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
+  loop_control:
+    loop_var: kora
+  vars:
+    _base_path: "{{ kora.base_path | default('/opt/' + kora.name) }}"
+    _keys_path: "{{ _base_path }}/keys"
+    _signers_template: "{{ kora.kora_signers_template | default('signers.toml.j2') }}"
+  register: _kora_signers_template

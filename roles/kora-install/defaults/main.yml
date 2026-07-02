@@ -25,5 +25,4 @@ kora_instances: []
 kora_base_path: "/opt/kora"
 kora_compose_path: "/opt/docker/kora"
 
-# Fee payer key lives in keys/ (e.g. keys/fee-payer.json).
-# Place key files yourself per instance; role only creates the directory.
+#   /opt/<name>/keys/signers.toml  — managed by role (private key via KORA_PRIVATE_KEY env)

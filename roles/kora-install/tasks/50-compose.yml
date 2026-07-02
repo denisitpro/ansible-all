@@ -51,6 +51,15 @@
   when: item.changed
   # noqa: no-handler  # intentional: per-instance conditional recreate after config change
 
+- name: ensure compose project is up (recreate when signers config changed)
+  community.docker.docker_compose_v2:
+    project_src: "{{ item.kora.compose_path | default('/opt/docker/' + item.kora.name) }}"
+    state: present
+    recreate: always
+  loop: "{{ _kora_signers_template.results }}"
+  when: item.changed
+  # noqa: no-handler  # intentional: per-instance conditional recreate after signers change
+
 - name: ensure compose project is present and running
   community.docker.docker_compose_v2:
     project_src: "{{ _compose_path }}"
