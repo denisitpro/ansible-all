@@ -4,8 +4,33 @@ nginx_logs_disabled: true
 
 upstream_multi:
   upstream:
-    - {name: "backend_beta", server: "127.0.0.1", port: 8787, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32}
-    - {name: "backend_heaven", server: "127.0.0.1", port: 18787, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32}
+    - {
+        name: "backend_beta",
+        server: "127.0.0.1",
+        port: 8787,
+        fail_timeout: 30,
+        max_fails: 30,
+        conf: "nginx-multi-g3.conf.j2",
+        keepalive: 32,
+      }
+    - {
+        name: "backend_heaven",
+        server: "127.0.0.1",
+        port: 18787,
+        fail_timeout: 30,
+        max_fails: 30,
+        conf: "nginx-multi-g3.conf.j2",
+        keepalive: 32,
+      }
+    - {
+        name: "kora_devnet",
+        server: "127.0.0.1",
+        port: 8080,
+        fail_timeout: 30,
+        max_fails: 30,
+        conf: "nginx-multi-g3.conf.j2",
+        keepalive: 32,
+      }
 
 nginx_access_log_format: extend_json
 nginx_logs_stdout: true
@@ -23,4 +48,10 @@ nginx:
       config_file: "angie2-general-g4.conf.j2"
       upstream_protocol: http
       upstream_name: "backend_heaven"
+      client_max_body_size: 50M
+    - servername: "kora-devnet.beta-82.win"
+      domain: "selfsign"
+      config_file: "angie2-general-g4.conf.j2"
+      upstream_protocol: http
+      upstream_name: "kora_devnet"
       client_max_body_size: 50M
