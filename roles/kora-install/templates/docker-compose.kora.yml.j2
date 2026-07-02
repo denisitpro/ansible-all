@@ -11,7 +11,7 @@
 #
 # ─── Files needed per instance dir ────────────────────────────────────────────
 #   /opt/<name>/config/kora.toml   — managed by role
-#   /opt/<name>/keys/              — fee payer key (place yourself, never commit)
+#   /opt/<name>/keys/signers.toml  — managed by role
 
 services:
   kora:
@@ -23,19 +23,14 @@ services:
       - {{ _config_path }}/kora.toml:/app/config/kora.toml:ro
       - {{ _keys_path }}:/app/keys:ro
     environment:
-      - RUST_LOG={{ _rust_log }}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    # Example start command (adjust paths/signers as needed):
-    # command:
-    #   - kora
-    #   - --config
-    #   - /app/config/kora.toml
-    #   - rpc
-    #   - start
-    #   - --signers-config
-    #   - /app/keys/signers.toml
+      - RUST_LOG=info
+      - RPC_URL=https://api.devnet.solana.com
+      - KORA_PRIVATE_KEY=/app/keys/fee-payer.json
+    command:
+      - "kora"
+      - "--config"
+      - "/app/config/kora.toml"
+      - "rpc"
+      - "start"
+      - "--signers-config"
+      - "/app/keys/signers.toml"
