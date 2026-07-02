@@ -1,0 +1,32 @@
+---
+- name: stop kora compose project for instance
+  community.docker.docker_compose_v2:
+    project_src: "{{ _compose_path }}"
+    state: absent
+  loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
+  loop_control:
+    loop_var: kora
+  vars:
+    _compose_path: "{{ kora.compose_path | default('/opt/docker/' + kora.name) }}"
+  ignore_errors: true # noqa: ignore-errors
+
+- name: remove generated compose file for instance
+  ansible.builtin.file:
+    path: "{{ _compose_path }}/docker-compose.yml"
+    state: absent
+  loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
+  loop_control:
+    loop_var: kora
+  vars:
+    _compose_path: "{{ kora.compose_path | default('/opt/docker/' + kora.name) }}"
+
+# Note: data dirs (config/, keys/) live under /opt/<name>/ .
+# Clean stops the project. By default only removes the compose file (data preserved).
+# Uncomment below for full dir removal (destructive).
+# - name: remove kora project dir (DESTRUCTIVE — deletes config & keys too)
+#   ansible.builtin.file:
+#     path: "{{ _base_path }}"
+#     state: absent
+#   loop: ...
+#   vars:
+#     _base_path: "{{ kora.base_path | default('/opt/' + kora.name) }}"

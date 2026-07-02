@@ -1,0 +1,29 @@
+---
+kora_image: "ghcr.io/solana-foundation/kora"
+kora_version: "v2.0.5"
+
+kora_rust_log: "info"
+kora_restart: "unless-stopped"
+
+# Multi-instance support.
+# Each instance gets its own:
+#   /opt/<name>/                 (data: config/, keys/)
+#   /opt/docker/<name>/          (docker-compose.yml)
+#
+# The 'name' is fully controlled by you (e.g. kora, kora_devnet etc).
+kora_instances: []
+# Example:
+# kora_instances:
+#   - name: kora
+#     # kora_version: "1.0.0"
+#     # kora_image: "sigma9/kora"
+#     # kora_restart: "unless-stopped"
+
+# Legacy single-instance paths (kept for backward compatibility).
+# When kora_instances is empty, the role synthesizes one instance
+# using name "kora" which resolves to these locations.
+kora_base_path: "/opt/kora"
+kora_compose_path: "/opt/docker/kora"
+
+# Fee payer key lives in keys/ (e.g. keys/fee-payer.json).
+# Place key files yourself per instance; role only creates the directory.

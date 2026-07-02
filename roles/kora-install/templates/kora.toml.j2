@@ -1,0 +1,81 @@
+# {{ ansible_managed }}
+# Kora runtime config for Sigma9 wallet — Solana Devnet (LOCAL, gitignored).
+# Phase-0 live verification config. Adds a mock 6-dec token we control the mint of
+# (4CW8GB…, price-sourced via Mock as a generic mint = 0.001 SOL) so the relayer
+# mechanics can be proven end-to-end without the browser-only Circle USDC faucet.
+# Real devnet USDC (4zMMC9…) stays allow-listed for the on-device product run.
+
+[kora]
+rate_limit = 100
+
+[kora.enabled_methods]
+liveness = true
+estimate_transaction_fee = true
+get_supported_tokens = true
+get_payer_signer = true
+sign_transaction = true
+sign_and_send_transaction = true
+transfer_transaction = false
+get_blockhash = true
+get_config = true
+
+[validation]
+max_allowed_lamports = 10000000
+max_signatures = 10
+price_source = "Mock"
+allow_durable_transactions = false
+cross_cluster_check = false
+
+allowed_programs = [
+    "11111111111111111111111111111111",              # System Program
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",   # SPL Token Program
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",  # Associated Token Account Program
+    "ComputeBudget111111111111111111111111111111",   # Compute Budget
+    "AddressLookupTab1e1111111111111111111111111",   # Address Lookup Table
+]
+
+allowed_tokens = [
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # Devnet USDC (Circle)
+    "4CW8GBPFoBbm6DuX4tKg5xv9TYRPQgpfjPwCp3NfeB3S",  # Local mock 6-dec token (Phase-0 testing only)
+]
+
+allowed_spl_paid_tokens = [
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+    "4CW8GBPFoBbm6DuX4tKg5xv9TYRPQgpfjPwCp3NfeB3S",
+]
+
+disallowed_accounts = []
+
+[validation.fee_payer_policy.system]
+allow_transfer = true
+allow_assign = false
+allow_create_account = true
+allow_allocate = true
+
+[validation.fee_payer_policy.spl_token]
+allow_transfer = true
+allow_burn = false
+allow_close_account = true
+allow_approve = false
+allow_revoke = false
+allow_set_authority = false
+allow_mint_to = false
+allow_initialize_mint = false
+allow_initialize_account = true
+allow_initialize_multisig = false
+allow_freeze_account = false
+allow_thaw_account = false
+
+[validation.price]
+type = "margin"
+margin = 0.05
+
+[metrics]
+enabled = true
+endpoint = "/metrics"
+port = 8080
+scrape_interval = 60
+
+[metrics.fee_payer_balance]
+enabled = true
+expiry_seconds = 30

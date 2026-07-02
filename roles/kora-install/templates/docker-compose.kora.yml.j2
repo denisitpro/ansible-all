@@ -1,0 +1,41 @@
+## {{ ansible_managed }} ##
+
+# Kora relayer — single-service stack.
+#
+# Supports multiple named instances on the same host.
+# Each instance gets its own directory (name provided via role var):
+#   /opt/<name>/                 — data (config/, keys/)
+#   /opt/docker/<name>/          — compose
+#
+# Uses host networking — Linux only. Listens on port 8080 by default.
+#
+# ─── Files needed per instance dir ────────────────────────────────────────────
+#   /opt/<name>/config/kora.toml   — managed by role
+#   /opt/<name>/keys/              — fee payer key (place yourself, never commit)
+
+services:
+  kora:
+    image: {{ _image }}:{{ _version }}
+    container_name: {{ _name }}
+    restart: {{ _restart }}
+    network_mode: host
+    volumes:
+      - {{ _config_path }}/kora.toml:/app/config/kora.toml:ro
+      - {{ _keys_path }}:/app/keys:ro
+    environment:
+      - RUST_LOG={{ _rust_log }}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    # Example start command (adjust paths/signers as needed):
+    # command:
+    #   - kora
+    #   - --config
+    #   - /app/config/kora.toml
+    #   - rpc
+    #   - start
+    #   - --signers-config
+    #   - /app/keys/signers.toml

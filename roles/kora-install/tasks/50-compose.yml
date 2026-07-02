@@ -1,0 +1,62 @@
+---
+- name: copy kora config for instance
+  ansible.builtin.template:
+    src: "{{ _config_template }}"
+    dest: "{{ _config_path }}/kora.toml"
+    mode: "0640"
+  loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
+  loop_control:
+    loop_var: kora
+  vars:
+    _base_path: "{{ kora.base_path | default('/opt/' + kora.name) }}"
+    _config_path: "{{ _base_path }}/config"
+    _config_template: "{{ kora.kora_config_template | default('kora.toml.j2') }}"
+  register: _kora_config_template
+
+- name: copy compose file for kora instance
+  ansible.builtin.template:
+    src: "docker-compose.kora.yml.j2"
+    dest: "{{ _compose_path }}/docker-compose.yml"
+    mode: "0640"
+  loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
+  loop_control:
+    loop_var: kora
+  vars:
+    _name: "{{ kora.name }}"
+    _compose_path: "{{ kora.compose_path | default('/opt/docker/' + kora.name) }}"
+    _base_path: "{{ kora.base_path | default('/opt/' + kora.name) }}"
+    _image: "{{ kora.kora_image | default(kora_image) }}"
+    _version: "{{ kora.kora_version | default(kora_version) }}"
+    _restart: "{{ kora.kora_restart | default(kora_restart) }}"
+    _rust_log: "{{ kora.kora_rust_log | default(kora_rust_log) }}"
+    _config_path: "{{ _base_path }}/config"
+    _keys_path: "{{ _base_path }}/keys"
+  register: _compose_template
+
+- name: ensure compose project is up (recreate only when compose file changed)
+  community.docker.docker_compose_v2:
+    project_src: "{{ item.kora.compose_path | default('/opt/docker/' + item.kora.name) }}"
+    state: present
+    recreate: always
+  loop: "{{ _compose_template.results }}"
+  when: item.changed
+  # noqa: no-handler  # intentional: per-instance conditional recreate after template change
+
+- name: ensure compose project is up (recreate when kora config changed)
+  community.docker.docker_compose_v2:
+    project_src: "{{ item.kora.compose_path | default('/opt/docker/' + item.kora.name) }}"
+    state: present
+    recreate: always
+  loop: "{{ _kora_config_template.results }}"
+  when: item.changed
+  # noqa: no-handler  # intentional: per-instance conditional recreate after config change
+
+- name: ensure compose project is present and running
+  community.docker.docker_compose_v2:
+    project_src: "{{ _compose_path }}"
+    state: present
+  loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
+  loop_control:
+    loop_var: kora
+  vars:
+    _compose_path: "{{ kora.compose_path | default('/opt/docker/' + kora.name) }}"

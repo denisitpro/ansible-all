@@ -7,4 +7,5 @@
     - ufw-base-configure
     - ufw-rules-tf-g2
     - tips-backend
+    - kora-install
     - angie-install-g2

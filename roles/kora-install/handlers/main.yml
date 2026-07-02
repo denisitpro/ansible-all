@@ -1,0 +1,12 @@
+---
+# NOTE: With multi-instance support (kora_instances list),
+# compose (re)start is handled directly inside tasks/50-compose.yml.
+# This handler is kept only for backward compatibility with old single-mode notify.
+# It will only work correctly when the legacy single path vars are still in effect.
+
+- name: recreate-docker kora (legacy single)
+  community.docker.docker_compose_v2:
+    project_src: "{{ kora_compose_path | default('/opt/docker/kora') }}"
+    state: present
+    recreate: always
+  listen: "recreate-docker kora"

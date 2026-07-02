@@ -1,0 +1,13 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - kora
+    - kora-prefly
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - kora
+    - kora-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'kora-clean']
