@@ -19,6 +19,23 @@ transfer_transaction = false
 get_blockhash = true
 get_config = true
 
+# Per-wallet usage cap. In PAID pricing mode (we use [validation.price] type="fixed",
+# a paid model, NOT Free) kora derives the limiter key ON-CHAIN from the owner/authority
+# of the token account paying our fee — so it is NOT client-spoofable (Free mode instead
+# trusts a caller-supplied user_id). This caps how many sponsored txs one paying wallet
+# can push per window, closing the "spam the relayer" hole alongside the fee-payer policy.
+# In-memory store (no cache_url) → counters are per-process and reset on restart; for
+# persistent / multi-instance enforcement point cache_url at Redis. Tune max/window_seconds.
+[kora.usage_limit]
+enabled = true
+# cache_url = "redis://127.0.0.1:6379"   # uncomment for shared/persistent counters
+fallback_if_unavailable = false           # deny if the store is unreachable (Redis only)
+
+[[kora.usage_limit.rules]]
+type = "transaction"
+max = 100
+window_seconds = 3600
+
 [validation]
 max_allowed_lamports = 10000000
 max_signatures = 10
@@ -57,11 +74,28 @@ allowed_spl_paid_tokens = [
 
 disallowed_accounts = []
 
+# Token-2022 extension blocklist — HARD reject if the fee-payment token's mint carries a
+# dangerous extension. permanent_delegate lets a third party move/burn tokens from ANY
+# account of that mint; we never accept such a mint as a paid fee token. Our allowed USDC
+# (devnet 4zMMC9…, mainnet EPjFWdd5…) is a CLASSIC SPL token (Tokenkeg, no extensions), so
+# this is a no-op guard today — it only bites if a Token-2022 mint is ever allow-listed.
+# Key MUST be `token_2022` WITH the underscore (kora's root-example `token2022` form is
+# silently ignored). transfer_hook is the other candidate to add here later.
+[validation.token_2022]
+blocked_mint_extensions = ["permanent_delegate"]
+blocked_account_extensions = []   # required field even if empty (kora rejects the section without it)
+
 [validation.fee_payer_policy.system]
-allow_transfer = true
+# allow_transfer OFF: the fee-payer is never the SOL sender in our flows (plain SPL
+# transfer, lazy ATA creation, CCTP v2 burn all have the USER as sender/authority; the
+# fee-payer only pays network fee + account rent). Verified against kora v2.2 source —
+# this flag gates System Transfer only when the fee-payer is the source — so turning it
+# off closes the "force the fee-payer to send SOL without paying" hole without breaking
+# those flows. Turn back on only if a future flow needs the fee-payer itself to move SOL.
+allow_transfer = false
 allow_assign = false
-allow_create_account = true
-allow_allocate = true
+allow_create_account = true   # required: ATA rent + CCTP MessageSent account creation
+allow_allocate = true         # kept on (CCTP path unverified); candidate to disable after a devnet dry-run
 
 [validation.fee_payer_policy.spl_token]
 allow_transfer = true
