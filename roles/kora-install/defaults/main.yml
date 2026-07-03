@@ -2,6 +2,12 @@
 kora_image: "ghcr.io/solana-foundation/kora"
 kora_version: "v2.2.0-beta.7"
 
+# Solana RPC endpoint the relayer talks to. Per-cluster — override per instance
+# for mainnet. Kora reads this via the RPC_URL env / --rpc-url flag (there is NO
+# kora.toml field for it in v2.2), so it stays an env var in compose, but the value
+# is a variable here rather than hardcoded in the compose template.
+kora_rpc_url: "https://api.devnet.solana.com"
+
 kora_rust_log: "info"
 kora_restart: "unless-stopped"
 
@@ -24,5 +30,10 @@ kora_instances: []
 # using name "kora" which resolves to these locations.
 kora_base_path: "/opt/kora"
 kora_compose_path: "/opt/docker/kora"
+
+# Fee-payer keypair filename inside the instance keys dir (/opt/<name>/keys/).
+# The container path becomes /app/keys/<kora_key_filename>; kora's memory signer
+# auto-detects a file path in KORA_PRIVATE_KEY (file -> u8-array -> base58).
+kora_key_filename: "fee-payer.json"
 
 #   /opt/<name>/keys/signers.toml  — managed by role (private key via KORA_PRIVATE_KEY env)
