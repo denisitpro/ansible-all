@@ -23,9 +23,9 @@ services:
       - {{ _config_path }}/kora.toml:/app/config/kora.toml:ro
       - {{ _keys_path }}:/app/keys:ro
     environment:
-      - RUST_LOG=info
-      - RPC_URL=https://api.devnet.solana.com
-      - KORA_PRIVATE_KEY=/app/keys/fee-payer.json
+      - RUST_LOG={{ _rust_log }}
+      - RPC_URL={{ _rpc_url }}
+      - KORA_PRIVATE_KEY=/app/keys/{{ _key_filename }}
     command:
       - "kora"
       - "--config"
