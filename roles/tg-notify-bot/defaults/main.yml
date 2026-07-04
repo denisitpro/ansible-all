@@ -2,7 +2,7 @@
 tg_notify_bot_image: "denisitpro/tg-bot-kora"
 tg_notify_bot_version: "0.6.3"
 
-tg_notify_bot_restart: "unless-stopped"
+tg_notify_bot_restart: "always"
 
 # Required env — mapped to TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID in the container.
 # Override per instance via tg_notify_bot_instances[].tg_notify_bot_token / tg_notify_bot_chat_id.
