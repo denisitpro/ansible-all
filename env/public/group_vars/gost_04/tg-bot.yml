@@ -6,3 +6,9 @@ tg_notify_bot_instances:
     tg_notify_bot_env:
       WATCH_DEVNET_TREASURY_ADDRESS: "FqqJ9aAgwGQBosT8Re3wdqqKVR7aTEvHez5P58MyvXrF"
       WATCH_DEVNET_FEE_USDC_ADDRESS: "3Sfkkg8jD1otcwcoJGHy5SjzHbBr3u9QjQB84AZNt5rr"
+  - name: tg-notify-kora-mainnet
+    tg_notify_bot_token: "{{ infisical_dict_users_secret_g1.tg_notify_bot_token }}"
+    tg_notify_bot_chat_id: "{{ infisical_dict_users_secret_g1.tg_notify_bot_chat_id }}"
+    tg_notify_bot_env:
+      WATCH_MAINNET_TREASURY_ADDRESS: "Hejav6DnaNd7XeAbV7Muu7PiifgYHPzXpZQDcqYNSNNg"
+      WATCH_MAINNET_FEE_USDC_ADDRESS: "BHLNEsoCbtgHDUNd5qB1jeD2tRRF88676HGHrSJMd1Ly"
