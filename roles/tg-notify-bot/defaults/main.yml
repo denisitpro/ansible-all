@@ -1,0 +1,31 @@
+---
+tg_notify_bot_image: "denisitpro/tg-bot-kora"
+tg_notify_bot_version: "0.6.2"
+
+tg_notify_bot_restart: "unless-stopped"
+
+# Required env — mapped to TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID in the container.
+# Override per instance via tg_notify_bot_instances[].tg_notify_bot_token / tg_notify_bot_chat_id.
+tg_notify_bot_token: ""
+tg_notify_bot_chat_id: ""
+
+# Extra container env vars (merged into compose after TELEGRAM_* defaults).
+# Override or extend per instance via tg_notify_bot_instances[].tg_notify_bot_env.
+tg_notify_bot_env: {}
+
+# Multi-instance support.
+# Each instance gets its own:
+#   /opt/docker/<name>/          (docker-compose.yml)
+#
+# The 'name' is fully controlled by you (e.g. kora-devnet, kora-mainnet).
+tg_notify_bot_instances: []
+# Example:
+# tg_notify_bot_instances:
+#   - name: kora-devnet
+#     tg_notify_bot_token: "<bot-token>"
+#     tg_notify_bot_chat_id: "<chat-id>"
+#     tg_notify_bot_env:              # optional extra env vars for this bot
+#       LOG_LEVEL: "debug"
+
+# Legacy single-instance path (when tg_notify_bot_instances is empty).
+tg_notify_bot_compose_path: "/opt/docker/tg-notify-bot"

@@ -1,0 +1,13 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - tg-notify-bot
+    - tg-notify-bot-prefly
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - tg-notify-bot
+    - tg-notify-bot-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'tg-notify-bot-clean']

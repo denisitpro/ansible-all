@@ -1,0 +1,59 @@
+---
+- name: assert required telegram env vars per instance
+  ansible.builtin.assert:
+    that:
+      - _token | length > 0
+      - _chat_id | length > 0
+    fail_msg: "Instance {{ bot.name | default('unknown') }} must define tg_notify_bot_token and tg_notify_bot_chat_id"
+  loop: "{{ tg_notify_bot_instances | default([{'name': 'tg-notify-bot'}]) }}"
+  loop_control:
+    loop_var: bot
+    label: "{{ bot.name | default('tg-notify-bot') }}"
+  vars:
+    _token: "{{ bot.tg_notify_bot_token | default(tg_notify_bot_token) }}"
+    _chat_id: "{{ bot.tg_notify_bot_chat_id | default(tg_notify_bot_chat_id) }}"
+  no_log: true
+
+- name: copy compose file for tg-notify-bot instance
+  ansible.builtin.template:
+    src: "docker-compose.tg-notify-bot.yml.j2"
+    dest: "{{ _compose_path }}/docker-compose.yml"
+    mode: "0640"
+  loop: "{{ tg_notify_bot_instances | default([{'name': 'tg-notify-bot'}]) }}"
+  loop_control:
+    loop_var: bot
+    label: "{{ bot.name | default('tg-notify-bot') }}"
+  vars:
+    _name: "{{ bot.name }}"
+    _compose_path: "{{ bot.compose_path | default('/opt/docker/' + bot.name) }}"
+    _image: "{{ bot.tg_notify_bot_image | default(tg_notify_bot_image) }}"
+    _version: "{{ bot.tg_notify_bot_version | default(tg_notify_bot_version) }}"
+    _restart: "{{ bot.tg_notify_bot_restart | default(tg_notify_bot_restart) }}"
+    _telegram_bot_token: "{{ bot.tg_notify_bot_token | default(tg_notify_bot_token) }}"
+    _telegram_chat_id: "{{ bot.tg_notify_bot_chat_id | default(tg_notify_bot_chat_id) }}"
+    _extra_env: "{{ tg_notify_bot_env | default({}) | combine(bot.tg_notify_bot_env | default({})) }}"
+  register: _compose_template
+  no_log: true
+
+- name: ensure compose project is up (recreate only when compose file changed)
+  community.docker.docker_compose_v2:
+    project_src: "{{ item.bot.compose_path | default('/opt/docker/' + item.bot.name) }}"
+    state: present
+    recreate: always
+  loop: "{{ _compose_template.results }}"
+  loop_control:
+    label: "{{ item.bot.name | default('tg-notify-bot') }}"
+  when: item.changed
+  no_log: true
+  # noqa: no-handler  # intentional: per-instance conditional recreate after template change
+
+- name: ensure compose project is present and running
+  community.docker.docker_compose_v2:
+    project_src: "{{ _compose_path }}"
+    state: present
+  loop: "{{ tg_notify_bot_instances | default([{'name': 'tg-notify-bot'}]) }}"
+  loop_control:
+    loop_var: bot
+    label: "{{ bot.name | default('tg-notify-bot') }}"
+  vars:
+    _compose_path: "{{ bot.compose_path | default('/opt/docker/' + bot.name) }}"

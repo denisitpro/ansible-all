@@ -1,0 +1,21 @@
+---
+- name: stop tg-notify-bot compose project for instance
+  community.docker.docker_compose_v2:
+    project_src: "{{ _compose_path }}"
+    state: absent
+  loop: "{{ tg_notify_bot_instances | default([{'name': 'tg-notify-bot'}]) }}"
+  loop_control:
+    loop_var: bot
+  vars:
+    _compose_path: "{{ bot.compose_path | default('/opt/docker/' + bot.name) }}"
+  ignore_errors: true # noqa: ignore-errors
+
+- name: remove generated compose file for instance
+  ansible.builtin.file:
+    path: "{{ _compose_path }}/docker-compose.yml"
+    state: absent
+  loop: "{{ tg_notify_bot_instances | default([{'name': 'tg-notify-bot'}]) }}"
+  loop_control:
+    loop_var: bot
+  vars:
+    _compose_path: "{{ bot.compose_path | default('/opt/docker/' + bot.name) }}"

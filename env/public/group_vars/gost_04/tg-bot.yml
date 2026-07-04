@@ -1,0 +1,5 @@
+---
+tg_notify_bot_instances:
+  - name: tg-notify-kora-devnet
+    tg_notify_bot_token: "0000000000:FAKE_TOKEN_KORA_DEVNET"
+    tg_notify_bot_chat_id: "-1000000000001"

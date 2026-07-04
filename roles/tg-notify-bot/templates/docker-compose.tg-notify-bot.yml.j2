@@ -1,0 +1,24 @@
+## {{ ansible_managed }} ##
+
+# Telegram notify bot — single-service stack.
+#
+# Supports multiple named instances on the same host.
+# Each instance gets its own directory (name provided via role var):
+#   /opt/docker/<name>/          — compose
+#
+# Required env — override per instance via tg_notify_bot_instances[]:
+#   tg_notify_bot_token  -> TELEGRAM_BOT_TOKEN
+#   tg_notify_bot_chat_id -> TELEGRAM_CHAT_ID
+# Optional extra env — role default tg_notify_bot_env + per-instance tg_notify_bot_env
+
+services:
+  tg-notify-bot:
+    image: {{ _image }}:{{ _version }}
+    container_name: {{ _name }}
+    restart: {{ _restart }}
+    environment:
+      - TELEGRAM_BOT_TOKEN={{ _telegram_bot_token }}
+      - TELEGRAM_CHAT_ID={{ _telegram_chat_id }}
+{% for _env_key, _env_val in _extra_env | dictsort %}
+      - {{ _env_key }}={{ _env_val }}
+{% endfor %}
