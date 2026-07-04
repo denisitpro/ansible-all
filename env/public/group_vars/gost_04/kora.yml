@@ -6,3 +6,15 @@ kora_instances:
     # supported (confirmed in solana-foundation/kora source), so we cannot chain the public
     # node as a fallback here; this is Helius only. Devnet Helius key (fine in this env).
     kora_rpc_url: "{{ infisical_dict_users_secret_g1.kora_rpc_url_devnet }}"
+
+  - name: kora-mainnet
+    kora_mode: mainnet
+    # Host networking + devnet instance already binds 8080, so mainnet must use a distinct port.
+    kora_port: 8081
+    # Dedicated mainnet RPC required — public api.mainnet-beta.solana.com will NOT sustain
+    # real traffic. Add the "kora_rpc_url_mainnet" key to the g1 Infisical secret before deploying.
+    kora_rpc_url: "{{ infisical_dict_users_secret_g1.kora_rpc_url_mainnet }}"
+    # Required because kora_mode: mainnet selects the Jupiter price oracle (margin pricing).
+    # Add the "kora_jupiter_api_key" key to the g1 Infisical secret before deploying.
+    kora_jupiter_api_key: "{{ infisical_dict_users_secret_g1.kora_jupiter_api_key }}"
+    # price_margin: 0.5   # role default is already 0.5 (+50% over real tx cost); override only if needed
