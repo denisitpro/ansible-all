@@ -137,7 +137,7 @@ allow_thaw_account = false
 # first-time recipients; it also absorbs priority-fee spikes. margin is our profit markup.
 [validation.price]
 type = "margin"
-margin = {{ kora.price_margin | default(0.1) }}
+margin = {{ kora.price_margin | default(0.5) }}   # 0.5 = +50% over real tx cost (MVP prod default)
 {% else %}
 # DEVNET/TEST: fixed model — a flat charge in `token` base units. NOTE: kora silently falls
 # back to margin{0.0} if this block isn't parsed exactly, and the fixed figure is only truly
