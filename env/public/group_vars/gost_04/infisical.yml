@@ -1,0 +1,14 @@
+---
+infisical_project_id: "3195d55d-4423-4e4f-b74c-4d6c03f56aec"
+infisical_environment: "dev"
+
+infisical_extend_g1:
+  - name: tg_notify_bot_token
+    secret_path: "/"
+    secret_name: "TELEGRAM_BOT_TOKEN"
+  - name: tg_notify_bot_chat_id
+    secret_path: "/"
+    secret_name: "KORA_NOTIFY_BOT_TELEGRAM_CHAT_ID"
+  - name: kora_rpc_url_devnet
+    secret_path: "/"
+    secret_name: "KORA_RPC_URL_DEVNET"

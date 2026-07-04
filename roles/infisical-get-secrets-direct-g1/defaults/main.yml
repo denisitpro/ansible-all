@@ -1,0 +1,6 @@
+---
+infisical_api_url: https://app.infisical.com
+infisical_client_id_var_name: "INFISICAL_CLIENT_ID"
+infisical_client_secret_var_name: "INFISICAL_CLIENT_SECRET"
+infisical_project_id: ""
+infisical_environment: "prod"
