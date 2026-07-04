@@ -1,0 +1,26 @@
+---
+# - name: Print the Infisical client credentials (for debugging, optional)
+#   ansible.builtin.debug:
+#     msg: "INFISICAL_CLIENT_ID: {{ lookup('ansible.builtin.env', infisical_client_id_var_name) }}"
+
+- name: Check if Infisical client ID is available
+  ansible.builtin.fail:
+    msg: "Infisical client ID environment variable is not set"
+  when: lookup('ansible.builtin.env', infisical_client_id_var_name) == ""
+
+- name: Check if Infisical client secret is available
+  ansible.builtin.fail:
+    msg: "Infisical client secret environment variable is not set"
+  when: lookup('ansible.builtin.env', infisical_client_secret_var_name) == ""
+
+- name: Set Infisical client ID from environment variable
+  ansible.builtin.set_fact:
+    infisical_client_id: "{{ lookup('env', infisical_client_id_var_name) }}"
+
+- name: Set Infisical client secret from environment variable
+  ansible.builtin.set_fact:
+    infisical_client_secret: "{{ lookup('env', infisical_client_secret_var_name) }}"
+
+# - name: Print the Infisical client credentials (for debugging, optional)
+#   ansible.builtin.debug:
+#     msg: "Using Infisical client ID: {{ infisical_client_id }}"

@@ -5,4 +5,4 @@ kora_instances:
     # Helius devnet RPC. Kora v2.2 takes a SINGLE RPC_URL — comma-separated fallback is NOT
     # supported (confirmed in solana-foundation/kora source), so we cannot chain the public
     # node as a fallback here; this is Helius only. Devnet Helius key (fine in this env).
-    kora_rpc_url: "https://devnet.helius-rpc.com/?api-key=1f01bff0-b4d9-4ed7-865a-211ab3fd1d7f"
+    kora_rpc_url: "{{ infisical_dict_users_secret_g1.kora_rpc_url_devnet }}"

@@ -1,0 +1,37 @@
+---
+- name: Authenticate to Infisical via Universal Auth  # noqa: command-instead-of-module
+  ansible.builtin.command: >
+    curl --silent --show-error
+    --header "Content-Type: application/json"
+    --request POST
+    --data '{"clientId": "{{ infisical_client_id }}", "clientSecret": "{{ infisical_client_secret }}"}'
+    --write-out "\n%{http_code}"
+    "{{ infisical_api_url }}/api/v1/auth/universal-auth/login"
+  register: infisical_auth_response
+  failed_when: false
+  no_log: true
+
+- name: Fail if Infisical is unreachable
+  ansible.builtin.fail:
+    msg: "Infisical is unreachable or connection failed. Error: {{ infisical_auth_response.stderr }}"
+  when: infisical_auth_response.rc != 0
+
+- name: Extract HTTP code and response body
+  ansible.builtin.set_fact:
+    infisical_http_code: "{{ infisical_auth_response.stdout_lines[-1] }}"
+    infisical_response_body: "{{ infisical_auth_response.stdout_lines[:-1] | join('\n') }}"
+  no_log: true
+
+- name: Display Infisical HTTP response code
+  ansible.builtin.debug:
+    msg: "Infisical {{ infisical_api_url }} responded with HTTP code: {{ infisical_http_code }}"
+
+- name: Fail if Infisical returned non-200 status (auth may be blocked or invalid)
+  ansible.builtin.fail:
+    msg: "Infisical returned HTTP {{ infisical_http_code }}, expected 200. Universal Auth login may be invalid or Infisical may be unavailable"
+  when: infisical_http_code != "200"
+
+- name: Set Infisical access token from login response
+  ansible.builtin.set_fact:
+    infisical_access_token: "{{ (infisical_response_body | from_json).accessToken }}"
+  no_log: true

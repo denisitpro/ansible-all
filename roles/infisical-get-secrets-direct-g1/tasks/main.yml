@@ -1,0 +1,38 @@
+---
+# - ansible.builtin.import_tasks: 10-prefly.yml
+#   delegate_to: localhost
+#   run_once: true
+#   become: false
+#   connection: local
+#   tags: ['always', 'infisical']
+
+# - ansible.builtin.import_tasks: 12-auth.yml
+#   delegate_to: localhost
+#   run_once: true
+#   become: false
+#   connection: local
+#   tags: ['always', 'infisical', 'infisical-check']
+
+# - ansible.builtin.import_tasks: 15-get-secrets.yml
+#   delegate_to: localhost
+#   run_once: true
+#   connection: local
+#   become: false
+#   tags: ['always', 'infisical']
+
+- name: Infisical secrets import block
+  run_once: true
+  delegate_to: localhost
+  connection: local
+  become: false
+  vars:
+    ansible_skip_facts: true
+  block:
+    - ansible.builtin.import_tasks: 10-prefly.yml
+      tags: ['always', 'infisical']
+
+    - ansible.builtin.import_tasks: 12-auth.yml
+      tags: ['always', 'infisical', 'infisical-check']
+
+    - ansible.builtin.import_tasks: 15-get-secrets.yml
+      tags: ['always', 'infisical']
