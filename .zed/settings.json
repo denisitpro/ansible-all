@@ -1,0 +1,33 @@
+{
+  "format_on_save": "off",
+  "remove_trailing_whitespace_on_save": false,
+  "ensure_final_newline_on_save": false,
+  "file_types": {
+    "Ansible": ["yml", "yaml"]
+  },
+  "languages": {
+    "YAML": {
+      "format_on_save": "off",
+      "formatter": "none",
+      "remove_trailing_whitespace_on_save": false,
+      "ensure_final_newline_on_save": false
+    },
+    "Ansible": {
+      "format_on_save": "off",
+      "formatter": "none",
+      "remove_trailing_whitespace_on_save": false,
+      "ensure_final_newline_on_save": false
+    }
+  },
+  "lsp": {
+    "yaml-language-server": {
+      "settings": {
+        "yaml": {
+          "format": {
+            "enable": false
+          }
+        }
+      }
+    }
+  }
+}

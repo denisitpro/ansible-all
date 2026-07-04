@@ -1,13 +1,14 @@
 {
-    "ansible.validation.enabled": true,
-    "ansible.ansible.useFullyQualifiedCollectionNames": true,
-    "files.associations": {
-        "*.yml": "ansible",
-        "*.yaml": "ansible"
-    },
-    "yaml.schemaStore.enable": false,
-    "ansible.python.interpreterPath": "/usr/bin/python3",
-    "ansible.validation.lint.enabled": true,
-    "ansible.validation.lint.path": "ansible-lint"
+  "ansible.validation.enabled": true,
+  "ansible.ansible.useFullyQualifiedCollectionNames": true,
+  "files.associations": {
+    "*.yml": "ansible",
+    "*.yaml": "ansible",
+    "*.yaml.j2": "ansible",
+    "*.yml.j2": "ansible",
+  },
+  "yaml.schemaStore.enable": false,
+  "ansible.python.interpreterPath": "python3",
+  "ansible.validation.lint.enabled": true,
+  "ansible.validation.lint.path": "ansible-lint",
 }
-

@@ -12,3 +12,9 @@ infisical_extend_g1:
   - name: kora_rpc_url_devnet
     secret_path: "/"
     secret_name: "KORA_RPC_URL_DEVNET"
+  - name: kora_rpc_url_mainnet
+    secret_path: "/"
+    secret_name: "KORA_RPC_URL_MAINNET"
+  - name: kora_jupiter_api_key
+    secret_path: "/"
+    secret_name: "KORA_JUPITER_API_KEY"
