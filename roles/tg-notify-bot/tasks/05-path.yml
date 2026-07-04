@@ -1,0 +1,21 @@
+---
+- name: ensure /opt/docker exists
+  ansible.builtin.file:
+    path: /opt/docker
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: create compose directory for each tg-notify-bot instance
+  ansible.builtin.file:
+    path: "{{ _compose_path }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop: "{{ tg_notify_bot_instances | default([{'name': 'tg-notify-bot'}]) }}"
+  loop_control:
+    loop_var: bot
+  vars:
+    _compose_path: "{{ bot.compose_path | default('/opt/docker/' + bot.name) }}"

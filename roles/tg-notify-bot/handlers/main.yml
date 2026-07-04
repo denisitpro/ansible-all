@@ -1,0 +1,12 @@
+---
+# NOTE: With multi-instance support (tg_notify_bot_instances list),
+# compose (re)start is handled directly inside tasks/50-compose.yml.
+# This handler is kept only for backward compatibility with old single-mode notify.
+# It will only work correctly when the legacy single path vars are still in effect.
+
+- name: recreate-docker tg-notify-bot (legacy single)
+  community.docker.docker_compose_v2:
+    project_src: "{{ tg_notify_bot_compose_path | default('/opt/docker/tg-notify-bot') }}"
+    state: present
+    recreate: always
+  listen: "recreate-docker tg-notify-bot"
