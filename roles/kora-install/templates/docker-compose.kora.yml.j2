@@ -24,13 +24,19 @@ services:
       - {{ _keys_path }}:/app/keys:ro
     environment:
       - RUST_LOG={{ _rust_log }}
-      - RPC_URL={{ _rpc_url }}
+{% set _default_rpc = 'https://api.mainnet-beta.solana.com' if _mode == 'mainnet' else 'https://api.devnet.solana.com' %}
+      - RPC_URL={{ _rpc_url if _rpc_url else _default_rpc }}
       - KORA_PRIVATE_KEY=/app/keys/{{ _key_filename }}
+{% if _jupiter_api_key %}
+      - JUPITER_API_KEY={{ _jupiter_api_key }}
+{% endif %}
     command:
       - "kora"
       - "--config"
       - "/app/config/kora.toml"
       - "rpc"
       - "start"
+      - "--port"
+      - "{{ _port }}"
       - "--signers-config"
       - "/app/keys/signers.toml"

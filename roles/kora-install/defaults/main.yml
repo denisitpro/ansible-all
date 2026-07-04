@@ -2,11 +2,32 @@
 kora_image: "ghcr.io/solana-foundation/kora"
 kora_version: "v2.2.0-beta.7"
 
-# Solana RPC endpoint the relayer talks to. Per-cluster — override per instance
-# for mainnet. Kora reads this via the RPC_URL env / --rpc-url flag (there is NO
-# kora.toml field for it in v2.2), so it stays an env var in compose, but the value
-# is a variable here rather than hardcoded in the compose template.
-kora_rpc_url: "https://api.devnet.solana.com"
+# Cluster mode — selects the token-mint / price-oracle / pricing-model preset baked into
+# kora.toml.j2 (NOT a bool: devnet | mainnet | testnet | ...). devnet is the default and a
+# plain run needs nothing else. Preset VALUES live in the template, not here, to keep the
+# role readable. Override per instance via kora_instances[].kora_mode.
+#   devnet  -> fixed price, Mock oracle, devnet USDC
+#   mainnet -> margin price, Jupiter oracle (needs kora_jupiter_api_key), mainnet USDC + USDT
+# Per-instance template overrides: allowed_tokens, price_source, price_amount, price_margin.
+kora_mode: "devnet"
+
+# HTTP listen port for the kora RPC server (`rpc start --port`; kora has NO env var for it).
+# Also written to [metrics].port in kora.toml so each instance binds a SINGLE socket. With
+# host networking, EACH instance on the same host MUST use a distinct kora_port (8080, 8081…).
+# Override per instance via kora_instances[].kora_port.
+kora_port: 8080
+
+# Jupiter API key — REQUIRED when the effective price_source is Jupiter (mainnet preset).
+# Passed to the container as JUPITER_API_KEY only when set. Override per instance via
+# kora_instances[].kora_jupiter_api_key. Keep the real value in host/instance vars, not here.
+kora_jupiter_api_key: ""
+
+# Solana RPC endpoint. Empty by default → the compose template picks the PUBLIC endpoint
+# for kora_mode (devnet: api.devnet.solana.com, mainnet: api.mainnet-beta.solana.com).
+# Kora reads this via the RPC_URL env / --rpc-url flag (no kora.toml field in v2.2). Set a
+# dedicated / Helius URL per instance via kora_instances[].kora_rpc_url. Public mainnet RPC
+# will NOT sustain real traffic — supply a dedicated URL before going live.
+kora_rpc_url: ""
 
 kora_rust_log: "info"
 kora_restart: "unless-stopped"
@@ -18,12 +39,36 @@ kora_restart: "unless-stopped"
 #
 # The 'name' is fully controlled by you (e.g. kora, kora_devnet etc).
 kora_instances: []
-# Example:
+# Examples:
+#
+# Devnet — runs fully on template/role defaults (fixed price, Mock oracle, devnet USDC,
+# public devnet RPC). Only the RPC override below is optional (e.g. a Helius devnet key):
 # kora_instances:
-#   - name: kora
-#     # kora_version: "1.0.0"
-#     # kora_image: "sigma9/kora"
-#     # kora_restart: "unless-stopped"
+#   - name: kora-devnet
+#     kora_mode: devnet
+#     # kora_rpc_url: "https://devnet.helius-rpc.com/?api-key=..."   # single URL only
+#
+# Mainnet — set kora_mode: mainnet (margin price, Jupiter oracle, mainnet USDC + USDT).
+# You MUST supply a dedicated RPC (public mainnet RPC won't sustain traffic) and a Jupiter
+# API key, and place the mainnet fee-payer keypair at /opt/<name>/keys/fee-payer.json.
+# kora_instances:
+#   - name: kora-mainnet
+#     kora_mode: mainnet
+#     kora_rpc_url: "https://<your-dedicated-mainnet-rpc>"
+#     kora_jupiter_api_key: "<jupiter-api-key>"
+#     # price_margin: 0.1          # override the 0.1 default markup if needed
+#     # allowed_tokens: [...]      # override the USDC+USDT preset if needed
+#
+# Two instances on ONE host (host networking) — give each a distinct kora_port:
+# kora_instances:
+#   - name: kora-devnet
+#     kora_mode: devnet
+#     kora_port: 8080
+#   - name: kora-mainnet
+#     kora_mode: mainnet
+#     kora_port: 8081
+#     kora_rpc_url: "https://<your-dedicated-mainnet-rpc>"
+#     kora_jupiter_api_key: "<jupiter-api-key>"
 
 # Legacy single-instance paths (kept for backward compatibility).
 # When kora_instances is empty, the role synthesizes one instance

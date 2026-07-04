@@ -1,9 +1,23 @@
 # {{ ansible_managed }}
-# Kora runtime config for Sigma9 wallet — Solana Devnet (LOCAL, gitignored).
-# Phase-0 live verification config. Adds a mock 6-dec token we control the mint of
-# (4CW8GB…, price-sourced via Mock as a generic mint = 0.001 SOL) so the relayer
-# mechanics can be proven end-to-end without the browser-only Circle USDC faucet.
-# Real devnet USDC (4zMMC9…) stays allow-listed for the on-device product run.
+{% set _mode = kora.kora_mode | default(kora_mode) | default('devnet') -%}
+{% if _mode == 'mainnet' -%}
+{%   set _tokens = ['EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'] -%}
+{%   set _price_source = 'Jupiter' -%}
+{% else -%}
+{%   set _tokens = ['4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'] -%}
+{%   set _price_source = 'Mock' -%}
+{% endif -%}
+{% set _tokens = kora.allowed_tokens | default(_tokens) -%}
+{% set _price_source = kora.price_source | default(_price_source) -%}
+{% set _port = kora.kora_port | default(kora_port) | default(8080) -%}
+# Kora runtime config — cluster mode: {{ _mode }}.
+#
+# Cluster presets (token mints, price oracle, pricing model) are selected by `kora_mode`
+# and their DEFAULTS live HERE in the template, so a plain devnet run needs zero extra vars.
+#   devnet  (default) -> fixed price, Mock oracle, devnet USDC
+#   mainnet           -> margin price, Jupiter oracle, mainnet USDC + USDT
+# Per-instance overrides (in kora_instances[]): allowed_tokens, price_source,
+# price_amount (fixed), price_margin (margin). Use them for testnet / custom clusters.
 
 [kora]
 rate_limit = 100
@@ -19,13 +33,13 @@ transfer_transaction = false
 get_blockhash = true
 get_config = true
 
-# Per-wallet usage cap. In PAID pricing mode (we use [validation.price] type="fixed",
-# a paid model, NOT Free) kora derives the limiter key ON-CHAIN from the owner/authority
-# of the token account paying our fee — so it is NOT client-spoofable (Free mode instead
-# trusts a caller-supplied user_id). This caps how many sponsored txs one paying wallet
-# can push per window, closing the "spam the relayer" hole alongside the fee-payer policy.
-# In-memory store (no cache_url) → counters are per-process and reset on restart; for
-# persistent / multi-instance enforcement point cache_url at Redis. Tune max/window_seconds.
+# Per-wallet usage cap. In PAID pricing mode (fixed OR margin — both paid, NOT Free) kora
+# derives the limiter key ON-CHAIN from the owner/authority of the token account paying our
+# fee — so it is NOT client-spoofable (Free mode instead trusts a caller-supplied user_id).
+# This caps how many sponsored txs one paying wallet can push per window, closing the "spam
+# the relayer" hole alongside the fee-payer policy. In-memory store (no cache_url) → counters
+# are per-process and reset on restart; for persistent / multi-instance enforcement point
+# cache_url at Redis. Tune max/window_seconds.
 [kora.usage_limit]
 enabled = true
 # cache_url = "redis://127.0.0.1:6379"   # uncomment for shared/persistent counters
@@ -39,8 +53,10 @@ window_seconds = 3600
 [validation]
 max_allowed_lamports = 10000000
 max_signatures = 10
-price_source = "Mock"
-# price_source = "Jupiter"
+# Oracle supplying the SOL<->token rate. Mock (devnet) is a hardcoded lookup; Jupiter
+# (mainnet) queries live prices and needs JUPITER_API_KEY in the container env. Jupiter
+# cannot price devnet mints, so devnet MUST stay Mock.
+price_source = "{{ _price_source }}"
 
 
 allow_durable_transactions = false
@@ -60,15 +76,18 @@ allowed_programs = [
     "CCTPV2Sm4AdWt5296sk4P66VBZ7bEhcARwFaaS9YPbeC",  # CCTP v2 MessageTransmitterV2  (CPI target of the burn)
 ]
 
-# Token mints are PER-CLUSTER — pick the set for the cluster this relayer serves:
-#   DEVNET  USDC = 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU  (6 dec)
-#   MAINNET USDC = EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v  (6 dec)
+# Token mints are the per-cluster preset for `kora_mode` (see header), overridable via
+# kora_instances[].allowed_tokens. devnet -> devnet USDC; mainnet -> USDC + USDT.
 allowed_tokens = [
-    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # DEVNET USDC (swap for mainnet mint in prod)
+{% for _t in _tokens %}
+    "{{ _t }}",
+{% endfor %}
 ]
 
 allowed_spl_paid_tokens = [
-    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",  # DEVNET USDC (swap for mainnet mint in prod)
+{% for _t in _tokens %}
+    "{{ _t }}",
+{% endfor %}
 ]
 
 
@@ -76,11 +95,11 @@ disallowed_accounts = []
 
 # Token-2022 extension blocklist — HARD reject if the fee-payment token's mint carries a
 # dangerous extension. permanent_delegate lets a third party move/burn tokens from ANY
-# account of that mint; we never accept such a mint as a paid fee token. Our allowed USDC
-# (devnet 4zMMC9…, mainnet EPjFWdd5…) is a CLASSIC SPL token (Tokenkeg, no extensions), so
-# this is a no-op guard today — it only bites if a Token-2022 mint is ever allow-listed.
-# Key MUST be `token_2022` WITH the underscore (kora's root-example `token2022` form is
-# silently ignored). transfer_hook is the other candidate to add here later.
+# account of that mint; we never accept such a mint as a paid fee token. Our allowed USDC/USDT
+# (devnet 4zMMC9…, mainnet EPjFWdd5… / Es9vMF…) are CLASSIC SPL tokens (Tokenkeg, no
+# extensions), so this is a no-op guard today — it only bites if a Token-2022 mint is ever
+# allow-listed. Key MUST be `token_2022` WITH the underscore (kora's root-example `token2022`
+# form is silently ignored). transfer_hook is the other candidate to add here later.
 [validation.token_2022]
 blocked_mint_extensions = ["permanent_delegate"]
 blocked_account_extensions = []   # required field even if empty (kora rejects the section without it)
@@ -111,22 +130,33 @@ allow_initialize_multisig = false
 allow_freeze_account = false
 allow_thaw_account = false
 
-# originam
-# [validation.price]
-# type = "margin"
-# margin = 0.05
-#
-# # kotili
+{% if _mode == 'mainnet' %}
+# MAINNET: margin model — charge = REAL tx cost (base + priority + fee-payer outflow +
+# Account Creation Fee for a new recipient ATA) × (1 + margin). This is the ONLY model that
+# passes recipient-ATA rent (~0.00204 SOL) on to the SENDER, so the relayer is not drained by
+# first-time recipients; it also absorbs priority-fee spikes. margin is our profit markup.
+[validation.price]
+type = "margin"
+margin = {{ kora.price_margin | default(0.1) }}
+{% else %}
+# DEVNET/TEST: fixed model — a flat charge in `token` base units. NOTE: kora silently falls
+# back to margin{0.0} if this block isn't parsed exactly, and the fixed figure is only truly
+# flat when the client pays in the SAME mint as `token`. Fine for test predictability on
+# throwaway SOL; mainnet uses margin (above).
 [validation.price]
 type = "fixed"
-amount = 20000                                          # 0.02 USDC (6 знаков → 0.02 × 10^6)
-token = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"  # devnet USDC mint
+amount = {{ kora.price_amount | default(20000) }}          # 0.03 USDC (6 decimals → 0.03 × 10^6)
+token = "{{ _tokens[0] }}"                                 # fee-payment mint (devnet USDC)
 strict = false
+{% endif %}
 
 [metrics]
 enabled = true
 endpoint = "/metrics"
-port = 8080
+# Keep metrics on the RPC --port (kora_port) so each instance binds exactly ONE socket
+# (/metrics rides on the RPC port). A different value here spawns a SECOND listener that
+# would also have to be unique per instance.
+port = {{ _port }}
 scrape_interval = 60
 
 [metrics.fee_payer_balance]
