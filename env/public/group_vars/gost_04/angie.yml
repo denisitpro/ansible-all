@@ -26,13 +26,13 @@ nginx:
       upstream_protocol: http
       upstream_name: "backend_heaven"
       client_max_body_size: 50M
-    - servername: "kora-devnet.beta-82.win"
+    - servername: "devnet.kora-nodes.com kora-devnet.beta-82.win"
       domain: "selfsign"
       config_file: "angie2-general-g4.conf.j2"
       upstream_protocol: http
       upstream_name: "kora_devnet"
       client_max_body_size: 50M
-    - servername: "kora-mainnet.beta-82.win"
+    - servername: "mainnet.kora-nodes.com kora-mainnet.beta-82.win"
       domain: "selfsign"
       config_file: "angie2-general-g4.conf.j2"
       upstream_protocol: http

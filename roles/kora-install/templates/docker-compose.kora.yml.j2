@@ -40,3 +40,8 @@ services:
       - "{{ _port }}"
       - "--signers-config"
       - "/app/keys/signers.toml"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

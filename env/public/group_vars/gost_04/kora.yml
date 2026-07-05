@@ -8,6 +8,7 @@ kora_instances:
     kora_rpc_url: "{{ infisical_dict_users_secret_g1.kora_rpc_url_devnet }}"
 
   - name: kora-mainnet
+    kora_rate_limit: 5
     kora_mode: mainnet
     # Host networking + devnet instance already binds 8080, so mainnet must use a distinct port.
     kora_port: 8081
