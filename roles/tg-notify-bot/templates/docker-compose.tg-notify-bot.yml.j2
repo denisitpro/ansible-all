@@ -22,3 +22,8 @@ services:
 {% for _env_key, _env_val in _extra_env | dictsort %}
       - {{ _env_key }}={{ _env_val }}
 {% endfor %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

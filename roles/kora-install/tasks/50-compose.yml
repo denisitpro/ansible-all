@@ -1,18 +1,4 @@
 ---
-- name: copy kora config for instance
-  ansible.builtin.template:
-    src: "{{ _config_template }}"
-    dest: "{{ _config_path }}/kora.toml"
-    mode: "0640"
-  loop: "{{ kora_instances | default([{'name': 'kora'}]) }}"
-  loop_control:
-    loop_var: kora
-  vars:
-    _base_path: "{{ kora.base_path | default('/opt/' + kora.name) }}"
-    _config_path: "{{ _base_path }}/config"
-    _config_template: "{{ kora.kora_config_template | default('kora.toml.j2') }}"
-  register: _kora_config_template
-
 - name: copy compose file for kora instance
   ansible.builtin.template:
     src: "docker-compose.kora.yml.j2"

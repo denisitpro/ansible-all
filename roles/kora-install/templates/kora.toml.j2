@@ -17,10 +17,10 @@
 #   devnet  (default) -> fixed price, Mock oracle, devnet USDC
 #   mainnet           -> margin price, Jupiter oracle, mainnet USDC + USDT
 # Per-instance overrides (in kora_instances[]): allowed_tokens, price_source,
-# price_amount (fixed), price_margin (margin). Use them for testnet / custom clusters.
+# price_amount (fixed), price_margin (margin), kora_rate_limit. Use them for testnet / custom clusters.
 
 [kora]
-rate_limit = 100
+rate_limit = {{ kora.kora_rate_limit | default(100) }}
 
 [kora.enabled_methods]
 liveness = true
@@ -151,7 +151,7 @@ strict = false
 {% endif %}
 
 [metrics]
-enabled = true
+enabled = {{ kora_metrics_enabled | default(false) | lower }}
 endpoint = "/metrics"
 # Keep metrics on the RPC --port (kora_port) so each instance binds exactly ONE socket
 # (/metrics rides on the RPC port). A different value here spawns a SECOND listener that
@@ -160,5 +160,5 @@ port = {{ _port }}
 scrape_interval = 60
 
 [metrics.fee_payer_balance]
-enabled = true
+enabled = {{ kora_metrics_fee_payer_balance | default(false) | lower }}
 expiry_seconds = 30
