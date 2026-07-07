@@ -10,6 +10,10 @@
 #   tg_notify_bot_token  -> TELEGRAM_BOT_TOKEN
 #   tg_notify_bot_chat_id -> TELEGRAM_CHAT_ID
 # Optional extra env — role default tg_notify_bot_env + per-instance tg_notify_bot_env
+#
+# For Kora fee monitoring use:
+#   WATCH_*_TREASURY_ADDRESS for native SOL
+#   WATCH_*_FEE_TOKENS="ata1:SYMBOL,ata2:SYMBOL2" for tokens (no per-coin vars)
 
 services:
   tg-notify-bot:

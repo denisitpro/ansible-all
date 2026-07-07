@@ -1,6 +1,6 @@
 ---
 tg_notify_bot_image: "denisitpro/tg-bot-kora"
-tg_notify_bot_version: "0.7.0"
+tg_notify_bot_version: "0.8.0"
 
 tg_notify_bot_restart: "always"
 
@@ -19,13 +19,19 @@ tg_notify_bot_env: {}
 #
 # The 'name' is fully controlled by you (e.g. kora-devnet, kora-mainnet).
 tg_notify_bot_instances: []
-# Example:
+# Example (new style, one FEE_TOKENS list per cluster for any tokens):
 # tg_notify_bot_instances:
 #   - name: kora-devnet
 #     tg_notify_bot_token: "<bot-token>"
 #     tg_notify_bot_chat_id: "<chat-id>"
-#     tg_notify_bot_env:              # optional extra env vars for this bot
-#       LOG_LEVEL: "debug"
+#     tg_notify_bot_env:
+#       WATCH_DEVNET_TREASURY_ADDRESS: "..."
+#       WATCH_DEVNET_FEE_TOKENS: "ata1:USDC"
+#   - name: kora-mainnet
+#     ...
+#     tg_notify_bot_env:
+#       WATCH_MAINNET_TREASURY_ADDRESS: "..."
+#       WATCH_MAINNET_FEE_TOKENS: "ataUsdc:USDC,ataUsdt:USDT"
 
 # Legacy single-instance path (when tg_notify_bot_instances is empty).
 tg_notify_bot_compose_path: "/opt/docker/tg-notify-bot"
