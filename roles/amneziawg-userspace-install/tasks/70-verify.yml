@@ -1,0 +1,55 @@
+---
+# Read-only proof that the interface is actually served by amneziawg-go
+# (userspace), not the kernel module, and that the tunnel came up with the
+# expected peers. All tasks here are non-mutating (changed_when: false /
+# assert-only).
+
+- name: Check the AmneziaWG interface exists
+  ansible.builtin.command: "ip link show {{ amneziawg_interface }}"
+  register: amneziawg_iface_check
+  changed_when: false
+  failed_when: false
+
+- name: Assert the AmneziaWG interface exists
+  ansible.builtin.assert:
+    that: amneziawg_iface_check.rc == 0
+    fail_msg: >-
+      Interface {{ amneziawg_interface }} does not exist -
+      awg-quick@{{ amneziawg_interface }} did not start correctly.
+
+- name: Check the amneziawg-go UAPI socket
+  ansible.builtin.stat:
+    path: "/var/run/amneziawg/{{ amneziawg_interface }}.sock"
+  register: amneziawg_uapi_sock
+
+- name: Assert the interface is owned by the userspace UAPI socket
+  # This is the positive proof of the datapath: amneziawg-go listens on this
+  # UAPI socket; the kernel module does not create it. If this is missing
+  # while the interface exists, the kernel module silently won the fallback
+  # race (see 05-prefly.yml guard) and I1-I5 are not in effect.
+  ansible.builtin.assert:
+    that: amneziawg_uapi_sock.stat.exists
+    fail_msg: >-
+      /var/run/amneziawg/{{ amneziawg_interface }}.sock does not exist - the
+      interface is not being served by amneziawg-go.
+
+- name: Show configured peers
+  ansible.builtin.command: "{{ amneziawg_awg_bin }} show {{ amneziawg_interface }}"
+  register: amneziawg_show
+  changed_when: false
+
+- name: Assert the expected number of peers is configured
+  ansible.builtin.assert:
+    that: >-
+      (amneziawg_show.stdout_lines | select('match', '^peer:') | list | length)
+      == (amneziawg_clients | length)
+    fail_msg: >-
+      Expected {{ amneziawg_clients | length }} peers in
+      `awg show {{ amneziawg_interface }}`, got
+      {{ amneziawg_show.stdout_lines | select('match', '^peer:') | list | length }}.
+
+# Deliberately NOT checked: whether I1-I5 show up anywhere in `awg show`
+# output. `wg`/`awg show` only prints endpoint/allowed-ips/handshake/transfer
+# fields; there is no verified evidence (source or docs) that the imitator
+# strings are exposed there at all, so asserting on it would be a guess.
+# See README "Verification" for how to check this manually if needed.

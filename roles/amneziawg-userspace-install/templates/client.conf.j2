@@ -1,0 +1,38 @@
+[Interface]
+PrivateKey = {{ client_private_key }}
+Address = {{ client_ip }}{% if client_ipv6 | length > 0 %}, {{ client_ipv6 }}{% endif %}
+
+DNS = 2606:4700:4700::1111,2001:4860:4860::8888,1.1.1.1
+MTU = {{ amneziawg_mtu }}
+Jc = {{ amneziawg_jc }}
+Jmin = {{ amneziawg_jmin }}
+Jmax = {{ amneziawg_jmax }}
+S1 = {{ amneziawg_s1 }}
+S2 = {{ amneziawg_s2 }}
+S3 = {{ amneziawg_s3 }}
+S4 = {{ amneziawg_s4 }}
+H1 = {{ amneziawg_h1 }}
+H2 = {{ amneziawg_h2 }}
+H3 = {{ amneziawg_h3 }}
+H4 = {{ amneziawg_h4 }}
+{% if amneziawg_i1 | default('') | length > 0 %}
+I1 = {{ amneziawg_i1 }}
+{% endif %}
+{% if amneziawg_i2 | default('') | length > 0 %}
+I2 = {{ amneziawg_i2 }}
+{% endif %}
+{% if amneziawg_i3 | default('') | length > 0 %}
+I3 = {{ amneziawg_i3 }}
+{% endif %}
+{% if amneziawg_i4 | default('') | length > 0 %}
+I4 = {{ amneziawg_i4 }}
+{% endif %}
+{% if amneziawg_i5 | default('') | length > 0 %}
+I5 = {{ amneziawg_i5 }}
+{% endif %}
+
+[Peer]
+PublicKey = {{ amneziawg_server_public_key }}
+Endpoint = {{ amnezia_endpoint_address }}:{{ amneziawg_port }}
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 60

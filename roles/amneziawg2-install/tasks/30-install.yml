@@ -1,0 +1,86 @@
+---
+# Install AmneziaWG from ppa:amnezia/ppa. The PPA's current build (2026-06+)
+# supports 2.0 obfuscation keys (S1-S4 junk sizes + H1-H4 magic headers).
+# I1-I5 signature "imitator" packets are NOT supported by the kernel module
+# (userspace amneziawg-go only) and are intentionally out of scope here.
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - software-properties-common
+      - python3-launchpadlib
+      - gnupg2
+      - linux-headers-generic
+      - "linux-headers-{{ ansible_facts['kernel'] }}"  # running-kernel headers for DKMS
+      - qrencode
+    state: present
+    update_cache: true
+
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Add Amnezia PPA signing key
+  ansible.builtin.get_url:
+    # ppa:amnezia/ppa signing key, fingerprint 75C9DD72C799870E310542E24166F2C257290828
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search=0x75C9DD72C799870E310542E24166F2C257290828"
+    dest: /etc/apt/keyrings/amnezia-ppa.asc
+    mode: '0644'
+
+- name: Find legacy Amnezia PPA .list sources (pre-deb822 / legacy role)
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: "*amnezia*.list"
+  register: awg_legacy_ppa_lists
+
+- name: Remove legacy Amnezia PPA .list sources (avoid Signed-By conflict)
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ awg_legacy_ppa_lists.files }}"
+
+- name: Add Amnezia PPA repository
+  ansible.builtin.deb822_repository:
+    name: amnezia-ppa
+    types: [deb]
+    uris: "https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu"
+    suites: ["{{ ansible_facts['distribution_release'] }}"]
+    components: [main]
+    signed_by: /etc/apt/keyrings/amnezia-ppa.asc
+    state: present
+
+- name: Install AmneziaWG package (2.0-capable build)
+  ansible.builtin.apt:
+    name: amneziawg
+    state: latest  # noqa: package-latest - must pull the 2.0 PPA build
+    update_cache: true
+
+- name: Find AmneziaWG DKMS source directories
+  ansible.builtin.find:
+    paths: /var/lib/dkms/amneziawg
+    file_type: directory
+    depth: 1
+  register: awg_dkms_dirs
+
+- name: Patch dkms.conf (remove deprecated REMAKE_INITRD)
+  ansible.builtin.lineinfile:
+    path: "{{ item.path }}/source/dkms.conf"
+    regexp: '^REMAKE_INITRD.*'
+    state: absent
+  loop: "{{ awg_dkms_dirs.files }}"
+  failed_when: false
+  notify: Rebuild AmneziaWG DKMS
+
+- name: Build AmneziaWG DKMS module for the running kernel
+  ansible.builtin.command: dkms autoinstall
+  register: awg_dkms_autoinstall
+  changed_when: "'installed' in awg_dkms_autoinstall.stdout"
+  failed_when:
+    - awg_dkms_autoinstall.rc != 0
+    - "'already installed' not in awg_dkms_autoinstall.stdout"
+
+- name: Ensure AmneziaWG module is loaded
+  community.general.modprobe:
+    name: amneziawg
+    state: present

@@ -1,0 +1,67 @@
+---
+# AmneziaWG userspace role defaults.
+# Datapath = amneziawg-go (userspace), installed from a prebuilt GitHub
+# Release and run via awg-quick's WG_QUICK_USERSPACE_IMPLEMENTATION fallback.
+# See README.md.
+
+amneziawg_interface: "awg0"
+amneziawg_port: 49666
+# Explicit tunnel MTU. Must be set — wg-quick otherwise derives it from the
+# WAN interface MTU, which breaks on AWS jumbo-frame (9001) instances.
+amneziawg_mtu: 1380
+amneziawg_subnet: "10.9.9.1/24"
+amneziawg_ipv6_subnet: "fd00:9:9:9::1/64"
+amnezia_working_dir: "/opt/awg"
+amnezia_wan_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"
+amnezia_endpoint_address: "{{ ansible_host }}"
+
+# List of clients. Define in inventory/group_vars.
+#   - name: client1
+#     ip: 10.9.9.2/32
+#     ipv6: fd00:9:9:9::2/128   # optional
+amneziawg_clients: []
+
+# --- Prebuilt userspace binaries ----------------------------------------
+# Neither amneziawg-go nor amneziawg-tools publishes GitHub release binaries
+# themselves, so this role consumes a self-hosted mirror release that
+# packages both as prebuilt, checksum-pinned artifacts (see README "Why a
+# self-hosted release"). No compiler, no Go toolchain, no source checkout.
+
+# amneziawg_go_tag / amneziawg_tools_tag are FUNCTIONAL here (unlike the old
+# build-from-source vars): they compose amneziawg_release_tag below, which
+# picks the actual asset URLs. They are a MATCHED PAIR and must be bumped
+# together. amneziawg-tools only learned to SEND the AmneziaWG 3.0 UAPI keys
+# in v3.0.20260730; the previous tag (v1.0.20260618-2) is 2.0-only. Pairing a
+# 3.x datapath with 2.x tools therefore silently loses every 3.0 feature -
+# the tunnel still comes up, so nothing tells you. Whenever you bump
+# either tag, you MUST also update all three amneziawg_*_sha256 vars below
+# from that release's own `SHA256SUMS` asset - never invent a checksum.
+amneziawg_go_tag: "v3.0.2"
+amneziawg_tools_tag: "v3.0.20260730"
+
+amneziawg_release_repo: "denisitpro/amnezia-binary"
+amneziawg_release_tag: "awg-{{ amneziawg_go_tag }}-tools-{{ amneziawg_tools_tag }}"
+amneziawg_release_base_url: "https://github.com/{{ amneziawg_release_repo }}/releases/download/{{ amneziawg_release_tag }}"
+
+# SHA256 digests copied verbatim from the release's SHA256SUMS asset.
+amneziawg_go_sha256: "50c333cacd6dc951575009f41f3c5b38c4f7aae39e0e18d5a80948549f10a9b2"
+amneziawg_awg_sha256: "6060f43e3b670b2e9a690cc208773a7299572219219781ee2a80cef6b95578b7"
+amneziawg_awg_quick_sha256: "f4bb0f5d63665ade87f0cb9f2185c43515cff09868637eb311f98f65a318722c"
+
+# /usr/local/bin (not /usr/bin): these binaries are not apt/distro-packaged,
+# so installing under /usr/local avoids ever clobbering an apt-owned
+# /usr/bin/awg. awg-quick still finds `awg` unconditionally because the
+# shipped awg-quick script prepends its own directory to PATH.
+amneziawg_bin_dir: "/usr/local/bin"
+amneziawg_go_bin: "{{ amneziawg_bin_dir }}/amneziawg-go"
+amneziawg_awg_bin: "{{ amneziawg_bin_dir }}/awg"
+amneziawg_awg_quick_bin: "{{ amneziawg_bin_dir }}/awg-quick"
+
+# Optional imitator ("custom signature packets") strings. Empty string =
+# not rendered at all (an emitted-but-empty `I1 = ` line crashes awg-quick,
+# see README). No default/example value is provided — see README for why.
+amneziawg_i1: ""
+amneziawg_i2: ""
+amneziawg_i3: ""
+amneziawg_i4: ""
+amneziawg_i5: ""

@@ -1,0 +1,84 @@
+---
+- name: Ensure config directory exists
+  ansible.builtin.file:
+    path: /etc/amnezia/amneziawg
+    state: directory
+    mode: '0700'
+
+- name: Check if server params exist
+  ansible.builtin.stat:
+    path: /etc/amnezia/amneziawg/server_params.yml
+  register: server_params_file
+
+# awg is addressed by absolute path here (as in 70-verify / 80-manage-clients):
+# it lives in {{ amneziawg_bin_dir }}, which is not guaranteed to be on the
+# PATH of the non-interactive shell Ansible gets over SSH.
+- name: Generate Private Key
+  ansible.builtin.command: "{{ amneziawg_awg_bin }} genkey"
+  register: awg_private_key
+  changed_when: false
+  when: not server_params_file.stat.exists
+
+- name: Generate Public Key
+  ansible.builtin.shell: echo "{{ awg_private_key.stdout }}" | {{ amneziawg_awg_bin }} pubkey
+  register: awg_public_key
+  changed_when: false
+  when: not server_params_file.stat.exists
+
+- name: Generate obfuscation parameters (AmneziaWG 2.0 valid ranges)
+  # Ranges per docs.amnezia.org + kernel-module README:
+  #   Jc 4-12 (recommended); Jmin~8, Jmax~80 (Jmin < Jmax < 1280)
+  #   S1-S3 in 0-64, S4 in 0-32 (strict-client / Windows limit)
+  #   S1 >= 15 && S2 <= 64 guarantees S1+56 != S2 (no init/response size collision)
+  #   H1-H4 must be unique & non-overlapping and <= INT32_MAX (Windows client);
+  #     generated in 4 disjoint uint31 bands so uniqueness is guaranteed by construction.
+  # I1-I5 are NOT generated here: they are operator-supplied CPS strings, not
+  # random values (see README) and are never persisted to server_params.yml.
+  ansible.builtin.set_fact:
+    gen_jc: "{{ 13 | random(start=4) }}"
+    gen_jmin: "{{ 17 | random(start=8) }}"
+    gen_s1: "{{ 65 | random(start=15) }}"
+    gen_s2: "{{ 65 | random(start=15) }}"
+    gen_s3: "{{ 56 | random(start=8) }}"
+    gen_s4: "{{ 28 | random(start=4) }}"
+    gen_h1: "{{ 536870912 | random(start=5) }}"
+    gen_h2: "{{ 1073741824 | random(start=536870912) }}"
+    gen_h3: "{{ 1610612736 | random(start=1073741824) }}"
+    gen_h4: "{{ 2147483647 | random(start=1610612736) }}"
+  when: not server_params_file.stat.exists
+
+- name: Calculate Jmax (Jmin < Jmax, kept well below the 1280 MTU bound)
+  ansible.builtin.set_fact:
+    gen_jmax: "{{ ((gen_jmin | int) + 121) | random(start=(gen_jmin | int) + 40) }}"
+  when: not server_params_file.stat.exists
+
+- name: Save server parameters
+  ansible.builtin.copy:
+    content: |
+      amneziawg_server_private_key: "{{ awg_private_key.stdout }}"
+      amneziawg_server_public_key: "{{ awg_public_key.stdout }}"
+      amneziawg_jc: {{ gen_jc }}
+      amneziawg_jmin: {{ gen_jmin }}
+      amneziawg_jmax: {{ gen_jmax }}
+      amneziawg_s1: {{ gen_s1 }}
+      amneziawg_s2: {{ gen_s2 }}
+      amneziawg_s3: {{ gen_s3 }}
+      amneziawg_s4: {{ gen_s4 }}
+      amneziawg_h1: {{ gen_h1 }}
+      amneziawg_h2: {{ gen_h2 }}
+      amneziawg_h3: {{ gen_h3 }}
+      amneziawg_h4: {{ gen_h4 }}
+    dest: /etc/amnezia/amneziawg/server_params.yml
+    mode: '0600'
+  when: not server_params_file.stat.exists
+
+- name: Read server parameters file
+  ansible.builtin.slurp:
+    src: /etc/amnezia/amneziawg/server_params.yml
+  register: server_params_file_content
+
+- name: Set server parameters variables
+  ansible.builtin.set_fact:
+    "{{ item.key }}": "{{ item.value }}"
+  loop: "{{ (server_params_file_content['content'] | b64decode | from_yaml) | dict2items }}"
+  no_log: true

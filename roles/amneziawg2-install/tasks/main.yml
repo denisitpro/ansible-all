@@ -1,0 +1,25 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - amneziawg2
+    - amneziawg2-prefly
+
+- ansible.builtin.import_tasks: 30-install.yml
+  tags:
+    - amneziawg2
+    - amneziawg2-install
+
+- ansible.builtin.import_tasks: 40-generate-configs.yml
+  tags:
+    - amneziawg2
+    - amneziawg2-generate
+
+- ansible.builtin.import_tasks: 60-add-clients.yml
+  tags:
+    - amneziawg2
+    - amneziawg2-add-client
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - amneziawg2-clean

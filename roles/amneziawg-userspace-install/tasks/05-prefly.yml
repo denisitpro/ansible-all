@@ -1,0 +1,100 @@
+---
+# AmneziaWG userspace datapath. awg-quick tries `ip link add type amneziawg`
+# (kernel module) FIRST and only falls back to
+# ${WG_QUICK_USERSPACE_IMPLEMENTATION:-amneziawg-go} when that fails. If the
+# kernel module is present, I1-I5 would silently be dropped, so refuse to
+# proceed rather than produce a host that looks configured but isn't.
+- name: Check for the AmneziaWG kernel module
+  ansible.builtin.stat:
+    path: /sys/module/amneziawg
+  register: amneziawg_kmod_stat
+
+# A LOADED module is not the only danger: if the DKMS module is merely
+# installed (not currently loaded), `ip link add ... type amneziawg` inside
+# awg-quick auto-loads it via the rtnl-link alias and the kernel datapath
+# silently wins anyway. This probe is read-only (no modprobe/apt mutation) -
+# it only tells us whether the module is available to be auto-loaded.
+- name: Check whether the AmneziaWG kernel module is installed (even if not loaded)
+  ansible.builtin.command: modinfo amneziawg
+  register: amneziawg_kmod_modinfo
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Fail if the AmneziaWG kernel module is loaded or installed
+  ansible.builtin.fail:
+    msg: >-
+      The AmneziaWG kernel module (DKMS) is
+      {{ 'loaded' if amneziawg_kmod_stat.stat.exists else 'installed but not currently loaded' }}
+      on this host
+      ({{ '/sys/module/amneziawg exists' if amneziawg_kmod_stat.stat.exists else 'modinfo amneziawg succeeded' }}).
+      awg-quick tries the kernel datapath first and only falls back to
+      amneziawg-go when it fails, so even an unloaded-but-installed module
+      would be auto-loaded via the rtnl-link alias on `ip link add ... type
+      amneziawg` and I1-I5 imitators would silently NOT be in effect. The
+      DKMS package itself (`amneziawg-dkms`) must be gone, not just
+      unloaded. Run the kernel role's clean phase first
+      (roles/amneziawg2-install, `--tags amneziawg2-clean`), then re-run
+      this role.
+  when: amneziawg_kmod_stat.stat.exists or amneziawg_kmod_modinfo.rc == 0
+
+- name: Update package cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install runtime dependencies
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - qrencode
+    state: present
+
+- name: Enable IP forwarding
+  ansible.builtin.sysctl:
+    name: "{{ item }}"
+    value: '1'
+    state: present
+    sysctl_file: /etc/sysctl.d/20-amnezia.conf
+    reload: true
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
+
+- name: Ensure the tun kernel module is loaded
+  community.general.modprobe:
+    name: tun
+    state: present
+
+- name: Persist the tun module across reboots
+  ansible.builtin.copy:
+    content: |
+      tun
+    dest: /etc/modules-load.d/amneziawg-tun.conf
+    mode: '0644'
+
+- name: Check /dev/net/tun
+  ansible.builtin.stat:
+    path: /dev/net/tun
+  register: amneziawg_dev_net_tun
+
+- name: Assert /dev/net/tun exists
+  ansible.builtin.assert:
+    that: amneziawg_dev_net_tun.stat.exists
+    fail_msg: "/dev/net/tun is missing - amneziawg-go cannot create a TUN device without it."
+
+- name: Create working directory
+  ansible.builtin.file:
+    path: "{{ amnezia_working_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure AmneziaWG config directory exists
+  ansible.builtin.file:
+    path: /etc/amnezia/amneziawg
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'

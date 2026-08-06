@@ -1,0 +1,89 @@
+---
+- name: Read server parameters file
+  ansible.builtin.slurp:
+    src: /etc/amnezia/amneziawg/server_params.yml
+  register: server_params_file_content
+
+- name: Set server parameters variables
+  ansible.builtin.set_fact:
+    "{{ item.key }}": "{{ item.value }}"
+  loop: "{{ (server_params_file_content['content'] | b64decode | from_yaml) | dict2items }}"
+  no_log: true
+
+- name: Manage Clients (ensure keys exist)
+  ansible.builtin.include_tasks: 80-manage-clients.yml
+
+- name: Generate Client Configs
+  ansible.builtin.template:
+    src: client.conf.j2
+    dest: "{{ amnezia_working_dir }}/{{ item.name }}.conf"
+    mode: '0600'
+  loop: "{{ amneziawg_clients_data }}"
+  register: amneziawg_client_configs
+  vars:
+    client_private_key: "{{ item.private_key }}"
+    client_ip: "{{ item.ip }}"
+    client_ipv6: "{{ item.ipv6 | default('') }}"
+
+- name: Check which client QR codes already exist
+  ansible.builtin.stat:
+    path: "{{ amnezia_working_dir }}/{{ item.name }}.png"
+  register: amneziawg_client_qr
+  loop: "{{ amneziawg_clients_data }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Regenerate only when the config actually changed (or the PNG is missing).
+# `qrencode -r` reads the config directly, so no shell redirect is needed and
+# the task can report `changed` honestly instead of blanket changed_when: false.
+# Both register results above are looped over amneziawg_clients_data, so they
+# share its ordering and index_var indexes all three consistently.
+- name: Generate QR codes for new or changed client configs
+  ansible.builtin.command:
+    argv:
+      - qrencode
+      - -t
+      - PNG
+      - -o
+      - "{{ amnezia_working_dir }}/{{ item.name }}.png"
+      - -r
+      - "{{ amnezia_working_dir }}/{{ item.name }}.conf"
+  loop: "{{ amneziawg_clients_data }}"
+  loop_control:
+    index_var: amneziawg_client_idx
+    label: "{{ item.name }}"
+  when: >-
+    amneziawg_client_configs.results[amneziawg_client_idx].changed
+    or not amneziawg_client_qr.results[amneziawg_client_idx].stat.exists
+  changed_when: true
+
+# The QR encodes the whole client config, private key included - it must not be
+# world-readable. qrencode writes with the default umask (0644), so the mode is
+# enforced separately to match the 0600 of the .conf files next to it.
+- name: Restrict client QR code permissions
+  ansible.builtin.file:
+    path: "{{ amnezia_working_dir }}/{{ item.name }}.png"
+    mode: '0600'
+  loop: "{{ amneziawg_clients_data }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Generate Server Config
+  ansible.builtin.template:
+    src: awg0.conf.j2
+    dest: "/etc/amnezia/amneziawg/{{ amneziawg_interface }}.conf"
+    mode: '0600'
+  notify: restart amneziawg
+
+- name: Enable and start AmneziaWG service
+  ansible.builtin.service:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: started
+    enabled: true
+
+# Handlers must run here: if the server config changed, the `restart
+# amneziawg` handler must fire before 70-verify inspects the interface -
+# otherwise verification would validate the previously running
+# configuration instead of the one just generated above.
+- name: Flush handlers so a changed server config is actually running before verification
+  ansible.builtin.meta: flush_handlers

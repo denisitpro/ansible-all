@@ -1,0 +1,9 @@
+---
+- name: restart amneziawg
+  ansible.builtin.service:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: restarted
+
+- name: daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
