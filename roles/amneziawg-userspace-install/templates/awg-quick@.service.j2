@@ -1,0 +1,36 @@
+{# Derived from amneziawg-tools' shipped awg-quick@.service (installed by its
+   Makefile as $(SYSTEMDUNITDIR)/awg-quick@.service) at commit
+   d09ecc38425082e472368dd2bf8c4c42d10cae03 (tag v3.0.20260730). We write our
+   own copy here because the amneziawg-binary GitHub Release consumed by this
+   role ships binaries only - no unit, no man pages, no bash completion.
+
+   Deliberate differences from upstream's unit:
+     - PartOf=awg-quick.target dropped: this role does not install that
+       target, so the reference would dangle.
+     - Documentation=man:awg-quick(8) / man:awg(8) dropped: no man pages are
+       installed.
+     - Executable paths point at amneziawg_awg_quick_bin / amneziawg_awg_bin
+       (/usr/local/bin by default) instead of the hardcoded /usr/bin/... -
+       these binaries are not distro-packaged.
+     - WG_QUICK_USERSPACE_IMPLEMENTATION is set explicitly to
+       amneziawg_go_bin so the userspace datapath is forced rather than
+       relying on a PATH lookup at service-start time.
+#}
+[Unit]
+Description=AmneziaWG (userspace datapath) via awg-quick(8) for %I
+After=network-online.target nss-lookup.target
+Wants=network-online.target nss-lookup.target
+Documentation=https://www.wireguard.com/
+Documentation=https://www.wireguard.com/quickstart/
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart={{ amneziawg_awg_quick_bin }} up %i
+ExecStop={{ amneziawg_awg_quick_bin }} down %i
+ExecReload=/bin/bash -c 'exec {{ amneziawg_awg_bin }} syncconf %i <(exec {{ amneziawg_awg_quick_bin }} strip %i)'
+Environment=WG_ENDPOINT_RESOLUTION_RETRIES=infinity
+Environment=WG_QUICK_USERSPACE_IMPLEMENTATION={{ amneziawg_go_bin }}
+
+[Install]
+WantedBy=multi-user.target

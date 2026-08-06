@@ -1,0 +1,88 @@
+---
+# Phase 99: Full teardown of the AmneziaWG 2.0 install (reverse of every phase).
+# Gated behind the `never` tag — runs ONLY with `-t amneziawg2-clean`.
+- name: Stop and disable AmneziaWG service
+  ansible.builtin.systemd:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Unload AmneziaWG kernel module
+  community.general.modprobe:
+    name: amneziawg
+    state: absent
+  failed_when: false
+
+- name: Find AmneziaWG DKMS versions
+  ansible.builtin.find:
+    paths: /var/lib/dkms/amneziawg
+    file_type: directory
+    depth: 1
+  register: awg_dkms_dirs
+  failed_when: false
+
+- name: Remove AmneziaWG DKMS modules
+  ansible.builtin.command: "dkms remove amneziawg/{{ item.path | basename }} --all"
+  loop: "{{ awg_dkms_dirs.files | default([]) }}"
+  changed_when: true
+  failed_when: false
+
+- name: Remove AmneziaWG package
+  ansible.builtin.apt:
+    name: amneziawg
+    state: absent
+    purge: true
+
+- name: Remove Amnezia PPA deb822 source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/amnezia-ppa.sources
+    state: absent
+
+- name: Find legacy Amnezia PPA .list sources
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: "*amnezia*.list"
+  register: awg_legacy_ppa_lists
+
+- name: Remove legacy Amnezia PPA .list sources
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ awg_legacy_ppa_lists.files }}"
+
+- name: Remove Amnezia PPA signing key
+  ansible.builtin.file:
+    path: /etc/apt/keyrings/amnezia-ppa.asc
+    state: absent
+
+- name: Refresh package cache after removing the repo
+  ansible.builtin.apt:
+    update_cache: true
+  failed_when: false
+
+- name: Remove AmneziaWG directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/amnezia/amneziawg
+    - "{{ amnezia_working_dir }}"
+
+- name: Remove sysctl configuration
+  ansible.builtin.file:
+    path: /etc/sysctl.d/20-amnezia.conf
+    state: absent
+
+- name: Reload sysctl after removing config
+  ansible.builtin.command: sysctl --system
+  changed_when: false
+  failed_when: false
+
+- name: Reload systemd daemon after cleanup
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Debug cleanup complete
+  ansible.builtin.debug:
+    msg: "AmneziaWG 2.0 fully cleaned: service stopped, module unloaded, DKMS + package purged, repo/keyring/configs removed."

@@ -1,0 +1,19 @@
+---
+# AmneziaWG 2.0 role defaults (kernel module via ppa:amnezia/ppa).
+
+amneziawg_interface: "awg0"
+amneziawg_port: 49666
+# Explicit tunnel MTU. Must be set — wg-quick otherwise derives it from the
+# WAN interface MTU, which breaks on AWS jumbo-frame (9001) instances.
+amneziawg_mtu: 1380
+amneziawg_subnet: "10.9.9.1/24"
+amneziawg_ipv6_subnet: "fd00:9:9:9::1/64"
+amnezia_working_dir: "/opt/awg"
+amnezia_wan_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"
+amnezia_endpoint_address: "{{ ansible_host }}"
+
+# List of clients. Define in inventory/group_vars.
+#   - name: client1
+#     ip: 10.9.9.2/32
+#     ipv6: fd00:9:9:9::2/128   # optional
+amneziawg_clients: []

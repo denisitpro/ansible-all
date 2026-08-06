@@ -1,0 +1,30 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - awg-userspace
+    - awg-userspace-prefly
+
+- ansible.builtin.import_tasks: 30-install.yml
+  tags:
+    - awg-userspace
+    - awg-userspace-install
+
+- ansible.builtin.import_tasks: 40-generate-configs.yml
+  tags:
+    - awg-userspace
+    - awg-userspace-generate
+
+- ansible.builtin.import_tasks: 60-add-clients.yml
+  tags:
+    - awg-userspace
+    - awg-userspace-add-client
+
+- ansible.builtin.import_tasks: 70-verify.yml
+  tags:
+    - awg-userspace
+    - awg-userspace-verify
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - awg-userspace-clean

@@ -1,0 +1,107 @@
+---
+# Phase 99: Full teardown of the AmneziaWG userspace install (reverse of
+# every phase). Gated behind the `never` tag - runs ONLY with
+# `-t awg-userspace-clean`.
+#
+# This role never adds any apt source/PPA/keyring, so there is nothing to
+# revert there. The `tun` kernel module is shared with other software on the
+# host and is intentionally NOT unloaded. No build packages are installed by
+# this version of the role, so the only apt packages left in place are the
+# runtime deps: ca-certificates, qrencode - same asymmetry as
+# roles/amneziawg2-install's clean phase.
+
+- name: Stop and disable AmneziaWG service
+  ansible.builtin.systemd:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Remove AmneziaWG userspace runtime socket directory
+  ansible.builtin.file:
+    path: /var/run/amneziawg
+    state: absent
+
+- name: Remove the systemd unit written by this role
+  ansible.builtin.file:
+    path: /etc/systemd/system/awg-quick@.service
+    state: absent
+
+- name: Remove prebuilt binaries downloaded by this role
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ amneziawg_go_bin }}"
+    - "{{ amneziawg_awg_bin }}"
+    - "{{ amneziawg_awg_quick_bin }}"
+
+# Everything below this comment is a leftover path from the previous
+# build-from-source version of this role (git clone + `make install`), which
+# installed under /usr/bin, plus man pages, bash completions, a systemd
+# drop-in, and the upstream-shipped unit/target under
+# /usr/lib/systemd/system. None of these are created by the current
+# get_url-based install, but they are kept here so `--tags
+# awg-userspace-clean` still fully cleans a host that ran the old version of
+# this role.
+
+- name: Remove leftover systemd drop-in from the build-from-source version
+  ansible.builtin.file:
+    path: "/etc/systemd/system/awg-quick@{{ amneziawg_interface }}.service.d"
+    state: absent
+
+- name: Remove leftover amneziawg-go/amneziawg-tools files from the build-from-source version
+  # /usr/bin/amneziawg-go is hardcoded (not {{ amneziawg_go_bin }}) because
+  # that variable now points at /usr/local/bin/amneziawg-go - the old
+  # /usr/bin path would otherwise never be cleaned on a host that ran the
+  # previous build-from-source version of this role.
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/bin/amneziawg-go
+    - /usr/bin/awg
+    - /usr/bin/awg-quick
+    - /usr/share/man/man8/awg.8
+    - /usr/share/man/man8/awg-quick.8
+    - /usr/share/bash-completion/completions/awg
+    - /usr/share/bash-completion/completions/awg-quick
+    - /usr/lib/systemd/system/awg-quick@.service
+    - /usr/lib/systemd/system/awg-quick.target
+
+- name: Remove AmneziaWG directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/amnezia/amneziawg
+    - "{{ amnezia_working_dir }}"
+
+- name: Remove tun module autoload configuration
+  ansible.builtin.file:
+    path: /etc/modules-load.d/amneziawg-tun.conf
+    state: absent
+
+- name: Remove sysctl configuration
+  ansible.builtin.file:
+    path: /etc/sysctl.d/20-amnezia.conf
+    state: absent
+
+- name: Reload sysctl after removing config
+  ansible.builtin.command: sysctl --system
+  changed_when: false
+  failed_when: false
+
+- name: Reload systemd daemon after cleanup
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Debug cleanup complete
+  ansible.builtin.debug:
+    msg: >-
+      AmneziaWG userspace fully cleaned: service stopped, downloaded
+      amneziawg-go/awg/awg-quick binaries and the awg-quick@.service unit
+      removed, config/working dirs removed, plus any leftover files from the
+      previous build-from-source version of this role. tun module left
+      loaded (shared with other software); no apt/PPA/keyring state to
+      revert (this role never adds any).

@@ -1,0 +1,104 @@
+---
+# Install the userspace datapath from prebuilt, checksum-pinned artifacts
+# published as a GitHub Release. This is the only datapath-specific phase - a
+# future full kernel+userspace-switchable variant only needs to swap this
+# file.
+#
+# Why prebuilt instead of build-from-source: neither amneziawg-go nor
+# amneziawg-tools publishes release binaries themselves, and the earlier
+# version of this role compiled both on the target host. That meant every
+# run needed a compiler, ~250 MB of Go toolchain, and - because
+# amneziawg-go has no vendor/ directory - HTTPS egress to proxy.golang.org
+# at build time. The last requirement is a real problem on a host behind a
+# censored network, which is exactly where this role is most likely to run.
+# The release consumed here (see defaults/main.yml) packages prebuilt
+# binaries with published SHA256 digests, so `get_url`'s checksum check is
+# the only trust anchor needed - no compiler, no Go toolchain, no source
+# checkout, no proxy.golang.org dependency.
+#
+# Idempotency: every stat/register-gated task below is a no-op on a second
+# consecutive run, and every phase can rebuild from a fully removed state in
+# one run (see README "Idempotency & clean parity").
+
+- name: Fail on unsupported architecture
+  ansible.builtin.assert:
+    that: ansible_facts['architecture'] == 'x86_64'
+    fail_msg: >-
+      Unsupported architecture '{{ ansible_facts['architecture'] }}' - the
+      {{ amneziawg_release_tag }} release only publishes linux/amd64 assets
+      (amneziawg-go-linux-amd64, awg-linux-amd64); there is no arm64 asset.
+
+# --- Download the three prebuilt artifacts -------------------------------
+
+- name: Download amneziawg-go (userspace datapath, I1-I5 imitators)
+  ansible.builtin.get_url:
+    url: "{{ amneziawg_release_base_url }}/amneziawg-go-linux-amd64"
+    dest: "{{ amneziawg_go_bin }}"
+    mode: '0755'
+    owner: root
+    group: root
+    checksum: "sha256:{{ amneziawg_go_sha256 }}"
+
+- name: Download awg (CLI, I1-I5 config keys)
+  ansible.builtin.get_url:
+    url: "{{ amneziawg_release_base_url }}/awg-linux-amd64"
+    dest: "{{ amneziawg_awg_bin }}"
+    mode: '0755'
+    owner: root
+    group: root
+    checksum: "sha256:{{ amneziawg_awg_sha256 }}"
+
+- name: Download awg-quick (interface up/down script)
+  ansible.builtin.get_url:
+    url: "{{ amneziawg_release_base_url }}/awg-quick"
+    dest: "{{ amneziawg_awg_quick_bin }}"
+    mode: '0755'
+    owner: root
+    group: root
+    checksum: "sha256:{{ amneziawg_awg_quick_sha256 }}"
+
+# get_url verifies the checksum itself and fails the task on a mismatch, so
+# a corrupted or tampered download never reaches disk in a "successful"
+# state. It is also idempotent: when the destination file already matches
+# the checksum, the download is skipped and the task reports OK, not
+# changed - the explicit stat/assert pass below is therefore not proving
+# get_url worked, it's proving nothing else on the host removed the file
+# afterwards.
+
+- name: Check the three binaries are present after download
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: amneziawg_bin_stat
+  loop:
+    - "{{ amneziawg_go_bin }}"
+    - "{{ amneziawg_awg_bin }}"
+    - "{{ amneziawg_awg_quick_bin }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Assert all three binaries are present
+  ansible.builtin.assert:
+    that: item.stat.exists
+    fail_msg: "{{ item.item }} is missing after download."
+  loop: "{{ amneziawg_bin_stat.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+# --- systemd unit ---------------------------------------------------------
+# The release ships binaries only (no unit, no man pages, no bash
+# completion), so this role writes its own unit, derived from
+# amneziawg-tools' shipped awg-quick@.service (see the template header for
+# the exact upstream commit and what was deliberately dropped).
+
+- name: Install the awg-quick@.service systemd unit
+  ansible.builtin.template:
+    src: awg-quick@.service.j2
+    dest: /etc/systemd/system/awg-quick@.service
+    mode: '0644'
+  notify: daemon reload
+
+# Handlers must run here: 60-add-clients enables/starts awg-quick@<iface>
+# later in this same play, and systemd has to know about the freshly
+# installed unit before that happens.
+- name: Flush handlers so the new unit is loaded
+  ansible.builtin.meta: flush_handlers
