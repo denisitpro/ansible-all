@@ -1,0 +1,57 @@
+## {{ ansible_managed }} ##
+# https://github.com/cilium/cilium/blob/v{{ cilium_version }}/install/kubernetes/cilium/values.yaml
+operator:
+  replicas: {{ cilium_operator_replicas }}
+
+# kube-proxy is disabled in k3s (disable-kube-proxy: true), so cilium handles
+# service routing in-kernel. Talk directly to the loopback API server.
+kubeProxyReplacement: true
+k8sServiceHost: "127.0.0.1"
+k8sServicePort: 6443
+
+ipv4:
+  enabled: true
+{% if k3s_dual_stack | bool %}
+ipv6:
+  enabled: true
+enableIPv6Masquerade: true
+{% endif %}
+
+ipam:
+  mode: "{{ cilium_ipam_mode }}"
+  operator:
+    clusterPoolIPv4PodCIDRList: ["{{ k3s_pod_cidr }}"]
+    clusterPoolIPv4MaskSize: 24
+{% if k3s_dual_stack | bool %}
+    clusterPoolIPv6PodCIDRList: ["{{ k3s_pod_cidr_v6 }}"]
+    clusterPoolIPv6MaskSize: 120
+{% endif %}
+
+routingMode: "{{ cilium_routing_mode }}"
+{% if cilium_routing_mode == "native" %}
+# Native routing: traffic to/from these CIDRs is treated as in-cluster and not
+# masqueraded. Everything outside them gets SNATed to the node IP on egress.
+# autoDirectNodeRoutes is for multi-node native routing — single-node doesn't
+# need it (cilium already programs the local pod CIDR on cilium_host).
+ipv4NativeRoutingCIDR: "{{ k3s_pod_cidr }}"
+autoDirectNodeRoutes: false
+{% if k3s_dual_stack | bool %}
+ipv6NativeRoutingCIDR: "{{ k3s_pod_cidr_v6 }}"
+{% endif %}
+{% endif %}
+
+hubble:
+  enabled: {{ cilium_hubble_enabled | bool | string | lower }}
+  relay:
+    enabled: {{ cilium_hubble_enabled | bool | string | lower }}
+  ui:
+    enabled: {{ cilium_hubble_ui_enabled | bool | string | lower }}
+{% if cilium_host_firewall_enabled | default(false) | bool %}
+
+# Host Firewall: enforce CiliumClusterwideNetworkPolicy on the node's host
+# namespace. The policies (and the node labels that bind them) are applied by
+# tasks/75-cilium-fw.yml. Those policies declare ingress only, so egress stays
+# unrestricted.
+hostFirewall:
+  enabled: true
+{% endif %}

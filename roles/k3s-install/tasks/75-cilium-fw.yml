@@ -1,0 +1,109 @@
+---
+# Cilium Host Firewall for the single-node k3s edge cluster.
+#
+# Mirrors roles/k8s-kubeadm-install-g2/tasks/95-cilium-fw.yml but adapted for a
+# single node that is master + worker + ingress at once:
+#   * the node is labelled worker (so it carries the worker policy's ingress
+#     80/443 + cluster/health entity allows) plus the shared system-base and
+#     cilium-gen-g1 labels;
+#   * we apply the system + worker + generated-g1 policies. No master policy:
+#     k3s uses embedded SQLite (no etcd 2379/2380) and the API 6443 is already
+#     opened by the system policy;
+#   * hostFirewall.enabled itself is turned on in templates/cilium-values.yaml.j2
+#     and applied by the helm upgrade in 70-cni-cilium.yml — that re-run needs
+#     cilium_force_install (set in group_vars/<group>/cilium-fw.yml). But helm
+#     only writes enable-host-firewall into the cilium-config ConfigMap; the
+#     agent reads that flag at START, and the chart does NOT roll the DaemonSet
+#     on a ConfigMap-only change (no rollOutCiliumPods). So on a node where
+#     cilium is already running the flag never reaches the datapath
+#     (`cilium-dbg status` keeps showing "Host firewall: Disabled") until the
+#     agent restarts — policies apply and validate but never enforce. We roll
+#     the agent at the end of this file to close that gap.
+#
+# Host policies are allow-lists and only ENFORCE on a node once a policy's
+# nodeSelector matches its labels. We therefore render + apply the manifests
+# first, label the node, and roll the cilium agent LAST, so enforcement starts
+# with the full allow-set already in place (no enforce-before-allow window).
+# The templates declare ingress only, so egress stays unrestricted — the node's
+# outbound Teleport reverse tunnel / image pulls / Vault calls are unaffected.
+
+- name: Cilium FW - render base Host Firewall policies (system + worker)
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - {src: 'cilium-system-rules.yml.j2', dest: "{{ cilium_system_rules_file }}"}
+    - {src: 'cilium-worker-rules.yml.j2', dest: "{{ cilium_worker_rules_file }}"}
+
+- name: Cilium FW - render generated-g1 Host Firewall policy
+  ansible.builtin.template:
+    src: "cilium-generated-rules-g1.yml.j2"
+    dest: "{{ cilium_generated_rules_g1_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: cilium_fw_generated_g1 is defined
+
+- name: Cilium FW - apply base Host Firewall policies (system + worker)
+  ansible.builtin.command: >
+    kubectl apply -f {{ item }}
+    --kubeconfig {{ k3s_admin_kubeconfig }}
+  loop:
+    - "{{ cilium_system_rules_file }}"
+    - "{{ cilium_worker_rules_file }}"
+  register: k3s_cilium_fw_base_apply
+  changed_when: "'created' in k3s_cilium_fw_base_apply.stdout or 'configured' in k3s_cilium_fw_base_apply.stdout"
+
+- name: Cilium FW - apply generated-g1 Host Firewall policy
+  ansible.builtin.command: >
+    kubectl apply -f {{ cilium_generated_rules_g1_file }}
+    --kubeconfig {{ k3s_admin_kubeconfig }}
+  register: k3s_cilium_fw_g1_apply
+  changed_when: "'created' in k3s_cilium_fw_g1_apply.stdout or 'configured' in k3s_cilium_fw_g1_apply.stdout"
+  when: cilium_fw_generated_g1 is defined
+
+- name: Cilium FW - label the node so the Host Firewall policies bind to it
+  ansible.builtin.command: >
+    kubectl label nodes --all
+    k8s-fw-base=system-base-100
+    k8s-node-type=worker
+    k8s-fw-external=cilium-gen-g1
+    --overwrite
+    --kubeconfig {{ k3s_admin_kubeconfig }}
+  register: k3s_cilium_fw_label
+  changed_when: "'labeled' in k3s_cilium_fw_label.stdout"
+
+# enable-host-firewall is read by the agent at start; the helm chart writes it
+# to the ConfigMap but does not roll the DaemonSet, so on a node where cilium
+# already runs the host firewall stays Disabled in the datapath. Read the live
+# state (the "Host firewall:" line of `cilium-dbg status`, run inside the agent
+# pod) and roll the DaemonSet only when it is not yet enforcing — idempotent, so
+# re-running this play on an already-enforcing node does not restart cilium.
+# - name: Cilium FW - read the running agent's host firewall state
+#   ansible.builtin.shell: >
+#     set -o pipefail;
+#     kubectl --kubeconfig {{ k3s_admin_kubeconfig }}
+#     -n {{ cilium_namespace }} exec ds/cilium --
+#     cilium-dbg status | grep '^Host firewall:'
+#   args:
+#     executable: /bin/bash
+#   register: k3s_cilium_fw_state
+#   changed_when: false
+#   failed_when: false
+
+# - name: Cilium FW - restart cilium so host firewall reaches the datapath
+#   ansible.builtin.command: >
+#     kubectl --kubeconfig {{ k3s_admin_kubeconfig }}
+#     -n {{ cilium_namespace }} rollout restart ds/cilium
+#   changed_when: true
+#   when: "'Disabled' in k3s_cilium_fw_state.stdout"
+
+# - name: Cilium FW - wait for the cilium rollout to finish
+#   ansible.builtin.command: >
+#     kubectl --kubeconfig {{ k3s_admin_kubeconfig }}
+#     -n {{ cilium_namespace }} rollout status ds/cilium --timeout=180s
+#   changed_when: false
+#   when: "'Disabled' in k3s_cilium_fw_state.stdout"

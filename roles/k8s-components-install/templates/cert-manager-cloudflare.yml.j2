@@ -20,6 +20,11 @@ spec:
       name: cloudflare-dns-key
     solvers:
       - dns01:
+{% if k8s_cert_manager_cf_cname_strategy | default('') %}
+          # CNAME delegation: cert-manager follows the static _acme-challenge
+          # CNAME into a CF zone it can write, leaving the geo-routed zone untouched.
+          cnameStrategy: {{ k8s_cert_manager_cf_cname_strategy }}
+{% endif %}
           cloudflare:
             email: {{k8s_cert_manager_cf_email | default('noreply@example.com')}}
             apiTokenSecretRef:

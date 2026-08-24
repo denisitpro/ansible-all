@@ -3,7 +3,7 @@
 # Uses ansible-set-tags role to discover nodes with k8s_ingress=nginx tag
 # Requires k8s_hosts_tag_configs variable with ingress node configuration
 #
-# Example inventory tag: nbg1-c1-sigma-w-02.sigma-ops.org k8s_role=worker k8s_ingress=nginx
+# Example inventory tag: demo-w-02.example.org k8s_role=worker k8s_ingress=nginx
 # Example k8s_hosts_tag_configs:
 #   - tags:
 #       k8s_ingress: nginx
@@ -20,19 +20,34 @@
     fail_msg: "Variable k8s_ingress_nodes_list is not defined. Ensure k8s_hosts_tag_configs contains entry with output_var_name: k8s_ingress_nodes_list and hosts have k8s_ingress=nginx tag."
     success_msg: "Using variable 'k8s_ingress_nodes_list' for ingress nodes list"
 
-- name: Build final NGINX ingress node hostnames (supports k8s_ingress=nginx,traefik)
+# Scope the search to the cluster's own worker group. ansible-set-tags scans
+# groups['all'], which on multi-cluster envs (e.g. env/c3-prod has both
+# k8s_worker_gen_c3_prod and k8s_worker_cnpg_c3_prod tagged k8s_ingress=nginx)
+# would otherwise mix nodes from a sibling cluster and fail with
+# `nodes "<host>" not found` against this cluster's kubeconfig.
+- name: Verify k8s_worker_group_name is defined for cluster-scoped ingress labeling
+  ansible.builtin.assert:
+    that:
+      - k8s_worker_group_name is defined
+      - groups[k8s_worker_group_name] is defined
+    fail_msg: "k8s_worker_group_name must be defined (set in env/<env>/group_vars/<cluster-children-group>/k8s-cluster.yml) and resolve to a non-empty inventory group."
+
+- name: Build final NGINX ingress node hostnames from the cluster's worker group
   ansible.builtin.set_fact:
     k8s_ingress_nodes_hostnames: >-
       {{
         (
-          (k8s_ingress_nodes_list | default([]) | map(attribute='name') | list)
+          (
+            (k8s_ingress_nodes_list | default([]) | map(attribute='name') | list)
+            | intersect(groups[k8s_worker_group_name])
+          )
           +
           (
-            hostvars
-            | dict2items
-            | selectattr('value.k8s_ingress', 'defined')
-            | selectattr('value.k8s_ingress', 'search', '(^|,)\\s*nginx\\s*(,|$)')
-            | map(attribute='key')
+            groups[k8s_worker_group_name]
+            | map('extract', hostvars)
+            | selectattr('k8s_ingress', 'defined')
+            | selectattr('k8s_ingress', 'search', '(^|,)\\s*nginx\\s*(,|$)')
+            | map(attribute='inventory_hostname')
             | list
           )
         )
@@ -59,15 +74,15 @@
   ansible.builtin.debug:
     msg: "Successfully labeled {{ k8s_ingress_nodes_hostnames | length }} ingress node(s)"
 
-- name: Build Traefik ingress nodes list from inventory tags
+- name: Build Traefik ingress nodes list from the cluster's worker group
   ansible.builtin.set_fact:
     k8s_traefik_nodes_hostnames: >-
       {{
-        hostvars
-        | dict2items
-        | selectattr('value.k8s_ingress', 'defined')
-        | selectattr('value.k8s_ingress', 'search', '(^|,)\\s*' ~ (k8s_traefik_inventory_tag_value | default('traefik')) ~ '\\s*(,|$)')
-        | map(attribute='key')
+        groups[k8s_worker_group_name]
+        | map('extract', hostvars)
+        | selectattr('k8s_ingress', 'defined')
+        | selectattr('k8s_ingress', 'search', '(^|,)\\s*' ~ (k8s_traefik_inventory_tag_value | default('traefik')) ~ '\\s*(,|$)')
+        | map(attribute='inventory_hostname')
         | list
       }}
   when: "'traefik' in helm_componets_list"

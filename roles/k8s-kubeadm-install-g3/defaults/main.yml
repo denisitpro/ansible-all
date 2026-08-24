@@ -1,0 +1,147 @@
+---
+# need for upgrade cluster
+k8s_cluster_minor_version: v1.36
+k8s_cls_version: "1.36.1"
+
+#### version for install k8s cluster
+
+containerd_version: 2.3.1
+runc_version: 1.4.3
+containerd_plugin_cni_version: 1.9.1
+cilium_version: 1.19.5
+cilium_cli_version: 0.19.4
+
+#### another
+k8s_local_config_path: ~/.kube/new-cluster.conf
+
+kubelet_ver: "{{ k8s_cls_version }}-1.1"
+
+# need for  cluster upgrade
+kubeadm_ver: "{{ kubelet_ver }}"
+
+container_runtime: containerd
+kubeadmin_config: /etc/kubernetes/admin.conf
+
+# CNI network — cilium only in this fork
+k8s_cni_network: "cilium"
+
+# Cilium section
+k8s_config_path: /etc/kubernetes/admin.conf
+cilium_install_mode: "helm" # helm + values file (the cli `--set` path is commented out in tasks/main.yml)
+
+# k8s group config
+k8s_master_group_name: k8s_master_example
+k8s_master_init_host: "{{ groups[k8s_master_group_name][0] }}"
+
+# Short cluster identifier (<=32 chars, validated by Cilium). Used for:
+#  - kubeadm ClusterConfiguration.clusterName (cluster context name in kubeconfig)
+#  - cilium --set cluster.name
+# Required; set per env in group_vars/all/k8s-setttings.yml. Keep it short — do
+# NOT reuse k8s_cls_fqdn (the LB FQDN), since FQDNs commonly exceed 32 chars.
+k8s_cls_shortname: "set-me-in-env-group-vars"
+
+# force set corrected DNS server for kubelet
+kubelet_path: true
+
+# Destination of the kubelet resolv.conf rendered from the shared template
+# (shared/templates/kubelet/kubelet.resolv.conf.j2 — also reused by the
+# k3s-install role with a different default path). All other kubeadm-specific
+# paths used in tasks/65-kubelet-path.yml live as literals in the template
+# next to the role.
+kubelet_resolv_conf_path: /etc/kubernetes/kubelet.resolv.conf
+
+# --- Cluster networking (pod + service CIDRs) --------------------------------
+# IPv4 ranges are always rendered. The IPv6 ranges are appended ONLY when
+# k8s_ipv6 is truthy (see the dual-stack toggle below). The IPv6 ranges are ULA
+# (fd00::/8) — pod IPv6 is masqueraded to the node's public IPv6 on egress, never
+# routed publicly.
+k8s_net_cluster_pool: "10.125.0.0/16"
+# IPv6 pod ranges are kept SEPARATE for kubeadm vs cilium on purpose — their
+# per-node masks differ, and BOTH cilium and kube-controller-manager's node-ipam
+# cap the IPv6 (perNodeMask - poolPrefix) delta at 16 bits (clusterSubnetMaxDiff):
+#   * k8s_net6_pod_subnet   -> kubeadm podSubnet. kcm uses the default /64 node
+#     mask, so /48 keeps (64-48)=16 — valid. (cilium ignores this CIDR: IPAM is
+#     cluster-pool with k8s-require-ipv6-pod-cidr=false; it only has to satisfy kcm.)
+#   * k8s_net6_cluster_pool -> cilium clusterPoolIPv6PodCIDRList. cilium uses a /120
+#     per-node mask (clusterPoolIPv6MaskSize), so /104 keeps (120-104)=16 — valid.
+# Collapsing both onto one /48 var makes cilium do /48->/120 = 72 and the operator
+# dies with "New CIDR set failed; the node CIDR size is too big". g2 avoided this
+# by hardcoding podSubnet /48 while cilium kept the /104 pool default.
+k8s_net6_pod_subnet: "fd00:10:48::/48"  # kubeadm podSubnet (IPv6)
+k8s_net6_cluster_pool: "fd00::/104"     # cilium cluster-pool IPAM (IPv6); mask /120
+k8s_net_service_pool: "10.96.0.0/12"
+k8s_net6_service_pool: "fd00:10:96::/108" # /108 keeps service IPs kube-proxy/ipvs-friendly
+
+# --- Dual-stack (IPv4 + IPv6) master toggle ----------------------------------
+# ONE switch for the whole cluster. false (default) => IPv4-only; true =>
+# dual-stack. VALUE-gated everywhere in this role (NOT presence-gated), so
+# setting it to false fully disables IPv6 — you do NOT need to remove the var.
+k8s_ipv6: false
+# cilium's IPv6 (pod dual-stack in 75-cni-cilium-cli.yml + IPv6 host-firewall
+# rules in 92-cilium-enable-hostfw.yml) follows k8s_ipv6 by default, so the two
+# halves (kubeadm + cilium) cannot drift out of sync. Override per-group only if
+# you deliberately need cilium IPv6 decoupled from kubeadm.
+cilium_ipv6_enabled: "{{ k8s_ipv6 | default(false) }}"
+
+dns_nameservers:
+  - 1.1.1.1
+  - 8.8.8.8
+
+k8s_go_arch_map:
+  i386: "386"
+  x86_64: "amd64"
+  aarch64: "arm64"
+  armv7l: "armv7"
+  armv6l: "armv6"
+
+k8s_go_arch: "{{ k8s_go_arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
+
+# Cilium Host Firewall policy files
+cilium_system_rules_file: "/tmp/cilium-host-firewall-system.yml"
+cilium_worker_rules_file: "/tmp/cilium-host-firewall-worker.yml"
+cilium_master_rules_file: "/tmp/cilium-host-firewall-master.yml"
+cilium_generated_rules_g1_file: "/tmp/cilium-host-firewall-generated-g1.yml"
+cilium_longhorn_rules_file: "/tmp/cilium-host-firewall-longhorn.yml"
+
+# Cilium Host Firewall optional policies
+cilium_fw_longhorn_enabled: false
+
+# Base labels applied to all master nodes (always applied)
+k8s_master_node_labels_base:
+  - name: "k8s-fw-base"
+    value: "system-base-100"
+  - name: "k8s-node-type"
+    value: "master"
+
+# Additional labels for master nodes (can be overridden per environment)
+k8s_master_node_labels_extra: []
+
+# Base labels applied to all worker nodes (always applied)
+k8s_worker_node_labels_base:
+  - name: "k8s-fw-base"
+    value: "system-base-100"
+  - name: "k8s-node-type"
+    value: "worker"
+
+# Additional labels for worker nodes (can be overridden per environment)
+k8s_worker_node_labels_extra: []
+
+# Cilium Prometheus metrics configuration
+# By default metrics are enabled (Cilium default behavior)
+# Set to false to disable metrics collection
+# cilium_prometheus_enabled: false  # Disable cilium-agent metrics
+# cilium_operator_prometheus_enabled: false  # Disable cilium-operator metrics
+
+# Hubble (observability UI + relay). Enabled by default; set false to drop
+# hubble-relay/hubble-ui entirely (e.g. clusters with no worker to schedule them
+# on, or where the UI is not wanted). Single switch — gates relay, ui and the
+# metrics block in cilium-values.yaml.j2.
+cilium_hubble_enabled: true
+
+# Hubble metrics configuration
+# Specify list of metrics to enable for network observability
+# Available metrics: dns, drop, tcp, flow, port-distribution, icmp, httpV2
+# Example: cilium_hubble_metrics_enabled: ["dns", "drop", "tcp", "flow"]
+# cilium_hubble_metrics_enabled: []
+
+k8s_server_hostname: "{{ inventory_hostname_short | default(inventory_hostname.split('.')[0]) }}"

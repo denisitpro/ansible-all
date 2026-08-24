@@ -1,0 +1,16 @@
+---
+- name: Teleport exec RBAC (namespace-scoped) - render Role/RoleBinding
+  ansible.builtin.template:
+    src: "teleport-exec-role-ns.yaml.j2"
+    dest: /tmp/teleport-exec-role-ns.yaml
+    mode: "0600"
+
+- name: Teleport exec RBAC (namespace-scoped) - apply
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/teleport-exec-role-ns.yaml
+    --kubeconfig {{ k8s_config_path }}
+
+- name: Teleport exec RBAC (namespace-scoped) - remove rendered manifest
+  ansible.builtin.file:
+    path: /tmp/teleport-exec-role-ns.yaml
+    state: absent

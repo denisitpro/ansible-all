@@ -1,0 +1,10 @@
+---
+# for ubuntu 24 - no need
+- name: copy sysctl cilium
+  ansible.builtin.template:
+    src: sysctl-cilium.conf.j2
+    dest: /etc/sysctl.d/sysctl-cilium.conf
+    mode: "0644"
+
+- name: apply cilium sysctl
+  ansible.builtin.command: /usr/sbin/sysctl -p  /etc/sysctl.d/sysctl-cilium.conf

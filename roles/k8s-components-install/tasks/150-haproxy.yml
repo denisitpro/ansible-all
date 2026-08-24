@@ -1,0 +1,57 @@
+---
+- name: HAProxy - Ensure Helm is installed
+  ansible.builtin.command: helm version
+  register: helm_check
+  failed_when: helm_check.rc != 0
+  changed_when: false
+
+- name: HAProxy - Check if haproxy is already installed
+  ansible.builtin.shell: |
+    helm list -n {{ helm_haproxy_namespace | default('haproxy') }} --kubeconfig {{ k8s_config_path }} | grep -w haproxy
+  register: haproxy_installed
+  failed_when: false
+  changed_when: false
+
+- name: HAProxy - Set fact whether to skip haproxy install
+  ansible.builtin.set_fact:
+    skip_haproxy_install: "{{ haproxy_installed.rc == 0 and (not haproxy_force_install | default(false)) }}"
+
+- name: HAProxy - Add Helm repository
+  ansible.builtin.command: helm repo add haproxytech https://haproxytech.github.io/helm-charts
+  register: helm_haproxy_repo
+  changed_when: '"has been added" in helm_haproxy_repo.stdout'
+  when: not skip_haproxy_install
+
+- name: HAProxy - Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: not skip_haproxy_install or helm_cache_update is defined
+
+- name: HAProxy - Create values config from template
+  ansible.builtin.template:
+    src: haproxy-values.yaml.j2
+    dest: /tmp/haproxy-values.yaml
+    mode: "0600"
+  when: not skip_haproxy_install or haproxy_force_install | default(false)
+  tags:
+    - haproxy-values
+
+- name: HAProxy - Install via Helm
+  ansible.builtin.command: >
+    helm upgrade --install haproxy haproxytech/haproxy
+    --namespace {{ helm_haproxy_namespace | default('haproxy') }}
+    --version {{ helm_haproxy_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --values /tmp/haproxy-values.yaml
+  when: not skip_haproxy_install or haproxy_force_install | default(false)
+  register: haproxy_helm_result
+
+- name: HAProxy - Show Helm output
+  ansible.builtin.debug:
+    var: haproxy_helm_result.stdout_lines
+  when: haproxy_helm_result is defined and haproxy_helm_result.stdout_lines is defined
+
+- name: HAProxy - Remove values config
+  ansible.builtin.file:
+    path: /tmp/haproxy-values.yaml
+    state: absent

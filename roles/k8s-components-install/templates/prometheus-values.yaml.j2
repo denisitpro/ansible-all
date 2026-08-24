@@ -239,7 +239,7 @@ alertmanager:
   enabled: false
 
 grafana:
-  enabled: true
+  enabled: {{ k8s_grafana_enabled | default(true) }}
 {% if k8s_grafana_annotations is defined or k8s_grafana_labels is defined %}
   service:
 {% if k8s_grafana_annotations is defined %}

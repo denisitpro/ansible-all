@@ -1,5 +1,9 @@
 persistence:
   defaultClassReplicaCount: {{ k8s_longhorn_default_settings_replica_count | default('2') }}
+  # Drives the dataLocality parameter on the auto-created `longhorn` StorageClass,
+  # which is inherited by every PVC created against it. Must be paired with the
+  # global default below, otherwise SC and global Setting drift apart.
+  defaultDataLocality: "{{ k8s_longhorn_data_locality_mode | default('disabled') }}"
 
 defaultSettings:
   defaultReplicaCount: {{ k8s_longhorn_default_settings_replica_count | default('2') }}
@@ -12,7 +16,9 @@ defaultSettings:
   # disabled - no data locality
   # best-effort - try to keep data on the same node as pod, but allow scheduling on other nodes
   # strict-local - strictly keep data on the same node as pod
-  dataLocality: "{{ k8s_longhorn_data_locality_mode | default('best-effort') }}"
+  # Upstream key is `defaultDataLocality` — `dataLocality` is silently ignored
+  # by the chart and leaves Setting/default-data-locality at its factory default.
+  defaultDataLocality: "{{ k8s_longhorn_data_locality_mode | default('disabled') }}"
 
 # # failed https://github.com/longhorn/longhorn/issues/6415
 # # https://github.com/longhorn/longhorn/issues/6623

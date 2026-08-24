@@ -1,0 +1,30 @@
+## {{ ansible_managed }} ##
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ k8s_teleport_exec_ns_scoped_group }}
+  namespace: {{ k8s_teleport_exec_ns_scoped_namespace }}
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create", "get"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ k8s_teleport_exec_ns_scoped_group }}
+  namespace: {{ k8s_teleport_exec_ns_scoped_namespace }}
+subjects:
+- kind: Group
+  name: {{ k8s_teleport_exec_ns_scoped_group }}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: {{ k8s_teleport_exec_ns_scoped_group }}
+  apiGroup: rbac.authorization.k8s.io

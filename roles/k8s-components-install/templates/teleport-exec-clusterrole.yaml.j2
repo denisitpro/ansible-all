@@ -1,0 +1,28 @@
+## {{ ansible_managed }} ##
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ k8s_teleport_exec_all_pods_group }}
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create", "get"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ k8s_teleport_exec_all_pods_group }}
+subjects:
+- kind: Group
+  name: {{ k8s_teleport_exec_all_pods_group }}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: {{ k8s_teleport_exec_all_pods_group }}
+  apiGroup: rbac.authorization.k8s.io

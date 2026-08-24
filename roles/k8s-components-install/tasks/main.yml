@@ -19,7 +19,9 @@
 - ansible.builtin.import_tasks: 25-set-ingress-label-from-ansible.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
-  when: "'ingress-nginx' in helm_componets_list or 'traefik' in helm_componets_list"
+  when:
+    - "'ingress-nginx' in helm_componets_list or 'traefik' in helm_componets_list"
+    - k8s_ingress_nodes_list is defined
   tags:
     - k8s
     - k8s-addition
@@ -135,6 +137,24 @@
     - k8s-addition
     - k8s-teleport
 
+- ansible.builtin.import_tasks: 85-teleport-exec-rbac.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: k8s_teleport_exec_all_pods_enabled | default(false)
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-teleport
+
+- ansible.builtin.import_tasks: 86-teleport-exec-rbac-ns.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: k8s_teleport_exec_ns_scoped_enabled | default(false)
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-teleport
+
 - ansible.builtin.import_tasks: 90-vault-secret-operator.yml
   delegate_to: "{{ k8s_master_init_host }}"
   run_once: true
@@ -208,3 +228,37 @@
     - k8s
     - k8s-addition
     - k8s-cnpg
+
+- ansible.builtin.import_tasks: 150-haproxy.yml
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'haproxy' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-haproxy
+
+# GitHub Actions Runner Controller (ARC). The github-arc-install role was written
+# for the single-node k3s ARC host (runner-k3s-arc-c3-infra.yml), where it runs
+# helm directly ON the node. Here it is imported into the components flow and
+# DELEGATED to the master init host (run_once), so its `helm --kubeconfig
+# {{ k8s_config_path }}` calls hit THIS cluster's /etc/kubernetes/admin.conf —
+# exactly like every component above. Config (scale sets + PATs) lives in the
+# components group_vars (github-arc.yml + secrets.yml). The controller and the
+# privileged dind runner pods schedule on the worker (masters keep the
+# control-plane NoSchedule taint), so nothing runs until the worker has joined.
+# NB: delegate_to/run_once on a static import_role are inherited by every task in
+# the role (same mechanism the import_tasks blocks above rely on) — verify on the
+# first run that helm executes on the master init host, not on the components
+# (mgmt) host, since that host has its OWN unrelated admin.conf.
+- name: GitHub ARC (controller + runner scale sets)
+  ansible.builtin.import_role:
+    name: github-arc-install
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+  when: "'github-arc' in helm_componets_list"
+  tags:
+    - k8s
+    - k8s-addition
+    - k8s-github-arc
+    - github-arc

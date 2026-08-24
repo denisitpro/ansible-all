@@ -1,3 +1,4 @@
+---
 - ansible.builtin.import_tasks: 10-nofiles.yml
   tags:
     - ulimits
@@ -9,3 +10,11 @@
     - tune
     - inotify
     - ulimits
+
+- ansible.builtin.import_tasks: 20-docker-ulimits.yml
+  when: k6_load_test | default(false) | bool
+  tags:
+    - tune
+    - ulimits
+    - docker
+    - k6-load-test

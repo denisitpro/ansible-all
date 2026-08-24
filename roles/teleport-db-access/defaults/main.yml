@@ -17,7 +17,7 @@ teleport_db_ssl_group: "{{ mysql_gid | default(999) }}"
 
 # MySQL config (host side)
 teleport_db_mysql_conf_path: "{{ mysql_conf_path | default('/opt/mysql/conf') }}"
-teleport_db_mysql_conf_file: "mysql.c3-57.cnf"
+teleport_db_mysql_conf_file: "mysql-57.cnf"
 
 # Docker compose for MySQL restart
 teleport_db_mysql_compose_path: "{{ mysql_compose_path | default('/opt/docker/mysql') }}"
@@ -27,11 +27,11 @@ teleport_db_admin_user: teleport-admin
 
 # Database definitions — override in group_vars
 # teleport_db_databases:
-#   - name: mysql-cis-27 (name in Teleport UI)
+#   - name: mysql-example-01 (name in Teleport UI)
 #     description: ""
 #     protocol: mysql
 #     uri: "127.0.0.1:3306"
 #     labels:
 #       db_acl_level300: "300"
-#       env: "c3-dev"
-#       cluster: "c3-infra"
+#       env: "example-dev"
+#       cluster: "example-infra"

@@ -1,0 +1,60 @@
+## {{ ansible_managed }} ##
+write-kubeconfig-mode: "{{ k3s_write_kubeconfig_mode }}"
+{% if k3s_node_name | length > 0 %}
+# Node name pinned to the short inventory hostname so cluster identity does not
+# follow the OS hostname (which no role forces here). See k3s_node_name in
+# roles/k3s-install/defaults/main.yml for the why.
+node-name: "{{ k3s_node_name }}"
+{% endif %}
+{% if k3s_dual_stack | bool %}
+cluster-cidr: "{{ k3s_pod_cidr }},{{ k3s_pod_cidr_v6 }}"
+service-cidr: "{{ k3s_service_cidr }},{{ k3s_service_cidr_v6 }}"
+# kube-controller-manager's node-ipam validates cluster-cidr mask <= node mask
+# per CIDR family. IPv6 default is /64, which is smaller than our /104 pod
+# CIDR — bump it to /120 so it matches cilium's clusterPoolIPv6MaskSize.
+kube-controller-manager-arg:
+  - "node-cidr-mask-size-ipv4=24"
+  - "node-cidr-mask-size-ipv6=120"
+{% else %}
+cluster-cidr: "{{ k3s_pod_cidr }}"
+service-cidr: "{{ k3s_service_cidr }}"
+{% endif %}
+{% if k3s_cni == "cilium" %}
+flannel-backend: "none"
+disable-network-policy: true
+disable-kube-proxy: true
+{% endif %}
+{% if k3s_disable | length > 0 %}
+disable:
+{% for item in k3s_disable %}
+  - {{ item }}
+{% endfor %}
+{% endif %}
+{% if k3s_node_taints | length > 0 %}
+node-taint:
+{% for taint in k3s_node_taints %}
+  - "{{ taint }}"
+{% endfor %}
+{% endif %}
+{% if k3s_node_labels | length > 0 %}
+node-label:
+{% for label in k3s_node_labels %}
+  - "{{ label }}"
+{% endfor %}
+{% endif %}
+tls-san:
+  - "{{ k3s_control_plane }}"
+{% for san in k3s_tls_san %}
+  - "{{ san }}"
+{% endfor %}
+{% if kubelet_path | default(false) | bool %}
+# Kubelet patching — see roles/k3s-install/tasks/08-kubelet-patch.yml. This
+# first-class k3s key replaces the host's /etc/resolv.conf for kubelet
+# (--resolv-conf) AND for CoreDNS's upstream resolver in one go. The file
+# itself is rendered by 08-kubelet-patch.yml from a template shared with the
+# kubeadm role so the two can't drift on what nameservers pods see.
+resolv-conf: "{{ kubelet_resolv_conf_path }}"
+{% endif %}
+{% if k3s_extra_config | length > 0 %}
+{{ k3s_extra_config | to_nice_yaml(indent=2) }}
+{% endif %}

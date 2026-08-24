@@ -1,0 +1,112 @@
+---
+# Cilium Host Firewall Policy - System Rules
+# This policy controls OS-level access and management for all nodes
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: "host-firewall-cilium-gen-g1"
+spec:
+  description: "System-level firewall rules for OS management and basic connectivity - applies to all cluster nodes"
+  nodeSelector:
+    matchLabels:
+      k8s-fw-external: cilium-gen-g1
+  ingress:
+  # ============================================================
+  # ICMP - Basic connectivity
+  # ============================================================
+  # Allow ICMP echo requests (ping) from anywhere for IPv4
+  - fromCIDRSet:
+    - cidr: 0.0.0.0/0
+    icmps:
+    - fields:
+      - type: 8
+        family: IPv4
+
+  # Allow ICMP echo requests (ping) from anywhere for IPv6
+  - fromCIDRSet:
+    - cidr: ::/0
+    icmps:
+    - fields:
+      - type: 128
+        family: IPv6
+
+{% if cilium_fw_generated_g1 is defined %}
+  # ============================================================
+  # IPv4 Rules from cilium_fw_generated_g1
+  # ============================================================
+{% if cilium_fw_generated_g1.ipv4 is defined and cilium_fw_generated_g1.ipv4 | length > 0 %}
+{% for rule in cilium_fw_generated_g1.ipv4 %}
+  # {{ rule.name }}
+{% if rule.source is defined %}
+  - fromCIDRSet:
+    - cidr: {{ rule.source if '/' in rule.source else rule.source + '/32' }}
+    toPorts:
+    - ports:
+{% if ':' in rule.port %}
+{% set port_range = rule.port.split(':') %}
+      - port: "{{ port_range[0] }}"
+        endPort: {{ port_range[1] }}
+        protocol: {{ rule.protocol | upper }}
+{% else %}
+      - port: "{{ rule.port }}"
+        protocol: {{ rule.protocol | upper }}
+{% endif %}
+{% else %}
+  # Rule without source restriction - allow from anywhere
+  - fromCIDRSet:
+    - cidr: 0.0.0.0/0
+    toPorts:
+    - ports:
+{% if ':' in rule.port %}
+{% set port_range = rule.port.split(':') %}
+      - port: "{{ port_range[0] }}"
+        endPort: {{ port_range[1] }}
+        protocol: {{ rule.protocol | upper }}
+{% else %}
+      - port: "{{ rule.port }}"
+        protocol: {{ rule.protocol | upper }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+  # ============================================================
+  # IPv6 Rules from cilium_fw_generated_g1
+  # ============================================================
+{% if cilium_fw_generated_g1.ipv6 is defined and cilium_fw_generated_g1.ipv6 | length > 0 %}
+{% for rule in cilium_fw_generated_g1.ipv6 %}
+  # {{ rule.name }}
+{% if rule.source is defined %}
+  - fromCIDRSet:
+    - cidr: {{ rule.source if '/' in rule.source else rule.source + '/128' }}
+    toPorts:
+    - ports:
+{% if ':' in rule.port %}
+{% set port_range = rule.port.split(':') %}
+      - port: "{{ port_range[0] }}"
+        endPort: {{ port_range[1] }}
+        protocol: {{ rule.protocol | upper }}
+{% else %}
+      - port: "{{ rule.port }}"
+        protocol: {{ rule.protocol | upper }}
+{% endif %}
+{% else %}
+  # Rule without source restriction - allow from anywhere
+  - fromCIDRSet:
+    - cidr: ::/0
+    toPorts:
+    - ports:
+{% if ':' in rule.port %}
+{% set port_range = rule.port.split(':') %}
+      - port: "{{ port_range[0] }}"
+        endPort: {{ port_range[1] }}
+        protocol: {{ rule.protocol | upper }}
+{% else %}
+      - port: "{{ rule.port }}"
+        protocol: {{ rule.protocol | upper }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
+

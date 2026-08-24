@@ -19,8 +19,8 @@
 ```yaml
 # Для ресурса "k8s_master_lb" (Load Balancer)
 k8s_master_lb:
-  ipv4: ["167.235.110.61"]
-  ipv6: ["2a01:4f8:1c1f:6899::1"]
+  ipv4: ["203.0.113.61"]
+  ipv6: ["2001:db8:2::1"]
 
 # Для ресурса "k8s_masters" (серверы)
 k8s_masters:
@@ -89,12 +89,12 @@ terraform_states:
 
 ```yaml
 k8s_ingress_nodes:
-  - name: "fsn1-prod-i-50"
-    ipv4: "49.13.123.200"
-    ipv6: "2a01:4f8:c014:b8ac::1"
-  - name: "fsn1-prod-i-51"
-    ipv4: "49.13.123.201"
-    ipv6: "2a01:4f8:c014:b8ac::2"
+  - name: "demo-i-50"
+    ipv4: "203.0.113.20"
+    ipv6: "2001:db8:1::1"
+  - name: "demo-i-51"
+    ipv4: "203.0.113.21"
+    ipv6: "2001:db8:1::2"
 ```
 
 ## Дополнительные переменные
@@ -104,10 +104,10 @@ k8s_ingress_nodes:
 ```yaml
 lb_k8s_master_lb: [
   {
-    "name": "lb-k8s-master-c1-p2p",
-    "ipv4": "167.235.110.61",
-    "ipv6": "2a01:4f8:1c1f:6899::1",
-    "id": "4320172"
+    "name": "lb-k8s-master-example",
+    "ipv4": "203.0.113.61",
+    "ipv6": "2001:db8:2::1",
+    "id": "1234567"
   }
 ]
 ```

@@ -1,0 +1,46 @@
+---
+- name: Cordon node
+  ansible.builtin.command: >
+    kubectl cordon {{ inventory_hostname_short | default(inventory_hostname.split('.')[0]) }}
+    --kubeconfig {{ k8s_config_path }}
+  delegate_to: "{{ k8s_master_init_host }}"
+  when: k8s_master_init_host is defined
+
+- name: Drain node
+  ansible.builtin.command: >
+    kubectl drain {{ inventory_hostname_short | default(inventory_hostname.split('.')[0]) }}
+    --kubeconfig {{ k8s_config_path }}
+    --ignore-daemonsets --delete-emptydir-data --timeout=300s --force
+  delegate_to: "{{ k8s_master_init_host }}"
+  when: k8s_master_init_host is defined
+
+- name: Reboot node
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+  when: k8s_master_init_host is defined
+
+- name: Wait for node to be Ready
+  ansible.builtin.command: >
+    kubectl wait --for=condition=Ready node/{{ inventory_hostname_short | default(inventory_hostname.split('.')[0]) }} --timeout=300s --kubeconfig {{ k8s_config_path }}
+  delegate_to: "{{ k8s_master_init_host }}"
+  when: k8s_master_init_host is defined
+  register: node_ready
+
+- name: Check node status
+  ansible.builtin.command: >
+    kubectl get node {{ inventory_hostname_short | default(inventory_hostname.split('.')[0]) }} --kubeconfig {{ k8s_config_path }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  delegate_to: "{{ k8s_master_init_host }}"
+  when: k8s_master_init_host is defined
+  register: node_status
+
+- name: Fail if node is not Ready
+  ansible.builtin.fail:
+    msg: "Node {{ inventory_hostname }} is not Ready after reboot!"
+  when: node_status.stdout != "True"
+
+- name: Uncordon node
+  ansible.builtin.command: >
+    kubectl uncordon {{ inventory_hostname_short | default(inventory_hostname.split('.')[0]) }}
+    --kubeconfig {{ k8s_config_path }}
+  delegate_to: "{{ k8s_master_init_host }}"
+  when: k8s_master_init_host is defined and node_status.stdout == "True"

@@ -1,13 +1,46 @@
 ---
-- name: teleport — add gpg key
-  ansible.builtin.apt_key:
-    url: https://apt.releases.teleport.dev/gpg
-    keyring: /etc/apt/trusted.gpg.d/teleport.gpg
+# deb822_repository (the non-deprecated replacement for apt_key + apt_repository)
+# imports the python3-debian library on the target, so make sure it is present
+# first.
+- name: teleport — ensure python3-debian present (required by deb822_repository)
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+    update_cache: true
 
 - name: teleport — add repo
-  ansible.builtin.apt_repository:
-    repo: "deb https://apt.releases.teleport.dev/ubuntu {{ ansible_facts['distribution_release'] }} {{ teleport_db_version }}"
+  ansible.builtin.deb822_repository:
+    name: teleport
+    types: deb
+    uris: https://apt.releases.teleport.dev/ubuntu
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: "{{ teleport_db_version }}"
+    signed_by: https://apt.releases.teleport.dev/gpg
     state: present
+    enabled: true
+
+# Drop leftovers from the old apt_key/apt_repository method: the globally-trusted
+# key in trusted.gpg.d (superseded by the per-repo Signed-By keyring) and the
+# auto-named *.list file (superseded by teleport.sources).
+- name: teleport — remove legacy apt-key from trusted.gpg.d
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/teleport.gpg
+    state: absent
+
+- name: teleport — find stale .list repo file(s)
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: "*.list"
+    contains: "apt.releases.teleport.dev"
+  register: teleport_stale_list
+
+- name: teleport — remove stale .list repo file(s)
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ teleport_stale_list.files }}"
+  loop_control:
+    label: "{{ item.path }}"
 
 - name: teleport — install
   ansible.builtin.apt:

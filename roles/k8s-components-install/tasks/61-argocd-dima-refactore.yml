@@ -162,7 +162,7 @@
 
 - name: ArgoCD - Set cluster name
   ansible.builtin.set_fact:
-    cluster_name: "{{ k8s_cls_name | default(inventory_hostname) }}"
+    cluster_name: "{{ k8s_cls_fqdn | default(inventory_hostname) }}"
   when: argocd_self_cluster_add | default(false)
 
 

@@ -1,20 +1,21 @@
 ---
 # Helm chart versions for all components
 # Centralized version management for easier updates and overview
-helm_longhorn_version: "1.11.1"
-helm_ingress_nginx_version: "4.15.0"
-helm_prometheus_version: "80.8.0"
-helm_cert_manager_version: "1.19.0"
-helm_argocd_version: "9.4.17"
-helm_loki_version: "6.46.0"
-helm_vector_version: "0.51.0"
-helm_teleport_version: "18.4.1"
-helm_vso_version: "1.0.1"
-helm_vai_version: "0.31.0"
-metrics_server_helm_version: "3.12.1"
-helm_kong_version: "2.52.0"
-helm_traefik_version: "39.0.1"
-helm_cnpg_version: "0.28.0"
+helm_longhorn_version: "1.11.2"
+helm_ingress_nginx_version: "4.15.1"
+helm_prometheus_version: "85.1.3"
+helm_cert_manager_version: "1.20.2"
+helm_argocd_version: "9.5.14"
+helm_loki_version: "7.0.0"
+helm_vector_version: "0.52.0"
+helm_teleport_version: "18.8.1"
+helm_vso_version: "1.4.0"
+helm_vai_version: "0.32.0"
+metrics_server_helm_version: "3.13.0"
+helm_kong_version: "3.2.0"
+helm_traefik_version: "40.2.0"
+helm_cnpg_version: "0.28.2"
+helm_haproxy_version: "1.28.1"
 
 helm_componets_list:
   - longhorn
@@ -31,8 +32,8 @@ helm_componets_list:
   # - cnpg
   # - kong
 
-k8s_cluster_id: "k8s-default-cls"
-k8s_prom_cluster_id: "{{ k8s_cluster_id }}-prom"
+k8s_cls_shortname: "k8s-default-cls"
+k8s_prom_cluster_id: "{{ k8s_cls_shortname }}-prom"
 
 argocd_github_client_id: "{{ vault_dict_users_secret_g2.argocd_github.client_id | default('set_me') }}"
 argocd_github_secret_id: "{{ vault_dict_users_secret_g2.argocd_github.secret_id | default('set_me') }}"
@@ -67,7 +68,47 @@ k8s_teleport_agent_kubernetes_discovery:
       app_acl_level900: "900"
 
 # Discovery group for unique identification of teleport agents
-k8s_teleport_agent_discovery_group: "{{ k8s_cls_name | default('k8s-example.example.com') }}"
+k8s_teleport_agent_discovery_group: "{{ k8s_cls_fqdn | default('k8s-example.example.com') }}"
+
+# Teleport DB access (optional). When enabled, agent gets 'db' role and
+# registers static databases from k8s_teleport_agent_databases list.
+# Supported protocols: postgres, mysql, redis (valkey is wire-compatible with redis).
+# Auth is handled Teleport-side (certs or teleport-db-user mapping), no passwords here.
+# Example:
+# k8s_teleport_agent_databases:
+#   - name: "pg-app"
+#     protocol: "postgres"
+#     uri: "pg.svc.cluster.local:5432"
+#     static_labels:
+#       env: "dev"
+k8s_teleport_agent_db_enabled: false
+k8s_teleport_agent_databases: []
+
+k8s_teleport_agent_static_apps: []
+
+k8s_teleport_exec_all_pods_enabled: false
+k8s_teleport_exec_all_pods_group: "k8s-acl-250"
+
+k8s_teleport_exec_ns_scoped_enabled: false
+k8s_teleport_exec_ns_scoped_namespace: ""
+k8s_teleport_exec_ns_scoped_group: ""
+
+# Optional: mount DB server CA bundles from existing k8s Secrets.
+# Each item produces an extraVolume + extraVolumeMount at /etc/teleport-tls/<name>/ca.crt.
+# Reference a mount from a database entry via its `ca_mount` field (see example below).
+# Example:
+# k8s_teleport_agent_db_ca_mounts:
+#   - name: pg-base-ca                           # volume name + subpath
+#     secretName: postgres-base-cluster-server-ca
+#     key: ca.crt                                # optional, defaults to ca.crt
+#
+# k8s_teleport_agent_databases:
+#   - name: payload-postgres-base-rw
+#     protocol: postgres
+#     uri: postgres-base-cluster-rw.k3.svc.cluster.local:5432
+#     ca_mount: pg-base-ca                       # links to the mount above
+#     static_labels: { env: "c3-dev" }
+k8s_teleport_agent_db_ca_mounts: []
 
 # argocd_policy_csv_admins:
 #   - org:team
@@ -122,6 +163,12 @@ k8s_pod_monitoring_config:
 #   - host_port: hostPort mode for specific port binding via pod spec
 nginx_ingress_mode: "network_mode"
 
+# Force HTTP -> HTTPS redirect globally for all ingresses (sets ssl-redirect and
+# force-ssl-redirect in the controller ConfigMap). Safe with Cloudflare in Full /
+# Full (Strict) mode because use-forwarded-headers honors X-Forwarded-Proto.
+# Set to false per-env to disable.
+nginx_ingress_force_ssl_redirect: true
+
 # Ingress node labeling configuration
 # These labels will be applied to nodes with k8s_ingress=nginx tag in inventory
 k8s_ingress_label_key: "ingress.nginx/enabled"
@@ -169,8 +216,8 @@ k8s_config_path: /etc/kubernetes/admin.conf
 # k8s_prometheus_external_labels:
 #   environment: "{{ ansible_facts.get('fqdn') | default(ansible_host) | default(inventory_hostname) }}"
 #   monitoring: monitoring
-#   cluster: k8s-prom-c1-p2p
-#   replica: k8s-prom-c1-p2p
+#   cluster: k8s-prom-example
+#   replica: k8s-prom-example
 
 # Metric relabeling configuration for Prometheus scrape jobs
 # Used to drop or keep specific metrics based on labels

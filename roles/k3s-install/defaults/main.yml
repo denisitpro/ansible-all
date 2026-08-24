@@ -1,0 +1,164 @@
+---
+# Pin version for reproducibility. Empty value installs latest stable.
+# See https://github.com/k3s-io/k3s/releases
+k3s_version: "v1.36.1+k3s1"
+k3s_channel: "stable"
+
+k3s_installer_url: "https://get.k3s.io"
+
+# Airgap escape hatch for RKN-restricted hosts (e.g. msk). install.sh itself is
+# still fetched from k3s_installer_url (get.k3s.io is reachable), but the binary
+# download it performs from GitHub releases is blocked. Stage the k3s binary on
+# the host manually and point this at it — install.sh then runs with
+# INSTALL_K3S_SKIP_DOWNLOAD=true and uses the staged binary instead of fetching.
+# Empty = normal online install. Per-host special case: set it in
+# env/<env>/group_vars/<group>/, not here.
+k3s_local_binary_path: ""
+
+# Optional pre-staged k3s airgap images tarball on the host. When set it is
+# copied into k3s_airgap_images_dir, which k3s imports into its embedded
+# containerd on first start. Empty = skip (component images are pulled online).
+# See https://docs.k3s.io/installation/airgap
+k3s_local_airgap_images_path: ""
+k3s_airgap_images_dir: "/var/lib/rancher/k3s/agent/images"
+
+k3s_config_dir: "/etc/rancher/k3s"
+k3s_config_path: "{{ k3s_config_dir }}/config.yaml"
+k3s_binary_path: "/usr/local/bin/k3s"
+k3s_uninstall_script: "/usr/local/bin/k3s-uninstall.sh"
+
+k3s_service_name: "k3s"
+
+dns_nameservers:
+  - 1.1.1.1
+  - 8.8.8.8
+
+# Single-node server defaults: drop bundled components we don't use,
+# taint control-plane so workloads opt in explicitly via tolerations.
+# `local-storage` is kept — that's the local-path-provisioner StorageClass,
+# good enough for single-node geo-edge workloads.
+k3s_write_kubeconfig_mode: "0644"
+
+k3s_disable:
+  - traefik
+  - servicelb
+
+# CNI selection: "cilium" (default — installs via helm with kube-proxy replacement)
+# or "flannel" (k3s built-in, no extra install).
+k3s_cni: "cilium"
+
+# Pod / service CIDRs. Defaults match k3s defaults so flannel users get the same
+# range, but they're rendered into config.yaml explicitly so cilium ipam can
+# reuse the pod CIDR.
+k3s_pod_cidr: "10.42.0.0/16"
+k3s_service_cidr: "10.43.0.0/16"
+
+# Dual-stack (IPv4 + IPv6). Requires a routable IPv6 on the node. When enabled:
+#  - k3s config.yaml gets `cluster-cidr` / `service-cidr` with both families
+#  - cilium gets ipv6.enabled + IPv6 cluster-pool + IPv6 masquerade
+# Pod/service IPv6 ranges default to ULA (fd00::/8) — fine for SNAT egress.
+k3s_dual_stack: false
+# Cilium cluster-pool IPAM splits the pod CIDR into per-node blocks of size
+# `clusterPoolIPv6MaskSize` (120). The gap (pod CIDR mask vs per-node mask) must
+# be small — too wide and the allocator refuses with "node CIDR size is too big".
+# /104 pods + /120 per-node = 16 bits = 65k nodes × 256 pods, plenty for us.
+k3s_pod_cidr_v6: "fd00:42::/104"
+k3s_service_cidr_v6: "fd00:43::/112"
+
+# Cilium settings (used when k3s_cni == "cilium").
+cilium_version: "1.19.4"
+cilium_namespace: "kube-system"
+cilium_operator_replicas: 1
+# Single-node clusters don't need overlay encapsulation — there are no other
+# nodes to tunnel pod traffic to. Native routing puts plain Linux routes on
+# cilium_host and lets the kernel forward pod traffic directly.
+cilium_routing_mode: "native"
+cilium_ipam_mode: "cluster-pool"
+cilium_hubble_enabled: false
+cilium_hubble_ui_enabled: false
+cilium_values_path: "/tmp/cilium-values.yaml"
+
+# --- Cilium Host Firewall (opt-in, single-node edge) -----------------------
+# Off by default. Enable per-host in group_vars/<group>/cilium-fw.yml together
+# with cilium_force_install (so the helm upgrade in 70-cni-cilium.yml re-runs
+# and flips hostFirewall.enabled in the rendered values). When enabled,
+# 75-cilium-fw.yml renders + applies the system/worker/generated-g1
+# CiliumClusterwideNetworkPolicies and labels the node so they bind to it.
+# Per-IP allow rules go in cilium_fw_generated_g1 (see cilium-exteral-access.yml);
+# Cloudflare 80/443 ranges go in k8s_lb_k8s_ingress. Both reuse the kubeadm
+# role's variable interface verbatim.
+# See env/c3-prod/group_vars/k3s_la_c3_prod/cilium-fw.yml for a live example.
+cilium_host_firewall_enabled: false
+cilium_system_rules_file: "/tmp/cilium-host-firewall-system.yml"
+cilium_worker_rules_file: "/tmp/cilium-host-firewall-worker.yml"
+cilium_generated_rules_g1_file: "/tmp/cilium-host-firewall-generated-g1.yml"
+
+# Path to the admin kubeconfig on the k3s node (used by helm against the API).
+k3s_admin_kubeconfig: "{{ k3s_config_dir }}/k3s.yaml"
+
+k3s_node_taints:
+  - "node-role.kubernetes.io/control-plane:NoSchedule"
+
+k3s_node_labels: []
+# - "topology.kubernetes.io/region=nbg1"
+
+# Labels derived from inventory host_vars by 06-derive-labels.yml. Mirrors the
+# defaults of k8s-components-install so this role stays self-contained when
+# composed without it. Override in group_vars if you want different label keys.
+k8s_ingress_label_key: "ingress.nginx/enabled"
+k8s_ingress_label_value: "enabled"
+k8s_traefik_label_key: "ingress.traefik/enabled"
+k8s_traefik_label_value: "enabled"
+k8s_traefik_inventory_tag_value: "traefik"
+
+# Kubelet patching — reuses the kubeadm role's `kubelet_path` toggle and its
+# `shared/templates/kubelet/kubelet.resolv.conf.j2` so both roles render the
+# same nameserver list. For k3s the resolv-conf path is wired into the
+# top-level `resolv-conf:` key in templates/config.yaml.j2, which k3s forwards
+# to kubelet AND CoreDNS. We deliberately do NOT pass `kubelet-arg=config=...`
+# here: a hand-written KubeletConfiguration would replace k3s's own embedded
+# one (incl. containerRuntimeEndpoint=unix:///run/k3s/containerd/containerd.sock)
+# and crash-loop k3s. Required side input: `dns_nameservers` (env-wide).
+kubelet_path: true
+kubelet_resolv_conf_path: "{{ k3s_config_dir }}/kubelet.resolv.conf"
+
+# Pin the Kubernetes node name explicitly instead of letting k3s default it to
+# the OS hostname. k3s names the Node after `hostname` at first registration. If
+# the host boots with a wrong/placeholder hostname the node registers under that
+# junk name, and a later hostname change orphans the original Node object as a
+# duplicate (NotReady) for the same physical box. This repo never forces the
+# hostname (set_hostname_management is undefined everywhere), so on images that
+# don't set it themselves — e.g. the Ubuntu 26.04 "resolute" base image, which
+# ships hostname = the image filename — that is exactly what happens. Pinning the
+# node name to the short inventory hostname makes cluster identity deterministic
+# and image-independent. It equals the existing short-FQDN node names on the live
+# k3s hosts, so it is a no-op for already-correctly-named nodes (no duplicate).
+# Override per host/group if you ever need a different node name; set "" to fall
+# back to k3s's hostname-derived default.
+k3s_node_name: "{{ inventory_hostname_short }}"
+
+# Public address kubectl will use to reach the API server. Baked into the
+# server cert as a SAN and used to rewrite `server:` in the fetched kubeconfig
+# (k3s writes 127.0.0.1 there by default).
+k3s_control_plane: "{{ inventory_hostname }}"
+
+# Extra Subject Alternative Names baked into the API server certificate
+# on top of `k3s_control_plane`. Use for additional DNS names or IPs.
+k3s_tls_san: []
+# - "k3s.example.org"
+
+# Extra raw keys merged into config.yaml as-is. Use for anything not covered above.
+# Example:
+#   k3s_extra_config:
+#     cluster-cidr: "10.42.0.0/16"
+#     service-cidr: "10.43.0.0/16"
+k3s_extra_config: {}
+
+# Mirror kubeconfig to /root/.kube/config for convenient kubectl access on the node.
+k3s_copy_kubeconfig_to_root: true
+
+# Local path on the operator workstation for the fetched kubeconfig.
+# Only fetched when `k3s_get_config` is defined (run with --tags k3s-get-config).
+# Note: k3s writes `server: https://127.0.0.1:6443` into k3s.yaml — rewrite the
+# server address after fetch if you want to use it from outside the node.
+k3s_local_config_path: ~/.kube/k3s-cluster.conf

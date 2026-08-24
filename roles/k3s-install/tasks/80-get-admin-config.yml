@@ -1,0 +1,17 @@
+---
+- name: Fetch kubeconfig from remote k3s server for local use
+  ansible.builtin.fetch:
+    src: "{{ k3s_config_dir }}/k3s.yaml"
+    dest: "{{ k3s_local_config_path }}"
+    flat: true
+
+# k3s writes `server: https://127.0.0.1:6443` into k3s.yaml. Rewrite it so the
+# fetched kubeconfig works from the operator workstation out of the box.
+- name: Rewrite server URL in the fetched kubeconfig
+  ansible.builtin.replace:
+    path: "{{ k3s_local_config_path }}"
+    regexp: 'server:\s+https://127\.0\.0\.1:6443'
+    replace: "server: https://{{ k3s_control_plane }}:6443"
+  delegate_to: localhost
+  connection: local
+  become: false

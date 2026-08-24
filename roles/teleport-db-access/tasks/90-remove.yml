@@ -20,7 +20,7 @@
     state: absent
 
 - name: drop teleport-admin MySQL user
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: "{{ teleport_db_admin_user }}"
     host: "%"
     state: absent

@@ -1,0 +1,54 @@
+{{ ansible_managed | comment }}
+# HAProxy Helm values
+# Chart: https://github.com/haproxytech/helm-charts/tree/main/haproxy
+# values : https://github.com/haproxytech/helm-charts/blob/main/haproxy/values.yaml
+#
+# This is a "plain HAProxy" deployment (not the kubernetes-ingress controller).
+# It's intended as a generic L4 load balancer; the actual frontend/backend
+# config goes in `config:` below (raw haproxy.cfg, mounted as a ConfigMap).
+#
+# Keep the values file thin — env-specific overrides live in
+# env/<env>/group_vars/k8s_components_*/haproxy.yml.
+
+kind: {{ haproxy_kind | default('Deployment') }}
+replicaCount: {{ haproxy_replica_count | default(1) }}
+
+{% if haproxy_image_tag is defined %}
+image:
+  tag: "{{ haproxy_image_tag }}"
+{% endif %}
+
+{% if haproxy_service is defined %}
+service:
+{{ haproxy_service | to_nice_yaml(indent=2) | indent(2, True) }}
+{% endif %}
+
+{% if haproxy_extra_ports is defined %}
+containerPorts:
+{{ haproxy_extra_ports | to_nice_yaml(indent=2) | indent(2, True) }}
+{% endif %}
+
+{% if haproxy_config is defined %}
+config: |
+{{ haproxy_config | indent(2, True) }}
+{% endif %}
+
+{% if haproxy_resources is defined %}
+resources:
+{{ haproxy_resources | to_nice_yaml(indent=2) | indent(2, True) }}
+{% endif %}
+
+{% if haproxy_node_selector is defined %}
+nodeSelector:
+{{ haproxy_node_selector | to_nice_yaml(indent=2) | indent(2, True) }}
+{% endif %}
+
+{% if haproxy_tolerations is defined %}
+tolerations:
+{{ haproxy_tolerations | to_nice_yaml(indent=2) | indent(2, True) }}
+{% endif %}
+
+{% if haproxy_pod_annotations is defined %}
+podAnnotations:
+{{ haproxy_pod_annotations | to_nice_yaml(indent=2) | indent(2, True) }}
+{% endif %}

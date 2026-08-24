@@ -1,9 +1,14 @@
 proxyAddr: "{{ teleport_proxy_host | default('tp.example.com:443') }}"
 authToken: "{{ teleport_k8s_agent_token | default('set_me') }}"
 
-kubeClusterName:  "{{ k8s_cls_name | default('k8s-example.example.com') }}"
+kubeClusterName:  "{{ k8s_cls_fqdn | default('k8s-example.example.com') }}"
 discoveryGroup: "{{ k8s_teleport_agent_discovery_group }}"
-roles: "kube,app,discovery"
+{# Build roles dynamically — append 'db' only when DB feature is enabled #}
+{%- set _roles = ['kube', 'app', 'discovery'] -%}
+{%- if k8s_teleport_agent_db_enabled | default(false) -%}
+{%- set _ = _roles.append('db') -%}
+{%- endif -%}
+roles: "{{ _roles | join(',') }}"
 labels:
 {% for key, value in k8s_teleport_agent_kub_cluster_base_labels.items() %}
   {{ key }}: "{{ value | quote }}"
@@ -24,3 +29,81 @@ kubernetesDiscovery:
       {{ key }}: "{{ value | quote }}"
 {% endfor %}
 {% endfor %}
+{% if k8s_teleport_agent_db_enabled | default(false) and (k8s_teleport_agent_db_ca_mounts | default([])) | length > 0 %}
+
+# Mount DB server CA bundles as read-only volumes. Referenced by databases[].ca_mount.
+# Mount path: /etc/teleport-tls/<name>/ca.crt
+extraVolumes:
+{% for m in k8s_teleport_agent_db_ca_mounts %}
+  - name: "{{ m.name }}"
+    secret:
+      secretName: "{{ m.secretName }}"
+      items:
+        - key: "{{ m.key | default('ca.crt') }}"
+          path: ca.crt
+{% endfor %}
+extraVolumeMounts:
+{% for m in k8s_teleport_agent_db_ca_mounts %}
+  - name: "{{ m.name }}"
+    mountPath: "/etc/teleport-tls/{{ m.name }}"
+    readOnly: true
+{% endfor %}
+{% endif %}
+{% if k8s_teleport_agent_db_enabled | default(false) and (k8s_teleport_agent_db_resources | default([])) | length > 0 %}
+
+# Dynamic database resource matching (db_service.resources).
+# Matches db resources registered via tctl create, K8s Operator CRDs, or Terraform.
+# The agent proxies connections for any db whose labels match a selector below.
+databaseResources:
+{% for res in k8s_teleport_agent_db_resources %}
+  - labels:
+{% for key, value in res.labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endfor %}
+{% endif %}
+{% if k8s_teleport_agent_db_enabled | default(false) and (k8s_teleport_agent_databases | default([])) | length > 0 %}
+
+# Static database registrations (legacy). Prefer databaseResources + dynamic registration.
+databases:
+{% for db in k8s_teleport_agent_databases %}
+  - name: "{{ db.name }}"
+    uri: "{{ db.uri }}"
+    protocol: "{{ db.protocol }}"
+{% if db.ca_mount is defined %}
+    tls:
+      ca_cert_file: "/etc/teleport-tls/{{ db.ca_mount }}/ca.crt"
+{% endif %}
+{% if db.static_labels is defined and db.static_labels | length > 0 %}
+    static_labels:
+{% for key, value in db.static_labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+{% if db.dynamic_labels is defined and db.dynamic_labels | length > 0 %}
+    dynamic_labels:
+{% for dl in db.dynamic_labels %}
+      - name: "{{ dl.name }}"
+        command: {{ dl.command | to_json }}
+        period: "{{ dl.period | default('1h') }}"
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if (k8s_teleport_agent_static_apps | default([])) | length > 0 %}
+
+apps:
+{% for app in k8s_teleport_agent_static_apps %}
+  - name: "{{ app.name }}"
+    uri: "{{ app.uri }}"
+{% if app.public_addr is defined %}
+    public_addr: "{{ app.public_addr }}"
+{% endif %}
+{% if app.labels is defined and app.labels | length > 0 %}
+    labels:
+{% for key, value in app.labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}

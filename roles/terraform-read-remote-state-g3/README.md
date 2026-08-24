@@ -107,12 +107,12 @@ The `filter_by_labels` option creates a list variable with all matching instance
 
 ```yaml
 k8s_ingress_nodes:
-  - name: "fsn1-prod-i-50"
-    ipv4: "49.13.123.200"
-    ipv6: "2a01:4f8:c014:b8ac::1"
-  - name: "fsn1-prod-i-51"
-    ipv4: "49.13.123.201"
-    ipv6: "2a01:4f8:c014:b8ac::2"
+  - name: "demo-i-50"
+    ipv4: "203.0.113.20"
+    ipv6: "2001:db8:1::1"
+  - name: "demo-i-51"
+    ipv4: "203.0.113.21"
+    ipv6: "2001:db8:1::2"
 ```
 
 ## Output Variables

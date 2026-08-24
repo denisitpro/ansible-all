@@ -1,0 +1,87 @@
+---
+- name: Ensure apt keyrings directory exists - Ubuntu
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# apt_key is deprecated and apt-key is gone on Ubuntu 24.04+/26.04, so fetch the
+# ASCII-armored Release.key into a per-repo keyring and reference it via Signed-By
+# (same keyring + signed_by pattern as the docker-install / teleport-client roles).
+- name: Add k8s GPG key from URL - Ubuntu
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/{{ k8s_cluster_minor_version }}/deb/Release.key"
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    owner: root
+    group: root
+    mode: "0644"
+  when: apt_keyring_force_file is not defined
+
+# Offline / geo-blocked fallback: drop the key shipped in the role's files/ dir
+# instead of fetching it from pkgs.k8s.io (kept for parity with the old apt_key flow).
+- name: Add k8s GPG key from local file - Ubuntu
+  ansible.builtin.copy:
+    content: "{{ lookup('file', 'Release.' + k8s_cluster_minor_version + '.key') }}"
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    owner: root
+    group: root
+    mode: "0644"
+  when: apt_keyring_force_file is defined
+
+- name: print cluste minor  version
+  ansible.builtin.debug:
+    msg: version - "{{ k8s_cluster_minor_version }}"
+
+# deb822_repository (the non-deprecated replacement for apt_repository) imports
+# the python3-debian library on the target, so make sure it is present first.
+- name: Ensure python3-debian present (required by deb822_repository) - Ubuntu
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+    update_cache: true
+
+#  address repo https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+# pkgs.k8s.io is a FLAT repo (the trailing " /" in the old one-liner): in deb822
+# that maps to Suites: "/" with no Components.
+- name: Add k8s repository
+  ansible.builtin.deb822_repository:
+    name: kubernetes
+    types: deb
+    uris: "https://pkgs.k8s.io/core:/stable:/{{ k8s_cluster_minor_version }}/deb/"
+    suites: "/"
+    signed_by: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    state: present
+    enabled: true
+
+# The previous apt_repository task wrote an auto-named *.list file; the repo is
+# now a deb822 *.sources file, so drop the stale *.list to avoid apt
+# "configured multiple times" warnings. Matched by content, not a guessed name.
+- name: Find stale k8s .list repo file(s) - Ubuntu
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: "*.list"
+    contains: "pkgs.k8s.io"
+  register: k8s_stale_list
+
+- name: Remove stale k8s .list repo file(s) - Ubuntu
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ k8s_stale_list.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+# deb822_repository does NOT refresh the apt cache (apt_repository used to). The
+# later install task in 30-kube-services.yml uses cache_valid_time: 3600, so it
+# would skip the refresh and miss the just-added repo — force an update here.
+- name: Refresh apt cache after adding k8s repo - Ubuntu
+  ansible.builtin.apt:
+    update_cache: true
+
+# need for set corrected hostname
+- name: restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted

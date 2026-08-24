@@ -44,7 +44,7 @@ traefik_websecure_node_port: 32443
 # Add your load balancer IP(s)
 traefik_proxy_protocol:
   ipv4:
-    - 46.225.44.132/32  # Hetzner LB IP
+    - 203.0.113.10/32  # LB public IP
 
 # Important: Service uses externalTrafficPolicy: Local by default for NodePort
 # This preserves source IP when using Proxy Protocol
@@ -70,7 +70,7 @@ traefik_websecure_node_port: 32443
 # LB sends Proxy Protocol header with Cloudflare IP as source
 traefik_proxy_protocol:
   ipv4:
-    - 46.225.44.132/32  # Hetzner LB IP
+    - 203.0.113.10/32  # LB public IP
 
 # Real IP detection (Cloudflare IPs)
 # Cloudflare adds X-Forwarded-For headers with real client IP

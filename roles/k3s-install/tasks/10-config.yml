@@ -1,0 +1,9 @@
+---
+- name: render k3s config.yaml
+  ansible.builtin.template:
+    src: "config.yaml.j2"
+    dest: "{{ k3s_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: "restart k3s"

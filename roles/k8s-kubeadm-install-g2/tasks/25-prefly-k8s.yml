@@ -1,27 +1,42 @@
 ---
-- name: Add k8s key - Ubuntu
-  ansible.builtin.apt_key:
+# apt-key binary is absent on Ubuntu 26.04 (deprecated since 22.04).
+# The apt_key module calls it internally and fails; replace with get_url.
+# apt_repository is unaffected — it only writes a .list file, no apt-key needed.
+- name: Ensure apt keyrings directory exists - Ubuntu
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: apt_keyring_force_file is not defined
+
+- name: Add k8s GPG key - Ubuntu
+  ansible.builtin.get_url:
     url: "https://pkgs.k8s.io/core:/stable:/{{ k8s_cluster_minor_version }}/deb/Release.key"
-    keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    owner: root
+    group: root
+    mode: "0644"
   when: apt_keyring_force_file is not defined
 
 - name: Add k8s key from local file - Ubuntu
-  ansible.builtin.apt_key:
-    data: "{{ lookup('file', 'Release.' + k8s_cluster_minor_version + '.key') }}"
-    keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-    state: present
+  ansible.builtin.copy:
+    src: "Release.{{ k8s_cluster_minor_version }}.key"
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    owner: root
+    group: root
+    mode: "0644"
   when: apt_keyring_force_file is defined
 
-- name: print cluste minor  version
+- name: print cluster minor version
   ansible.builtin.debug:
     msg: version - "{{ k8s_cluster_minor_version }}"
 
-#  address repo https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 - name: Add k8s repository
   ansible.builtin.apt_repository:
-    repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ k8s_cluster_minor_version }}/deb/ /
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/{{ k8s_cluster_minor_version }}/deb/ /"
 
-# need for set corrected hostname
 - name: restart systemd-resolved
   ansible.builtin.systemd:
     name: systemd-resolved

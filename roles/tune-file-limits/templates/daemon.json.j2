@@ -1,0 +1,9 @@
+{
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Soft": {{ k6_docker_nofile_soft | default(65535) }},
+      "Hard": {{ k6_docker_nofile_hard | default(65535) }}
+    }
+  }
+}

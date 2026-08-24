@@ -1,0 +1,49 @@
+---
+- name: install helm
+  ansible.builtin.import_role:
+    name: helm-install
+
+- name: add cilium helm repo
+  ansible.builtin.command: helm repo add cilium https://helm.cilium.io/
+  register: cilium_repo_add
+  changed_when: '"has been added" in cilium_repo_add.stdout'
+
+- name: update helm repos
+  ansible.builtin.command: helm repo update
+  changed_when: false
+
+- name: render cilium values
+  ansible.builtin.template:
+    src: "cilium-values.yaml.j2"
+    dest: "{{ cilium_values_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: check whether cilium is already installed
+  ansible.builtin.shell: >
+    helm list -n {{ cilium_namespace }} --kubeconfig {{ k3s_admin_kubeconfig }} -q | grep -w cilium
+  register: cilium_installed
+  failed_when: false
+  changed_when: false
+
+- name: install / upgrade cilium via helm
+  ansible.builtin.command: >
+    helm upgrade --install cilium cilium/cilium
+    --namespace {{ cilium_namespace }}
+    --version {{ cilium_version }}
+    --kubeconfig {{ k3s_admin_kubeconfig }}
+    --create-namespace
+    --values {{ cilium_values_path }}
+  register: cilium_helm
+  changed_when: cilium_installed.rc != 0 or cilium_force_install | default(false) | bool
+
+- name: wait for cilium pods to be ready
+  ansible.builtin.command: >
+    kubectl --kubeconfig {{ k3s_admin_kubeconfig }}
+    -n {{ cilium_namespace }} wait pods -l k8s-app=cilium
+    --for=condition=Ready --timeout=180s
+  changed_when: false
+  async: 200
+  poll: 5
+  when: cilium_helm is changed
