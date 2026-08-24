@@ -1,0 +1,36 @@
+## {{ ansible_managed }} ##
+
+[Unit]
+Description=3proxy proxy server
+Documentation=https://github.com/3proxy/3proxy
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=3proxy
+Group=3proxy
+WorkingDirectory={{ threeproxy_config_dir }}
+ExecStart={{ threeproxy_binary_path }} {{ threeproxy_config_dir }}/3proxy.cfg
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=10s
+TimeoutStopSec=30s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=3proxy
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths={{ threeproxy_log_dir }}
+ReadOnlyPaths={{ threeproxy_config_dir }}
+
+# Capabilities for low ports
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

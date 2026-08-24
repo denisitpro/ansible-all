@@ -1,0 +1,24 @@
+---
+- name: "[psql-cluster/prefly] Create docker directories"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0775"
+  loop:
+    - "/opt/docker"
+    - "{{ psql_compose_path }}"
+
+- name: "[psql-cluster/prefly] Create psql directories"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  loop:
+    - "{{ psql_base_path }}"
+    - "{{ psql_node_data_path }}"
+    - "{{ psql_node_data_conf }}"
+    - "{{ psql_node_data_ssl }}"

@@ -1,0 +1,14 @@
+---
+- name: deploy 3proxy configuration from template
+  ansible.builtin.template:
+    src: 3proxy.cfg.j2
+    dest: "{{ threeproxy_systemd_config_dir if threeproxy_install_systemd else threeproxy_config_dir }}/3proxy.cfg"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  notify: reload 3proxy
+  changed_when: true  # Always trigger handler
+
+- name: force handlers to run now
+  ansible.builtin.meta: flush_handlers

@@ -3,15 +3,15 @@
 services:
   redis:
     image: {{ redis_image }}:{{ redis_version }}
-    container_name: redis
-    hostname: redis-{{ stand_type }}
+    container_name: {{ redis_container_name }}
+    hostname: {{ redis_container_name }}
 # work only bridge
 #    sysctls:
 #      net.core.somaxconn : 65535
     network_mode: host
     volumes:
       - {{ redis_base_path }}:{{ redis_base_path }}
-    command: redis-server {{redis_conf_path}}/redis.conf
+    command: {{ redis_server_binary | default('redis-server') }} {{redis_conf_path}}/redis.conf
 {% if redis_restart is defined %}
     restart: always
 {% endif %}

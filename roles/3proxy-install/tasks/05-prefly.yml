@@ -1,0 +1,31 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ threeproxy_compose_path }}"
+  when: threeproxy_install_docker
+
+- name: create 3proxy folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  with_items:
+    - "{{ threeproxy_config_dir }}"
+    - "{{ threeproxy_log_dir }}"
+
+- name: adjust log directory ownership (docker)
+  ansible.builtin.file:
+    path: "{{ threeproxy_log_dir }}"
+    owner: "1001"
+    group: "1001"
+    mode: '0755'
+  when: threeproxy_install_docker

@@ -14,8 +14,6 @@
     update_cache: false
   when: not binary_stat_result.stat.exists
 
-
-
 - name: Debug download proxy settings
   ansible.builtin.debug:
     msg:
@@ -30,14 +28,16 @@
     dest: "{{ consul_download_dir }}"
     mode: "0644"
     use_proxy: "{{ download_use_proxy | default('no') }}"
-  when: not binary_stat_result.stat.exists
+  when:
+    - not binary_stat_result.stat.exists
+    - consul_local_archive_path | length == 0
   environment:
     http_proxy: "{{ download_http_proxy | default('http://user:password@proxy.example.com') }}"
     https_proxy: "{{ download_https_proxy | default('https://user:password@proxy.example.com') }}"
 
 - name: Unarchive a file that is already on the remote machine
   ansible.builtin.unarchive:
-    src: "{{ consul_download_dir }}/consul_{{ consul_version }}_linux_{{ consul_go_arch }}.zip"
+    src: "{{ consul_local_archive_path | ternary(consul_local_archive_path, consul_download_dir ~ '/consul_' ~ consul_version ~ '_linux_' ~ consul_go_arch ~ '.zip') }}"
     dest: "/tmp/"
     owner: root
     group: root

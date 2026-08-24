@@ -1,0 +1,44 @@
+---
+- name: Determine username for current proxy user
+  ansible.builtin.set_fact:
+    threeproxy_current_username: >-
+      {{
+        (threeproxy_vault_data['user' ~ (user_index | string)]
+          if ('user' ~ (user_index | string)) in threeproxy_vault_data and threeproxy_vault_data['user' ~ (user_index | string)] | length > 0
+          else lookup('password', '/dev/null length=6 chars=ascii_lowercase')
+        )
+      }}
+  no_log: true
+
+- name: Determine password for current proxy user
+  ansible.builtin.set_fact:
+    threeproxy_current_password: >-
+      {{
+        (threeproxy_vault_data['password' ~ (user_index | string)]
+          if ('password' ~ (user_index | string)) in threeproxy_vault_data and threeproxy_vault_data['password' ~ (user_index | string)] | length > 0
+          else lookup('password', '/dev/null length=10 chars=ascii_letters,digits')
+        )
+      }}
+  no_log: true
+
+- name: Mark Vault data for update when username/password were generated
+  ansible.builtin.set_fact:
+    threeproxy_vault_data: >-
+      {{ threeproxy_vault_data
+          | combine({
+              'user' ~ (user_index | string): threeproxy_current_username,
+              'password' ~ (user_index | string): threeproxy_current_password
+            }, recursive=True)
+      }}
+    threeproxy_vault_needs_update: true
+  when: >-
+    ('user' ~ (user_index | string)) not in threeproxy_vault_data
+    or threeproxy_vault_data['user' ~ (user_index | string)] | length == 0
+    or ('password' ~ (user_index | string)) not in threeproxy_vault_data
+    or threeproxy_vault_data['password' ~ (user_index | string)] | length == 0
+  no_log: true
+
+- name: Append proxy user to list
+  ansible.builtin.set_fact:
+    threeproxy_users: "{{ threeproxy_users + [ {'username': threeproxy_current_username, 'password': threeproxy_current_password} ] }}"
+  no_log: true

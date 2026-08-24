@@ -1,0 +1,13 @@
+---
+- name: "[psql-cluster-backup] Preflight - create directories"
+  ansible.builtin.import_tasks: 00-prefly.yml
+  tags: [psql, psql-backup, psql-backup-prefly]
+
+
+- name: "[psql-cluster-backup] Config - deploy backup script"
+  ansible.builtin.import_tasks: 05-config.yml
+  tags: [psql, psql-backup, psql-backup-config]
+
+- name: "[psql-cluster-backup] Cleanup - remove old backups"
+  ansible.builtin.import_tasks: 90-cleanup.yml
+  tags: [never, psql-backup-cleanup]

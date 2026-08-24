@@ -61,6 +61,6 @@ client-output-buffer-limit slave 256mb 64mb 60
 client-output-buffer-limit pubsub 32mb 8mb 60
 hz 10
 aof-rewrite-incremental-fsync yes
-{% if vault_dict_users_secret.redis_pass is defined %}
-requirepass {{ vault_dict_users_secret.redis_pass }}
+{% if redis_password %}
+requirepass {{ redis_password }}
 {% endif %}

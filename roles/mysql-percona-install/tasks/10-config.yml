@@ -8,4 +8,4 @@
     mode: '0644'
   # notify: restart-docker mysq
   with_items:
-    - mysql.c3-57.cnf
+    - mysql-57.cnf

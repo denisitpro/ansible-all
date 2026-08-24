@@ -1,0 +1,31 @@
+---
+- name: "[psql-cluster/compose] Deploy docker-compose.yml"
+  ansible.builtin.template:
+    src: docker-compose.psql.yml.j2
+    dest: "{{ psql_compose_path }}/docker-compose.yml"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify: recreate-docker postgres
+
+- name: "[psql-cluster/compose] Start PostgreSQL container"
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ psql_compose_path }}/docker-compose.yml up -d"
+  register: docker_compose_up
+  changed_when: "'Creating' in docker_compose_up.stdout or 'Starting' in docker_compose_up.stdout"
+
+- name: "[psql-cluster/compose] Wait for port {{ psql_port }} to open"
+  ansible.builtin.wait_for:
+    host: "127.0.0.1"
+    port: "{{ psql_port }}"
+    delay: 10
+    timeout: 300
+
+- name: "[psql-cluster/compose] Wait for PostgreSQL to be ready"
+  ansible.builtin.command:
+    cmd: "docker exec {{ psql_docker_container_name }} pg_isready -U {{ psql_default_db_user }}"
+  register: pg_ready_check
+  until: pg_ready_check.rc == 0
+  retries: 30
+  delay: 2
+  changed_when: false

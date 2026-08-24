@@ -1,0 +1,28 @@
+---
+- name: ARC | Render controller values
+  ansible.builtin.template:
+    src: controller-values.yaml.j2
+    dest: /tmp/arc-controller-values.yaml
+    mode: "0600"
+
+- name: ARC | Install/upgrade gha-runner-scale-set-controller
+  ansible.builtin.command: >
+    helm upgrade --install {{ arc_controller_release_name }}
+    {{ arc_controller_chart_oci }}
+    --namespace {{ arc_controller_namespace }}
+    --create-namespace
+    --version {{ arc_chart_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --values /tmp/arc-controller-values.yaml
+  register: arc_controller_install
+  changed_when: arc_controller_install.rc == 0
+
+- name: ARC | Show controller helm output
+  ansible.builtin.debug:
+    var: arc_controller_install.stdout_lines
+  when: arc_controller_install.stdout_lines is defined
+
+- name: ARC | Remove controller values file
+  ansible.builtin.file:
+    path: /tmp/arc-controller-values.yaml
+    state: absent

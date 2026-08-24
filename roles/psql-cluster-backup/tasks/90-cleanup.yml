@@ -1,0 +1,8 @@
+---
+
+- name: "[psql-cluster-backup/cleanup] Delete old backup files"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ psql_old_backups.files }}"
+  when: inventory_hostname == psql_backup_node

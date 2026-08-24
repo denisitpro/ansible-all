@@ -1,0 +1,119 @@
+---
+## ── Cluster ───────────────────────────────────────────────────────────────────
+psql_cluster_name: "psql-cluster"
+psql_master_node: "psql-master"         # inventory_hostname of master
+psql_replica_nodes: []                   # list of inventory_hostnames of replicas
+# psql_replica_nodes:
+#   - psql-replica-01
+#   - psql-replica-02
+
+## ── Docker Image ──────────────────────────────────────────────────────────────
+psql_version: "18.3-alpine3.22"
+psql_image: "postgres"
+psql_main_version: "18"
+
+## ── Paths (host side) ────────────────────────────────────────────────────────
+psql_compose_path: "/opt/docker/psql"
+psql_base_path: "/opt/psql"
+psql_node_data_path: "{{ psql_base_path }}/db"
+psql_node_data_conf: "{{ psql_base_path }}/conf"
+psql_node_data_ssl: "{{ psql_base_path }}/ssl"
+
+## ── Paths (container side) ───────────────────────────────────────────────────
+psql_docker_data_path: "/var/lib/postgresql/data"
+psql_docker_conf_dir: "/etc/postgresql"
+psql_docker_ssl_dir: "/etc/ssl/psql"
+
+## ── Network ───────────────────────────────────────────────────────────────────
+psql_bind_addr: "0.0.0.0"
+psql_port: 5432
+psql_docker_container_name: "psql"
+
+## ── Auth ──────────────────────────────────────────────────────────────────────
+psql_default_db_user: "postgres"
+psql_default_db_password: "postgres"
+
+## ── Docker user (postgres uid/gid in alpine image) ───────────────────────────
+psql_docker_user_uid: 999
+psql_docker_user_gid: 999
+
+## ── TLS ───────────────────────────────────────────────────────────────────────
+psql_tls: false
+psql_domain: "selfsigned"
+psql_cert: "{{ psql_docker_ssl_dir }}/fullchain.pem"
+psql_privkey: "{{ psql_docker_ssl_dir }}/privkey.pem"
+
+## ── Performance ───────────────────────────────────────────────────────────────
+psql_shared_buffers: "128MB"
+psql_work_mem: "4MB"
+psql_maintenance_work_mem: "64MB"
+psql_max_connections: "200"
+psql_reserved_connections: "16"
+psql_max_worker_processes: "8"
+psql_max_parallel_workers_per_gather: "2"
+psql_max_parallel_workers: "8"
+psql_checkpoint_completion_target: "0.9"
+psql_wal_buffers: "16MB"
+
+## ── WAL & Replication ────────────────────────────────────────────────────────
+psql_wal_level: "replica"
+psql_max_wal_senders: 10
+psql_max_replication_slots: 10
+psql_wal_keep_size: "1GB"
+psql_hot_standby: "on"
+psql_hot_standby_feedback: "on"
+# Network allowed for replication (fallback if psql_replication_hosts not set)
+psql_replication_net: "10.0.0.0/8"
+# Explicit list of replica IPs for pg_hba (overrides psql_replication_net)
+# psql_replication_hosts:
+#   - "10.10.0.11/32"
+#   - "10.10.0.12/32"
+
+## ── Replication user password ─────────────────────────────────────────────────
+psql_pgpassword: "replication_secret"
+
+## ── Force flags ───────────────────────────────────────────────────────────────
+psql_force_create_replica: false    # Wipe and redo pg_basebackup even if already standby
+psql_force_password_update: false   # Re-apply ALTER ROLE ... PASSWORD on every run
+psql_force_grant_update: false      # Re-apply GRANT on every run
+
+## ── Users (list of dicts) ────────────────────────────────────────────────────
+psql_users:
+  - name: "replication"
+    password: "{{ psql_pgpassword }}"
+    is_replication: true
+# Additional users example:
+# psql_users:
+#   - name: "replication"
+#     password: "{{ psql_pgpassword }}"
+#     is_replication: true
+#   - name: "migrator"
+#     password: "{{ vault_dict_users_secret_g2.psql_db_pass.migrator_pass }}"
+#     member_of:
+#       - "pg_read_all_data"
+#       - "pg_write_all_data"
+#   - name: "backend"
+#     password: "{{ vault_dict_users_secret_g2.psql_db_pass.backend_pass }}"
+#     member_of:
+#       - "migrator"
+
+## ── Databases (list of dicts) ────────────────────────────────────────────────
+psql_db: []
+# psql_db:
+#   - name: "backend"
+#     owner: "migrator"
+
+## ── Host-Based Authentication ────────────────────────────────────────────────
+psql_hba_acl_allow_all: false
+psql_hba_acl: []
+# psql_hba_acl:
+#   - user: "devops"
+#     database: "all"
+#     address:
+#       - "10.10.0.5/32"
+#   - user: "backend"
+#     database: "backend"
+#     address: "10.10.0.0/24"
+
+## ── Consul ────────────────────────────────────────────────────────────────────
+psql_consul_service_name: "postgres"

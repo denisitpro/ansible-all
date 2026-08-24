@@ -19,6 +19,13 @@
     - s3-backups
     - monthly-backup
 
+- ansible.builtin.import_tasks: 08-payload-backup.yml
+  when: payload_backup_enabled | default(false)
+  tags:
+    - backup
+    - s3-backups
+    - payload-backup
+
 - ansible.builtin.import_tasks: 10-state-backup.yml
   when: state_backup_enabled | default(false)
   tags:

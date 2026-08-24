@@ -1,0 +1,33 @@
+---
+- name: create 3proxy compose directory
+  ansible.builtin.file:
+    path: "{{ threeproxy_compose_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: deploy 3proxy docker-compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ threeproxy_compose_path }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart 3proxy docker
+
+- name: ensure docker daemon is running
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+  ignore_errors: true
+
+- name: start 3proxy docker-compose services
+  community.docker.docker_compose_v2:
+    project_src: "{{ threeproxy_compose_path }}"
+    state: present
+    pull: always
+  register: threeproxy_compose_result
+  become: true

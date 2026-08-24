@@ -1,0 +1,31 @@
+---
+- name: ARC | Ensure helm is available
+  ansible.builtin.command: helm version
+  register: arc_helm_check
+  changed_when: false
+  failed_when: arc_helm_check.rc != 0
+
+# Fail before installing anything if a scale set lacks its name, GitHub config
+# URL, or credentials. The loop label keeps secret-bearing data out of output.
+- name: ARC | Validate runner scale set config and credentials
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - (item.name | default('')) | length > 0
+      - item.github_config_url is defined
+      - (item.github_config_url | default('')) | length > 0
+      - "'REPLACE_ME' not in (item.github_config_url | default(''))"
+      - >-
+        ((item.github_token | default('')) | length > 0)
+        or
+        (((item.github_app_id | default('')) | length > 0)
+         and ((item.github_app_installation_id | default('')) | length > 0)
+         and ((item.github_app_private_key | default('')) | length > 0))
+    fail_msg: >-
+      Runner scale set '{{ item.name | default('?') }}' is missing its name,
+      GitHub config URL, or credentials. Create the GitHub App (or PAT), store
+      it in Vault, and ensure vault_dict_users_secret_g2 is populated.
+    quiet: true
+  loop: "{{ arc_runner_scale_sets }}"
+  loop_control:
+    label: "{{ item.name | default('?') }} ({{ item.namespace | default(arc_runners_namespace) }})"

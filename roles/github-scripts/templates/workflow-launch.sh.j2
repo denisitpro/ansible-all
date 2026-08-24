@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+#
+# {{ item.dest }}
+# Triggers a GitHub Actions workflow_dispatch event via GitHub App installation token.
+#
+# Usage:
+#   {{ item.dest }} <workflow_file> [ref] [inputs_json]
+#
+# Arguments:
+#   workflow_file  Workflow filename, e.g. build.yml                (or env: GH_WORKFLOW)
+#   ref            Branch or tag, e.g. main, v1.2.3                 (or env: GH_REF, default: main)
+#   inputs_json    Optional JSON string for workflow inputs          (or env: GH_INPUTS)
+#                  e.g. '{"environment":"staging","version":"1.0.0"}'
+#
+# Requirements: bash, openssl, curl, python3
+
+set -euo pipefail
+
+# ---------- Compiled-in configuration (rendered by Ansible) ----------
+APP_ID="{{ item.gh_app_id }}"
+INSTALLATION_ID="{{ item.gh_installation_id }}"
+REPO="{{ item.gh_repo }}"
+PEM_PATH="{{ github_apps_certs_dir }}/{{ item.gh_pem_vault_key }}.pem"
+# ---------------------------------------------------------------------
+
+# Simple logger with timestamp and severity
+log() {
+  local level="$1"; shift
+  printf '[%s] [%s] %s\n' "$(date '+%H:%M:%S')" "$level" "$*" >&2
+}
+
+# ---------- CLI args / env vars ----------
+WORKFLOW="${1:-${GH_WORKFLOW:-}}"
+REF="${2:-${GH_REF:-main}}"
+INPUTS="${3:-${GH_INPUTS:-}}"
+
+if [[ -z "$WORKFLOW" ]]; then
+  log ERROR "Workflow file not specified. Pass as first argument or set GH_WORKFLOW env var."
+  log ERROR "Usage: $0 <workflow_file> [ref] [inputs_json]"
+  exit 1
+fi
+
+log INFO "Starting workflow dispatch"
+log INFO "Repo:            $REPO"
+log INFO "Workflow file:   $WORKFLOW"
+log INFO "Ref:             $REF"
+log INFO "App ID:          $APP_ID"
+log INFO "Installation ID: $INSTALLATION_ID"
+[[ -n "$INPUTS" ]] && log INFO "Inputs:          $INPUTS"
+
+# ---------- Step 0: sanity checks ----------
+log INFO "Step 0: checking prerequisites"
+
+if [[ ! -f "$PEM_PATH" ]]; then
+  log ERROR "Private key file not found at: $PEM_PATH"
+  exit 1
+fi
+log INFO "Private key file found: $PEM_PATH"
+
+for cmd in openssl curl python3; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    log ERROR "Required command not found in PATH: $cmd"
+    exit 1
+  fi
+done
+log INFO "All required commands are available"
+
+# ---------- Step 1: build a JWT (valid for 10 minutes) ----------
+log INFO "Step 1: generating JWT signed with the App private key"
+
+now=$(date +%s)
+iat=$((now - 60))    # issued 60s in the past to tolerate clock skew
+exp=$((now + 540))   # expires in 9 minutes (max allowed is 10)
+
+# base64url encoder: standard base64 with +/= replaced/stripped
+b64url() {
+  openssl base64 -A | tr '+/' '-_' | tr -d '='
+}
+
+header=$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)
+payload_jwt=$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$iat" "$exp" "$APP_ID" | b64url)
+signing_input="${header}.${payload_jwt}"
+
+signature=$(printf '%s' "$signing_input" \
+  | openssl dgst -sha256 -sign "$PEM_PATH" \
+  | b64url)
+
+jwt="${signing_input}.${signature}"
+jwt_len=$(printf '%s' "$jwt" | wc -c | tr -d ' ')
+log INFO "JWT generated successfully (length: $jwt_len chars, expires in 9 min)"
+
+# ---------- Step 2: exchange JWT for an installation access token ----------
+log INFO "Step 2: requesting installation access token from GitHub"
+
+token_response_file=$(mktemp)
+trap 'rm -f "$token_response_file"' EXIT
+
+token_http_code=$(curl -sS -o "$token_response_file" -w '%{http_code}' \
+  -X POST \
+  -H "Authorization: Bearer $jwt" \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  "https://api.github.com/app/installations/$INSTALLATION_ID/access_tokens")
+
+log INFO "Token endpoint HTTP status: $token_http_code"
+
+if [[ "$token_http_code" != "201" ]]; then
+  log ERROR "Failed to obtain installation token. Response body:"
+  cat "$token_response_file" >&2
+  exit 1
+fi
+
+# Parse JSON with python3 (robust); fallback grep version is commented below.
+token=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["token"])' "$token_response_file")
+# Fallback without python3:
+# token=$(grep -o '"token":"[^"]*' "$token_response_file" | cut -d'"' -f4)
+
+if [[ -z "$token" ]]; then
+  log ERROR "Token field is empty in the response"
+  exit 1
+fi
+log INFO "Installation token acquired (prefix: ${token:0:8}..., valid for ~1h)"
+
+# ---------- Step 3: (optional) verify which repos the token can access ----------
+log INFO "Step 3: verifying repositories accessible by this installation"
+
+repos_json=$(curl -sS \
+  -H "Authorization: token $token" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/installation/repositories)
+
+repo_list=$(printf '%s' "$repos_json" \
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); print("\n".join(r["full_name"] for r in d.get("repositories", [])))')
+
+if [[ -z "$repo_list" ]]; then
+  log WARN "Installation has no accessible repositories — check App installation scope"
+else
+  log INFO "Accessible repositories:"
+  while IFS= read -r r; do log INFO "  - $r"; done <<< "$repo_list"
+fi
+
+# ---------- Step 4: trigger the workflow_dispatch event ----------
+log INFO "Step 4: dispatching workflow '$WORKFLOW' on ref '$REF'"
+
+dispatch_response_file=$(mktemp)
+trap 'rm -f "$token_response_file" "$dispatch_response_file"' EXIT
+
+# Build dispatch payload; include inputs only when provided
+if [[ -n "$INPUTS" ]]; then
+  dispatch_payload=$(printf '{"ref":"%s","inputs":%s}' "$REF" "$INPUTS")
+else
+  dispatch_payload=$(printf '{"ref":"%s"}' "$REF")
+fi
+
+dispatch_http_code=$(curl -sS -o "$dispatch_response_file" -w '%{http_code}' \
+  -X POST \
+  -H "Authorization: token $token" \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
+  -d "$dispatch_payload")
+
+log INFO "Dispatch endpoint HTTP status: $dispatch_http_code"
+
+# A successful workflow_dispatch returns 204 No Content with empty body
+if [[ "$dispatch_http_code" == "204" ]]; then
+  log INFO "SUCCESS: workflow '$WORKFLOW' has been triggered on ref '$REF'"
+  log INFO "Check runs at: https://github.com/$REPO/actions/workflows/$WORKFLOW"
+  exit 0
+else
+  log ERROR "Dispatch failed. Response body:"
+  cat "$dispatch_response_file" >&2
+  exit 1
+fi

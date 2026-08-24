@@ -1,0 +1,59 @@
+## {{ ansible_managed }} ##
+
+# ── Connection ────────────────────────────────────────────────────────────────
+listen_addresses = '{{ psql_bind_addr }}'
+port = {{ psql_port }}
+max_connections = {{ psql_max_connections | default('100') }}
+reserved_connections = {{ psql_reserved_connections | default('16') }}
+
+# ── TLS ───────────────────────────────────────────────────────────────────────
+{% if psql_tls %}
+ssl = on
+ssl_cert_file = '{{ psql_cert }}'
+ssl_key_file = '{{ psql_privkey }}'
+{% else %}
+ssl = off
+{% endif %}
+scram_iterations = {{ psql_scram_iterations | default('4096') }}
+
+# ── Memory ────────────────────────────────────────────────────────────────────
+shared_buffers = {{ psql_shared_buffers | default('128MB') }}
+work_mem = {{ psql_work_mem | default('4MB') }}
+maintenance_work_mem = {{ psql_maintenance_work_mem | default('64MB') }}
+
+# ── Parallel workers ──────────────────────────────────────────────────────────
+max_worker_processes = {{ psql_max_worker_processes | default('8') }}
+max_parallel_workers_per_gather = {{ psql_max_parallel_workers_per_gather | default('2') }}
+max_parallel_workers = {{ psql_max_parallel_workers | default('8') }}
+
+# ── WAL & Replication ─────────────────────────────────────────────────────────
+# Both master and replicas use replica wal_level so any node can become primary
+wal_level = {{ psql_wal_level | default('replica') }}
+max_wal_senders = {{ psql_max_wal_senders | default(10) }}
+max_replication_slots = {{ psql_max_replication_slots | default(10) }}
+wal_keep_size = {{ psql_wal_keep_size | default('1GB') }}
+hot_standby = {{ psql_hot_standby | default('on') }}
+hot_standby_feedback = {{ psql_hot_standby_feedback | default('on') }}
+
+# ── Checkpoints ───────────────────────────────────────────────────────────────
+checkpoint_completion_target = {{ psql_checkpoint_completion_target | default('0.9') }}
+wal_buffers = {{ psql_wal_buffers | default('16MB') }}
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+log_timezone = 'UTC'
+log_destination = 'stderr'
+logging_collector = off
+
+# ── Locale ────────────────────────────────────────────────────────────────────
+datestyle = 'iso, mdy'
+timezone = 'UTC'
+lc_messages = 'en_US.utf8'
+lc_monetary = 'en_US.utf8'
+lc_numeric = 'en_US.utf8'
+lc_time = 'en_US.utf8'
+default_text_search_config = 'pg_catalog.english'
+
+{% if psql_shared_preload_libraries is defined %}
+# ── Extensions ────────────────────────────────────────────────────────────────
+shared_preload_libraries = '{{ psql_shared_preload_libraries | join(",") }}'
+{% endif %}

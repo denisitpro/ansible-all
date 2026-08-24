@@ -1,0 +1,52 @@
+---
+# Installation method settings
+threeproxy_install_docker: true
+threeproxy_install_systemd: false
+
+# Docker installation settings
+threeproxy_compose_path: /opt/docker/3proxy
+threeproxy_version: 0.9.6
+
+# Systemd installation settings
+threeproxy_binary_path: /usr/bin/3proxy
+threeproxy_systemd_service_name: 3proxy
+threeproxy_download_url: "https://github.com/3proxy/3proxy/releases/download/{{ threeproxy_version }}/3proxy-{{ threeproxy_version }}.x86_64.deb"
+
+# Common settings
+threeproxy_config_dir: /opt/3proxy
+threeproxy_log_dir: /opt/3proxy/logs
+
+# Systemd-specific paths (deb package layout)
+threeproxy_systemd_config_dir: /etc/3proxy
+threeproxy_systemd_log_dir: /var/log/3proxy
+
+threeproxy_types:
+  - type: "http"
+    port: "3128"
+    auth_required: true
+  - type: "socks5"
+    port: "1080"
+    auth_required: true
+
+threeproxy_users:
+  - username: "{{ vault_dict_users_secret_g2.threeproxy_auth.username | default('user') }}"
+    password: "{{ vault_dict_users_secret_g2.threeproxy_auth.password | default('pass') }}"
+
+# Domain whitelist settings
+threeproxy_enable_whitelist: false
+threeproxy_allowed_domains: []
+# threeproxy_allowed_ips: []
+# Example:
+# threeproxy_allowed_domains:
+#   - "google.com"
+#   - "customer.io"
+#   - "dstdomain.com"
+
+threeproxy_docker_labels:
+  app.name: "3proxy"
+  app.type: "proxy"
+  app.role: "proxy"
+  app.environment: "{{ stand_type | default('unknown') }}"
+  app.version: "{{ threeproxy_version }}"
+  app.hostname: "{{ ansible_facts['hostname'] }}"
+  app.tier: "proxy"

@@ -1,0 +1,66 @@
+---
+## Manual replica promotion to primary
+##
+## Usage:
+##   ansible-playbook site.yml -i inventory -t psql-promote --limit <replica-hostname>
+##
+## Steps performed:
+##   1. Verify the target node is currently a standby (fail if already primary)
+##   2. Promote it to primary via pg_promote()
+##   3. Wait for promotion to complete
+##   4. Print cluster state summary
+##
+## After promotion you should:
+##   - Update psql_master_node in your inventory/group_vars to the new primary
+##   - Re-run the full playbook to reconfigure the old master as a replica
+##     (or handle it manually via pg_basebackup)
+
+- name: "[psql-cluster/promote] Verify node is currently a standby"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc "SELECT pg_is_in_recovery();"
+  register: promote_standby_check
+  changed_when: false
+  failed_when: promote_standby_check.stdout | trim != "t"
+
+- name: "[psql-cluster/promote] Promote replica to primary via pg_promote()"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c "SELECT pg_promote();"
+  register: promote_result
+  changed_when: true
+
+- name: "[psql-cluster/promote] Wait for promotion to complete"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc "SELECT pg_is_in_recovery();"
+  register: post_promote_check
+  until: post_promote_check.stdout | trim == "f"
+  retries: 15
+  delay: 2
+  changed_when: false
+
+- name: "[psql-cluster/promote] Print new primary status"
+  ansible.builtin.debug:
+    msg: >-
+      Node {{ inventory_hostname }} successfully promoted to PRIMARY.
+      Remember to update psql_master_node in your vars and
+      reconfigure remaining nodes as replicas.
+
+- name: "[psql-cluster/promote] Show replication slots on new primary"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c
+      "SELECT slot_name, slot_type, active FROM pg_replication_slots;"
+  register: replication_slots
+  changed_when: false
+  failed_when: false
+
+- name: "[psql-cluster/promote] Print replication slots"
+  ansible.builtin.debug:
+    msg: "{{ replication_slots.stdout_lines }}"
+  when: replication_slots.stdout_lines | length > 0

@@ -1,0 +1,33 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - 3proxy
+    - 3proxy-prefly
+    - 3proxy-docker
+    - 3proxy-systemd
+
+- ansible.builtin.import_tasks: 20-configure.yml
+  tags:
+    - 3proxy
+    - 3proxy-config
+    - 3proxy-docker
+    - 3proxy-systemd
+
+- ansible.builtin.import_tasks: 30-install-systemd.yml
+  when: threeproxy_install_systemd
+  tags:
+    - 3proxy
+    - 3proxy-systemd
+
+- ansible.builtin.import_tasks: 35-compose.yml
+  when: threeproxy_install_docker
+  tags:
+    - 3proxy
+    - 3proxy-docker
+
+- ansible.builtin.import_tasks: 50-health-check.yml
+  tags:
+    - 3proxy
+    - 3proxy-health
+    - 3proxy-docker
+    - 3proxy-systemd

@@ -139,7 +139,7 @@ This role depends on external roles for optional features:
 
 | Feature | Required Roles | Description |
 |---------|---------------|-------------|
-| Encryption | `rage-install`<br>`backup-directory` | Installs rage tool and encryption script |
+| Encryption | `rage-install`<br>`ct-backup-directory` | Installs rage tool and encryption script |
 | S3 Upload | `rclone-install` | Installs rclone for S3 operations |
 
 Make sure these roles are included in your playbook **before** `gitlab-ce-docker` role:
@@ -148,7 +148,7 @@ Make sure these roles are included in your playbook **before** `gitlab-ce-docker
 roles:
   - rclone-install        # For S3 upload
   - rage-install          # For encryption
-  - backup-directory      # For encryption script
+  - ct-backup-directory   # For encryption script
   - gitlab-ce-docker      # GitLab with backup
 ```
 

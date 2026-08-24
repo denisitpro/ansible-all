@@ -1,0 +1,19 @@
+---
+- name: Ensure github scripts destination directory exists
+  ansible.builtin.file:
+    path: "{{ github_scripts_dest_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ github_scripts_file_owner }}"
+    group: "{{ github_scripts_file_group }}"
+
+- name: Deploy github scripts from templates list
+  ansible.builtin.template:
+    src: "{{ item.template }}"
+    dest: "{{ github_scripts_dest_dir }}/{{ item.dest }}"
+    owner: "{{ item.owner | default(github_scripts_file_owner) }}"
+    group: "{{ item.group | default(github_scripts_file_group) }}"
+    mode: "{{ item.mode | default(github_scripts_file_mode) }}"
+  loop: "{{ github_scripts_files }}"
+  loop_control:
+    label: "{{ item.dest }}"

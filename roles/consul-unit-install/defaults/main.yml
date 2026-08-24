@@ -14,6 +14,12 @@ consul_binary_dir: /usr/local/bin
 consul_download_url: https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_{{ consul_go_arch }}.zip
 consul_download_dir: /tmp
 
+# Optional escape hatch: full path to a pre-staged consul zip on the remote host.
+# When set, the download step is skipped and this file is unarchived directly.
+# Use for hosts with no/unreliable egress (e.g. behind a restrictive filter) — stage the
+# archive manually (scp) at this path. Empty = normal download behaviour.
+consul_local_archive_path: ""
+
 consul_config_dir: /etc/consul.d
 consul_tmpl_dir: "{{ consul_base_path }}/tmpl"
 

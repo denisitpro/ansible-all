@@ -1,0 +1,50 @@
+---
+- name: Ensure threeproxy_users_count is integer
+  ansible.builtin.set_fact:
+    threeproxy_users_count_int: "{{ threeproxy_users_count | int }}"
+
+- name: Initialize threeproxy users list and Vault data
+  ansible.builtin.set_fact:
+    threeproxy_users: []
+    threeproxy_vault_data: {}
+    threeproxy_vault_needs_update: false
+
+- name: Read 3proxy users secret from Vault
+  ansible.builtin.uri:
+    url: "{{ vault_url_direct }}/v1/{{ threeproxy_vault_backend }}/data/{{ threeproxy_vault_base_path }}"
+    method: GET
+    headers:
+      X-Vault-Token: "{{ vault_normalized_access_token }}"
+      Accept: "application/json"
+    return_content: true
+    status_code: [200]
+  register: threeproxy_vault_secret
+  no_log: true
+
+- name: Extract existing Vault data when accessible
+  ansible.builtin.set_fact:
+    threeproxy_vault_data: "{{ threeproxy_vault_secret.json.data.data }}"
+  when: threeproxy_vault_secret.status == 200
+  no_log: true
+
+- name: Build 3proxy users from Vault data or generate
+  ansible.builtin.include_tasks: 11-user-from-vault.yml
+  loop: "{{ range(1, threeproxy_users_count_int + 1) | list }}"
+  loop_control:
+    loop_var: user_index
+
+- name: Write updated 3proxy users secret to Vault when needed
+  ansible.builtin.uri:
+    url: "{{ vault_url_direct }}/v1/{{ threeproxy_vault_backend }}/data/{{ threeproxy_vault_base_path }}"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ vault_normalized_access_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      data: "{{ threeproxy_vault_data }}"
+    status_code: [200, 204]
+  when:
+    - threeproxy_vault_needs_update | bool
+    - threeproxy_vault_secret.status != 403
+  no_log: true

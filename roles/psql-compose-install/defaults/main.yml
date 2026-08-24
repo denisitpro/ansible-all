@@ -1,5 +1,5 @@
 ---
-psql_version: 18.1-alpine3.23
+psql_version: 18.4-alpine3.24
 psql_image: "postgres"
 
 psql_compose_path: "/opt/docker/psql"
@@ -17,7 +17,7 @@ psql_node_data_ssl: "{{ psql_base_path }}/ssl"
 
 # Example update for PostgreSQL 18 and above:
 # psql_main_version: 18
-# psql_version: 18.1-alpine3.23
+# psql_version: 18.4-alpine3.24
 # psql_node_data_path: "{{ psql_base_path }}/db/{{ psql_main_version }}"
 # psql_docker_data_path: "/var/lib/postgresql/{{ psql_main_version }}/docker"
 

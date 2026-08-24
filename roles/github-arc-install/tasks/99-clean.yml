@@ -1,0 +1,29 @@
+---
+# Teardown. Uninstall scale sets first (they depend on the controller), then the
+# controller. `not found` is tolerated so the task is idempotent on a partial or
+# already-clean cluster. Namespaces are left in place (cheap, and may hold other
+# resources); delete them by hand if you really want a bare node.
+- name: ARC | Uninstall runner scale sets
+  ansible.builtin.command: >
+    helm uninstall {{ item.name }}
+    --namespace {{ item.namespace | default(arc_runners_namespace) }}
+    --kubeconfig {{ k8s_config_path }}
+  loop: "{{ arc_runner_scale_sets }}"
+  loop_control:
+    label: "{{ item.name }} ({{ item.namespace | default(arc_runners_namespace) }})"
+  register: arc_rss_uninstall
+  changed_when: "'uninstalled' in (arc_rss_uninstall.stdout | default(''))"
+  failed_when:
+    - arc_rss_uninstall.rc != 0
+    - "'not found' not in (arc_rss_uninstall.stderr | default(''))"
+
+- name: ARC | Uninstall controller
+  ansible.builtin.command: >
+    helm uninstall {{ arc_controller_release_name }}
+    --namespace {{ arc_controller_namespace }}
+    --kubeconfig {{ k8s_config_path }}
+  register: arc_controller_uninstall
+  changed_when: "'uninstalled' in (arc_controller_uninstall.stdout | default(''))"
+  failed_when:
+    - arc_controller_uninstall.rc != 0
+    - "'not found' not in (arc_controller_uninstall.stderr | default(''))"

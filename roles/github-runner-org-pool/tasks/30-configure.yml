@@ -1,0 +1,52 @@
+---
+- name: render runner env-file per pool (secrets, mode 0600)
+  ansible.builtin.template:
+    src: "runner.env.j2"
+    dest: "{{ github_runner_pool_compose_path }}/{{ item.org_name }}/runner.env"
+    mode: "0600"
+    owner: root
+    group: root
+  loop: "{{ github_runner_pools }}"
+  loop_control:
+    label: "{{ item.org_name }}"
+  register: github_runner_pool_env_render
+  no_log: true
+  notify: recreate-docker github-runner-pool
+
+- name: render compose-file per pool — github runner pool
+  ansible.builtin.template:
+    src: "docker-compose.github-runner-pool.yml.j2"
+    dest: "{{ github_runner_pool_compose_path }}/{{ item.org_name }}/docker-compose.yml"
+    mode: "0600"
+    owner: root
+    group: root
+  loop: "{{ github_runner_pools }}"
+  loop_control:
+    label: "{{ item.org_name }}"
+  register: github_runner_pool_compose_render
+  notify: recreate-docker github-runner-pool
+
+# Pools whose env-file or compose-file changed need a recreate+pull. The handler
+# loops over this list; we store the full pool dicts (deduped) so it has the
+# org_name and size for each one. Size-only changes do not land here (scale is a
+# compose-up parameter, not part of the rendered files) — they converge via the
+# "ensure ... at configured scale" task below without a disruptive recreate.
+- name: compute pools needing recreate
+  ansible.builtin.set_fact:
+    github_runner_pools_changed: >-
+      {{ (github_runner_pool_env_render.results + github_runner_pool_compose_render.results)
+         | selectattr('changed')
+         | map(attribute='item')
+         | list | unique }}
+
+# Ensure every pool is running at the configured scale without forcing recreate.
+# Covers initial bring-up and live resize via `size` / github_runner_pool_size.
+- name: ensure each pool is running at configured scale
+  community.docker.docker_compose_v2:
+    project_src: "{{ github_runner_pool_compose_path }}/{{ item.org_name }}"
+    state: present
+    scale:
+      runner: "{{ (item.size | default(github_runner_pool_size)) | int }}"
+  loop: "{{ github_runner_pools }}"
+  loop_control:
+    label: "{{ item.org_name }}"

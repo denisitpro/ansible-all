@@ -1,0 +1,47 @@
+---
+- name: create docker base folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  loop:
+    - "/opt/docker"
+    - "{{ github_runner_pool_compose_path }}"
+
+# --- Migration from the pre-multi-pool layout ---
+# Older revisions of this role ran a single pool with its compose project
+# directly in github_runner_pool_compose_path. The multi-pool layout moves every
+# pool into <compose_path>/<org_name>. Tear the legacy root-level project down
+# first, otherwise its containers keep running as orphans alongside the new ones.
+- name: detect legacy single-pool compose
+  ansible.builtin.stat:
+    path: "{{ github_runner_pool_compose_path }}/docker-compose.yml"
+  register: github_runner_pool_legacy_compose
+
+- name: tear down legacy single-pool project
+  community.docker.docker_compose_v2:
+    project_src: "{{ github_runner_pool_compose_path }}"
+    state: absent
+  when: github_runner_pool_legacy_compose.stat.exists
+
+- name: remove legacy single-pool files
+  ansible.builtin.file:
+    path: "{{ github_runner_pool_compose_path }}/{{ item }}"
+    state: absent
+  loop:
+    - docker-compose.yml
+    - runner.env
+  when: github_runner_pool_legacy_compose.stat.exists
+
+- name: create per-pool compose folders
+  ansible.builtin.file:
+    path: "{{ github_runner_pool_compose_path }}/{{ item.org_name }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  loop: "{{ github_runner_pools }}"
+  loop_control:
+    label: "{{ item.org_name }}"

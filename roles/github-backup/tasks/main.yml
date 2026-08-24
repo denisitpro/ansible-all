@@ -1,0 +1,11 @@
+---
+- ansible.builtin.import_tasks: 05-gh-install.yml
+  when: github_backup_enabled | default(false)
+  tags:
+    - github-backup
+    - gh-install
+
+- ansible.builtin.import_tasks: 10-script.yml
+  when: github_backup_enabled | default(false)
+  tags:
+    - github-backup

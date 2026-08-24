@@ -1,0 +1,22 @@
+---
+github_scripts_enabled: false
+
+github_scripts_dest_dir: "/opt/scripts"
+github_apps_certs_dir: "/opt/github-apps"
+github_scripts_file_owner: "root"
+github_scripts_file_group: "root"
+github_scripts_file_mode: "0755"
+
+# Vault dict for GitHub App private keys.
+# Populated from vault_extend_g2 → vault_dict_users_secret_g2
+# Access pattern: vault_dict_users_secret_g2[gh_pem_vault_group][gh_pem_vault_key]
+# PEM files are stored as: github_apps_certs_dir/<gh_pem_vault_key>.pem
+
+# List of scripts to render from templates.
+# template:          source template in role templates/
+# dest:              destination filename in github_scripts_dest_dir
+# gh_pem_vault_group: name field in vault_extend_g2 (first level key in vault_dict_users_secret_g2)
+# gh_pem_vault_key:  key within that vault group; also used as pem filename
+github_scripts_files:
+  - template: "workflow-launch.sh.j2"
+    dest: "workflow-launch.sh"

@@ -1,0 +1,37 @@
+{{ ansible_managed | comment }}
+
+# Ephemeral GitHub Actions runner pool (org-scoped: {{ item.org_name }}).
+# Single service `runner`, scaled to N replicas via the Ansible role.
+# Do NOT set `container_name` here — it is incompatible with scale.
+services:
+  runner:
+    image: "myoung34/github-runner:{{ item.tag | default(github_runner_pool_tag) }}"
+    env_file:
+      - runner.env
+    environment:
+      RUNNER_SCOPE: "org"
+      ORG_NAME: "{{ item.org_name }}"
+{% if item.github_host is defined and (item.github_host | string | length) > 0 %}
+      GITHUB_HOST: "{{ item.github_host }}"
+{% endif %}
+{% if item.runner_group is defined and (item.runner_group | string | length) > 0 %}
+      RUNNER_GROUP: "{{ item.runner_group }}"
+{% endif %}
+      RUNNER_NAME_PREFIX: "{{ item.name_prefix | default(github_runner_pool_name_prefix) }}"
+      RANDOM_RUNNER_SUFFIX: "true"
+      LABELS: "{{ ((item.labels | default(github_runner_pool_labels)) + [inventory_hostname_short]) | unique | join(',') }}"
+      EPHEMERAL: "true"
+{% if github_runner_pool_disable_auto_update %}
+      DISABLE_AUTO_UPDATE: "true"
+{% endif %}
+{% if github_runner_pool_unset_config_vars %}
+      UNSET_CONFIG_VARS: "true"
+{% endif %}
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    restart: {{ item.restart | default(github_runner_pool_restart | default('unless-stopped')) }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

@@ -1,0 +1,31 @@
+---
+- name: Check if per-pool docker-compose.yml exists
+  ansible.builtin.stat:
+    path: "{{ github_runner_pool_compose_path }}/{{ item.org_name }}/docker-compose.yml"
+  register: github_runner_pool_clean_stat
+  loop: "{{ github_runner_pools }}"
+  loop_control:
+    label: "{{ item.org_name }}"
+
+- name: stop compose per pool
+  community.docker.docker_compose_v2:
+    project_src: "{{ github_runner_pool_compose_path }}/{{ item.item.org_name }}"
+    state: absent
+  loop: "{{ github_runner_pool_clean_stat.results }}"
+  loop_control:
+    label: "{{ item.item.org_name }}"
+  when: item.stat.exists
+
+- name: Remove per-pool project directories
+  ansible.builtin.file:
+    path: "{{ github_runner_pool_compose_path }}/{{ item.org_name }}"
+    state: absent
+  loop: "{{ github_runner_pools }}"
+  loop_control:
+    label: "{{ item.org_name }}"
+
+- name: Remove cron maintenance entry
+  ansible.builtin.cron:
+    name: "Docker cleanup old images and builder cache (github-runner-pool)"
+    state: absent
+    user: root

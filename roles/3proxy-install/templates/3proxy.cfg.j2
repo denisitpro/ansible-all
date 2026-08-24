@@ -1,0 +1,60 @@
+## {{ ansible_managed }} ##
+
+# Logging
+log {{ threeproxy_systemd_log_dir if threeproxy_install_systemd else threeproxy_log_dir }}/3proxy.log D
+logformat "- +_L%t.%.  %N.%p %E %U %C:%c %R:%r %O %I %h %T"
+rotate 30
+
+# DNS
+nserver {{ dns_server | default('1.1.1.1') }}
+nserver {{ secondary_dns | default('8.8.8.8') }}
+nscache 65536
+
+# Daemon configuration
+maxconn 60000
+
+# Authentication users
+{% if threeproxy_users is defined and threeproxy_users | length > 0 %}
+{% for user in threeproxy_users %}
+users {{ user.username }}:CL:{{ user.password }}
+{% endfor %}
+{% endif %}
+
+auth strong
+
+# Access control rules
+{% if threeproxy_enable_whitelist and threeproxy_allowed_domains is defined and threeproxy_allowed_domains | length > 0 %}
+# ===== WHITELIST =====
+# HTTPS via CONNECT (proxy) / TLS destinations (socks)
+{% for domain in threeproxy_allowed_domains %}
+allow * * {{ domain }} 443
+allow * * *.{{ domain }} 443
+{% endfor %}
+
+# optional plain HTTP
+{% for domain in threeproxy_allowed_domains %}
+allow * * {{ domain }} 80
+allow * * *.{{ domain }} 80
+{% endfor %}
+
+# deny everything else
+deny * * * *
+{% elif threeproxy_allowed_ips is defined and threeproxy_allowed_ips | length > 0 %}
+# IP-based access control
+{% for ip in threeproxy_allowed_ips %}
+allow {{ ip }}
+{% endfor %}
+{% else %}
+# Allow all by default
+allow * *
+{% endif %}
+
+{% for threeproxy_type in threeproxy_types %}
+# {{ threeproxy_type.type | upper }} Proxy Service
+{% if threeproxy_type.type == 'http' %}
+proxy -p{{ threeproxy_type.port }}
+{% elif threeproxy_type.type == 'socks5' %}
+socks -p{{ threeproxy_type.port }}
+{% endif %}
+
+{% endfor %}

@@ -1,0 +1,54 @@
+## {{ ansible_managed }} ##
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# ── Local connections (always trusted) ───────────────────────────────────────
+local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+host    all             all             ::1/128                 trust
+host    all       all   0.0.0.0/0     scram-sha-256
+host    all       all   ::/0          scram-sha-256
+# ── Replication: local connections ───────────────────────────────────────────
+local   replication     all                                     trust
+host    replication     all             127.0.0.1/32            trust
+host    replication     all             ::1/128                 trust
+
+{% if psql_hba_acl_allow_all %}
+# ── Allow all (testing mode) ──────────────────────────────────────────────────
+{{ 'hostssl' if psql_tls else 'host' }}    all             all             all                     scram-sha-256
+
+{% endif %}
+# ── Replication: from cluster nodes (all members) ────────────────────────────
+{% if psql_replication_hosts is defined and psql_replication_hosts | length > 0 %}
+# Source: psql_replication_hosts (manual list)
+{% for repl_host in psql_replication_hosts %}
+{{ 'hostssl' if psql_tls else 'host' }}    replication     all             {{ repl_host }}           scram-sha-256
+{% endfor %}
+{% else %}
+{% set all_cluster_nodes = (psql_replica_nodes | default([])) + [psql_master_node] %}
+{% if all_cluster_nodes | length > 0 %}
+# Source: all cluster nodes (master + replicas) via gather_facts
+{% for node in all_cluster_nodes %}
+{% set node_ip = hostvars[node].ansible_default_ipv4.address | default(hostvars[node].ansible_all_ipv4_addresses | first | default('')) %}
+{% if node_ip %}
+{{ 'hostssl' if psql_tls else 'host' }}    replication     all             {{ node_ip }}/32           scram-sha-256
+{% endif %}
+{% endfor %}
+{% else %}
+# Source: psql_replication_net fallback
+{{ 'hostssl' if psql_tls else 'host' }}    replication     all             {{ psql_replication_net }}           scram-sha-256
+{% endif %}
+{% endif %}
+
+{% if psql_hba_acl is defined and psql_hba_acl | length > 0 %}
+# ── Custom ACLs ───────────────────────────────────────────────────────────────
+{% for acl in psql_hba_acl %}
+{% if acl.address is string %}
+{{ acl.type | default('hostssl' if psql_tls else 'host') }}    {{ acl.database }}      {{ acl.user }}      {{ acl.address }}      {{ acl.method | default('scram-sha-256') }}
+{% else %}
+{% for addr in acl.address %}
+{{ acl.type | default('hostssl' if psql_tls else 'host') }}    {{ acl.database }}      {{ acl.user }}      {{ addr }}      {{ acl.method | default('scram-sha-256') }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}

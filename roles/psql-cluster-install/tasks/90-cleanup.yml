@@ -1,0 +1,24 @@
+---
+## Full teardown - tagged 'never', must be run explicitly:
+##   ansible-playbook site.yml -i inventory -t psql-cleanup
+
+- name: "[psql-cluster/cleanup] Check if docker-compose.yml exists"
+  ansible.builtin.stat:
+    path: "{{ psql_compose_path }}/docker-compose.yml"
+  register: compose_file_stat
+
+- name: "[psql-cluster/cleanup] Stop and remove PostgreSQL container"
+  community.docker.docker_compose_v2:
+    project_src: "{{ psql_compose_path }}"
+    state: absent
+    remove_volumes: false
+  when: compose_file_stat.stat.exists
+
+- name: "[psql-cluster/cleanup] Remove data and config directories"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ psql_node_data_path }}"
+    - "{{ psql_node_data_conf }}"
+    - "{{ psql_compose_path }}/docker-compose.yml"

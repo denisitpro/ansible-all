@@ -1,0 +1,30 @@
+## {{ ansible_managed }} ##
+
+services:
+  3proxy:
+    image: 3proxy/3proxy:{{ threeproxy_version }}
+    container_name: 3proxy
+    network_mode: host
+    restart: unless-stopped
+{% if threeproxy_docker_labels is defined %}
+    labels:
+{% for key, value in threeproxy_docker_labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+    volumes:
+      - {{ threeproxy_config_dir }}/3proxy.cfg:/etc/3proxy/3proxy.cfg:ro
+      - {{ threeproxy_log_dir }}:{{ threeproxy_log_dir }}
+    environment:
+      - TZ=UTC
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "{{ threeproxy_types | selectattr('type', 'equalto', 'http') | map(attribute='port') | first }}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

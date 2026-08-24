@@ -1,0 +1,44 @@
+## {{ ansible_managed }} ##
+---
+services:
+  psql:
+    image: {{ psql_image }}:{{ psql_version }}
+    container_name: {{ psql_docker_container_name }}
+    network_mode: host
+    restart: {{ vm_restart | default('always') }}
+    environment:
+      POSTGRES_USER: "{{ psql_default_db_user }}"
+      POSTGRES_PASSWORD: "{{ psql_default_db_password }}"
+      POSTGRES_DB: "postgres"
+      PGDATA: "{{ psql_docker_data_path }}"
+    volumes:
+      - {{ psql_node_data_path }}:{{ psql_docker_data_path }}
+      - {{ psql_node_data_conf }}/postgresql.conf:{{ psql_docker_conf_dir }}/postgresql.conf
+      - {{ psql_node_data_conf }}/pg_hba.conf:{{ psql_docker_conf_dir }}/pg_hba.conf
+{% if psql_tls %}
+      - {{ psql_node_data_ssl }}:{{ psql_docker_ssl_dir }}
+{% endif %}
+    command: >
+      postgres
+      -c config_file={{ psql_docker_conf_dir }}/postgresql.conf
+      -c hba_file={{ psql_docker_conf_dir }}/pg_hba.conf
+    logging:
+{% if vector is defined %}
+      driver: fluentd
+      options:
+        fluentd-address: "127.0.0.1:24224"
+        tag: "{{ psql_docker_container_name }}"
+{% else %}
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+{% endif %}
+{% if psql_resource_limits is defined %}
+    deploy:
+      resources:
+        limits:
+{% for key, value in psql_resource_limits.items() %}
+          {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
