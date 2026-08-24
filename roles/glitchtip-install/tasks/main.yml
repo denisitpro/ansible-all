@@ -1,0 +1,34 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - glitchtip
+    - glitchtip-prefly
+
+- ansible.builtin.import_tasks: 10-db.yml
+  tags:
+    - glitchtip
+    - glitchtip-db
+
+- ansible.builtin.import_tasks: 20-compose.yml
+  tags:
+    - glitchtip
+    - glitchtip-compose
+
+- name: Flush handlers to start glitchtip containers before init
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - glitchtip
+    - glitchtip-init
+
+- ansible.builtin.import_tasks: 30-init.yml
+  tags:
+    - glitchtip
+    - glitchtip-init
+
+- ansible.builtin.import_tasks: 40-social-auth.yml
+  tags:
+    - glitchtip
+    - glitchtip-social-auth
+
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'glitchtip-clean']

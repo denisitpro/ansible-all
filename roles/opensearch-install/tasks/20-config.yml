@@ -1,0 +1,8 @@
+---
+- name: copy opensearch config
+  ansible.builtin.template:
+    src: opensearch.yml.j2
+    dest: "{{ opensearch_conf_path }}/opensearch.yml"
+    owner: "{{ opensearch_uid }}"
+    group: "{{ opensearch_gid }}"
+    mode: '0644'

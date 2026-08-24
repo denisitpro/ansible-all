@@ -1,0 +1,20 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - pagespeed
+    - pagespeed-exporter
+
+- ansible.builtin.import_tasks: 20-compose.yml
+  tags:
+    - pagespeed
+    - pagespeed-exporter
+    - pagespeed-compose
+
+- ansible.builtin.import_tasks: 30-consul-reg.yml
+  tags:
+    - pagespeed
+    - pagespeed-exporter
+    - pagespeed-consul
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'pagespeed-clean']

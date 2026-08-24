@@ -1,0 +1,29 @@
+---
+- name: check if bugsink db user exists
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -tAc "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ bugsink_db_user }}'"
+  register: bugsink_db_user_check
+  changed_when: false
+  failed_when: false
+
+- name: create bugsink db user
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -c "CREATE ROLE \"{{ bugsink_db_user }}\" LOGIN PASSWORD '{{ bugsink_db_password }}';"
+  when: bugsink_db_user_check.stdout != "1"
+  no_log: true
+
+- name: check if bugsink database exists
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -tAc "SELECT 1 FROM pg_database WHERE datname = '{{ bugsink_db_name }}'"
+  register: bugsink_db_check
+  changed_when: false
+  failed_when: false
+
+- name: create bugsink database
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -c "CREATE DATABASE \"{{ bugsink_db_name }}\" OWNER \"{{ bugsink_db_user }}\";"
+  when: bugsink_db_check.stdout != "1"

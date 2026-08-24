@@ -1,0 +1,24 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: blockchain p1 alert rules
+  rules:
+
+  {% if incld_blockchain_host_p1 is defined and incld_blockchain_host_p1 | length > 0 %}
+  # app-docker-bc host unavailable
+  - alert: BlockchainHostDownP1
+    expr: |
+      sum(up{job="node-exporter", server=~"{{ incld_blockchain_host_p1 | join('|') }}"}) == 0
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: blockchain
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Blockchain host unavailable (P1)"
+      description: >-
+        Blockchain host(s) (server label matching: {{ incld_blockchain_host_p1 | join(', ') }})
+        are unreachable for more than 2 minutes.
+  {% endif %}

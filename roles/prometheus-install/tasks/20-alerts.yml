@@ -1,0 +1,17 @@
+---
+- name: Copy alert rules files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ prometheus_rules_path }}/{{ item }}"
+    mode: "0644"
+  notify: reload docker prometheus
+  with_items: "{{ prometheus_alert_files }}"
+
+- name: Validate prometheus rules
+  ansible.builtin.command:
+    cmd: "docker run --rm --entrypoint sh --name prometheus.check -v {{ prometheus_config_path }}:{{ prometheus_config_dir }} prom/prometheus:{{ prometheus_image }} -c '/bin/promtool check rules {{ prometheus_config_dir }}/rules/*'"
+  register: promtool_rules_output
+  changed_when: false
+  failed_when: promtool_rules_output.rc != 0
+  when:
+    - prometheus_alert_rules != []

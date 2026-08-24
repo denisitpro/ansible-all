@@ -1,0 +1,65 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: memory alert rules
+  rules:
+  - alert: Memory usage over 80%
+    expr: |
+      (
+        100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 80
+        and ON (instance) node_uname_info{instance!~"{{ excld_inst_memory_usage_over80 |  default([]) | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_memory_usage_over80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 15 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  - alert: Memory usage over 90%
+    expr: |
+      (
+        100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 90
+        and ON (instance) node_uname_info{instance!~"{{ excld_inst_memory_usage_over90 |  default([]) | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_memory_usage_over90 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 15 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  - alert: Memory usage over 95%
+    expr: |
+      (
+        100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 95
+        and ON (instance) node_uname_info{instance!~"{{ excld_inst_memory_usage_over95 |  default([]) | join('|') }}"}
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_memory_usage_over95 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} has Very Critical Memory Usage more than 15 minutes.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} has Critical Memory Usage. \nCurrent value: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  # from alerts-migrated-node-exporter-g2.yml.j2 (kept commented: legacy/duplicate-by-purpose)
+  # - alert: Linux | VeryHighMemoryUsage
+  #   expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+  #   for: 7m
+  #   labels:
+  #     severity: VeryHigh
+  #   annotations:
+  #     summary: "{% raw %}High MEMORY utilization on the instance {{ $labels.instance }}{% endraw %}"
+  #     description: "{% raw %}MEMORY utilization exceeds 95% for the last seven minutes on the instance {{ $labels.instance }}.{% endraw %}"
+  #
+  # - alert: Linux | HighMemoryUsage_old
+  #   expr: (sum(node_memory_MemTotal) - sum(node_memory_MemFree + node_memory_Buffers + node_memory_Cached) ) / sum(node_memory_MemTotal) * 100 > 85
+  #   for: 30s
+  #   labels:
+  #     severity: warning
+  #   annotations:
+  #     description: "{% raw %}Host memory usage is {{ humanize $value }}%. Reported by instance {{ $labels.instance }} of job {{ $labels.job }}.{% endraw %}"
+  #     summary: "Server memory is almost full"

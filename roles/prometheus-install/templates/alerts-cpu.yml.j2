@@ -1,0 +1,131 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: CPU alert rules
+  rules:
+  - alert: NodeCPUHighUsage - 95
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 95%, VALUE = {{ printf \"%.2f\" $value }} for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_95 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 95
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over95 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: info
+  - alert: NodeCPUHighUsage - 90
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 90%, VALUE = {{ printf \"%.2f\" $value }} for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_90 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 90
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over90 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: info
+  - alert: NodeCPUHighUsage - 80
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 80%, VALUE = {{ printf \"%.2f\" $value }}for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_80 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 80
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over80 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: info
+  - alert: NodeCPUHighUsage - 70
+    annotations:
+      description: "{% raw %}CPU usage at {{ $labels.instance }} has been above 70%, VALUE = {{ printf \"%.2f\" $value }}for the last 15 minutes, is currently at  {% endraw %}"
+      summary: High CPU usage.
+    expr: |
+      (
+        sum without(mode) (avg without (cpu) (rate(node_cpu_seconds_total{
+          job="node-exporter",
+          mode!="idle",
+          instance!~"{{ excld_inst_cpu_usage_70 | default([]) | join('|') }}"
+        }[15m]))) * 100 > 70
+        and ON (instance) node_uname_info{tags!~"{{ excld_tags_cpu_usage_over70 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+      )
+    for: 15m
+    labels:
+      severity: info
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+# dl: There is no real benefit and it doesn't say specifically what the problem is, it's an indirect metric
+  # - alert: Linux | NodeIsHang
+  #   expr: |
+  #     (
+  #       (node_load5{job="node-exporter"} / count without(cpu, mode) (node_cpu_seconds_total{job="node-exporter", mode="idle"})) > 2
+  #     )
+  #   for: 15m
+  #   labels:
+  #     severity: critical
+  #   annotations:
+  #     description: "{% raw %}{{ $labels.instance }}: is hang{% endraw %}"
+  #     summary: "{% raw %}{{ $labels.instance }}: is hang{% endraw %}"
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+# dl: There is no real benefit and it doesn't say specifically what the problem is, it's an indirect metric
+  # - alert: Linux | ContextSwitching
+  #   expr: rate(node_context_switches_total{job="node-exporter"}[5m]) > 200000
+  #   for: 5m
+  #   labels:
+  #     severity: warning
+  #   annotations:
+  #     summary: "{% raw %}Context switching (instance {{ $labels.instance }}){% endraw %}"
+  #     description: "{% raw %}Context switching is growing on node (> 200000 / s)\n  value = {{ $value }}\n  labels: {{ $labels }}{% endraw %}"
+
+  # from alerts-migrated-node-exporter-g2.yml.j2 (kept commented: legacy/duplicate-by-purpose / metrics may be missing)
+  # - alert: HighCPUUsage
+  #   expr: (100 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+  #   for: 7m
+  #   labels:
+  #     severity: VeryHigh
+  #   annotations:
+  #     summary: "{% raw %}High CPU utilization on the instance {{ $labels.instance }}{% endraw %}"
+  #     description: "{% raw %}CPU utilization exceeds 90% for the last 7 minutes on the instance {{ $labels.instance }}.{% endraw %}"
+  #
+  # - alert: Linux | HighLoadAverage
+  #   expr: sum(node_load5) by (instance) / count without(cpu, mode) (node_cpu_seconds_total{mode="idle"}) * 100 > 110
+  #   for: 10m
+  #   labels:
+  #     severity: VeryHigh
+  #   annotations:
+  #     description: "{% raw %}{{ $labels.instance }}: High load average{% endraw %}"
+  #     summary: "{% raw %}{{ $labels.instance }}: Load average is too high{% endraw %}"
+  #
+  # - alert: Linux | ExtremelyHighCPU
+  #   expr: instance:node_cpu_in_use:ratio > 0.95
+  #   for: 3m
+  #   labels:
+  #     severity: critical
+  #   annotations:
+  #     description: "{% raw %}CPU use percent is extremely high on {{ $labels.instance }} for the past 5 minutes.{% endraw %}"
+  #     summary: "{% raw %}CPU use percent is extremely high on {{ $labels.instance }} for the past 5 minutes.{% endraw %}"
+  #
+  # - alert: Linux | HighCPU
+  #   expr: instance:node_cpu_in_use:ratio > 0.8
+  #   for: 3m
+  #   labels:
+  #     severity: critical
+  #   annotations:
+  #     description: "{% raw %}CPU use percent is high on {{ $labels.instance }} for the past 2 hours.{% endraw %}"
+  #     summary: "{% raw %}CPU use percent is high on {{ $labels.instance }} for the past 2 hours.{% endraw %}"

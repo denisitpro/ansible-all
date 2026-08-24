@@ -1,0 +1,102 @@
+groups:
+- name: disks alert rules
+  rules:
+
+  - alert: HighDiskIOPS - 15m over 500 iops
+    expr: >
+      rate(node_disk_reads_completed_total{instance!~"{{ excld_high_disk_iops500_15m_inst | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_15m | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[15m]) +
+      rate(node_disk_writes_completed_total{instance!~"{{ excld_high_disk_iops500_15m_inst | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_15m | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[15m]) > 500
+    for: 15m
+    labels:
+      severity: info
+    annotations:
+      summary: "{% raw %}High Disk IOPS on instance {{ $labels.instance }}{% endraw %}"
+      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 500 IOPS over the last 15 minutes.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  - alert: HighDiskIOPS - 1h over 500 iops
+    expr: >
+      rate(node_disk_reads_completed_total{instance!~"{{ excld_high_disk_iops500_1h_inst | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_1h | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[1h]) +
+      rate(node_disk_writes_completed_total{instance!~"{{ excld_high_disk_iops500_1h_inst | join('|') }}", tags!~"{{ excld_tags_high_disk_iops_1h | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[1h]) > 500
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}High Disk IOPS on instance {{ $labels.instance }}{% endraw %}"
+      description: "{% raw %}Disk IOPS on instance {{ $labels.instance }} has exceeded 500 IOPS over the last 1 hour.\nCurrent IOPS: {{ printf \"%.2f\" $value }}{% endraw %}"
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+  - alert: HighDiskIOWait
+    expr: rate(node_disk_io_time_seconds_total{job="node-exporter", device!="", instance!~"{{ excld_inst_high_disk_iowait | join('|') }}"}[5m]) * 100 > 90
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}High waiting time for disk operations on an instance {{ $labels.instance }}, device {{ $labels.device }}{% endraw %}"
+      description: "{% raw %}Waiting for disk I/O exceeds threshold on the instance {{ $labels.instance }}, device {{ $labels.device }}.{% endraw %}"
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+  # DEVOPS-4064: disabled alert `HighDiskDiscardTime` (do not delete; keep commented for reference).
+  # - alert: HighDiskDiscardTime
+  #   expr: rate(node_disk_discard_time_seconds_total{job="node-exporter", device!=""}[5m]) > 0.05
+  #   for: 5m
+  #   labels:
+  #     severity: warning
+  #   annotations:
+  #     summary: "{% raw %}High discard time of disk operations on instance {{ $labels.instance }}.{% endraw %}"
+  #     description: "{% raw %}Instance {{ $labels.instance }} spends too much time on operations trim/discard for disk {{ $labels.device }}.{% endraw %}"
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+  - alert: Linux | UnusualDiskReadLatency
+    expr: |
+      rate(node_disk_read_time_seconds_total{job="node-exporter", device!="", instance!~"{{ excld_inst_unusual_disk_read_latency | join('|') }}"}[1m])
+      /
+      rate(node_disk_reads_completed_total{job="node-exporter", device!="", instance!~"{{ excld_inst_unusual_disk_read_latency | join('|') }}"}[1m]) > 0.1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Unusual disk read latency (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Disk latency is growing (read operations > 100ms)\n  value = {{ $value }}\n  labels: {{ $labels }}{% endraw %}"
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+  - alert: Linux | UnusualDiskWriteLatency
+    expr: |
+      rate(node_disk_write_time_seconds_total{job="node-exporter", device!="", instance!~"{{ excld_inst_unusual_disk_write_latency | join('|') }}"}[1m])
+      /
+      rate(node_disk_writes_completed_total{job="node-exporter", device!="", instance!~"{{ excld_inst_unusual_disk_write_latency | join('|') }}"}[1m]) > 0.2
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Unusual disk write latency (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Disk latency is growing (write operations > 200ms)\n  value = {{ $value }}\n  labels: {{ $labels }}{% endraw %}"
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+  - alert: Linux | UnusualDiskReadRate
+    expr: sum by (instance) (irate(node_disk_read_bytes_total{job="node-exporter"}[2m])) / 1024 / 1024 > 200
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}Unusual disk read rate (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Disk is probably reading too much data (> 200 MB/s)\n  value = {{ $value }}\n  labels: {{ $labels }}{% endraw %}"
+
+  # migrated from alerts-migrated-node-exporter-g2.yml.j2
+  # - alert: Linux | UnusualDiskWriteRate
+  #   expr: sum by (instance) (irate(node_disk_written_bytes_total{job="node-exporter"}[2m])) / 1024 / 1024 > 200
+  #   for: 15m
+  #   labels:
+  #     severity: warning
+  #   annotations:
+  #     summary: "{% raw %}Unusual disk write rate (instance {{ $labels.instance }}){% endraw %}"
+  #     description: "{% raw %}Disk is probably writing too much data (> 200 MB/s)\n  value = {{ $value }}\n  labels: {{ $labels }}{% endraw %}"
+
+  # from alerts-migrated-node-exporter-g2.yml.j2 (kept commented: legacy/duplicate-by-purpose)
+  # - alert: HighDiskIOWait-HL
+  #   expr: rate(node_disk_io_time_seconds_total[5m]) * 100 > 1500
+  #   for: 15m
+  #   labels:
+  #     severity: warning
+  #   annotations:
+  #     summary: "{% raw %}High waiting time for disk operations on an instance {{ $labels.instance }}, device {{ $labels.device }}{% endraw %}"
+  #     description: "{% raw %}Waiting for disk I/O exceeds threshold on the instance {{ $labels.instance }}, device {{ $labels.device }}.{% endraw %}"

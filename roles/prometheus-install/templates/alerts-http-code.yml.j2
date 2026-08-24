@@ -1,0 +1,73 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: http code alert rules
+  rules:
+  - alert: HTTP-DomainMisconfig
+    expr: probe_http_status_code{instance!~"{{ excld_inst_http_domain_misconfig | default([]) | join('|') }}"} == 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} - domain reading misconfig (no HTTP response, possible DNS/connection issue){% endraw %}"
+      summary: "{% raw %}\n
+      Instance {{ $labels.instance }} - probe_http_status_code=0, domain unreachable.\n
+      TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }}
+      {% endraw %}"
+  - alert: HTTP-200-Fail-general
+    expr: probe_http_status_code{expected_code="200",tier!~"{{ custom_tier_alerts | default([]) | map(attribute='tier') | join('|') | default('(?!x)x', true) }}",instance!~"{{ excld_inst_http_200_fail_general | default([]) | join('|') }}"} != 200
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} response code not eq 200{% endraw %}"
+      summary: "{% raw %}\n
+      Instance {{ $labels.instance }} - response code - {{ humanize $value }}.\n
+      HTTP_CODE = {{ printf \"%.2f\" $value }}\n
+      TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }}
+      {% endraw %}"
+{% for tier_alert in custom_tier_alerts | default([]) %}
+  - alert: HTTP-200-Fail-{{ tier_alert.tier }}
+    expr: probe_http_status_code{expected_code="200",tier="{{ tier_alert.tier }}"} != 200
+    for: {{ tier_alert.http_200_for | default('10m') }}
+    labels:
+      severity: warning
+    annotations:
+      description: "{{ '{{' }} $labels.instance {{ '}}' }} response code not eq 200 ({{ tier_alert.tier }})"
+      summary: "Instance {{ '{{' }} $labels.instance {{ '}}' }} - response code - {{ '{{' }} humanize $value {{ '}}' }}.\nHTTP_CODE = {{ '{{' }} printf \"%.2f\" $value {{ '}}' }}\nTIMESTAMP = {{ '{{' }} with query \"time()\" {{ '}}' }}{{ '{{' }} . | first | value | humanizeTimestamp {{ '}}' }}{{ '{{' }} end {{ '}}' }}"
+{% endfor %}
+  - alert: HTTP-404-Fail-general
+    expr: probe_http_status_code{expected_code="404"} != 404
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} response code not eq 404{% endraw %}"
+      summary: "{% raw %}\n
+      Instance {{ $labels.instance }} - response code not eq - {{ humanize $value }}.\nHTTP_CODE = {{ printf \"%.2f\" $value }} \n
+      TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }}
+      {% endraw %}"
+  - alert: HTTP-301-Fail-general
+    expr: probe_http_status_code{expected_code="301"} != 301
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} response code not eq 301{% endraw %}"
+      summary: "{% raw %}\n
+      Instance {{ $labels.instance }} - response code not eq - {{ humanize $value }}.\nHTTP_CODE = {{ printf \"%.2f\" $value }} \n
+      TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }}
+      {% endraw %}"
+  - alert: HTTP-401-Fail-general
+    expr: probe_http_status_code{expected_code="401"} != 401
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} response code not eq 401{% endraw %}"
+      summary: "{% raw %}\n
+      Instance {{ $labels.instance }} - response code not eq - {{ humanize $value }}.\nHTTP_CODE = {{ printf \"%.2f\" $value }} \n
+      TIMESTAMP = {{ with query \"time()\" }}{{ . | first | value | humanizeTimestamp }}{{ end }}
+      {% endraw %}"
+
+

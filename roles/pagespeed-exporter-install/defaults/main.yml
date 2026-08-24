@@ -1,0 +1,24 @@
+---
+pagespeed_exporter_version: "3.2.0"
+pagespeed_exporter_compose_path: /opt/docker/pagespeed-exporter
+pagespeed_exporter_base_path: /opt/pagespeed-exporter
+pagespeed_exporter_config_path: "{{ pagespeed_exporter_base_path }}/config"
+
+pagespeed_exporter_bind_port: "9271"
+pagespeed_exporter_bind_addr: "[::]"
+
+# Google PageSpeed Insights API key (required)
+pagespeed_exporter_api_key: ""
+
+# URLs to monitor (checked on each scrape)
+pagespeed_exporter_targets: []
+
+
+# Consul registration
+consul_pagespeed_exporter_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default('') }}"
+consul_pagespeed_exporter_name: "pagespeed-exporter"
+consul_pagespeed_exporter_tags:
+  - "prometheus"
+  - "exporter=pagespeed-exporter"
+  - "stand={{ stand_type | default('undefined') }}"
+  - "dc={{ consul_dc_name | default('undefined') }}"

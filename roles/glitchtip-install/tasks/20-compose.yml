@@ -1,0 +1,19 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: docker-compose.glitchtip.yml.j2
+    dest: "{{ glitchtip_compose_path }}/docker-compose.yml"
+    mode: '0600'
+  notify: recreate-docker glitchtip
+
+- name: copy custom settings
+  ansible.builtin.template:
+    src: custom_settings.py.j2
+    dest: "{{ glitchtip_compose_path }}/custom_settings.py"
+    mode: '0644'
+  notify: recreate-docker glitchtip
+
+- name: run docker compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ glitchtip_compose_path }}"
+    state: present

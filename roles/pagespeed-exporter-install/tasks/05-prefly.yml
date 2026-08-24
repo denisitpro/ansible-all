@@ -1,0 +1,20 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ pagespeed_exporter_compose_path }}"
+
+- name: create application folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+  with_items:
+    - "{{ pagespeed_exporter_base_path }}"
+    - "{{ pagespeed_exporter_config_path }}"

@@ -1,0 +1,20 @@
+---
+postgres_exporter_version: "0.19.0"
+postgres_exporter_compose_path: /opt/docker/postgres-exporter
+postgres_exporter_bind_port: "9187"
+
+# PostgreSQL connection
+postgres_exporter_password: "{{ vault_dict_users_secret_g2.postgres_exporter_password.value | default('changeme') }}"
+postgres_exporter_dsn: "postgresql://postgres_exporter:{{ postgres_exporter_password }}@localhost:5432/postgres?sslmode=disable"
+
+# Consul registration
+consul_postgres_exporter_enabled: true
+consul_postgres_exporter_name: "postgres-exporter"
+consul_postgres_exporter_tags:
+  - "prometheus"
+  - "exporter=postgres-exporter"
+  - "stand={{ stand_type | default('undefined') }}"
+  - "dc={{ consul_dc_name | default('undefined') }}"
+consul_postgres_exporter_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default(omit) }}"
+consul_install_mode: "docker"
+consul_compose_path: /opt/docker/consul

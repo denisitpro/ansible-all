@@ -1,0 +1,92 @@
+{{ ansible_managed | comment }}
+
+{% set wl_blackbox_job = wl_blackbox_job_p1 | default('blackbox_200x_without_auth') %}
+
+groups:
+- name: whitelabel p1 alert rules
+  rules:
+
+  {% if incld_inst_wl_nodes_p1 is defined and incld_inst_wl_nodes_p1 | length > 0 %}
+  # All WL nodes unreachable at host level
+  - alert: WhitelabelAllNodesDownP1
+    expr: |
+      sum(up{job="node-exporter", server=~"{{ incld_inst_wl_nodes_p1 | join('|') }}"}) == 0
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: whitelabel
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "All WL nodes are down (P1)"
+      description: >-
+        All WL nodes (instances matching: {{ incld_inst_wl_nodes_p1 | join(', ') }}) are unreachable
+        for more than 2 minutes. This indicates complete whitelabel host outage.
+  {% endif %}
+
+  {% if incld_wl_fsn1_nbg1_backend_urls_p1 is defined and incld_wl_fsn1_nbg1_backend_urls_p1 | length > 0 %}
+  # All WL backends (multi-DC) unavailable via HTTP (health-check)
+  - alert: WhitelabelMultiDcBackendsUnavailableP1
+    expr: |
+      sum(
+        (probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_fsn1_nbg1_backend_urls_p1 | join('|') }}"} < 200)
+        or (probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_fsn1_nbg1_backend_urls_p1 | join('|') }}"} >= 300)
+      ) == count(probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_fsn1_nbg1_backend_urls_p1 | join('|') }}"})
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: whitelabel
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "WL backends (multi-dc) unavailable via HTTP (P1)"
+      description: >-
+        WL backend health-check URLs (multi-dc) ({{ incld_wl_fsn1_nbg1_backend_urls_p1 | join(', ') }}) are returning
+        non-2xx status codes for more than 2 minutes. No backend is serving traffic.
+  {% endif %}
+
+  {% if incld_wl_c1_prod_backend_urls_p1 is defined and incld_wl_c1_prod_backend_urls_p1 | length > 0 %}
+  # All WL backends (example-prod) unavailable via HTTP (health-check)
+  - alert: WhitelabelBackendsUnavailableP1
+    expr: |
+      sum(
+        (probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_c1_prod_backend_urls_p1 | join('|') }}"} < 200)
+        or (probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_c1_prod_backend_urls_p1 | join('|') }}"} >= 300)
+      ) == count(probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_c1_prod_backend_urls_p1 | join('|') }}"})
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: whitelabel
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "WL backends (example-prod) unavailable via HTTP (P1)"
+      description: >-
+        WL backend health-check URLs (example-prod) ({{ incld_wl_c1_prod_backend_urls_p1 | join(', ') }}) are returning
+        non-2xx status codes for more than 2 minutes. No backend is serving traffic.
+  {% endif %}
+
+  {% if incld_wl_public_urls_p1 is defined and incld_wl_public_urls_p1 | length > 0 %}
+  # User-facing WL endpoint (domain behind load balancer) unavailable
+  - alert: WhitelabelPublicEndpointUnavailableP1
+    expr: |
+      sum(
+        (probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_public_urls_p1 | join('|') }}"} != 200)
+        and (probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_public_urls_p1 | join('|') }}"} != 302)
+      ) == count(probe_http_status_code{job="{{ wl_blackbox_job }}", instance=~"{{ incld_wl_public_urls_p1 | join('|') }}"})
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: whitelabel
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "WL public endpoint unavailable (P1)"
+      description: >-
+        WL public URL(s) ({{ incld_wl_public_urls_p1 | join(', ') }}) are not returning 200/302
+        or are timing out for more than 2 minutes. End users cannot access the service.
+  {% endif %}

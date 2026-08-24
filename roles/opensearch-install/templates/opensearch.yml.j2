@@ -1,0 +1,8 @@
+cluster.name: {{ opensearch_cluster_name }}
+node.name: {{ opensearch_node_name }}
+network.host: {{ opensearch_network_host }}
+http.port: {{ opensearch_http_port }}
+transport.tcp.port: {{ opensearch_transport_port }}
+path.data: /usr/share/opensearch/data
+path.logs: /usr/share/opensearch/logs
+discovery.type: single-node

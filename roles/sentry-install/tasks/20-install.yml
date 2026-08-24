@@ -1,0 +1,26 @@
+---
+- name: Check if sentry is already installed
+  ansible.builtin.stat:
+    path: "{{ sentry_compose_path }}/.installed"
+  register: sentry_installed_marker
+
+- name: Run sentry install script
+  ansible.builtin.command:
+    cmd: ./install.sh --skip-user-creation --no-report-self-hosted-issues
+    chdir: "{{ sentry_compose_path }}"
+  when: not sentry_installed_marker.stat.exists
+
+- name: Create install marker
+  ansible.builtin.file:
+    path: "{{ sentry_compose_path }}/.installed"
+    state: touch
+    mode: '0644'
+  when: not sentry_installed_marker.stat.exists
+
+- name: Configure CSRF_TRUSTED_ORIGINS in sentry.conf.py
+  ansible.builtin.blockinfile:
+    path: "{{ sentry_compose_path }}/sentry/sentry.conf.py"
+    marker: "# {mark} ANSIBLE MANAGED - CSRF_TRUSTED_ORIGINS"
+    block: |
+      CSRF_TRUSTED_ORIGINS = {{ sentry_csrf_trusted_origins | to_json }}
+  when: sentry_csrf_trusted_origins | length > 0

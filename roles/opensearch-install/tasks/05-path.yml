@@ -1,0 +1,30 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  loop:
+    - /opt/docker
+    - "{{ opensearch_compose_path }}"
+
+- name: create opensearch data and log folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: "{{ opensearch_uid }}"
+    group: "{{ opensearch_gid }}"
+  loop:
+    - "{{ opensearch_data_path }}"
+    - "{{ opensearch_log_path }}"
+
+- name: create opensearch config folder
+  ansible.builtin.file:
+    path: "{{ opensearch_conf_path }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ opensearch_uid }}"
+    group: "{{ opensearch_gid }}"

@@ -1,0 +1,18 @@
+---
+- name: Check if sentry admin user exists
+  ansible.builtin.command:
+    cmd: >
+      docker compose -p {{ sentry_compose_project_name }} run --rm web
+      shell -c "from django.contrib.auth import get_user_model; U=get_user_model(); print(U.objects.filter(email='{{ sentry_admin_email }}').exists())"
+    chdir: "{{ sentry_compose_path }}"
+  register: sentry_user_check
+  changed_when: false
+
+- name: Create sentry admin user
+  ansible.builtin.command:
+    cmd: >
+      docker compose -p {{ sentry_compose_project_name }} run --rm web
+      createuser --email {{ sentry_admin_email }} --password {{ sentry_admin_password }} --superuser --no-input
+    chdir: "{{ sentry_compose_path }}"
+  when: "'True' not in sentry_user_check.stdout"
+  no_log: true

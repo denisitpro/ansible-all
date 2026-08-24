@@ -1,0 +1,9 @@
+---
+- name: Template Consul service definition for pagespeed-exporter
+  ansible.builtin.template:
+    src: pagespeed-exporter.hcl.j2
+    dest: /etc/consul.d/pagespeed-exporter.hcl
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart-docker consul

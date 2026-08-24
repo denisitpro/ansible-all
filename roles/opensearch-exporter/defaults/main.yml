@@ -1,0 +1,16 @@
+---
+opensearch_exporter_version: "v1.10.0"
+opensearch_exporter_compose_path: /opt/docker/opensearch-exporter
+opensearch_exporter_uri: "http://localhost:9200"
+opensearch_exporter_bind_port: "9114"
+
+consul_opensearch_exporter_enabled: true
+consul_opensearch_exporter_name: "opensearch-exporter"
+consul_opensearch_exporter_tags:
+  - "prometheus"
+  - "exporter=opensearch-exporter"
+  - "stand={{ stand_type | default('undefined') }}"
+  - "dc={{ consul_dc_name | default('undefined') }}"
+consul_opensearch_exporter_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default(omit) }}"
+consul_install_mode: "docker"
+consul_compose_path: /opt/docker/consul

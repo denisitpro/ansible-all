@@ -1,0 +1,13 @@
+---
+- ansible.builtin.import_tasks: 05-create-path.yml
+  tags:
+    - opensearch-exporter
+
+- ansible.builtin.import_tasks: 20-copy-compose.yml
+  tags:
+    - opensearch-exporter
+
+- ansible.builtin.import_tasks: 25-consul-reg.yml
+  tags:
+    - opensearch-exporter
+    - opensearch-exporter-consul

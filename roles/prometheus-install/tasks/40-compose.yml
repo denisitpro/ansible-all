@@ -1,0 +1,7 @@
+---
+- name: copy compose-file - prometheus
+  ansible.builtin.template:
+    src: "docker-compose.prometheus.yml.j2"
+    dest: "{{ prometheus_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker prometheus

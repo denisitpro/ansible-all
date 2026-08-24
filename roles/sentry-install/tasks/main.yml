@@ -1,0 +1,28 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - sentry
+    - sentry-prefly
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - sentry
+    - sentry-config
+
+- ansible.builtin.import_tasks: 20-install.yml
+  tags:
+    - sentry
+    - sentry-install
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - sentry
+    - sentry-compose
+
+- ansible.builtin.import_tasks: 60-admin.yml
+  tags:
+    - sentry
+    - sentry-admin
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'sentry-clean']

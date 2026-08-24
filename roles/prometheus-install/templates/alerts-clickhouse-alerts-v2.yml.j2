@@ -1,0 +1,149 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: Proxy rate lag v2 (example-click-metrics)
+	rules:
+	- alert: coin-a rate down (v2)
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[10m]))) * 100 < 25
+		for: 10s
+		labels:
+			severity: telegram
+			receiver: telegram
+
+	- alert: Proxy-a rate lag v2
+		expr: (1 - (avg_over_time(example_rate_by_proxy{coin!~"coin-b|coin-e", proxy_id="proxy-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[5m]) / avg_over_time(example_rate_by_proxy{coin!~"coin-b|coin-e", proxy_id="proxy-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * 100 < 70
+		for: 10s
+		labels:
+			severity: rate
+			receiver: slack
+		annotations:
+			identifier: '{{ $labels.proxy_id }}'
+			summary: 'Check rate on {{ $labels.proxy_id }} proxy'
+			description: 'proxy-a: {{ $labels.coin }} 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: Proxy rate lag v2
+		expr: (1 - (avg_over_time(example_rate_by_proxy{coin!="coin-d", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[10m]) / avg_over_time(example_rate_by_proxy{coin!="coin-d", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * 100 < 70
+		for: 10s
+		labels:
+			severity: warning
+			receiver: slack
+		annotations:
+			identifier: '{{ $labels.proxy_id }}'
+			summary: 'Check rate on {{ $labels.proxy_id }} proxy'
+			description: '{{ $labels.proxy_id }}: {{ $labels.coin }} 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-a rate increased v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * -100 > 25
+		for: 10s
+		labels:
+			severity: rate
+			receiver: slack
+		annotations:
+			identifier: 'coin-a rate lag'
+			summary: 'Check rate on coin-a proxy'
+			description: 'coin-a 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-a rate decreased v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * 100 < 25
+		for: 10s
+		labels:
+			severity: rate
+			receiver: slack
+		annotations:
+			identifier: 'coin-a rate lag'
+			summary: 'Check rate on coin-a proxy'
+			description: 'coin-a 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-a rate decreased critical v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-a", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * 100 < 30
+		for: 10s
+		labels:
+			severity: critical
+			receiver: opsgenie
+		annotations:
+			identifier: 'coin-a rate lag'
+			summary: 'Check rate on coin-a proxy'
+			description: 'coin-a 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-b rate increased v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-b", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-b", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * -100 > 20
+		for: 10s
+		labels:
+			severity: rate
+			receiver: slack
+		annotations:
+			identifier: 'coin-b rate lag'
+			summary: 'Check rate on coin-b proxy'
+			description: 'coin-b 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-b rate decreased v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-b", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-b", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * 100 < 20
+		for: 10s
+		labels:
+			severity: rate
+			receiver: slack
+		annotations:
+			identifier: 'coin-b rate lag'
+			summary: 'Check rate on coin-b proxy'
+			description: 'coin-b 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-b rate decreased critical v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-b", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-b", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * 100 < 30
+		for: 15m
+		labels:
+			severity: critical
+			receiver: opsgenie
+		annotations:
+			identifier: 'coin-b rate lag'
+			summary: 'Check rate on coin-b proxy'
+			description: 'coin-b 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-c rate decreased v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-c", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-c", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * -100 < -20
+		for: 10s
+		labels:
+			severity: rate
+			receiver: slack
+		annotations:
+			identifier: 'coin-c rate lag'
+			summary: 'Check rate on coin-c proxy'
+			description: 'coin-c 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-c rate decreased critical v2
+		expr: (1 - (sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-c", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[30s]))) / sum by (coin) (avg_over_time(example_rate_by_proxy{coin="coin-c", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}[60m]))) * 100 < 30
+		for: 10s
+		labels:
+			severity: critical
+			receiver: opsgenie
+		annotations:
+			identifier: 'coin-c rate lag'
+			summary: 'Check rate on coin-c proxy'
+			description: 'coin-c 1h rate changed to {{ $value | printf "%.2f" }}%'
+
+	- alert: coin-c reject rate increased v2
+		expr: 100 * (example_reject_rate_by_proxy{coin="coin-c", instance!~"{{ excld_inst_hashrate_alerts_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_hashrate_alerts_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}) > 50
+		for: 3m
+		labels:
+			severity: rate
+			receiver: slack
+		annotations:
+			identifier: 'coin-c reject rate lag'
+			summary: 'Check reject rate on coin-c'
+			description: 'coin-c 3m reject rate changed to {{ $value | printf "%.2f" }}% on {{ $labels.proxy_id }}'
+
+- name: ClickHouse node shares imbalance v2 (example-click-metrics)
+	rules:
+	- alert: Click shares imbalance v2
+		expr: |
+			(max by (coin) (example_shares_count{instance!~"{{ excld_inst_shares_imbalance_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_shares_imbalance_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}) - min by (coin) (example_shares_count{instance!~"{{ excld_inst_shares_imbalance_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_shares_imbalance_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}))
+				/ max by (coin) (example_shares_count{instance!~"{{ excld_inst_shares_imbalance_v2 | default([]) | join('|') }}", tags!~"{{ excld_tags_shares_imbalance_v2 | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}) > 0.1
+		for: 5m
+		labels:
+			severity: warning
+			receiver: slack
+		annotations:
+			summary: 'Check ClickHouse shares imbalance for {{ $labels.coin }}'
+			description: >-
+				Shares count differs between ClickHouse nodes for {{ $labels.coin }}:
+				max vs min over last minute differ by more than 10%%.
+

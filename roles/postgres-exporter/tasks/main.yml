@@ -1,0 +1,19 @@
+---
+- ansible.builtin.import_tasks: 05-create-path.yml
+  tags:
+    - postgres-exporter
+
+- ansible.builtin.import_tasks: 20-copy-compose.yml
+  tags:
+    - postgres-exporter
+
+- ansible.builtin.import_tasks: 25-consul-reg.yml
+  when: consul_postgres_exporter_enabled | default(true) | bool
+  tags:
+    - postgres-exporter
+    - postgres-exporter-consul
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - postgres-exporter-clean

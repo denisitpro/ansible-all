@@ -1,0 +1,21 @@
+service {
+  name = "{{ consul_pagespeed_exporter_name }}"
+  port = {{ pagespeed_exporter_bind_port }}
+  tags = [
+{% for tag in consul_pagespeed_exporter_tags %}
+    "{{ tag }}",
+{% endfor %}
+  ]
+
+{% if consul_pagespeed_exporter_token is defined and consul_pagespeed_exporter_token | length > 0 %}
+  token = "{{ consul_pagespeed_exporter_token }}"
+{% endif %}
+
+  check = {
+    id       = "pagespeed-exporter-check"
+    name     = "PageSpeed Exporter Health Check"
+    tcp      = "localhost:{{ pagespeed_exporter_bind_port }}"
+    interval = "10s"
+    timeout  = "1s"
+  }
+}

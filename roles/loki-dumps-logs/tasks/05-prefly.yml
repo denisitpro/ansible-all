@@ -1,0 +1,8 @@
+---
+- name: Ensure script directory exists
+  ansible.builtin.file:
+    path: "{{ loki_dump_script_dir }}"
+    state: directory
+    owner: "{{ loki_dump_script_owner }}"
+    group: "{{ loki_dump_script_group }}"
+    mode: "0755"

@@ -1,0 +1,92 @@
+{{ ansible_managed | comment }}
+
+x-environment: &glitchtip-env
+  SECRET_KEY: "{{ glitchtip_secret_key }}"
+  DATABASE_URL: "postgresql://{{ glitchtip_db_user }}:{{ glitchtip_db_password | urlencode }}@{{ glitchtip_db_host }}:{{ glitchtip_db_port }}/{{ glitchtip_db_name }}"
+{% if glitchtip_redis_password | default('') %}
+  VALKEY_URL: "valkey://:{{ glitchtip_redis_password }}@{{ glitchtip_redis_host }}:{{ glitchtip_redis_port }}/0"
+{% else %}
+  VALKEY_URL: "valkey://{{ glitchtip_redis_host }}:{{ glitchtip_redis_port }}/0"
+{% endif %}
+  GLITCHTIP_DOMAIN: "{{ glitchtip_domain }}"
+  ALLOWED_HOSTS: "{{ glitchtip_allowed_hosts }}"
+  DEFAULT_FROM_EMAIL: "{{ glitchtip_default_from_email }}"
+  EMAIL_URL: "{{ glitchtip_email_url }}"
+  PORT: "{{ glitchtip_port }}"
+  GRANIAN_HOST: "{{ glitchtip_bind_host | default('127.0.0.1') }}"
+  CELERY_WORKER_AUTOSCALE: "{{ glitchtip_celery_autoscale }}"
+  CELERY_WORKER_MAX_TASKS_PER_CHILD: "{{ glitchtip_celery_max_tasks_per_child }}"
+  DJANGO_SETTINGS_MODULE: "custom_settings"
+  ENABLE_USER_REGISTRATION: "{{ glitchtip_enable_user_registration | default('false') }}"
+  ENABLE_SOCIAL_APPS_USER_REGISTRATION: "{{ glitchtip_enable_social_apps_user_registration | default('false') }}"
+  SOCIALACCOUNT_EMAIL_AUTHENTICATION: "true"
+  SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT: "true"
+  ENABLE_ORGANIZATION_CREATION: "{{ glitchtip_enable_organization_creation | default('false') }}"
+  GLITCHTIP_RETENTION_DAYS: "{{ glitchtip_retention_days | default(45) }}"
+  GLITCHTIP_EMBED_WORKER: "{{ glitchtip_embed_worker | default('false') }}"
+  BEHIND_HTTPS_PROXY: "{{ glitchtip_behind_https_proxy | default('false') }}"
+{% if glitchtip_csrf_trusted_origins | default('') %}
+  CSRF_TRUSTED_ORIGINS: "{{ glitchtip_csrf_trusted_origins }}"
+{% endif %}
+
+services:
+  glitchtip-web:
+    image: {{ glitchtip_image }}:{{ glitchtip_version }}
+    container_name: glitchtip-web
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      <<: *glitchtip-env
+    volumes:
+      - {{ glitchtip_uploads_path }}:/code/uploads
+      - {{ glitchtip_compose_path }}/custom_settings.py:/code/custom_settings.py:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  glitchtip-worker:
+    image: {{ glitchtip_image }}:{{ glitchtip_version }}
+    container_name: glitchtip-worker
+    restart: unless-stopped
+    network_mode: host
+    command: ./bin/run-worker.sh
+    environment:
+      <<: *glitchtip-env
+      WORKER_MAX_CONCURRENCY: "{{ glitchtip_worker_max_concurrency }}"
+    volumes:
+      - {{ glitchtip_uploads_path }}:/code/uploads
+      - {{ glitchtip_compose_path }}/custom_settings.py:/code/custom_settings.py:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  glitchtip-beat:
+    image: {{ glitchtip_image }}:{{ glitchtip_version }}
+    container_name: glitchtip-beat
+    restart: unless-stopped
+    network_mode: host
+    command: ./bin/run-beat.sh
+    environment:
+      <<: *glitchtip-env
+    volumes:
+      - {{ glitchtip_compose_path }}/custom_settings.py:/code/custom_settings.py:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  glitchtip-migrate:
+    image: {{ glitchtip_image }}:{{ glitchtip_version }}
+    container_name: glitchtip-migrate
+    network_mode: host
+    command: ./manage.py migrate
+    environment:
+      <<: *glitchtip-env
+    volumes:
+      - {{ glitchtip_compose_path }}/custom_settings.py:/code/custom_settings.py:ro
+    restart: "no"

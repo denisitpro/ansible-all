@@ -1,0 +1,130 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: loki alert rules v1
+  rules:
+
+  - alert: LokiDown
+    expr: up{job=~".*loki.*", instance!~"{{ excld_inst_loki_down | default([]) | join('|') }}"} == 0
+    for: 5m
+    labels:
+      severity: page
+    annotations:
+      description: "{% raw %}Loki instance {{ $labels.instance }} is down for 5+ min{% endraw %}"
+      summary: "{% raw %}Loki down: {{ $labels.instance }}{% endraw %}"
+
+  - alert: LokiHighIngestionFailureRate
+    expr: |
+      sum by (instance) (rate(loki_distributor_ingester_append_failures_total{instance!~"{{ excld_inst_loki_ingestion_failure | default([]) | join('|') }}"}[5m]))
+      / sum by (instance) (rate(loki_distributor_ingester_appends_total{instance!~"{{ excld_inst_loki_ingestion_failure | default([]) | join('|') }}"}[5m])) > 0.01
+    for: 10m
+    labels:
+      severity: page
+    annotations:
+      description: "{% raw %}{{ $value | humanizePercentage }} of ingester appends are failing on {{ $labels.instance }} — risk of log loss (threshold: 1%){% endraw %}"
+      summary: "{% raw %}Loki ingestion failure rate {{ $value | humanizePercentage }} ({{ $labels.instance }}){% endraw %}"
+
+  - alert: LokiWalDiskFull
+    expr: rate(loki_ingester_wal_disk_full_failures_total{instance!~"{{ excld_inst_loki_wal_disk_full | default([]) | join('|') }}"}[5m]) > 0
+    for: 1m
+    labels:
+      severity: page
+    annotations:
+      description: "{% raw %}Loki ingester WAL disk full on {{ $labels.instance }} — {{ humanize $value }} fails/sec{% endraw %}"
+      summary: "{% raw %}Loki WAL disk full: {{ $labels.instance }} ({{ humanize $value }} fails/sec){% endraw %}"
+
+  - alert: LokiLogIngestionDropTotal
+    expr: |
+      (
+        sum by (instance) (rate(loki_distributor_lines_received_total{instance!~"{{ excld_inst_loki_log_ingestion_drop | default([]) | join('|') }}"}[30m]))
+        /
+        sum by (instance) (rate(loki_distributor_lines_received_total{instance!~"{{ excld_inst_loki_log_ingestion_drop | default([]) | join('|') }}"}[30m] offset 1h))
+      ) < 0.5
+      AND
+      sum by (instance) (rate(loki_distributor_lines_received_total{instance!~"{{ excld_inst_loki_log_ingestion_drop | default([]) | join('|') }}"}[1h] offset 1h)) > 100
+    for: 15m
+    labels:
+      severity: page
+    annotations:
+      description: "{% raw %}Loki log ingestion on {{ $labels.instance }} dropped >50% vs prev hour. Current: {{ $value | humanizePercentage }}. Probable cause: agents/promtail/vector down or network issues{% endraw %}"
+      summary: "{% raw %}Loki log volume dropped >50% ({{ $labels.instance }}){% endraw %}"
+
+  - alert: LokiNoIngestion
+    expr: sum by (instance) (rate(loki_distributor_lines_received_total{instance!~"{{ excld_inst_loki_no_ingestion | default([]) | join('|') }}"}[10m])) == 0
+    for: 30m
+    labels:
+      severity: page
+    annotations:
+      description: "{% raw %}Loki on {{ $labels.instance }} has not received a single log line for 30+ minutes. All agents broken?{% endraw %}"
+      summary: "{% raw %}Loki no ingestion for 30 minutes: {{ $labels.instance }}{% endraw %}"
+
+  - alert: LokiHighIngestRate
+    expr: sum by (instance) (rate(loki_distributor_lines_received_total{instance!~"{{ excld_inst_loki_high_ingest_rate | default([]) | join('|') }}"}[5m])) > 600
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Loki ingest on {{ $labels.instance }} is {{ humanize $value }} lines/sec (threshold: 600 lines/sec ≈ 180k per 5m, sustained 10m). To find the offending app: open Grafana → Explore → matching datasource for this instance → Code mode → run `topk(10, sum by (app) (count_over_time({app!=\"\"}[5m])))`. Then inspect the noisy app's lines: `{app=\"<name>\"}` over the same 5m window.{% endraw %}"
+      summary: "{% raw %}Loki ingest spike: {{ humanize $value }} lines/s on {{ $labels.instance }} (>180k/5m){% endraw %}"
+
+  - alert: LokiHighDiscardedRate
+    expr: sum by (instance, reason) (rate(loki_discarded_samples_total{instance!~"{{ excld_inst_loki_discarded | default([]) | join('|') }}"}[5m])) > 100
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Loki on {{ $labels.instance }} is discarding {{ humanize $value }} logs/sec, reason: {{ $labels.reason }}. rate_limited/stream_limit/line_too_long etc.{% endraw %}"
+      summary: "{% raw %}Loki discarding {{ humanize $value }} logs/sec ({{ $labels.instance }}): {{ $labels.reason }}{% endraw %}"
+
+  - alert: LokiHighStreamCardinality
+    expr: sum by (instance) (loki_ingester_memory_streams{instance!~"{{ excld_inst_loki_stream_cardinality | default([]) | join('|') }}"}) > 100000
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ humanize $value }} active streams in ingester memory on {{ $labels.instance }} (threshold: 100k). Possible label cardinality explosion.{% endraw %}"
+      summary: "{% raw %}Loki high stream cardinality: {{ $labels.instance }} ({{ humanize $value }} streams){% endraw %}"
+
+  - alert: LokiQueryLatencyHigh
+    expr: |
+      histogram_quantile(0.99,
+        sum by (instance, le) (rate(loki_request_duration_seconds_bucket{route=~".*query.*", instance!~"{{ excld_inst_loki_query_latency | default([]) | join('|') }}"}[5m]))
+      ) > 10
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Loki query p99 latency {{ humanizeDuration $value }} on {{ $labels.instance }} (threshold: 10s). Query frontend is slow, check cache hit rate.{% endraw %}"
+      summary: "{% raw %}Loki query latency p99 {{ humanizeDuration $value }} ({{ $labels.instance }}){% endraw %}"
+
+  - alert: LokiHighFlushQueueLength
+    expr: avg_over_time(loki_ingester_flush_queue_length{instance!~"{{ excld_inst_loki_flush_queue | default([]) | join('|') }}"}[10m]) > 100
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Loki flush queue at {{ humanize $value }} items on {{ $labels.instance }} (threshold: 100). Chunks are piling up, risk of loss on ingester OOM.{% endraw %}"
+      summary: "{% raw %}Loki flush queue backlog: {{ $labels.instance }} ({{ humanize $value }} chunks){% endraw %}"
+
+  - alert: LokiHigh5xxRate
+    expr: |
+      sum by (instance) (rate(loki_request_duration_seconds_count{status_code=~"5..", instance!~"{{ excld_inst_loki_5xx_rate | default([]) | join('|') }}"}[5m]))
+      / sum by (instance) (rate(loki_request_duration_seconds_count{instance!~"{{ excld_inst_loki_5xx_rate | default([]) | join('|') }}"}[5m])) > 0.05
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Loki on {{ $labels.instance }} returning 5xx for {{ $value | humanizePercentage }} of requests (threshold: 5%).{% endraw %}"
+      summary: "{% raw %}Loki 5xx error rate {{ $value | humanizePercentage }} ({{ $labels.instance }}){% endraw %}"
+
+  - alert: LokiLowCacheHitRate
+    expr: |
+      sum by (instance) (rate(loki_chunk_cache_hits_total{instance!~"{{ excld_inst_loki_cache_hit_rate | default([]) | join('|') }}"}[10m]))
+      / sum by (instance) (rate(loki_chunk_cache_request_total{instance!~"{{ excld_inst_loki_cache_hit_rate | default([]) | join('|') }}"}[10m])) < 0.5
+      AND sum by (instance) (rate(loki_chunk_cache_request_total{instance!~"{{ excld_inst_loki_cache_hit_rate | default([]) | join('|') }}"}[10m])) > 1
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}Loki chunk cache hit rate {{ $value | humanizePercentage }} on {{ $labels.instance }} (threshold: 50%). Queries will be slow, object storage is overloaded.{% endraw %}"
+      summary: "{% raw %}Loki chunk cache hit rate low {{ $value | humanizePercentage }}: {{ $labels.instance }}{% endraw %}"

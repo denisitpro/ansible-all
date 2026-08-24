@@ -1,0 +1,12 @@
+---
+- name: Deploy dump scripts
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ loki_dump_script_dir }}/{{ item }}"
+    owner: "{{ loki_dump_script_owner }}"
+    group: "{{ loki_dump_script_group }}"
+    mode: "0755"
+  loop:
+    # - loki-1h.sh # deprecated
+    # - loki-dump.sh # deprecat
+    - loki-dump-logcli.sh

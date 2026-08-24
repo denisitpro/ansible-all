@@ -1,0 +1,62 @@
+{{ ansible_managed | comment }}
+
+{% if incld_inst_postgres_primary_p1 is defined and incld_inst_postgres_primary_p1 | length > 0 %}
+groups:
+- name: postgres p1 alert rules
+  rules:
+  - alert: PostgresPrimaryEndpointsUnavailableP1
+    expr: |
+      sum(pg_up{job="postgres-exporter", server=~"{{ incld_inst_postgres_primary_p1 | join('|') }}"}) == 0
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "All configured Postgres endpoints for prod are unavailable (P1)"
+      description: >-
+        All Postgres endpoints used by the production application
+        (servers matching: {{ incld_inst_postgres_primary_p1 | join(', ') }})
+        report pg_up == 0 for more than 1 minute.
+        This means there is no available primary/active Postgres instance
+        for the prod application (connection failures for clients).
+
+  - alert: PostgresPrimaryDiskSpaceCriticalP1
+    expr: |
+      ((node_filesystem_avail_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_postgres_primary_node_p1 | join('|') }}", mountpoint!~"^/run(/.*|$)", fstype!~"(squashfs|fuse.*)"} * 100)
+        / node_filesystem_size_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_postgres_primary_node_p1 | join('|') }}"}) < 5
+      and ON (instance, device, mountpoint) node_filesystem_readonly{job=~"node.*exporter", instance=~"{{ incld_inst_postgres_primary_node_p1 | join('|') }}"} == 0
+    for: 10m
+    labels:
+      severity: p1
+      team: devops
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Postgres primary disk space below 5% (P1)"
+      description: >-
+        Host filesystem for primary Postgres instances (instances matching:
+        {{ incld_inst_postgres_primary_node_p1 | join(', ') }}) has less than 5% free space
+        for more than 10 minutes (and filesystem is not read-only).
+        This makes it impossible to reliably write new data; user transactions
+        are at high risk of failing.
+
+  - alert: PostgresPrimaryExporterDownP1
+    expr: |
+      sum(up{job="postgres-exporter", server=~"{{ incld_inst_postgres_primary_p1 | join('|') }}"}) == 0
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Postgres TCP endpoints for prod are unreachable (P1)"
+      description: >-
+        All postgres-exporter TCP endpoints for production Postgres instances
+        (servers matching: {{ incld_inst_postgres_primary_p1 | join(', ') }})
+        are unreachable from Prometheus for more than 1 minute.
+        This indicates that the TCP endpoints used to access Postgres
+        are down or not accepting connections.
+{% endif %}

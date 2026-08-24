@@ -1,0 +1,11 @@
+---
+- name: Stop glitchtip compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ glitchtip_compose_path }}"
+    state: absent
+  ignore_errors: true  # noqa: ignore-errors
+
+- name: Remove glitchtip compose file
+  ansible.builtin.file:
+    path: "{{ glitchtip_compose_path }}/docker-compose.yml"
+    state: absent

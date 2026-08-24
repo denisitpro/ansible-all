@@ -1,0 +1,29 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - bugsink
+    - bugsink-prefly
+
+- ansible.builtin.import_tasks: 10-db.yml
+  tags:
+    - bugsink
+    - bugsink-db
+
+- ansible.builtin.import_tasks: 20-compose.yml
+  tags:
+    - bugsink
+    - bugsink-compose
+
+- name: Flush handlers to start bugsink containers before init
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - bugsink
+    - bugsink-init
+
+- ansible.builtin.import_tasks: 30-init.yml
+  tags:
+    - bugsink
+    - bugsink-init
+
+- ansible.builtin.import_tasks: 90-clean.yml
+  tags: ['never', 'bugsink-clean']

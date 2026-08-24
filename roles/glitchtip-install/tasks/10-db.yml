@@ -1,0 +1,29 @@
+---
+- name: check if glitchtip db user exists
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -tAc "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ glitchtip_db_user }}'"
+  register: glitchtip_db_user_check
+  changed_when: false
+  failed_when: false
+
+- name: create glitchtip db user
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -c "CREATE ROLE \"{{ glitchtip_db_user }}\" LOGIN PASSWORD '{{ glitchtip_db_password }}';"
+  when: glitchtip_db_user_check.stdout != "1"
+  no_log: true
+
+- name: check if glitchtip database exists
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -tAc "SELECT 1 FROM pg_database WHERE datname = '{{ glitchtip_db_name }}'"
+  register: glitchtip_db_check
+  changed_when: false
+  failed_when: false
+
+- name: create glitchtip database
+  ansible.builtin.command: >
+    docker exec {{ psql_docker_container_name }} psql -U {{ psql_default_db_user }}
+    -c "CREATE DATABASE \"{{ glitchtip_db_name }}\" OWNER \"{{ glitchtip_db_user }}\";"
+  when: glitchtip_db_check.stdout != "1"

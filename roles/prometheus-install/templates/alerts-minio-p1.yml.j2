@@ -1,0 +1,43 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: minio p1 alert rules
+  rules:
+
+  # MinIO node disks full / filesystem read-only
+  - alert: MinioDiskSpaceCriticalP1
+    expr: |
+      ((node_filesystem_avail_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_minio_c1_prod_node_p1 | join('|') }}", mountpoint="{{ minio_data_mountpoint | default('/mnt/minio-data') }}", fstype!~"(squashfs|fuse.*)"} * 100)
+        / node_filesystem_size_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_minio_c1_prod_node_p1 | join('|') }}", mountpoint="{{ minio_data_mountpoint | default('/mnt/minio-data') }}"}) < 5
+      and ON (instance, device, mountpoint) node_filesystem_readonly{job=~"node.*exporter", instance=~"{{ incld_inst_minio_c1_prod_node_p1 | join('|') }}", mountpoint="{{ minio_data_mountpoint | default('/mnt/minio-data') }}"} == 0
+    for: 10m
+    labels:
+      severity: p1
+      team: devops
+      service: minio
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Disk space on MinIO nodes below 5% in minio_example_prod (P1)"
+      description: >-
+        MinIO data disk {{ minio_data_mountpoint | default('/mnt/minio-data') }} on nodes
+        (instances matching: {{ incld_inst_minio_c1_prod_node_p1 | join(', ') }})
+        has less than 5% free space for more than 10 minutes (and filesystem is not read-only).
+        This prevents new object writes; critical file upload/download operations will fail.
+
+  # MinIO S3 endpoint unavailable (5xx/timeout)
+  - alert: MinioS3EndpointUnavailableP1
+    expr: |
+      probe_success{job="blackbox_minio_s3", instance="https://s3.example.com"} == 0
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: minio
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "MinIO S3 endpoint unavailable in example-prod (P1)"
+      description: >-
+        MinIO S3 endpoint https://s3.example.com is not responding (5xx/timeout) for more than 2 minutes.
+        Users cannot upload/download critical files.

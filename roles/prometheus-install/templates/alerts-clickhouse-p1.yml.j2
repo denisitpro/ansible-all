@@ -1,0 +1,108 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: clickhouse p1 alert rules
+  rules:
+
+  # Keeper quorum lost for click_example_prod
+  - alert: ClickKeeperQuorumLostP1
+    expr: |
+      sum by () (up{job="clickhouse-keeper-metrics", instance=~"{{ incld_inst_keeper_c1_prod_p1 | join('|') }}"}) < {{ keeper_c1_prod_quorum_min_p1 | default(3) }}
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      service: clickhouse-keeper
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "ClickHouse Keeper quorum lost for click_example_prod (P1)"
+      description: >-
+        Number of reachable ClickHouse Keeper nodes in click_example_prod
+        (instances matching: {{ incld_inst_keeper_c1_prod_p1 | join(', ') }})
+        fell below {{ keeper_c1_prod_quorum_min_p1 | default(3) }} for more than 1 minute.
+        This indicates Keeper quorum loss and the cluster cannot safely perform
+        critical operations; application requests depending on this cluster are likely failing.
+
+  # Keeper quorum lost for click_general_example_prod
+  - alert: ClickKeeperGeneralQuorumLostP1
+    expr: |
+      sum by () (up{job="clickhouse-keeper-metrics", instance=~"{{ incld_inst_keeper_general_c1_prod_p1 | join('|') }}"}) < {{ keeper_general_c1_prod_quorum_min_p1 | default(3) }}
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      service: clickhouse-keeper
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "ClickHouse Keeper quorum lost for click_general_example_prod (P1)"
+      description: >-
+        Number of reachable ClickHouse Keeper nodes in click_general_example_prod
+        (instances matching: {{ incld_inst_keeper_general_c1_prod_p1 | join(', ') }})
+        fell below {{ keeper_general_c1_prod_quorum_min_p1 | default(3) }} for more than 1 minute.
+        This indicates Keeper quorum loss and the cluster cannot safely perform
+        critical operations; application requests depending on this cluster are likely failing.
+
+  # All critical online table replicas unavailable (readonly replicas on primary nodes)
+  - alert: ClickhouseReadonlyReplicasOnPrimaryNodesP1
+    expr: |
+      sum by () (ClickHouseMetrics_ReadonlyReplica{instance=~"{{ incld_inst_click_primary_metrics_p1 | join('|') }}"}) > 0
+    for: 5m
+    labels:
+      severity: p1
+      team: devops
+      service: clickhouse
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Readonly replicas detected on primary ClickHouse nodes (P1)"
+      description: >-
+        One or more ClickHouse primary nodes used for online logic
+        (instances matching: {{ incld_inst_click_primary_node_p1 | join(', ') }})
+        report Readonly replicas (ClickHouseMetrics_ReadonlyReplica > 0)
+        for more than 5 minutes.
+        This indicates that replicas of critical online tables are unavailable
+        and online features depending on fresh data may be broken.
+
+  # ClickHouse metrics endpoints unavailable on nodes (9363)
+  - alert: ClickhousePrimaryEndpointsUnavailableP1
+    expr: |
+      sum(up{job="clickhouse-server-metrics", instance=~"clickhouse-01.example.com.*:9363|clickhouse-02.example.com.*:9363|clickhouse-03.example.com.*:9363|clickhouse-04.example.com.*:9363"}) < 4
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      service: clickhouse
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "All configured ClickHouse endpoints for prod are unavailable (P1)"
+      description: >-
+        All ClickHouse endpoints used by the production application
+        (exporter series with server label matching: {{ incld_inst_click_primary_servers_p1 | join(', ') }})
+        have up == 0 for more than 1 minute.
+        This means there is no reachable ClickHouse endpoint for prod applications
+        (connection failures for clients).
+
+  # Primary ClickHouse node disks full / filesystem read-only
+  - alert: ClickhousePrimaryDiskSpaceCriticalP1
+    expr: |
+      ((node_filesystem_avail_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_click_primary_node_p1 | join('|') }}", mountpoint!~"^/run(/.*|$)", fstype!~"(squashfs|fuse.*)"} * 100)
+        / node_filesystem_size_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_click_primary_node_p1 | join('|') }}"}) < 5
+      and ON (instance, device, mountpoint) node_filesystem_readonly{job=~"node.*exporter", instance=~"{{ incld_inst_click_primary_node_p1 | join('|') }}"} == 0
+    for: 10m
+    labels:
+      severity: p1
+      team: devops
+      service: clickhouse
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Disk space on primary ClickHouse nodes below 5% (P1)"
+      description: >-
+        Host filesystem for primary ClickHouse nodes (instances matching:
+        {{ incld_inst_click_primary_node_p1 | join(', ') }}) has less than 5% free space
+        for more than 10 minutes (and filesystem is not read-only).
+        This makes it impossible to reliably write new data; online features
+        depending on fresh data are at high risk of failing.

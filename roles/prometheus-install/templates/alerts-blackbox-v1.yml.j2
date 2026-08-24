@@ -1,0 +1,122 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: blackbox alert rules v1
+  rules:
+  - alert: SslCertificateWillExpireSoon
+    # `probe_ssl_last_chain_expiry_timestamp_seconds` is derived from the TLS
+    # VerifiedChains. For targets probed with `insecure_skip_verify: true`
+    # (the http_200_mtls module) or self-signed endpoints there is no verified
+    # chain, so blackbox emits the zero-time epoch (~ -6.2e10) and the bare
+    # `metric - time() < N` without `> 0` fires permanently on skip_verify targets. The `> 0` guard drops
+    # that garbage while still alerting on genuinely expiring/expired certs on
+    # verifiable endpoints. Do NOT remove it (see DEVOPS-6490).
+    expr: |
+      probe_ssl_last_chain_expiry_timestamp_seconds{instance!~"{{ excld_inst_ssl_cert_will_expire_soon | default([], true) | join('|') }}"} > 0
+      and probe_ssl_last_chain_expiry_timestamp_seconds{instance!~"{{ excld_inst_ssl_cert_will_expire_soon | default([], true) | join('|') }}"} - time() < 86400 * 7
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+     description: "{% raw %}SSL certificate will expire in less than 7 days\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}{% endraw %}"
+     summary: "{% raw %}SSL certificate will expire soon (instance {{ $labels.instance }}){% endraw %}"
+  - alert: Production endpoint issue - v2
+    expr: probe_http_status_code{env='prod', instance!~"{{ excld_inst_prod_endpoint_issue | default([], true) | join('|') }}"} != 200 and probe_http_status_code{env='prod', instance!~"{{ excld_inst_prod_endpoint_issue | default([], true) | join('|') }}"} != 401
+    for: 40s
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+      summary: '{% raw %}Issue with {{ $labels.instance }}{% endraw %}'
+      description: '{% raw %}Endpoint {{ $labels.instance }} on {{ $labels.server }} ( {{ $labels.location }} ) in invalid state. Check services{% endraw %}'
+  - alert: Development endpoint issue - v2
+    expr: probe_http_status_code{env='dev', instance!~"{{ excld_inst_dev_endpoint_issue | default([], true) | join('|') }}"} != 200 and probe_http_status_code{env='dev', instance!~"{{ excld_inst_dev_endpoint_issue | default([], true) | join('|') }}"} != 401
+    for: 120s
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+      summary: '{% raw %}Issue with {{ $labels.instance }}{% endraw %}'
+      description: '{% raw %}Endpoint {{ $labels.instance }} on {{ $labels.server }} ( {{ $labels.location }} ) in invalid state. Check services{% endraw %}'
+{# Tiers that own a dedicated slow-probe alert below are excluded here so they don't double-fire.
+   Empty case must be an RE2-valid regex that matches no real tier (Prometheus uses RE2 — no lookahead). #}
+{% set blackbox_slow_probe_tier_excl = (custom_tier_alerts | default([], true) | map(attribute='tier') | list | join('|')) | default('__no_tier_excluded__', true) %}
+{% set blackbox_slow_probe_inst_count_excl = (excld_inst_blackbox_slow_probe | default([], true) + excld_inst_blackbox_slow_probe_count | default([], true)) | unique | list %}
+{% set blackbox_slow_probe_inst_ratio_excl = (excld_inst_blackbox_slow_probe | default([], true) + excld_inst_blackbox_slow_probe_ratio | default([], true)) | unique | list %}
+{% set blackbox_slow_probe_tags_count_excl = (excld_tags_blackbox_slow_probe | default([], true) + excld_tags_blackbox_slow_probe_count | default([], true)) | unique | map('regex_replace', '^(.*)$', '.*\\1.*') | list | join('|') %}
+{% set blackbox_slow_probe_tags_ratio_excl = (excld_tags_blackbox_slow_probe | default([], true) + excld_tags_blackbox_slow_probe_ratio | default([], true)) | unique | map('regex_replace', '^(.*)$', '.*\\1.*') | list | join('|') %}
+  # Replaced: sustained avg_over_time[1m] was too noisy on heavy endpoints.
+  # - alert: Blackbox slow probe - v2
+  #   expr: avg_over_time(probe_duration_seconds{tier!~"{{ blackbox_slow_probe_tier_excl }}",instance!~"{{ excld_inst_blackbox_slow_probe | default([], true) | list | join('|') }}", tags!~"{{ excld_tags_blackbox_slow_probe | default([], true) | map('regex_replace', '^(.*)$', '.*\\1.*') | list | join('|') }}"}[1m]) > 2
+  #   for: 5m
+  #   labels:
+  #     severity: warning
+  #     receiver: slack
+  #   annotations:
+  #     identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+  #     summary: '{% raw %}Blackbox slow probe (instance {{ $labels.instance }}){% endraw %}'
+  #     description: '{% raw %}Blackbox probe took more than 1s to complete\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}{% endraw %}'
+  - alert: Blackbox slow probe count - v2
+    expr: |
+      sum_over_time(
+        (probe_duration_seconds{tier!~"{{ blackbox_slow_probe_tier_excl }}",instance!~"{{ blackbox_slow_probe_inst_count_excl | join('|') }}",tags!~"{{ blackbox_slow_probe_tags_count_excl }}"} > bool {{ blackbox_slow_probe_threshold | default(2) }})[{{ blackbox_slow_probe_count_window | default('30m') }}:{{ blackbox_slow_probe_subquery_step | default('1m') }}]
+      ) >= {{ blackbox_slow_probe_count_min | default(5) }}
+    for: {{ blackbox_slow_probe_count_for | default('1m') }}
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+      summary: '{% raw %}Blackbox slow probe count (instance {{ $labels.instance }}){% endraw %}'
+      description: 'At least {{ blackbox_slow_probe_count_min | default(5) }} blackbox probes exceeded {{ blackbox_slow_probe_threshold | default(2) }}s within {{ blackbox_slow_probe_count_window | default("30m") }}\n  VALUE = {% raw %}{{ $value }}{% endraw %}\n  LABELS: {% raw %}{{ $labels }}{% endraw %}'
+  - alert: Blackbox slow probe ratio - v2
+    expr: |
+      (
+        sum_over_time(
+          (probe_duration_seconds{tier!~"{{ blackbox_slow_probe_tier_excl }}",instance!~"{{ blackbox_slow_probe_inst_ratio_excl | join('|') }}",tags!~"{{ blackbox_slow_probe_tags_ratio_excl }}"} > bool {{ blackbox_slow_probe_threshold | default(2) }})[{{ blackbox_slow_probe_ratio_window | default('30m') }}:{{ blackbox_slow_probe_subquery_step | default('1m') }}]
+        )
+        /
+        count_over_time(
+          probe_duration_seconds{tier!~"{{ blackbox_slow_probe_tier_excl }}",instance!~"{{ blackbox_slow_probe_inst_ratio_excl | join('|') }}",tags!~"{{ blackbox_slow_probe_tags_ratio_excl }}"}[{{ blackbox_slow_probe_ratio_window | default('30m') }}:{{ blackbox_slow_probe_subquery_step | default('1m') }}]
+        )
+      ) > {{ blackbox_slow_probe_ratio_min | default(0.3) }}
+    for: {{ blackbox_slow_probe_ratio_for | default('1m') }}
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.service }} - {{ $labels.env }}{% endraw %}'
+      summary: '{% raw %}Blackbox slow probe ratio (instance {{ $labels.instance }}){% endraw %}'
+      description: 'More than {{ (blackbox_slow_probe_ratio_min | default(0.3) | float * 100) | int }}% of blackbox probes exceeded {{ blackbox_slow_probe_threshold | default(2) }}s within {{ blackbox_slow_probe_ratio_window | default("30m") }}\n  VALUE = {% raw %}{{ $value }}{% endraw %}\n  LABELS: {% raw %}{{ $labels }}{% endraw %}'
+{% for tier_alert in custom_tier_alerts | default([]) %}
+  - alert: Blackbox slow probe - {{ tier_alert.tier }}
+    expr: avg_over_time(probe_duration_seconds{tier="{{ tier_alert.tier }}"}[1m]) > {{ tier_alert.slow_probe_threshold | default(4) }}
+    for: {{ tier_alert.slow_probe_for | default('10m') }}
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{{ '{{' }} $labels.project {{ '}}' }} - {{ '{{' }} $labels.service {{ '}}' }} - {{ '{{' }} $labels.env {{ '}}' }}'
+      summary: 'Blackbox slow probe {{ tier_alert.tier }} (instance {{ '{{' }} $labels.instance {{ '}}' }})'
+      description: 'Blackbox probe took more than {{ tier_alert.slow_probe_threshold | default(4) }}s to complete\n  VALUE = {{ '{{' }} $value {{ '}}' }}\n  LABELS: {{ '{{' }} $labels {{ '}}' }}'
+{% endfor %}
+  - alert: RobotsTxtZoaNonStandardSyntax
+    expr: probe_success{job="{{ alert_blackbox_robots_syntax_job | default('blackbox_robots_txt_standard_syntax') }}"} == 0
+    for: 5m
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      summary: '{% raw %}robots.txt: non-standard Disallow: /* or unreachable (instance {{ $labels.instance }}){% endraw %}'
+      description: '{% raw %}robots.txt on {{ $labels.instance }} should use "Disallow: /" not "Disallow: /*". Probe failed (syntax check or unreachable).{% endraw %}'
+  - alert: RobotsTxtUnavailable
+    expr: probe_success{job="blackbox_robots_txt"} == 0
+    for: 5m
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      summary: '{% raw %}robots.txt unreachable or invalid (instance {{ $labels.instance }}){% endraw %}'
+      description: '{% raw %}robots.txt check failed: unreachable, non-200, timeout, or body does not look like robots.txt (no User-agent). tier=robots_txt_check{% endraw %}'

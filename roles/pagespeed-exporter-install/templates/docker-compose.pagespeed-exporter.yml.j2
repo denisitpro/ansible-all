@@ -1,0 +1,15 @@
+services:
+  pagespeed-exporter:
+    image: foomo/pagespeed_exporter:{{ pagespeed_exporter_version }}
+    container_name: pagespeed-exporter
+    network_mode: host
+    restart: always
+    command:
+      - -api-key={{ pagespeed_exporter_api_key }}
+      - -listener={{ pagespeed_exporter_bind_addr }}:{{ pagespeed_exporter_bind_port }}
+      - -targets={{ pagespeed_exporter_targets | join(',') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: '100m'
+        max-file: '2'

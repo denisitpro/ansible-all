@@ -1,0 +1,60 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: backend p1 alert rules
+  rules:
+
+  {% if incld_inst_backend_c1_prod_node_p1 is defined and incld_inst_backend_c1_prod_node_p1 | length > 0 %}
+  # app-docker-01 host unavailable (no node_exporter metrics)
+  - alert: BackendHostDownP1
+    expr: |
+      up{job="node-exporter", instance=~"{{ incld_inst_backend_c1_prod_node_p1 | join('|') }}"} == 0
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      service: backend
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Backend host unavailable in example-prod (P1)"
+      description: >-
+        Backend host(s) (node-exporter instances matching: {{ incld_inst_backend_c1_prod_node_p1 | join(', ') }})
+        are unreachable for more than 1 minute. This indicates that app-docker-01 is down
+        or not exporting node metrics.
+
+  # RAM usage > 95%
+  - alert: BackendRamCriticalP1
+    expr: |
+      (1 - (node_memory_MemAvailable_bytes{instance=~"{{ incld_inst_backend_c1_prod_node_p1 | join('|') }}"}
+        / node_memory_MemTotal_bytes{instance=~"{{ incld_inst_backend_c1_prod_node_p1 | join('|') }}"})) * 100 > 95
+    for: 5m
+    labels:
+      severity: p1
+      team: devops
+      service: backend
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Backend RAM usage above 95% (P1)"
+      description: >-
+        RAM usage on backend host(s) ({{ incld_inst_backend_c1_prod_node_p1 | join(', ') }})
+        is above 95% for more than 5 minutes.
+
+  # CPU usage > 95%
+  - alert: BackendCpuCriticalP1
+    expr: |
+      (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle", instance=~"{{ incld_inst_backend_c1_prod_node_p1 | join('|') }}"}[5m]))) * 100 > 95
+    for: 5m
+    labels:
+      severity: p1
+      team: devops
+      service: backend
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Backend CPU usage above 95% (P1)"
+      description: >-
+        CPU usage on backend host(s) ({{ incld_inst_backend_c1_prod_node_p1 | join(', ') }})
+        is above 95% for more than 5 minutes.
+  {% endif %}

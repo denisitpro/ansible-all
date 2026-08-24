@@ -1,0 +1,11 @@
+---
+- name: Stop bugsink compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ bugsink_compose_path }}"
+    state: absent
+  ignore_errors: true  # noqa: ignore-errors
+
+- name: Remove bugsink compose file
+  ansible.builtin.file:
+    path: "{{ bugsink_compose_path }}/docker-compose.yml"
+    state: absent

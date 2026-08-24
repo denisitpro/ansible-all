@@ -1,0 +1,13 @@
+{{ ansible_managed | comment }}
+# need set cron job and hands metrics
+
+groups:
+- name: text collection alert rules
+  rules:
+  - alert: RebootRequired
+    expr: "node_reboot_required > 0"
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} requires a reboot.{% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} - reboot required{% endraw %}"

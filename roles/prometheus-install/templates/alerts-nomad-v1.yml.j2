@@ -1,0 +1,49 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: nomad alert rules
+  rules:
+    - alert: NomadJobFailed
+      expr: 'delta(nomad_nomad_job_summary_failed[1m])> 0'
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: "{% raw %}Nomad job {{ $labels.exported_job }} failed to {{ $labels.instance }}{% endraw %}"
+        description: "{% raw %}Nomad job failed {{ $labels.exported_job }} to {{ $labels.instance }}{% endraw %}"
+
+    - alert: NomadJobLost
+      expr: 'nomad_nomad_job_summary_lost > 0'
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: "{% raw %}Nomad job lost (instance {{ $labels.instance }}){% endraw %}"
+        description: "{% raw %}Nomad job lost\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}{% endraw %}"
+
+    - alert: NomadJobRestart
+      expr: 'nomad_client_allocs_restart > 0'
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        description: "{% raw %}{{ $labels.instance }} of job {{ $labels.exported_job }} nomad job restart{% endraw %}"
+        summary: "{% raw %} Job {{ $labels.exported_job }} restarted to {{ $labels.instance }}{% endraw %}"
+
+    - alert: NomadBlockedEvaluation
+      expr: 'nomad_nomad_blocked_evals_total_blocked > 0'
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: "{% raw %}Nomad blocked evaluation (instance {{ $labels.instance }}){% endraw %}"
+        description: "{% raw %}Nomad blocked evaluation\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}{% endraw %}"
+
+    - alert: NomadJobQueued
+      expr: 'nomad_nomad_job_summary_queued > 0'
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "{% raw %}Nomad job queued (instance {{ $labels.instance }}){% endraw %}"
+        description: "{% raw %}Nomad job queued\n  {{ $labels.exported_job }}  {{ $labels.instance }}{% endraw %}"

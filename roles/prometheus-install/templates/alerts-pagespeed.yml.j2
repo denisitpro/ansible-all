@@ -1,0 +1,86 @@
+{{ ansible_managed | comment }}
+
+{% if pagespeed_alert_targets is defined and pagespeed_alert_targets | length > 0 %}
+groups:
+- name: pagespeed.alert.rules
+  rules:
+
+{% for target in pagespeed_alert_targets %}
+  - alert: PageSpeed | PerformanceLow | {{ target.name }}
+    expr: |
+      max_over_time(pagespeed_lighthouse_category_score{category="performance", host="{{ target.url }}", strategy="mobile"}[45m]) < {{ target.performance_min | default(0.5) }}
+    for: 1m
+    labels:
+      severity: warning
+      team: devops
+      site: "{{ target.name }}"
+    annotations:
+      summary: "PageSpeed performance low for {{ target.name }} mobile"
+      description: >-
+        Mobile performance score for {{ target.url }} stayed below {{ target.performance_min | default(0.5) }} for 3 consecutive samples (last 45m). Worst recent value: {% raw %}{{ printf "%.2f" $value }}{% endraw %}.
+
+  - alert: PageSpeed | PerformanceCritical | {{ target.name }}
+    expr: |
+      max_over_time(pagespeed_lighthouse_category_score{category="performance", host="{{ target.url }}", strategy="mobile"}[45m]) < {{ target.performance_critical | default(0.3) }}
+    for: 1m
+    labels:
+      severity: critical
+      team: devops
+      receiver: slack
+      site: "{{ target.name }}"
+    annotations:
+      summary: "PageSpeed performance critical for {{ target.name }} mobile"
+      description: >-
+        Mobile performance score for {{ target.url }} stayed below {{ target.performance_critical | default(0.3) }} for 3 consecutive samples (last 45m). Worst recent value: {% raw %}{{ printf "%.2f" $value }}{% endraw %}.
+
+  - alert: PageSpeed | LCPSlow | {{ target.name }}
+    expr: |
+      min_over_time(pagespeed_lighthouse_largest_contentful_paint_duration_seconds{host="{{ target.url }}", strategy="mobile"}[45m]) > {{ target.lcp_max | default(4) }}
+    for: 1m
+    labels:
+      severity: warning
+      team: devops
+      site: "{{ target.name }}"
+    annotations:
+      summary: "PageSpeed LCP slow for {{ target.name }} mobile"
+      description: >-
+        LCP for {{ target.url }} mobile stayed above {{ target.lcp_max | default(4) }}s for 3 consecutive samples (last 45m). Best recent value: {% raw %}{{ printf "%.1f" $value }}{% endraw %}s.
+
+  - alert: PageSpeed | CLSHigh | {{ target.name }}
+    expr: |
+      min_over_time(pagespeed_lighthouse_cumulative_layout_shift_duration_seconds{host="{{ target.url }}", strategy="mobile"}[45m]) > {{ target.cls_max | default(0.25) }}
+    for: 1m
+    labels:
+      severity: warning
+      team: devops
+      site: "{{ target.name }}"
+    annotations:
+      summary: "PageSpeed CLS high for {{ target.name }} mobile"
+      description: >-
+        CLS for {{ target.url }} mobile stayed above {{ target.cls_max | default(0.25) }} for 3 consecutive samples (last 45m). Best recent value: {% raw %}{{ printf "%.3f" $value }}{% endraw %}.
+
+  - alert: PageSpeed | SEOLow | {{ target.name }}
+    expr: |
+      max_over_time(pagespeed_lighthouse_category_score{category="seo", host="{{ target.url }}", strategy="mobile"}[45m]) < {{ target.seo_min | default(0.5) }}
+    for: 1m
+    labels:
+      severity: warning
+      team: devops
+      site: "{{ target.name }}"
+    annotations:
+      summary: "PageSpeed SEO score low for {{ target.name }}"
+      description: >-
+        SEO score for {{ target.url }} stayed below {{ target.seo_min | default(0.5) }} for 3 consecutive samples (last 45m). Worst recent value: {% raw %}{{ printf "%.2f" $value }}{% endraw %}.
+
+{% endfor %}
+  - alert: PageSpeed | ExporterDown
+    expr: |
+      up{job="consul_pagespeed_exporter"} == 0
+    for: 30m
+    labels:
+      severity: warning
+      team: devops
+    annotations:
+      summary: "PageSpeed exporter is down ({% raw %}{{ $labels.instance }}{% endraw %})"
+      description: "PageSpeed exporter is unreachable for more than 30 minutes."
+{% endif %}

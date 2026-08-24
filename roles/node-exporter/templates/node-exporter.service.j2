@@ -36,7 +36,7 @@ SyslogIdentifier=node-exporter
 Restart=always
 RestartSec=1
 PrivateTmp=yes
-{% if ansible_mounts | selectattr('mount', 'equalto', '/home') | list %}
+{% if ansible_facts['mounts'] | selectattr('mount', 'equalto', '/home') | list %}
 ProtectHome=read-only
 {% else %}
 ProtectHome=yes
