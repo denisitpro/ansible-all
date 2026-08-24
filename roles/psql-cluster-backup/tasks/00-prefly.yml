@@ -1,0 +1,14 @@
+---
+- name: "[psql-cluster-backup/prefly] Create required directories"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  loop:
+    - "{{ psql_backup_base_path }}"
+    - "{{ psql_backup_script_path }}"
+    - "{{ psql_backup_data_path }}"
+    - "{{ psql_backup_log_path }}"
+  when: inventory_hostname == psql_backup_node

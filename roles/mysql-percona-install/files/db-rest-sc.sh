@@ -5,7 +5,7 @@
 # 1. Configure rclone remote "backblaze" for Backblaze B2
 #    rclone config → New remote → Name: backblaze → Type: b2
 #    Введите Account ID (ApplicationKeyId) и Application Key
-# 2. docker login (if using private image c4telegraph/percona-xtrabackup)
+# 2. docker login (if using a private mirror of percona/percona-xtrabackup)
 #
 # After that — script runs automatically
 #
@@ -19,9 +19,9 @@ TMP_BACKUP="/tmp/mysql_dump.tar"
 TMP_EXTRACT="/tmp/backup"
 
 
-RCLONE_REMOTE="backblaze:sanctum-7d-15/mysql-cluster-02"
+RCLONE_REMOTE="b2-example:example-backup-bucket/mysql-cluster-01"
 
-XTRABACKUP_IMAGE="c4telegraph/percona-xtrabackup:2.4.29"
+XTRABACKUP_IMAGE="percona/percona-xtrabackup:2.4.29"
 TODAY=$(date +%Y-%m-%d)
 
 echo "=== $(date) === Starting MySQL restore from XtraBackup (Backblaze B2) ==="

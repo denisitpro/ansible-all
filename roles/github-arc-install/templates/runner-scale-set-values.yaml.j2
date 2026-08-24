@@ -1,0 +1,46 @@
+{{ ansible_managed | comment }}
+# gha-runner-scale-set {{ arc_chart_version }} — scale set "{{ item.name }}"
+# runs-on label = runnerScaleSetName below.
+githubConfigUrl: "{{ item.github_config_url }}"
+
+runnerScaleSetName: "{{ item.runner_scale_set_name | default(item.name) }}"
+{% if item.runner_group is defined %}
+runnerGroup: "{{ item.runner_group }}"
+{% endif %}
+
+minRunners: {{ item.min_runners | default(arc_min_runners) }}
+maxRunners: {{ item.max_runners | default(arc_max_runners) }}
+
+githubConfigSecret:
+{% if (item.github_token | default('')) | length > 0 %}
+  github_token: "{{ item.github_token }}"
+{% else %}
+  github_app_id: "{{ item.github_app_id }}"
+  github_app_installation_id: "{{ item.github_app_installation_id }}"
+  github_app_private_key: |
+{{ item.github_app_private_key | indent(4, true) }}
+{% endif %}
+
+containerMode:
+  type: "{{ item.container_mode | default(arc_container_mode) }}"
+{% if (item.container_mode | default(arc_container_mode)) == 'kubernetes' %}
+  kubernetesModeWorkVolumeClaim:
+    accessModes: ["ReadWriteOnce"]
+    storageClassName: "{{ item.k8s_mode_storage_class | default(arc_k8s_mode_storage_class) }}"
+    resources:
+      requests:
+        storage: "{{ item.k8s_mode_storage_size | default(arc_k8s_mode_storage_size) }}"
+{% endif %}
+
+# With containerMode: dind the chart populates the rest of template.spec (the
+# privileged docker:dind sidecar + init container), reusing this runner image.
+template:
+  spec:
+    containers:
+      - name: runner
+        image: "{{ item.runner_image | default(arc_runner_image) }}:{{ item.runner_image_tag | default(arc_runner_image_tag) }}"
+        command: ["/home/runner/run.sh"]
+{% if (item.runner_resources | default(arc_runner_resources)) %}
+        resources:
+{{ (item.runner_resources | default(arc_runner_resources)) | to_nice_yaml | indent(10, true) }}
+{% endif %}

@@ -1,0 +1,30 @@
+---
+# Version shared by the controller and runner scale-set Helm charts.
+arc_chart_version: "0.14.2"
+
+arc_controller_release_name: "arc"
+arc_controller_namespace: "arc-systems"
+arc_controller_chart_oci: "oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller"
+arc_controller_replica_count: 1
+arc_controller_log_level: "info"
+arc_controller_log_format: "json"
+arc_controller_resources: {}
+
+arc_runner_set_chart_oci: "oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set"
+arc_runners_namespace: "arc-runners"
+
+# Defaults can be overridden per arc_runner_scale_sets entry.
+arc_container_mode: "dind"
+arc_min_runners: 0
+arc_max_runners: 3
+arc_runner_image: "ghcr.io/actions/actions-runner"
+
+# Runner releases have an independent lifecycle from the ARC Helm charts.
+arc_runner_image_tag: "2.336.0"
+arc_runner_resources: {}
+
+# Used only with container_mode: kubernetes.
+arc_k8s_mode_storage_class: "local-path"
+arc_k8s_mode_storage_size: "1Gi"
+
+arc_runner_scale_sets: []

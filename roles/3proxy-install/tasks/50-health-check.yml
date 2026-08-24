@@ -1,0 +1,33 @@
+---
+- name: wait for 3proxy ports to be ready
+  ansible.builtin.wait_for:
+    port: "{{ item.port }}"
+    delay: 5
+    timeout: 60
+  loop: "{{ threeproxy_types }}"
+
+- name: check 3proxy container status
+  community.docker.docker_container_info:
+    name: 3proxy
+  register: threeproxy_container_info
+  changed_when: false
+  become: true
+  when: threeproxy_install_docker
+
+- name: check 3proxy systemd service status
+  ansible.builtin.systemd:
+    name: "{{ threeproxy_systemd_service_name }}"
+  register: threeproxy_service_info
+  changed_when: false
+  become: true
+  when: threeproxy_install_systemd
+
+- name: display 3proxy container status
+  ansible.builtin.debug:
+    msg: "3proxy container is {{ threeproxy_container_info.container.State.Status if threeproxy_container_info.exists else 'not found' }}"
+  when: threeproxy_install_docker
+
+- name: display 3proxy service status
+  ansible.builtin.debug:
+    msg: "3proxy service is {{ threeproxy_service_info.status.ActiveState | default('unknown') }}"
+  when: threeproxy_install_systemd

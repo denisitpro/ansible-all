@@ -1,0 +1,18 @@
+---
+- name: "[psql-cluster/init-check] Check if data directory exists"
+  ansible.builtin.stat:
+    path: "{{ psql_node_data_path }}"
+  register: psql_data_dir_stat
+
+- name: "[psql-cluster/init-check] Check if PG_VERSION file exists"
+  ansible.builtin.stat:
+    path: "{{ psql_node_data_path }}/PG_VERSION"
+  register: psql_version_file_stat
+
+- name: "[psql-cluster/init-check] Set postgres_initialized fact"
+  ansible.builtin.set_fact:
+    postgres_initialized: "{{ psql_version_file_stat.stat.exists }}"
+
+- name: "[psql-cluster/init-check] Print initialization status"
+  ansible.builtin.debug:
+    msg: "PostgreSQL initialized: {{ postgres_initialized }} on {{ inventory_hostname }} (role: {{ 'master' if inventory_hostname == psql_master_node else 'replica' }})"

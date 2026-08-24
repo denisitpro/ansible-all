@@ -1,0 +1,37 @@
+---
+## Runs on master only (controlled by main.yml when condition)
+
+- name: "[psql-cluster/db] Check which databases already exist"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc
+      "SELECT 1 FROM pg_database WHERE datname = '{{ item.name }}';"
+  register: db_exists_check
+  loop: "{{ psql_db }}"
+  changed_when: false
+
+- name: "[psql-cluster/db] Verify database owner exists before creation"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc
+      "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ item.item.owner | default(item.item.name) }}';"
+  register: owner_exists_check
+  loop: "{{ db_exists_check.results }}"
+  when: item.stdout | trim != "1"
+  changed_when: false
+  failed_when: owner_exists_check.stdout | trim != "1"
+
+- name: "[psql-cluster/db] Create databases"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c
+      "CREATE DATABASE \"{{ item.item.name }}\" OWNER \"{{ item.item.owner | default(item.item.name) }}\";"
+  register: create_db_result
+  loop: "{{ db_exists_check.results }}"
+  when: item.stdout | trim != "1"
+  failed_when:
+    - create_db_result.rc != 0
+    - "'already exists' not in create_db_result.stderr"

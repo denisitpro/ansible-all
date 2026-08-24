@@ -1,0 +1,44 @@
+---
+- name: "[psql-cluster] Preflight - create directories"
+  ansible.builtin.import_tasks: 00-prefly.yml
+  tags: [psql, psql-cluster, psql-prefly]
+
+- name: "[psql-cluster] Config - deploy configuration files"
+  ansible.builtin.import_tasks: 05-config.yml
+  tags: [psql, psql-cluster, psql-config]
+
+- name: "[psql-cluster] Init check - detect PostgreSQL state"
+  ansible.builtin.import_tasks: 10-init-check.yml
+  tags: [psql, psql-cluster, psql-init-check]
+
+- name: "[psql-cluster] SSL - copy certificates"
+  ansible.builtin.import_tasks: 20-copy-ssl.yml
+  when: psql_tls | default(false)
+  tags: [psql, psql-cluster, psql-ssl]
+
+- name: "[psql-cluster] Compose - bring up container"
+  ansible.builtin.import_tasks: 40-compose.yml
+  tags: [psql, psql-cluster, psql-compose]
+
+- name: "[psql-cluster] Replication - setup streaming replication"
+  ansible.builtin.import_tasks: 50-replication-setup.yml
+  when: psql_replica_nodes | default([]) | length > 0
+  tags: [psql, psql-cluster, psql-replication]
+
+- name: "[psql-cluster] Users - create roles and users (master only)"
+  ansible.builtin.import_tasks: 60-create-users.yml
+  when: inventory_hostname == psql_master_node
+  tags: [psql, psql-cluster, psql-users]
+
+- name: "[psql-cluster] Databases - create databases (master only)"
+  ansible.builtin.import_tasks: 70-create-db.yml
+  when: inventory_hostname == psql_master_node
+  tags: [psql, psql-cluster, psql-db]
+
+- name: "[psql-cluster] Promote - manual replica promotion to primary"
+  ansible.builtin.import_tasks: 80-promote.yml
+  tags: [never, psql-promote]
+
+- name: "[psql-cluster] Cleanup - remove all"
+  ansible.builtin.import_tasks: 90-cleanup.yml
+  tags: [never, psql-cleanup]

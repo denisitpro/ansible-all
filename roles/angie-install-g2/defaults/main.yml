@@ -2,7 +2,7 @@
 angie_compose_path: /opt/docker/angie
 
 angie_version: 1.11.6
-angie_image_repository: "c4telegraph/angie"
+angie_image_repository: "docker.angie.software/angie"
 angie_image: "{{ angie_image_repository }}:{{ angie_version }}"
 
 # Binary name inside container (nginx for nginx images, angie for angie images)

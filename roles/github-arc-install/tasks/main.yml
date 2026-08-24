@@ -1,0 +1,30 @@
+---
+# Order matters: the runner-scale-set chart performs a LIVE cluster lookup for
+# the controller's ServiceAccount at render time, so the controller must be
+# installed before any scale set. Preflight validates credentials first so a
+# not-yet-wired run fails fast and installs nothing.
+- name: ARC | Preflight
+  ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - github-arc
+    - github-arc-prefly
+
+- name: ARC | Install controller
+  ansible.builtin.import_tasks: 10-controller.yml
+  tags:
+    - github-arc
+    - github-arc-controller
+
+- name: ARC | Install runner scale sets
+  ansible.builtin.import_tasks: 20-runner-scale-sets.yml
+  when: arc_runner_scale_sets | length > 0
+  tags:
+    - github-arc
+    - github-arc-runners
+
+# Destructive teardown, behind the `never` tag — run with -t github-arc-clean.
+- name: ARC | Teardown
+  ansible.builtin.import_tasks: 99-clean.yml
+  tags:
+    - never
+    - github-arc-clean

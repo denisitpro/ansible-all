@@ -1,0 +1,41 @@
+---
+- name: download 3proxy deb package
+  ansible.builtin.get_url:
+    url: "{{ threeproxy_download_url }}"
+    dest: /tmp/3proxy.deb
+    mode: '0644'
+  register: threeproxy_download
+
+- name: install 3proxy from deb package
+  ansible.builtin.apt:
+    deb: /tmp/3proxy.deb
+    state: present
+  notify: restart 3proxy systemd
+
+- name: ensure 3proxy config directory has correct ownership
+  ansible.builtin.file:
+    path: "{{ threeproxy_systemd_config_dir }}"
+    owner: 3proxy
+    group: 3proxy
+    mode: '0755'
+    state: directory
+
+- name: ensure 3proxy log directory has correct ownership
+  ansible.builtin.file:
+    path: "{{ threeproxy_systemd_log_dir }}"
+    owner: 3proxy
+    group: 3proxy
+    mode: '0755'
+    state: directory
+
+- name: enable and start 3proxy service
+  ansible.builtin.systemd:
+    name: "{{ threeproxy_systemd_service_name }}"
+    enabled: true
+    daemon_reload: true
+    state: started
+
+- name: cleanup downloaded files
+  ansible.builtin.file:
+    path: /tmp/3proxy.deb
+    state: absent

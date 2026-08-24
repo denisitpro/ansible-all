@@ -14,4 +14,3 @@
     - consul_dkron_exporter_enabled | bool
     - consul_config_dir_stat.stat.exists
   notify: reload consul
-

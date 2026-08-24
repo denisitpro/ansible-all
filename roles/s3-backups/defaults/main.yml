@@ -54,6 +54,31 @@ weekly_backup_config:
   sources: []
   destinations: []
 
+# Example backup configuration (B2 source bucket -> Wasabi destination bucket)
+payload_backup_enabled: false
+payload_backup_dry_run: false
+
+payload_backup_log_dir: "/tmp/rclone"
+payload_backup_log_level: "INFO"
+
+payload_backup_options:
+  max_age: "192h"
+  transfers: 4
+  checkers: 4
+  buffer_size: "32M"
+  ignore_existing: true
+  fast_list: false
+  retries: 3
+  bwlimit: ""
+
+payload_backup_config:
+  source:
+    remote: ""
+    bucket: ""
+  destination:
+    remote: ""
+    bucket: ""
+
 # State backup configuration (AWS S3 -> Local -> Encrypt -> Wasabi)
 state_backup_enabled: false
 state_backup_dry_run: false
@@ -85,7 +110,7 @@ state_backup_cron_weekday: "3"  # Thursday (0=Sunday, 3=Wednesday, 4=Thursday)
 #     - "s3-backend-example-1"
 #     - "s3-backend-example-2"
 #   destination:
-#     remote: "wasabi-weekly-backup-c3-2025"
+#     remote: "wasabi-weekly-backup-example"
 #     bucket: "backup-bucket"
 #     path: "s3-state-backup"
 state_backup_config:
@@ -164,10 +189,10 @@ video_archive_backup_cron_weekday: "0"  # Sunday (0=Sunday, 6=Saturday)
 #       path: "/Video team"  # Dropbox path
 #       dest_folder: "Video_team"  # Destination folder name in B2
 #     - remote: "dropbox-video-archive"
-#       path: "/Nick Vilson"  # Another Dropbox path
-#       dest_folder: "Nick_Vilson"  # Destination folder name in B2
+#       path: "/Jane Doe"  # Another Dropbox path
+#       dest_folder: "Jane_Doe"  # Destination folder name in B2
 #   destination:
-#     remote: "b2-infra-video-archive-90d-inf"
+#     remote: "b2-video-archive-example"
 #     bucket: "video-archive-bucket"
 #     path: ""  # Optional subdirectory in bucket
 video_archive_backup_config:

@@ -1,0 +1,20 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - github-runner-pool
+    - github-runner-pool-prefly
+
+- ansible.builtin.import_tasks: 30-configure.yml
+  tags:
+    - github-runner-pool
+    - github-runner-pool-config
+    - github-runner-pool-compose
+
+- ansible.builtin.import_tasks: 40-remove-old-images.yml
+  when: github_runner_pool_internal_cron_enabled
+  tags:
+    - github-runner-pool
+    - github-runner-pool-mantaince
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'github-runner-pool-clean']

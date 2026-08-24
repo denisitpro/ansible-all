@@ -1,0 +1,9 @@
+---
+- name: "[psql-cluster-backup/config] Deploy backup script"
+  ansible.builtin.template:
+    src: pg_dump.sh.j2
+    dest: "{{ psql_backup_script_path }}/pg_dump.sh"
+    owner: "root"
+    group: "root"
+    mode: "0750"
+  when: inventory_hostname == psql_backup_node

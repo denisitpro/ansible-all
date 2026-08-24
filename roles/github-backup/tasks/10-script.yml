@@ -1,0 +1,24 @@
+---
+- name: Ensure github-backup work directory exists
+  ansible.builtin.file:
+    path: "{{ github_backup_work_dir }}"
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+
+- name: Ensure github-backup log directory exists
+  ansible.builtin.file:
+    path: "{{ github_backup_log_dir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Deploy github-backup script
+  ansible.builtin.template:
+    src: github-backup.sh.j2
+    dest: "{{ github_backup_script_path }}/github-backup.sh"
+    mode: '0750'
+    owner: root
+    group: root

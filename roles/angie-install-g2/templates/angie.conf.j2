@@ -148,7 +148,7 @@ http {
 
 {% if angie_used_acme is defined %}
     # ACME auto-cert variables ($acme_cert_<name> / $acme_cert_key_<name>) embed the
-    # full server name. For long FQDNs (e.g. s3-images-ru.cointelegraph-ru.com) the
+    # full server name. For long FQDNs (e.g. s3-images-ru.example-long-domain.com) the
     # variable name overflows the default 64-byte hash bucket and angie aborts with
     # "could not build variables_hash, increase variables_hash_bucket_size". Raise it.
     variables_hash_bucket_size {{ angie_variables_hash_bucket_size | default(128) }};

@@ -1,0 +1,9 @@
+---
+- ansible.builtin.import_tasks: 03-pem-keys.yml
+  tags:
+    - github-scripts
+
+- ansible.builtin.import_tasks: 05-scripts.yml
+  # when: github_scripts_enabled | default(false)
+  tags:
+    - github-scripts

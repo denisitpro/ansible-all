@@ -1,0 +1,161 @@
+---
+## ── Extract replication credentials from psql_users ──────────────────────────
+
+- name: "[psql-cluster/replication] Set replication user facts"
+  ansible.builtin.set_fact:
+    psql_replication_user: "{{ psql_users | selectattr('is_replication', 'defined') | selectattr('is_replication', 'equalto', true) | map(attribute='name') | first }}"
+    psql_replication_password: "{{ psql_users | selectattr('is_replication', 'defined') | selectattr('is_replication', 'equalto', true) | map(attribute='password') | first }}"
+    psql_master_host: "{{ hostvars[psql_master_node]['ansible_host'] | default(psql_master_node) }}"
+    # ansible_host берётся из inventory напрямую — не требует gather_facts
+
+## ── Detect current state of each node ────────────────────────────────────────
+
+- name: "[psql-cluster/replication] Check if container is running"
+  ansible.builtin.command:
+    cmd: "docker inspect --format {{ '{{' }}.State.Running{{ '}}' }} {{ psql_docker_container_name }}"
+  register: container_running_check
+  changed_when: false
+  failed_when: false
+
+- name: "[psql-cluster/replication] Check node recovery status"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc "SELECT pg_is_in_recovery();"
+  register: recovery_status_check
+  changed_when: false
+  failed_when: false
+  when: container_running_check.stdout | trim == 'true'
+
+- name: "[psql-cluster/replication] Set node state facts"
+  ansible.builtin.set_fact:
+    psql_container_running: "{{ container_running_check.stdout | trim == 'true' }}"
+    psql_is_working_replica: "{{ container_running_check.stdout | trim == 'true' and recovery_status_check.stdout | default('') | trim == 't' }}"
+    psql_is_working_master: "{{ container_running_check.stdout | trim == 'true' and recovery_status_check.stdout | default('') | trim == 'f' }}"
+
+- name: "[psql-cluster/replication] Print current node state"
+  ansible.builtin.debug:
+    msg: >-
+      {{ inventory_hostname }}:
+      container={{ psql_container_running }},
+      replica={{ psql_is_working_replica }},
+      master={{ psql_is_working_master }}
+
+## ── MASTER: ensure replication user exists ────────────────────────────────────
+
+- name: "[psql-cluster/replication] Check replication user exists on master"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc
+      "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ psql_replication_user }}';"
+  register: replication_user_exists
+  when: inventory_hostname == psql_master_node
+  changed_when: false
+  no_log: true
+
+- name: "[psql-cluster/replication] Create replication user on master"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c
+      "CREATE ROLE \"{{ psql_replication_user }}\" LOGIN REPLICATION PASSWORD '{{ psql_replication_password }}';"
+  register: create_repl_user
+  when:
+    - inventory_hostname == psql_master_node
+    - replication_user_exists.stdout | trim != "1"
+  failed_when:
+    - create_repl_user.rc != 0
+    - "'already exists' not in create_repl_user.stderr"
+  no_log: true
+
+## ── REPLICAS: stream backup from master (only if not already working) ─────────
+
+- name: "[psql-cluster/replication] Skip message for already working replica"
+  ansible.builtin.debug:
+    msg: "{{ inventory_hostname }} is already a working replica — skipping pg_basebackup"
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - psql_is_working_replica | bool
+    - not psql_force_create_replica | default(false)
+
+- name: "[psql-cluster/replication] Stop container before pg_basebackup"
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ psql_compose_path }}/docker-compose.yml down"
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - not psql_is_working_replica | bool or psql_force_create_replica | default(false)
+  changed_when: true
+
+- name: "[psql-cluster/replication] Wipe data directory before pg_basebackup"
+  ansible.builtin.file:
+    path: "{{ psql_node_data_path }}"
+    state: absent
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - not psql_is_working_replica | bool or psql_force_create_replica | default(false)
+
+- name: "[psql-cluster/replication] Recreate empty data directory"
+  ansible.builtin.file:
+    path: "{{ psql_node_data_path }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - not psql_is_working_replica | bool or psql_force_create_replica | default(false)
+
+- name: "[psql-cluster/replication] Stream pg_basebackup from master"
+  ansible.builtin.command:
+    cmd: >
+      docker run --rm --name psql-replicator
+      -v {{ psql_node_data_path }}:{{ psql_docker_data_path }}
+      -e PGPASSWORD="{{ psql_replication_password }}"
+      {{ psql_image }}:{{ psql_version }}
+      pg_basebackup
+        -h {{ psql_master_host }}
+        -p {{ psql_port }}
+        -U {{ psql_replication_user }}
+        -D {{ psql_docker_data_path }}
+        -Fp -Xs -P -R
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - not psql_is_working_replica | bool or psql_force_create_replica | default(false)
+  register: pg_basebackup_result
+  no_log: true
+  changed_when: true
+
+- name: "[psql-cluster/replication] Start replica container after basebackup"
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ psql_compose_path }}/docker-compose.yml up -d"
+  when:
+    - inventory_hostname in psql_replica_nodes
+    - not psql_is_working_replica | bool or psql_force_create_replica | default(false)
+  register: replica_compose_up
+  changed_when: "'Creating' in replica_compose_up.stdout or 'Starting' in replica_compose_up.stdout"
+
+- name: "[psql-cluster/replication] Wait for replica PostgreSQL to be ready"
+  ansible.builtin.command:
+    cmd: "docker exec {{ psql_docker_container_name }} pg_isready -U {{ psql_default_db_user }}"
+  register: replica_pg_ready
+  until: replica_pg_ready.rc == 0
+  retries: 30
+  delay: 2
+  when: inventory_hostname in psql_replica_nodes
+  changed_when: false
+
+- name: "[psql-cluster/replication] Verify replica is in standby mode"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc "SELECT pg_is_in_recovery();"
+  register: verify_standby
+  when: inventory_hostname in psql_replica_nodes
+  changed_when: false
+  failed_when: verify_standby.stdout | trim != "t"
+
+- name: "[psql-cluster/replication] Print replication status"
+  ansible.builtin.debug:
+    msg: "{{ inventory_hostname }} confirmed running as STANDBY (replica)"
+  when: inventory_hostname in psql_replica_nodes

@@ -1,0 +1,12 @@
+---
+# Host-level dangling-image cleanup only. No `-a` flag on purpose:
+# aggressive prune under parallel jobs can remove images actively
+# used by concurrent workflows and cause flaky builds.
+- name: Add cron task for Docker images cleanup
+  ansible.builtin.cron:
+    name: "Docker cleanup old images and builder cache (github-runner-pool)"
+    minute: "0"
+    hour: "{{ github_runner_pool_cleanup_hour | default(3) }}"
+    job: "docker image prune -af --filter until={{ github_runner_pool_cleanup_age_hours | default(24) }}h; docker builder prune -f --filter \"until={{ github_runner_pool_cleanup_age_hours | default(24) }}h\""
+    user: root
+  when: github_runner_pool_internal_cron_enabled

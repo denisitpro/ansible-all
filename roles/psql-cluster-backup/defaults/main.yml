@@ -1,0 +1,26 @@
+---
+## ── Cluster (must match psql-cluster-install vars) ───────────────────────────
+psql_master_node: "psql-master"
+psql_docker_container_name: "psql"
+psql_default_db_user: "postgres"
+psql_port: 5432
+
+## ── Backup paths ──────────────────────────────────────────────────────────────
+psql_backup_base_path: "/opt/psql-backup"
+psql_backup_script_path: "/opt/scripts"
+psql_backup_data_path: "/mnt/backup"
+psql_backup_log_path: "{{ psql_backup_base_path }}/logs"
+
+## ── Backup target node ────────────────────────────────────────────────────────
+psql_backup_node: "{{ psql_master_node }}"   # inventory_hostname that runs backups
+
+## ── Databases to backup ───────────────────────────────────────────────────────
+psql_backup_db: []  # override per-group; empty = no databases backed up by default
+
+## ── Dump format & compression ────────────────────────────────────────────────
+psql_backup_format: "custom"                  # plain | custom | directory | tar
+psql_backup_compress_level: 9                 # 0-9 (custom format only)
+
+## ── Encryption (rage) ─────────────────────────────────────────────────────────
+psql_backup_encrypt: false
+psql_backup_retention_days: 3

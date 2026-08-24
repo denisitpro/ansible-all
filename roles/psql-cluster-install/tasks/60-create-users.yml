@@ -1,0 +1,69 @@
+---
+## Runs on master only (controlled by main.yml when condition)
+
+- name: "[psql-cluster/users] Check which users already exist"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -tAc
+      "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{{ item.name }}';"
+  register: user_exists_check
+  loop: "{{ psql_users }}"
+  changed_when: false
+  no_log: true
+
+- name: "[psql-cluster/users] Create users (skip replication and already existing)"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c
+      "CREATE ROLE \"{{ item.item.name }}\" LOGIN PASSWORD '{{ item.item.password }}';"
+  register: create_user_result
+  loop: "{{ user_exists_check.results }}"
+  when:
+    - item.stdout | trim != "1"
+    - item.item.is_replication is not defined or not (item.item.is_replication | default(false))
+  failed_when:
+    - create_user_result.rc != 0
+    - "'already exists' not in create_user_result.stderr"
+  no_log: true
+
+- name: "[psql-cluster/users] Grant roles to users"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c
+      "GRANT \"{{ item.member_of | join('\", \"') }}\" TO \"{{ item.name }}\";"
+  loop: "{{ psql_users }}"
+  when:
+    - item.member_of is defined
+    - item.member_of | length > 0
+  changed_when: true
+  no_log: true
+
+- name: "[psql-cluster/users] Force update passwords"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c
+      "ALTER ROLE \"{{ item.name }}\" WITH PASSWORD '{{ item.password }}';"
+  loop: "{{ psql_users }}"
+  when:
+    - psql_force_password_update | default(false)
+    - item.is_replication is not defined or not (item.is_replication | default(false))
+  changed_when: true
+  no_log: true
+
+- name: "[psql-cluster/users] Force re-apply grants"
+  ansible.builtin.command:
+    cmd: >
+      docker exec {{ psql_docker_container_name }}
+      psql -U {{ psql_default_db_user }} -c
+      "GRANT \"{{ item.member_of | join('\", \"') }}\" TO \"{{ item.name }}\";"
+  loop: "{{ psql_users }}"
+  when:
+    - psql_force_grant_update | default(false)
+    - item.member_of is defined
+    - item.member_of | length > 0
+  changed_when: true
+  no_log: true

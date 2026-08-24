@@ -17,7 +17,7 @@ LOCK_FILE="/tmp/${SCRIPT_NAME}.lock"
 DOWNLOAD_DIR="{{ state_backup_download_dir | default('/mnt/s3-state-backup') }}"
 ENCRYPT_DIR="{{ backup_dest_dir | default('/mnt/s3-state-encrypt') }}"
 
-# Scripts from backup-directory role
+# Scripts from ct-backup-directory role
 BACKUP_SCRIPT="/opt/scripts/backup-directory.sh"
 BACKUP_UPLOAD_SCRIPT="/opt/scripts/backup-upload.sh"
 

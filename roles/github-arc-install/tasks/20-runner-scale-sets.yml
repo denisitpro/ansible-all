@@ -1,0 +1,37 @@
+---
+# The rendered values file carries the GitHub App private key / PAT, so the
+# render step is no_log and the file is mode 0600 and removed right after the
+# install. The dest name keys on namespace+name so two same-named scale sets in
+# different namespaces never share a file.
+- name: ARC | Render runner scale set values
+  ansible.builtin.template:
+    src: runner-scale-set-values.yaml.j2
+    dest: "/tmp/arc-rss-{{ item.namespace | default(arc_runners_namespace) }}-{{ item.name }}.yaml"
+    mode: "0600"
+  loop: "{{ arc_runner_scale_sets }}"
+  loop_control:
+    label: "{{ item.name }} ({{ item.namespace | default(arc_runners_namespace) }})"
+  no_log: true
+
+- name: ARC | Install/upgrade runner scale sets
+  ansible.builtin.command: >
+    helm upgrade --install {{ item.name }}
+    {{ arc_runner_set_chart_oci }}
+    --namespace {{ item.namespace | default(arc_runners_namespace) }}
+    --create-namespace
+    --version {{ arc_chart_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --values /tmp/arc-rss-{{ item.namespace | default(arc_runners_namespace) }}-{{ item.name }}.yaml
+  loop: "{{ arc_runner_scale_sets }}"
+  loop_control:
+    label: "{{ item.name }} ({{ item.namespace | default(arc_runners_namespace) }})"
+  register: arc_rss_install
+  changed_when: arc_rss_install.rc == 0
+
+- name: ARC | Remove rendered runner scale set values
+  ansible.builtin.file:
+    path: "/tmp/arc-rss-{{ item.namespace | default(arc_runners_namespace) }}-{{ item.name }}.yaml"
+    state: absent
+  loop: "{{ arc_runner_scale_sets }}"
+  loop_control:
+    label: "{{ item.name }} ({{ item.namespace | default(arc_runners_namespace) }})"

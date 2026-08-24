@@ -1,0 +1,12 @@
+{{ ansible_managed | comment }}
+# gha-runner-scale-set-controller {{ arc_chart_version }}
+replicaCount: {{ arc_controller_replica_count }}
+
+flags:
+  logLevel: "{{ arc_controller_log_level }}"
+  logFormat: "{{ arc_controller_log_format }}"
+{% if arc_controller_resources %}
+
+resources:
+{{ arc_controller_resources | to_nice_yaml | indent(2, true) }}
+{% endif %}

@@ -21,3 +21,8 @@
     dest: "{{ redis_compose_path }}/docker-compose.yml"
     mode: 0600
   notify: recreate-docker redis
+
+- name: ensure redis is running
+  community.docker.docker_compose_v2:
+    project_src: "{{ redis_compose_path }}"
+    state: present

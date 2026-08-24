@@ -1,0 +1,27 @@
+---
+github_backup_enabled: false
+
+
+github_backup_orgs: []
+# - name: my-org
+#   token: "{{ vault_dict_users_secret_g2.github_account_myorg.token }}"
+#   full_backup: true  # false — per-repo only (saves disk, skips full org archive)
+
+github_backup_extra_repos: []
+# - repo: my-org/specific-repo
+#   token: "{{ vault_dict_users_secret_g2.github_account_myorg.token }}"
+
+github_backup_work_dir: "/mnt/backup/github"
+github_backup_log_dir: "/var/log/github-backup"
+github_backup_script_path: "/opt/scripts"
+
+github_backup_rclone_target: ""
+# example: "b2-my-remote-rw"
+github_backup_remote_path: ""
+# example: "my-bucket/github-backup"
+
+github_backup_rage_recipient: "{{ backup_rage_recipient }}"
+
+github_backup_clone_depth: 1
+github_backup_rclone_transfers: 4
+github_backup_rclone_checkers: 8

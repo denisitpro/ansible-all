@@ -63,11 +63,11 @@ Key options:
 
 ```yaml
 # group_vars/my_server/nginx-s3.yml
-nginx_s3_bucket_name: "{{ vault_dict_users_secret_g2.aws_qa_artifcats_ro.bucket }}"
-nginx_s3_access_key_id: "{{ vault_dict_users_secret_g2.aws_qa_artifcats_ro.access_key_id }}"
-nginx_s3_secret_key: "{{ vault_dict_users_secret_g2.aws_qa_artifcats_ro.secret_access_key }}"
-nginx_s3_region: "{{ vault_dict_users_secret_g2.aws_qa_artifcats_ro.region }}"
-nginx_s3_server: "s3.{{ vault_dict_users_secret_g2.aws_qa_artifcats_ro.region }}.amazonaws.com"
+nginx_s3_bucket_name: "{{ vault_dict_users_secret_g2.my_s3_secret.bucket }}"
+nginx_s3_access_key_id: "{{ vault_dict_users_secret_g2.my_s3_secret.access_key_id }}"
+nginx_s3_secret_key: "{{ vault_dict_users_secret_g2.my_s3_secret.secret_access_key }}"
+nginx_s3_region: "{{ vault_dict_users_secret_g2.my_s3_secret.region }}"
+nginx_s3_server: "s3.{{ vault_dict_users_secret_g2.my_s3_secret.region }}.amazonaws.com"
 nginx_s3_server_port: 443
 nginx_s3_server_proto: https
 nginx_s3_allow_directory_list: true

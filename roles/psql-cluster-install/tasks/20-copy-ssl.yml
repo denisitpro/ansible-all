@@ -1,0 +1,13 @@
+---
+- name: "[psql-cluster/ssl] Import ssl-selfsigned-cert role"
+  ansible.builtin.import_role:
+    name: ssl-selfsigned-cert
+  vars:
+    ssl_path: "{{ psql_node_data_ssl }}"
+    ssl_domain: "{{ psql_domain }}"
+    ssl_cert_path: "{{ psql_cert }}"
+    ssl_privkey_path: "{{ psql_privkey }}"
+    ssl_user: "{{ psql_docker_user_uid }}"
+    ssl_group: "{{ psql_docker_user_gid }}"
+    ssl_privkey_mode: "0600"
+  when: psql_tls and psql_domain == "selfsigned"

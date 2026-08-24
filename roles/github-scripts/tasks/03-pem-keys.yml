@@ -1,0 +1,21 @@
+---
+- name: Ensure github apps certs directory exists
+  ansible.builtin.file:
+    path: "{{ github_apps_certs_dir }}"
+    state: directory
+    owner: "{{ github_scripts_file_owner }}"
+    group: "{{ github_scripts_file_group }}"
+    mode: "0700"
+
+- name: Deploy github app private key from vault
+  ansible.builtin.copy:
+    content: "{{ vault_dict_users_secret_g2[item.gh_pem_vault_group][item.gh_pem_vault_key] | default('set_me') }}"
+    dest: "{{ github_apps_certs_dir }}/{{ item.gh_pem_vault_key }}.pem"
+    owner: "{{ item.owner | default(github_scripts_file_owner) }}"
+    group: "{{ item.group | default(github_scripts_file_group) }}"
+    mode: "0600"
+  loop: "{{ github_scripts_files }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  when: item.gh_pem_vault_key is defined
+  no_log: true

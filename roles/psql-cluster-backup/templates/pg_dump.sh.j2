@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+## {{ ansible_managed }} ##
+set -euo pipefail
+
+BACKUP_DIR="{{ psql_backup_data_path }}"
+CONTAINER="{{ psql_docker_container_name }}"
+DB_USER="{{ psql_default_db_user }}"
+RETENTION_DAYS="{{ psql_backup_retention_days }}"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+{% if psql_backup_format == "plain" %}
+EXT=".sql"
+{% else %}
+EXT=".pgdump"
+{% endif %}
+
+{% if psql_backup_encrypt | default(false) %}
+RAGE_RECIPIENT="{{ backup_rage_recipient }}"
+{% endif %}
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+
+{% if psql_backup_db | length > 0 %}
+DATABASES=({% for db in psql_backup_db %}"{{ db }}" {% endfor %})
+{% else %}
+mapfile -t DATABASES < <(
+  docker exec "${CONTAINER}" psql -U "${DB_USER}" -tAc \
+    "SELECT datname FROM pg_database WHERE datistemplate = false AND datname != 'postgres';"
+)
+{% endif %}
+
+log "Starting backup"
+log "Databases: ${DATABASES[*]:-none}"
+
+for DB in "${DATABASES[@]}"; do
+  DUMPFILE="${BACKUP_DIR}/${DB}_${TIMESTAMP}${EXT}"
+  log "Dumping: ${DB} -> ${DUMPFILE}"
+  docker exec "${CONTAINER}" pg_dump \
+    -U "${DB_USER}" \
+    --format={{ psql_backup_format }} \
+{% if psql_backup_format == "custom" %}
+    --compress={{ psql_backup_compress_level }} \
+{% endif %}
+    "${DB}" > "${DUMPFILE}"
+{% if psql_backup_encrypt | default(false) %}
+  OUTFILE="${DUMPFILE}.age"
+  log "Encrypting: ${DUMPFILE} -> ${OUTFILE}"
+  rage -r "${RAGE_RECIPIENT}" -o "${OUTFILE}" "${DUMPFILE}"
+  rm -f "${DUMPFILE}"
+  log "Done: ${DB} ($(du -sh "${OUTFILE}" | cut -f1))"
+{% else %}
+  log "Done: ${DB} ($(du -sh "${DUMPFILE}" | cut -f1))"
+{% endif %}
+done
+
+log "Removing backups older than ${RETENTION_DAYS} days"
+find "${BACKUP_DIR}" -maxdepth 1 \( -name "*.pgdump" -o -name "*.sql" -o -name "*.pgdump.age" -o -name "*.sql.age" \) -mtime "+${RETENTION_DAYS}" -delete
+log "Backup finished successfully"

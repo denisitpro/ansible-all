@@ -1,0 +1,52 @@
+---
+# Ephemeral GitHub Actions self-hosted runner pools (org-scoped).
+# Uses myoung34/github-runner image. Each pool is one compose service scaled to
+# N replicas, living in its own project dir <compose_path>/<org_name>.
+# Multiple organizations per host are supported via the github_runner_pools list.
+
+# Pin to a fixed upstream release tag (avoid :latest)
+# Upstream releases: https://github.com/myoung34/docker-github-actions-runner/releases
+github_runner_pool_tag: "2.334.0-ubuntu-noble"
+
+# Base path. Each pool gets its own subdir <compose_path>/<org_name> so multiple
+# orgs do not share a compose project.
+github_runner_pool_compose_path: "/opt/docker/github-runner-pool"
+
+# Default number of ephemeral runners per pool, per host.
+# Per-pool override: set `size` on the pool entry.
+# Per-host override: set github_runner_pool_size as a host var in inventory.
+github_runner_pool_size: 10
+
+# Runner name prefix in GitHub UI; random 13-char suffix is added by the image.
+github_runner_pool_name_prefix: "gha-{{ inventory_hostname_short }}"
+
+# Default labels for any pool that does not set its own `labels`.
+# inventory_hostname_short is appended automatically to allow per-host routing.
+github_runner_pool_labels:
+  - linux
+  - x64
+  - ephemeral
+  - org-pool
+
+# Behaviour toggles (global across all pools on the host)
+# Keep auto-update disabled: we pin runner version via image tag.
+github_runner_pool_disable_auto_update: true
+# Wipe registration env vars from the workflow environment (prevents PAT leakage).
+github_runner_pool_unset_config_vars: true
+
+# Host-level docker cleanup cron (dangling images only; safe for parallel jobs)
+github_runner_pool_internal_cron_enabled: true
+
+# List of org-scoped pools to run on this host. Override in group_vars; the empty
+# default keeps the role parseable but produces no pools until configured.
+# Each entry:
+#   org_name:     (required) GitHub organization slug
+#   access_token: (required) PAT with admin:org / org self-hosted-runners:write
+#   size:         (optional) replicas; defaults to github_runner_pool_size
+#   labels:       (optional) list; defaults to github_runner_pool_labels
+#   name_prefix:  (optional) defaults to github_runner_pool_name_prefix
+#   tag:          (optional) image tag; defaults to github_runner_pool_tag
+#   runner_group: (optional) org runner group; default org group if unset
+#   github_host:  (optional) GHES host; defaults to github.com
+#   restart:      (optional) compose restart policy; defaults to unless-stopped
+github_runner_pools: []
