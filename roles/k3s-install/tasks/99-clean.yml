@@ -1,0 +1,77 @@
+---
+- name: check for k3s uninstall script
+  ansible.builtin.stat:
+    path: "{{ k3s_uninstall_script }}"
+  register: k3s_uninstall_stat
+
+- name: run k3s uninstall script
+  ansible.builtin.command: "{{ k3s_uninstall_script }}"
+  when: k3s_uninstall_stat.stat.exists
+  ignore_errors: true # noqa: ignore-errors
+
+# k3s-uninstall.sh wipes /var/lib/rancher/k3s and stops the service, but it
+# leaves cilium's CNI conf, CNI binary, runtime state, and BPF maps behind.
+# Those leftovers make the next install boot into a half-broken networking
+# state. Scrub them so the reinstall starts from zero.
+
+# Cilium mounts a cgroup2 fs at /run/cilium/cgroupv2 for socket-level LB and
+# bpffs maps under /sys/fs/bpf. ansible.builtin.file:absent uses rmtree, which
+# can't delete cgroup pseudo-files (Operation not permitted on io.prio.class).
+# `umount -R` here is unreliable when the parent dir isn't itself a mountpoint,
+# so iterate the mount table explicitly, deepest-first, with a lazy fallback.
+- name: unmount cilium runtime + bpffs leftovers
+  ansible.builtin.shell: |
+    set +e
+    for mp in $(mount | awk '$3 ~ "^/(var/)?run/cilium" || $3 == "/sys/fs/bpf" {print $3}' | sort -r); do
+      umount "$mp" 2>/dev/null || umount -l "$mp"
+    done
+    exit 0
+  changed_when: false
+
+# Cilium leaves CILIUM_* + OLD_CILIUM_* iptables chains behind on uninstall.
+# On reinstall the agent tries to delete those backup rules using the *new*
+# CIDR config — if the CIDR has changed (or the rules look stale), the delete
+# fails, full reconciliation loops forever, and no MASQUERADE rule is ever
+# written. Result: pods can reach DNS but no outbound IPv4 traffic. Scrub the
+# chains from all four tables (nat/mangle/raw/filter), in both v4 and v6.
+- name: wipe leftover cilium iptables chains
+  ansible.builtin.shell: |
+    set +e
+    for ipt in iptables ip6tables; do
+      for table in nat mangle raw filter; do
+        $ipt-save -t $table 2>/dev/null | awk '/cilium-feeder/ {sub(/^-A/,"-D"); print}' | while IFS= read -r r; do
+          $ipt -t $table $r 2>/dev/null
+        done
+        $ipt-save -t $table 2>/dev/null | awk '/^:(OLD_)?CILIUM_/ {sub(/:/,""); print $1}' | sort -u | while read -r c; do
+          $ipt -t $table -F "$c" 2>/dev/null
+          $ipt -t $table -X "$c" 2>/dev/null
+        done
+      done
+    done
+    exit 0
+  changed_when: false
+
+- name: remove leftover state
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ k3s_config_dir }}"
+    - /var/lib/rancher/k3s
+    - /var/lib/cni
+    - /var/run/cilium
+    - /run/cilium
+    - /etc/cni/net.d/05-cilium.conflist
+    - /etc/cni/net.d/05-cilium.conf
+    - /opt/cni/bin/cilium-cni
+    - "{{ cilium_values_path }}"
+    - /root/.kube/config
+
+- name: remove operator-side kubeconfig
+  ansible.builtin.file:
+    path: "{{ k3s_local_config_path }}"
+    state: absent
+  delegate_to: localhost
+  connection: local
+  become: false
+  when: k3s_get_config is defined

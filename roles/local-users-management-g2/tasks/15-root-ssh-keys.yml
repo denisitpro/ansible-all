@@ -31,4 +31,4 @@
     owner: ubuntu
     group: ubuntu
     mode: '0600'
-    create: yes
+    create: true

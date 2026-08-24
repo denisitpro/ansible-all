@@ -1,2 +1,9 @@
 # CloudNativePG operator Helm values
 # https://cloudnative-pg.github.io/charts/
+
+# podMonitorEnabled creates a PodMonitor CR (monitoring.coreos.com/v1) for the
+# operator. The CRD is provided by prometheus-operator (kube-prometheus-stack).
+# Default = true; override to `false` only on clusters without prometheus,
+# otherwise helm install fails with "no matches for kind PodMonitor".
+monitoring:
+  podMonitorEnabled: {{ k8s_cnpg_pod_monitor_enabled | default(true) }}

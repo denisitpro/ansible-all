@@ -32,7 +32,7 @@ To interact with Vault, follow these steps:
 1. Log in to the Vault application using Teleport:
 
     ```bash
-    tsh app login vault-c1
+    tsh app login vault-example
     ```
 
 2. Export the necessary environment variables for Vault:
@@ -78,15 +78,15 @@ To log in to Consul, follow these steps:
 2. Log in to the Consul application:
 
     ```bash
-    tsh app login consul-01
+    tsh app login consul-example
     ```
 
 3. Export the necessary environment variables for Consul:
 
     ```bash
-    export CONSUL_CLIENT_CERT="$(tsh app config --format=cert consul-01)"
-    export CONSUL_CLIENT_KEY="$(tsh app config --format=key consul-01)"
-    export CONSUL_HTTP_ADDR=https://consul-01.tp.glorytech.bet
+    export CONSUL_CLIENT_CERT="$(tsh app config --format=cert consul-example)"
+    export CONSUL_CLIENT_KEY="$(tsh app config --format=key consul-example)"
+    export CONSUL_HTTP_ADDR=https://consul-example.example.com
     export CONSUL_HTTP_TOKEN=our_token
     ```
 

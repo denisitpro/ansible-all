@@ -1,0 +1,19 @@
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+clusterName: "{{ k8s_cls_shortname }}"
+kubernetesVersion: v{{k8s_cls_version}}
+certificateValidityPeriod: "{{k8s_cert_component_valid_hour |default('43800h')}}" # 5 year default
+{% if k8s_cls_fqdn is defined %}
+controlPlaneEndpoint: "{{ k8s_cls_fqdn |default('k8s.example.com') }}:{{ k8s_cls_port |default('6443') }}"
+{% endif %}
+networking:
+  podSubnet: "{{ k8s_net_cluster_pool }}{% if k8s_ipv6 | default(false) | bool %},{{ k8s_net6_pod_subnet }}{% endif %}"  # order: IPv4 first, IPv6 second — important. IPv6 != cilium pool (see defaults: mask asymmetry)
+  serviceSubnet: "{{ k8s_net_service_pool }}{% if k8s_ipv6 | default(false) | bool %},{{ k8s_net6_service_pool }}{% endif %}"  # order: IPv4 first, IPv6 second — important
+{% if k8s_ipv6 | default(false) | bool %}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+ipvs:
+  strictARP: true
+{% endif %}

@@ -19,3 +19,7 @@ controller:
     logLevel: "{{vault_controller_manager_log_level | default('info')}}"
     metricsAddr: ":8080"
     enableLeaderElection: true
+
+telemetry:
+  serviceMonitor:
+    enabled: {{ k8s_vso_service_monitor_enabled | default(false) | lower }}

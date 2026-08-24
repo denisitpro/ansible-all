@@ -13,6 +13,13 @@
     mode: "0600"
   when: k8s_cert_manager_type == "cloudflare"
 
+- name: Cert Manager Configure - Copy cert-manager manifests (SelfSign)
+  ansible.builtin.template:
+    src: "cert-manager-selfsign.yml.j2"
+    dest: /tmp/cert-manager-selfsign.yml
+    mode: "0600"
+  when: k8s_cert_manager_type == "selfsign"
+
 - name: Cert Manager Configure - Apply cert-manager manifests (HTTP)
   ansible.builtin.command: kubectl apply -f /tmp/cert-manager-http.yml --kubeconfig {{ k8s_config_path }}
   when: k8s_cert_manager_type == "http"
@@ -21,6 +28,10 @@
   ansible.builtin.command: kubectl apply -f /tmp/cert-manager-cloudflare.yml --kubeconfig {{ k8s_config_path }}
   when: k8s_cert_manager_type == "cloudflare"
 
+- name: Cert Manager Configure - Apply cert-manager manifests (SelfSign)
+  ansible.builtin.command: kubectl apply -f /tmp/cert-manager-selfsign.yml --kubeconfig {{ k8s_config_path }}
+  when: k8s_cert_manager_type == "selfsign"
+
 - name: Cert Manager Configure - Remove temporary files
   ansible.builtin.file:
     path: /tmp/{{ item }}
@@ -28,3 +39,4 @@
   with_items:
     - cert-manager-http.yml
     - cert-manager-cloudflare.yml
+    - cert-manager-selfsign.yml

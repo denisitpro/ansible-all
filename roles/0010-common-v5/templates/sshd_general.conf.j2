@@ -60,11 +60,7 @@ AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
 AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 
-{% if ansible_distribution == 'CentOS' %}
-Subsystem sftp    /usr/libexec/openssh/sftp-server
-{% else %}
 Subsystem sftp /usr/lib/openssh/sftp-server
-{% endif %}
 
 # Enable AllowAgentForwarding if you need to jump through this host
 {% if ssh_forward_disable is defined %}

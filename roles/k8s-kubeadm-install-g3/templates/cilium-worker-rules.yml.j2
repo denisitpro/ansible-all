@@ -1,0 +1,188 @@
+---
+# Cilium Host Firewall Policy - Worker Nodes Rules
+# This policy controls ingress traffic to worker nodes
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: "host-firewall-worker-nodes"
+spec:
+  description: "Host firewall policy for Kubernetes worker nodes - allows cluster communication and load balancer access"
+  nodeSelector:
+    matchLabels:
+      k8s-node-type: worker
+  ingress:
+  # ============================================================
+  # ICMP - Basic connectivity
+  # ============================================================
+  # Allow ICMP from remote nodes (IPv4)
+  - fromEntities:
+    - remote-node
+    - kube-apiserver
+    icmps:
+    - fields:
+      - type: 8
+        family: IPv4
+  # Allow ICMP from remote nodes (IPv6)
+  - fromEntities:
+    - remote-node
+    - kube-apiserver
+    icmps:
+    - fields:
+      - type: 128
+        family: IPv6
+
+  # ============================================================
+  # MASTER -> WORKER communication (and other nodes)
+  # ============================================================
+  # Cilium CNI ports from all remote nodes
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "4240"
+        protocol: TCP
+      - port: "4000"
+        protocol: TCP
+      - port: "4244"
+        protocol: TCP
+      - port: "51871"
+        protocol: UDP
+      - port: "4789"
+        protocol: UDP
+      - port: "8472"
+        protocol: UDP
+      - port: "6081"
+        protocol: UDP
+  # Cilium metrics from remote nodes
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "9962"
+        endPort: 9965
+        protocol: TCP
+  # Kubernetes ports from remote nodes
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "10255"
+        protocol: TCP
+      - port: "10258"
+        protocol: TCP
+  # Kubelet and webhook ports from master nodes (kube-apiserver identity)
+  - fromEntities:
+    - kube-apiserver
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "8443"
+        protocol: TCP
+  # Kubelet and metrics ports from cluster pods
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "9962"
+        endPort: 9965
+        protocol: TCP
+
+  # ============================================================
+  # WORKER <-> WORKER communication (and other nodes)
+  # ============================================================
+  # Cilium CNI ports from all remote nodes
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "4240"
+        protocol: TCP
+      - port: "4000"
+        protocol: TCP
+      - port: "4244"
+        protocol: TCP
+      - port: "51871"
+        protocol: UDP
+      - port: "4789"
+        protocol: UDP
+      - port: "8472"
+        protocol: UDP
+      - port: "6081"
+        protocol: UDP
+  # Cilium metrics from remote nodes
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "9962"
+        endPort: 9965
+        protocol: TCP
+  # Kubernetes ports from remote nodes
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "30000"
+        endPort: 32767
+        protocol: TCP
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP
+      - port: "12865"
+        protocol: TCP
+  
+  # ============================================================
+  # CLUSTER PODS -> WORKER communication
+  # ============================================================
+  # Allow cluster pods to access kubelet, Hubble and metrics on worker nodes
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "4244"
+        protocol: TCP
+      - port: "10250"
+        protocol: TCP
+      - port: "9962"
+        endPort: 9965
+        protocol: TCP
+
+{% if k8s_lb_k8s_ingress is defined and k8s_lb_k8s_ingress.ipv4 is defined and k8s_lb_k8s_ingress.ipv4 | length > 0 %}
+  # ============================================================
+  # Load Balancer access for Ingress (IPv4)
+  # ============================================================
+{% for cidr in k8s_lb_k8s_ingress.ipv4 %}
+  - fromCIDRSet:
+    - cidr: {{ cidr if '/' in cidr else cidr + '/32' }}
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP
+{% endfor %}
+{% endif %}
+{% if k8s_lb_k8s_ingress is defined and k8s_lb_k8s_ingress.ipv6 is defined and k8s_lb_k8s_ingress.ipv6 | length > 0 %}
+  # ============================================================
+  # Load Balancer access for Ingress (IPv6)
+  # ============================================================
+{% for cidr in k8s_lb_k8s_ingress.ipv6 %}
+  - fromCIDRSet:
+    - cidr: {{ cidr if '/' in cidr else cidr + '/128' }}
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP
+{% endfor %}
+{% endif %}
+

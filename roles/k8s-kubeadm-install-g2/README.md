@@ -37,13 +37,13 @@ Apply labels based on host tags defined in the inventory file. Uses `ansible-set
 
 In `hosts` file:
 ```ini
-[k8s_master_c1_sigma]
-nbg1-c1-sigma-k8s-01.example.org k8s_role=master
-nbg1-c1-sigma-k8s-02.example.org k8s_role=master
+[k8s_master_demo]
+demo-k8s-01.example.org k8s_role=master
+demo-k8s-02.example.org k8s_role=master
 
-[k8s_worker_c1_sigma]
-nbg1-c1-sigma-w-01.example.org k8s_role=worker
-nbg1-c1-sigma-w-02.example.org k8s_role=ingress
+[k8s_worker_demo]
+demo-w-01.example.org k8s_role=worker
+demo-w-02.example.org k8s_role=ingress
 ```
 
 ### Step 2: Configure tag discovery
@@ -104,14 +104,14 @@ k8s_worker_node_labels_extra:
 # Local ip address launch
 need set variable  for master node
 ```commandline
-k8s_cls_name: k8s-lb-local-01.beta-82.win
+k8s_cls_fqdn: k8s-lb-local-01.example.com
 k8s_cls_ip: 10.15.2.100
 k8s_local_network_force: true 
 ```
 
 For worker node
 ```commandline
-k8s_cls_name: k8s-lb-local-01.beta-82.win
+k8s_cls_fqdn: k8s-lb-local-01.example.com
 k8s_local_network_force: true
 ```
 
@@ -133,7 +133,7 @@ Helm - required localhost installed
 
 Check corrected work
 ```bash
-export KUBECONFIG=~/.kube/sigma.conf
+export KUBECONFIG=~/.kube/my-cluster.conf
 cilium status
 ```
 

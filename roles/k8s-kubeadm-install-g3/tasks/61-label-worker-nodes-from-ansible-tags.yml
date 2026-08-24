@@ -1,0 +1,42 @@
+---
+# Apply K8s labels to worker nodes based on ansible tags
+# Uses ansible-set-tags role to dynamically discover nodes by k8s_role tag
+# Only runs on worker nodes
+
+- name: Include ansible-set-tags role to populate host lists
+  ansible.builtin.include_role:
+    name: ansible-set-tags
+  run_once: true
+
+- name: Debug worker node labels configuration
+  ansible.builtin.debug:
+    msg: "Worker node labels: base={{ k8s_worker_node_labels_base | length }}, extra={{ k8s_worker_node_labels_extra | length }}, total={{ (k8s_worker_node_labels_base + k8s_worker_node_labels_extra) | length }}"
+  run_once: true
+
+- name: Debug worker nodes from Ansible tags
+  ansible.builtin.debug:
+    msg: "Will apply {{ (k8s_worker_node_labels_base + k8s_worker_node_labels_extra) | length }} labels to worker node {{ item.name.split('.')[0] }}"
+  loop: "{{ k8s_worker_nodes_list | default([]) }}"
+  when: k8s_worker_nodes_list is defined and k8s_worker_nodes_list | length > 0
+  run_once: true
+
+- name: Apply labels to worker nodes from Ansible tags
+  ansible.builtin.command: >
+    kubectl label nodes {{ item.0.name.split('.')[0] }}
+    {{ item.1.name }}={{ item.1.value }}
+    --overwrite
+    --kubeconfig {{ k8s_config_path }}
+  loop: "{{ k8s_worker_nodes_list | default([]) | product(k8s_worker_node_labels_base + k8s_worker_node_labels_extra) | list }}"
+  loop_control:
+    label: "{{ item.0.name.split('.')[0] }} -> {{ item.1.name }}={{ item.1.value }}"
+  register: worker_label_result
+  changed_when: "'labeled' in worker_label_result.stdout"
+  failed_when: worker_label_result.rc != 0 and 'not found' not in worker_label_result.stderr
+  when: k8s_worker_nodes_list is defined and k8s_worker_nodes_list | length > 0
+  delegate_to: "{{ k8s_master_init_host }}"
+  run_once: true
+- name: Display worker labeling results
+  ansible.builtin.debug:
+    msg: "Successfully labeled {{ k8s_worker_nodes_list | length }} worker node(s)"
+  when: k8s_worker_nodes_list is defined and k8s_worker_nodes_list | length > 0
+  run_once: true

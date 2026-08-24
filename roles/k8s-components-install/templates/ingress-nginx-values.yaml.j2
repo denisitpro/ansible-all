@@ -36,6 +36,27 @@ controller:
 {% endif %}
   config:
     proxy-body-size: "{{ nginx_ingress_proxy_body_size | default('500m') }}"
+{% if nginx_ingress_worker_shutdown_timeout is defined %}
+    # Graceful drain window for old workers after a config reload. TCP stream
+    # backends (tcp-services) trigger a full reload on any endpoint change
+    # (no Lua dynamic config for stream{}). Set this longer than your
+    # longest expected long-lived connection (e.g. DB session via passthrough)
+    # so reloads do not abruptly cut active sessions.
+    worker-shutdown-timeout: "{{ nginx_ingress_worker_shutdown_timeout }}"
+{% endif %}
+{% if nginx_ingress_proxy_stream_timeout is defined %}
+    # Idle timeout for TCP/UDP stream proxying. Default 600s is too short
+    # for long-lived DB connections; align with downstream L4 proxy
+    # (e.g. HAProxy `timeout client/server`) to avoid mid-session resets.
+    proxy-stream-timeout: "{{ nginx_ingress_proxy_stream_timeout }}"
+{% endif %}
+{% if nginx_ingress_force_ssl_redirect | default(true) %}
+    # Always redirect HTTP -> HTTPS for all ingresses (TLS terminates upstream on Cloudflare).
+    # Honors X-Forwarded-Proto via use-forwarded-headers, so HTTPS-from-CF requests are not redirected.
+    # Per-ingress opt-out is still possible via nginx.ingress.kubernetes.io/ssl-redirect: "false".
+    ssl-redirect: "true"
+    force-ssl-redirect: "true"
+{% endif %}
 {% if nginx_ingress_log_format_json is defined and nginx_ingress_log_format_json %}
     # extend_json_g2 - unified JSON format for ingress-nginx and standalone angie
     log-format-upstream: '{ "timestamp": "$time_iso8601", "remote_addr": "$remote_addr", "host": "$host", "server_name": "$server_name", "request_method": "$request_method", "request_id": "$request_id", "request_uri": "$request_uri", "uri": "$uri", "status": "$status", "body_bytes_sent": "$body_bytes_sent", "bytes_sent": "$bytes_sent", "http_referer": "$http_referer", "http_user_agent": "$http_user_agent", "http_x_forwarded_for": "$http_x_forwarded_for", "request_time": "$request_time", "upstream_addr": "$upstream_addr", "upstream_status": "$upstream_status", "upstream_response_time": "$upstream_response_time", "upstream_connect_time": "$upstream_connect_time", "scheme": "$scheme", "ssl_protocol": "$ssl_protocol", "server_protocol": "$server_protocol", "namespace": "$namespace", "ingress_name": "$ingress_name", "service_name": "$service_name", "service_port": "$service_port", "format": "extend_json_g2" }'

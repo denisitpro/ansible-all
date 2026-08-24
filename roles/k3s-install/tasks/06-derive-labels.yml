@@ -1,0 +1,56 @@
+---
+# Mirror of k8s-components-install/tasks/25-set-ingress-label-from-ansible.yml
+# adapted for single-node k3s: instead of running `kubectl label` after the
+# fact, we bake the same labels into k3s's --node-label config so the node
+# comes up already labelled. Source of truth is identical — the k8s_ingress
+# host_var on the inventory line.
+
+- name: Build NGINX ingress node hostnames from the cluster's worker group
+  ansible.builtin.set_fact:
+    k8s_ingress_nodes_hostnames: >-
+      {{
+        groups[k8s_worker_group_name]
+        | map('extract', hostvars)
+        | selectattr('k8s_ingress', 'defined')
+        | selectattr('k8s_ingress', 'search', '(^|,)\\s*nginx\\s*(,|$)')
+        | map(attribute='inventory_hostname')
+        | list
+      }}
+
+- name: Build Traefik ingress node hostnames from the cluster's worker group
+  ansible.builtin.set_fact:
+    k8s_traefik_nodes_hostnames: >-
+      {{
+        groups[k8s_worker_group_name]
+        | map('extract', hostvars)
+        | selectattr('k8s_ingress', 'defined')
+        | selectattr('k8s_ingress', 'search', '(^|,)\\s*' ~ (k8s_traefik_inventory_tag_value | default('traefik')) ~ '\\s*(,|$)')
+        | map(attribute='inventory_hostname')
+        | list
+      }}
+
+- name: Add NGINX ingress label to k3s node-label for matching hosts
+  ansible.builtin.set_fact:
+    k3s_node_labels: "{{ (k3s_node_labels | default([])) + [k8s_ingress_label_key ~ '=' ~ k8s_ingress_label_value] }}"
+  when: inventory_hostname in k8s_ingress_nodes_hostnames
+
+- name: Add Traefik ingress label to k3s node-label for matching hosts
+  ansible.builtin.set_fact:
+    k3s_node_labels: >-
+      {{
+        (k3s_node_labels | default([]))
+        + [(k8s_traefik_label_key | default('ingress.traefik/enabled', true))
+           ~ '='
+           ~ (k8s_traefik_label_value | default('enabled', true))]
+      }}
+  when: inventory_hostname in k8s_traefik_nodes_hostnames
+
+# Stage the list shape ansible-set-tags would have produced so that the
+# downstream k8s-components-install/tasks/25-set-ingress-label-from-ansible.yml
+# assert (`k8s_ingress_nodes_list is defined`) passes. The role's post-label
+# kubectl call then becomes a no-op (k3s already applied the same label).
+- name: Expose k8s_ingress_nodes_list for downstream components role
+  ansible.builtin.set_fact:
+    k8s_ingress_nodes_list: "{{ k8s_ingress_nodes_list | default([]) + [{'name': item, 'ipv4': '', 'ipv6': ''}] }}"
+  loop: "{{ k8s_ingress_nodes_hostnames }}"
+  when: k8s_ingress_nodes_hostnames | length > 0

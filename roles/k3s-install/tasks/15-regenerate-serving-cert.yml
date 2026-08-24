@@ -1,0 +1,16 @@
+---
+# Force k3s to regenerate the API server serving certificate. Needed after
+# changing `tls-san` (or anything else baked into the cert) because k3s does
+# not auto-rotate the serving cert on config change.
+#
+# Run explicitly: --tags k3s-regenerate-cert
+# Causes a brief API downtime on restart.
+- name: drop k3s api server serving cert to force regeneration
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/lib/rancher/k3s/server/tls/dynamic-cert.json
+    - /var/lib/rancher/k3s/server/tls/serving-kube-apiserver.crt
+    - /var/lib/rancher/k3s/server/tls/serving-kube-apiserver.key
+  notify: "restart k3s"

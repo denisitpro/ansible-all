@@ -1,0 +1,69 @@
+---
+- name: Check if Cilium namespace exists
+  ansible.builtin.command: kubectl get namespace {{ cilium_namespace | default('cilium') }} --kubeconfig {{ k8s_config_path }}
+  register: cilium_ns_check
+  failed_when: false
+  changed_when: false
+
+- name: Create Cilium namespace if not exists
+  ansible.builtin.command: >
+    kubectl create namespace {{ cilium_namespace | default('cilium') }}
+    --kubeconfig {{ k8s_config_path }}
+  when: cilium_ns_check.rc != 0
+  register: cilium_ns_create
+  changed_when: "'created' in cilium_ns_create.stdout"
+
+- name: Remove existing Cilium CNI config if forced reinstall is requested
+  ansible.builtin.file:
+    path: /etc/cni/net.d/05-cilium.conflist
+    state: absent
+  when: cilium_force_install is defined
+
+- name: Install Cilium using cilium-cli
+  ansible.builtin.command: >
+    cilium install
+    --version {{ cilium_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --namespace {{ cilium_namespace | default('cilium') }}
+    --set cluster.name={{ k8s_cls_shortname }}
+    --set encryption.enabled=true
+    --set encryption.type=wireguard
+    --set encryption.nodeEncryption=true
+    --set operator.replicas={{ cilium_operator_replicas | default(2) }}
+    --set hubble.enabled=true
+    --set hubble.relay.enabled=true
+    --set hubble.ui.enabled=true
+    --set kubeProxyReplacement=true
+    --set ipam.mode={{ cilium_ipam_mode | default('cluster-pool') }}
+    --set ipam.operator.clusterPoolIPv4PodCIDRList="{{ k8s_net_cluster_pool }}"
+    --set ipam.operator.clusterPoolIPv4MaskSize=24
+    --set tunnelProtocol={{ cilium_tunnel_protocol | default('vxlan') }}
+    --set routingMode={{ cilium_routing_mode | default('tunnel') }}
+    --set bpf.lbExternalClusterIP=true
+    {% if cilium_prometheus_enabled is defined %}
+    --set prometheus.enabled={{ cilium_prometheus_enabled | lower }}
+    {% endif %}
+    {% if cilium_operator_prometheus_enabled is defined %}
+    --set operator.prometheus.enabled={{ cilium_operator_prometheus_enabled | lower }}
+    {% endif %}
+    --set hubble.metrics.enableOpenMetrics={{ cilium_hubble_metrics_enable_open_metrics | default(true) }}
+    {% if cilium_hubble_metrics_enabled is defined and cilium_hubble_metrics_enabled | length > 0 %}
+    --set hubble.metrics.enabled={{ '{' + cilium_hubble_metrics_enabled | join(',') + '}' }}
+    {% endif %}
+    {% if cilium_host_firewall_enabled is defined %}
+    --set hostFirewall.enabled=true
+    {% endif %}
+    {% if cilium_ipv6_enabled is defined and cilium_ipv6_enabled | bool %}
+    --set ipv6.enabled=true
+    --set ipam.operator.clusterPoolIPv6PodCIDRList="{{ k8s_net6_cluster_pool }}"
+    --set ipam.operator.clusterPoolIPv6MaskSize=120
+    --set enableIPv6Masquerade=true
+    {% else %}
+    --set ipv6.enabled=false
+    {% endif %}
+  args:
+    creates: /etc/cni/net.d/05-cilium.conflist
+
+- name: Wait for Cilium components to initialize - 2 minutes
+  ansible.builtin.pause:
+    seconds: 120

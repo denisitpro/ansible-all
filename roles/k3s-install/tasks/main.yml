@@ -1,0 +1,79 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - k3s
+    - k3s-prefly
+    - k8s-install
+
+# - ansible.builtin.import_tasks: 06-derive-labels.yml
+#   tags:
+#     - k3s
+#     - k3s-config
+#     - k8s-install
+#     - k3s-tags
+#     - k8s-tags
+#     - k8s-labels
+#     - k3s-labels
+
+- ansible.builtin.import_tasks: 08-kubelet-patch.yml
+  when: kubelet_path | default(false) | bool
+  tags:
+    - k3s
+    - k3s-config
+    - k8s-install
+    - kubelet-path
+
+- ansible.builtin.import_tasks: 10-config.yml
+  tags:
+    - k3s
+    - k3s-config
+    - k8s-install
+    # kubelet-path also re-renders config.yaml so the resolv-conf / kubelet-arg
+    # block in templates/config.yaml.j2 stays in sync with 08-kubelet-patch.yml.
+    - kubelet-path
+
+- ansible.builtin.import_tasks: 15-regenerate-serving-cert.yml
+  tags: ["never", "k3s-regenerate-cert"]
+
+- ansible.builtin.import_tasks: 50-install.yml
+  tags:
+    - k3s
+    - k3s-install
+    - k8s-install
+
+- ansible.builtin.import_tasks: 60-kubeconfig.yml
+  when: k3s_copy_kubeconfig_to_root | bool
+  tags:
+    - k3s
+    - k3s-kubeconfig
+    - k8s-install
+
+- ansible.builtin.import_tasks: 70-cni-cilium.yml
+  when: k3s_cni == "cilium"
+  tags:
+    - k3s
+    - k3s-cilium
+    - k8s-install
+
+- ansible.builtin.import_tasks: 75-cilium-fw.yml
+  when:
+    - k3s_cni == "cilium"
+    - cilium_host_firewall_enabled | default(false) | bool
+  tags:
+    - k3s
+    - k3s-cilium
+    - k3s-cilium-fw
+    - cilium-fw
+    - k8s-install
+
+- ansible.builtin.import_tasks: 80-get-admin-config.yml
+  when: k3s_get_config is defined
+  run_once: true
+  tags:
+    - k3s
+    - k3s-config
+    - k3s-get-config
+    - get-config
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ["never", "k3s-clean"]

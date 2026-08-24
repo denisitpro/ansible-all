@@ -7,11 +7,18 @@ metadata:
   name: argocd-rbac-cm
   namespace: argocd
 data:
-{% if argocd_policy_csv_admins is defined and argocd_policy_csv_admins | length > 0 %}
+{% set _has_admins = argocd_policy_csv_admins is defined and argocd_policy_csv_admins | length > 0 %}
+{% set _has_readonly = argocd_policy_csv_readonly is defined and argocd_policy_csv_readonly | length > 0 %}
+{% if _has_admins or _has_readonly %}
   policy.csv: |
-{% for user in argocd_policy_csv_admins %}
+{% for user in argocd_policy_csv_admins | default([]) %}
 {% if user | length > 0 %}
     g, {{ user }}, role:admin
+{% endif %}
+{% endfor %}
+{% for user in argocd_policy_csv_readonly | default([]) %}
+{% if user | length > 0 %}
+    g, {{ user }}, role:readonly
 {% endif %}
 {% endfor %}
 {% else %}

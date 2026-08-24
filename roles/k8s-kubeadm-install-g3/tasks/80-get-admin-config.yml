@@ -1,0 +1,6 @@
+---
+- name: Fetch kubeconfig from remote k8s master for local use
+  ansible.builtin.fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ k8s_local_config_path }}"
+    flat: true

@@ -1,0 +1,40 @@
+---
+# Re-apply the Cilium config via Helm to (re)enable the Host Firewall after the
+# policies in 95-cilium-fw.yml are in place. Uses the SAME values file as the
+# initial install (73-cni-cilium-helm.yml) — single source of truth, so install
+# and upgrade can't drift apart. (Was a `cilium upgrade --set ...` cilium-cli
+# call; moved to Helm + values to match the file-based install path.) The repo
+# steps are repeated so this task also works standalone via `--tags cilium-upgrade`.
+
+- name: Add Cilium Helm repository
+  ansible.builtin.command: helm repo add cilium https://helm.cilium.io/
+  register: cilium_repo_fw
+  changed_when: "'\"has been added\"' in cilium_repo_fw.stdout"
+  when: cilium_force_install is defined
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+  when: cilium_force_install is defined
+
+- name: Render Cilium values for the Host Firewall upgrade
+  ansible.builtin.template:
+    src: "cilium-values.yaml.j2"
+    dest: /tmp/cilium-values.yaml
+    mode: "0644"
+  when: cilium_force_install is defined
+
+- name: Enable Cilium Host Firewall via Helm upgrade
+  ansible.builtin.command: >
+    helm upgrade --install cilium cilium/cilium
+    --namespace {{ cilium_namespace | default('cilium') }}
+    --version {{ cilium_version }}
+    --kubeconfig {{ k8s_config_path }}
+    --create-namespace
+    --force
+    --values /tmp/cilium-values.yaml
+  when: cilium_force_install is defined
+
+- name: Wait for Cilium components to initialize - 2 minutes
+  ansible.builtin.pause:
+    seconds: 120
+  when: cilium_force_install is defined

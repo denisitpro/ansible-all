@@ -1,5 +1,0 @@
-{{ ansible_managed | comment }}
-
-{% for ns in dns_nameservers %}
-nameserver {{ ns }}
-{% endfor %}

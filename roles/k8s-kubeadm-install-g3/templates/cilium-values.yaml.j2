@@ -1,0 +1,86 @@
+# Cilium Helm values — single source of truth for the install (73) and the
+# Host-Firewall upgrade (92). Mirrors the settings the (now-disabled) cilium-cli
+# `--set` path used to pass; a values file is cleaner and keeps the install and
+# the upgrade from drifting apart. Ref: https://docs.cilium.io/en/stable/helm-reference/
+cluster:
+  name: "{{ k8s_cls_shortname }}"
+
+encryption:
+{% if cilium_encryption_enabled is defined %}
+  enabled: true
+  type: wireguard
+  wireguard:
+    persistentKeepalive: 25s
+  nodeEncryption: true
+{% else %}
+  enabled: false
+{% endif %}
+
+operator:
+  replicas: {{ cilium_operator_replicas | default(2) }}
+{% if cilium_operator_prometheus_enabled is defined %}
+  prometheus:
+    enabled: {{ 'true' if cilium_operator_prometheus_enabled | bool else 'false' }}
+{% endif %}
+
+{% set hubble_on = (cilium_hubble_enabled | default(true)) | bool %}
+hubble:
+  enabled: {{ 'true' if hubble_on else 'false' }}
+  relay:
+    enabled: {{ 'true' if hubble_on else 'false' }}
+  ui:
+    enabled: {{ 'true' if hubble_on else 'false' }}
+{% if hubble_on %}
+  metrics:
+    enableOpenMetrics: {{ 'true' if (cilium_hubble_metrics_enable_open_metrics | default(true)) | bool else 'false' }}
+{% if cilium_hubble_metrics_enabled is defined and cilium_hubble_metrics_enabled | length > 0 %}
+    enabled:
+{% for metric in cilium_hubble_metrics_enabled %}
+      - {{ metric }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if cilium_prometheus_enabled is defined %}
+prometheus:
+  enabled: {{ 'true' if cilium_prometheus_enabled | bool else 'false' }}
+{% endif %}
+
+# kube-proxy replacement needs the API server endpoint explicitly (the cilium-cli
+# auto-detected it). Point it at the kubeadm controlPlaneEndpoint (the LB FQDN).
+kubeProxyReplacement: true
+k8sServiceHost: "{{ k8s_cls_fqdn }}"
+k8sServicePort: "{{ k8s_cls_port | default('6443') }}"
+
+bpf:
+  lbExternalClusterIP: true
+
+ipam:
+  mode: "{{ cilium_ipam_mode | default('cluster-pool') }}"
+  operator:
+    clusterPoolIPv4PodCIDRList: ["{{ k8s_net_cluster_pool }}"]
+    clusterPoolIPv4MaskSize: 24
+{% if cilium_ipv6_enabled is defined and cilium_ipv6_enabled | bool %}
+    clusterPoolIPv6PodCIDRList: ["{{ k8s_net6_cluster_pool }}"]
+    clusterPoolIPv6MaskSize: 120
+{% endif %}
+
+tunnelProtocol: "{{ cilium_tunnel_protocol | default('vxlan') }}"
+routingMode: "{{ cilium_routing_mode | default('tunnel') }}"
+
+{% if cilium_host_firewall_enabled is defined %}
+hostFirewall:
+  enabled: true
+{% endif %}
+
+# IPv6 / dual-stack. Pod IPv6 is ULA and is masqueraded to the node's public IPv6
+# on egress (enableIPv6Masquerade). Driven by cilium_ipv6_enabled, which follows
+# the single k8s_ipv6 switch by default.
+{% if cilium_ipv6_enabled is defined and cilium_ipv6_enabled | bool %}
+ipv6:
+  enabled: true
+enableIPv6Masquerade: true
+{% else %}
+ipv6:
+  enabled: false
+{% endif %}

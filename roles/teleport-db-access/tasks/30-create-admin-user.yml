@@ -5,7 +5,7 @@
     state: present
 
 - name: create teleport-admin MySQL user with X509 and GRANT OPTION
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: "{{ teleport_db_admin_user }}"
     host: "%"
     priv: "*.*:ALL PRIVILEGES,GRANT"

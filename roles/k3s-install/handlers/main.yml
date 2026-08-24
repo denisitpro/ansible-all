@@ -1,0 +1,12 @@
+---
+- name: restart k3s
+  ansible.builtin.systemd_service:
+    name: "{{ k3s_service_name }}"
+    state: restarted
+  listen:
+    - "restart k3s"
+    # The shared kubelet-patch task (tasks/08-kubelet-patch.yml) reuses the
+    # kubeadm-side `notify: restart kubelet` verbatim. k3s embeds kubelet —
+    # there's no separate kubelet unit — so bouncing k3s is what reloads the
+    # patched config.
+    - "restart kubelet"

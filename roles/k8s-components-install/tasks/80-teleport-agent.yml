@@ -16,10 +16,27 @@
   ansible.builtin.set_fact:
     skip_teleport_install: "{{ teleport_installed.rc == 0 and (not teleport_force_install | default(false)) }}"
 
+- name: Teleport agent - Validate DB entries (when db enabled)
+  ansible.builtin.assert:
+    that:
+      - item.name is defined and item.name | length > 0
+      - item.uri is defined and item.uri | length > 0
+      - item.protocol is defined
+      - item.protocol in ['postgres', 'mysql', 'redis']
+    fail_msg: >-
+      Invalid teleport DB entry '{{ item.name | default('<no-name>') }}':
+      protocol must be one of postgres/mysql/redis (valkey uses redis), uri/name required.
+  loop: "{{ k8s_teleport_agent_databases }}"
+  loop_control:
+    label: "{{ item.name | default('<no-name>') }}"
+  when:
+    - k8s_teleport_agent_db_enabled | default(false)
+    - k8s_teleport_agent_databases | length > 0
+
 - name: Teleport agent - Add Helm repository
   ansible.builtin.command: helm repo add teleport https://charts.releases.teleport.dev
   register: helm_teleport_repo
-  changed_when: "'\"has been added\"' in helm_teleport_repo.stdout"
+  changed_when: '''"has been added"'' in helm_teleport_repo.stdout'
   when: not skip_teleport_install
 
 - name: Teleport agent - Update Helm repos
@@ -31,7 +48,7 @@
     src: "teleport-values.yaml.j2"
     dest: /tmp/teleport-values.yaml
     mode: "0600"
-  when: not skip_teleport_install or teleport_force_install is defined
+  when: not (skip_teleport_install | default(false)) or teleport_force_install is defined
   tags:
     - teleport-value
 
@@ -43,9 +60,10 @@
     --kubeconfig {{ k8s_config_path }}
     --create-namespace
     --values /tmp/teleport-values.yaml
-  when: not skip_teleport_install or teleport_force_install is defined
-
-- name: Teleport agent - remove /tmp/teleport-values.yaml
-  ansible.builtin.file:
-    path: /tmp/teleport-values.yaml
-    state: absent
+  when: not (skip_teleport_install | default(false)) or teleport_force_install is defined
+  tags:
+    - teleport-value
+# - name: Teleport agent - remove /tmp/teleport-values.yaml
+#   ansible.builtin.file:
+#     path: /tmp/teleport-values.yaml
+#     state: absent

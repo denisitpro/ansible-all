@@ -17,7 +17,7 @@
 В файле `hosts` добавьте тег `ansible_fw_role` к каждому хосту:
 
 ```ini
-[k8s_master_c1_p2p]
+[k8s_master_example]
 server-01.example.com ansible_fw_role=k8s_master_p2p
 server-02.example.com ansible_fw_role=k8s_master_p2p
 

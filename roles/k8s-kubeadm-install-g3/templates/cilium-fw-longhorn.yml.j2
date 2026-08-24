@@ -1,0 +1,82 @@
+---
+# Cilium Host Firewall Policy - Longhorn Storage
+# This policy enables Longhorn distributed storage communication between worker nodes
+# Documentation: https://longhorn.io/docs/latest/deploy/install/#installing-open-iscsi
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: "host-firewall-longhorn"
+spec:
+  description: "Host firewall policy for Longhorn storage - allows replica sync and management between worker nodes"
+  nodeSelector:
+    matchLabels:
+      k8s-node-type: worker
+  ingress:
+  # ============================================================
+  # WORKER <-> WORKER Longhorn communication
+  # ============================================================
+  # Longhorn Engine/Replica gRPC API and sync (between remote nodes)
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "9500"
+        endPort: 9502
+        protocol: TCP
+  # Instance Manager API
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "8500"
+        protocol: TCP
+  # Backing Image Manager (delivery between nodes)
+  - fromEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "8000"
+        endPort: 8002
+        protocol: TCP
+
+  # ============================================================
+  # CLUSTER PODS -> WORKER Longhorn communication
+  # ============================================================
+  # Longhorn Engine/Replica gRPC API (from cluster pods)
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "9500"
+        endPort: 9502
+        protocol: TCP
+  # Instance Manager API (from cluster pods)
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "8500"
+        protocol: TCP
+  # Admission Webhook
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "9443"
+        protocol: TCP
+  # Backing Image Manager (from cluster pods)
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "8000"
+        endPort: 8002
+        protocol: TCP
+  # Longhorn Metrics (Prometheus scrape)
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "9600"
+        protocol: TCP
+

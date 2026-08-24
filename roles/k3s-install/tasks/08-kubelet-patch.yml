@@ -1,0 +1,25 @@
+---
+# Shares only the resolv.conf template with k8s-kubeadm-install-g2's
+# tasks/65-kubelet-path.yml so the two roles can't drift on what nameservers
+# kubelet hands to pods. The kubeadm role additionally renders a full
+# KubeletConfiguration (kubeReserved / systemReserved / maxPods / imageGC tuning
+# for worker nodes) — k3s doesn't need any of that on a single-node edge box,
+# and passing a hand-written `kubelet-arg=config=...` to k3s actively breaks
+# things because that file replaces k3s's own embedded KubeletConfiguration
+# (which sets containerRuntimeEndpoint to /run/k3s/containerd/containerd.sock,
+# among other things). The resolv-conf hand-off itself uses k3s's first-class
+# `resolv-conf:` top-level key (rendered in templates/config.yaml.j2), which
+# k3s forwards to both kubelet (--resolv-conf) and CoreDNS.
+#
+# The `restart kubelet` notify is wired through k3s-install/handlers/main.yml,
+# which routes it to the k3s systemd unit (k3s embeds kubelet — there is no
+# standalone kubelet service to restart).
+
+- name: Deploy kubelet resolv.conf template
+  ansible.builtin.template:
+    src: "shared/templates/kubelet/kubelet.resolv.conf.j2"
+    dest: "{{ kubelet_resolv_conf_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart kubelet

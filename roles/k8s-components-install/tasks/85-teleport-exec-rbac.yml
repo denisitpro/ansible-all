@@ -1,0 +1,16 @@
+---
+- name: Teleport exec RBAC - render ClusterRole/ClusterRoleBinding
+  ansible.builtin.template:
+    src: "teleport-exec-clusterrole.yaml.j2"
+    dest: /tmp/teleport-exec-clusterrole.yaml
+    mode: "0600"
+
+- name: Teleport exec RBAC - apply
+  ansible.builtin.command: >
+    kubectl apply -f /tmp/teleport-exec-clusterrole.yaml
+    --kubeconfig {{ k8s_config_path }}
+
+- name: Teleport exec RBAC - remove rendered manifest
+  ansible.builtin.file:
+    path: /tmp/teleport-exec-clusterrole.yaml
+    state: absent

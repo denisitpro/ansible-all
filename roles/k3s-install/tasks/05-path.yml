@@ -1,0 +1,8 @@
+---
+- name: create k3s config directory
+  ansible.builtin.file:
+    path: "{{ k3s_config_dir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root

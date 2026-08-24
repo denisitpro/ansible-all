@@ -1,0 +1,19 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: JoinConfiguration
+patches:
+  directory: /etc/kubernetes/patches
+controlPlane:
+  certificateKey: "{{ k8s_cert.stdout }}"
+  localAPIEndpoint:
+    advertiseAddress: "{{ master_ip }}"
+    bindPort: 6443
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: "{{ control_plane_endpoint }}"
+    token: "{{ bootstrap_token }}"
+    caCertHashes: ["{{ca_cert_hashes}}"]
+  tlsBootstrapToken: "{{ bootstrap_token }}"
+nodeRegistration:
+  kubeletExtraArgs:
+    node-ip: "{{ master_ip }}"
+    address: "{{ master_ip }}"

@@ -9,7 +9,7 @@ This document describes how to configure external labels for Prometheus deployed
 Use the `k8s_prometheus_external_labels` variable in your group_vars to define external labels:
 
 ```yaml
-# Example: env/c1-p2p/group_vars/k8s_worker_c1_p2p/prometheus.yml
+# Example: env/<env>/group_vars/k8s_worker_<cluster>/prometheus.yml
 k8s_prometheus_external_labels:
   environment: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
   monitoring: monitoring
@@ -22,11 +22,11 @@ k8s_prometheus_external_labels:
 Use the `prometheus_external_labels` variable (existing functionality):
 
 ```yaml
-# Example: env/c1-infra/group_vars/exporters_c1_infra/prom.yml
+# Example: env/<env>/group_vars/exporters_<env>/prom.yml
 prometheus_external_labels:
   environment: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}"
   monitoring: monitoring
-  cluster: prom-c1-infra-scraper
+  cluster: prom-example-scraper
   replica: "{{ ansible_hostname | default(inventory_hostname) }}"
 ```
 
