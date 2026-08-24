@@ -1,0 +1,86 @@
+{{ ansible_managed | comment }}
+
+{% for cluster in psql_cluster_alert_targets | default([]) %}
+groups:
+- name: psql_{{ cluster.name }}.alert.rules
+  rules:
+
+  - alert: PsqlCluster | NodeDown | {{ cluster.name }}
+    expr: |
+      count(pg_up{tags=~".*{{ cluster.tag }}.*"} == 1)
+        < count(pg_up{tags=~".*{{ cluster.tag }}.*"})
+    for: 5m
+    labels:
+      severity: critical
+      team: devops
+      receiver: slack
+      cluster: "{{ cluster.name }}"
+    annotations:
+      summary: "PostgreSQL {{ cluster.name }}: node down"
+      description: >-
+        Not all nodes in {{ cluster.tag }} are up for more than 5 minutes.
+        {% raw %}{{ $value }}{% endraw %} nodes are UP out of expected total.
+
+  - alert: PsqlCluster | AllNodesDown | {{ cluster.name }}
+    expr: |
+      count(pg_up{tags=~".*{{ cluster.tag }}.*"} == 1) == 0
+      or absent(pg_up{tags=~".*{{ cluster.tag }}.*"})
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      receiver: slack
+      notify_channel_critical: true
+      cluster: "{{ cluster.name }}"
+    annotations:
+      summary: "PostgreSQL {{ cluster.name }}: ALL nodes down (P1)"
+      description: >-
+        All PostgreSQL nodes in {{ cluster.tag }} are unreachable.
+        Complete database outage.
+
+  - alert: PsqlCluster | ReplicationLag | {{ cluster.name }}
+    expr: |
+      pg_replication_lag_seconds{tags=~".*{{ cluster.tag }}.*"} > {{ cluster.replication_lag_warning | default(300) }}
+    for: 5m
+    labels:
+      severity: warning
+      team: devops
+      cluster: "{{ cluster.name }}"
+    annotations:
+      summary: "PostgreSQL {{ cluster.name }}: replication lag > {{ cluster.replication_lag_warning | default(300) }}s ({% raw %}{{ $labels.instance }}{% endraw %})"
+      description: >-
+        Replication lag on {% raw %}{{ $labels.instance }}{% endraw %} is
+        {% raw %}{{ $value }}{% endraw %} seconds.
+
+  - alert: PsqlCluster | ReplicationLagCritical | {{ cluster.name }}
+    expr: |
+      pg_replication_lag_seconds{tags=~".*{{ cluster.tag }}.*"} > {{ cluster.replication_lag_critical | default(1800) }}
+    for: 5m
+    labels:
+      severity: critical
+      team: devops
+      receiver: slack
+      cluster: "{{ cluster.name }}"
+    annotations:
+      summary: "PostgreSQL {{ cluster.name }}: replication lag > {{ cluster.replication_lag_critical | default(1800) }}s ({% raw %}{{ $labels.instance }}{% endraw %})"
+      description: >-
+        Critical replication lag on {% raw %}{{ $labels.instance }}{% endraw %} is
+        {% raw %}{{ $value }}{% endraw %} seconds.
+
+  - alert: PsqlCluster | DiskSpace | {{ cluster.name }}
+    expr: |
+      (
+        (node_filesystem_avail_bytes{tags=~".*{{ cluster.tag }}.*", mountpoint="/", fstype!~"(squashfs|fuse.*|tmpfs)"} * 100)
+        / node_filesystem_size_bytes{tags=~".*{{ cluster.tag }}.*", mountpoint="/"}
+      ) < {{ cluster.disk_space_warning | default(15) }}
+    for: 10m
+    labels:
+      severity: warning
+      team: devops
+      cluster: "{{ cluster.name }}"
+    annotations:
+      summary: "PostgreSQL {{ cluster.name }}: disk space < {{ cluster.disk_space_warning | default(15) }}% ({% raw %}{{ $labels.instance }}{% endraw %})"
+      description: >-
+        Host {% raw %}{{ $labels.instance }}{% endraw %} has less than {{ cluster.disk_space_warning | default(15) }}% free disk space.
+
+{% endfor %}

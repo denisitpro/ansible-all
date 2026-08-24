@@ -1,0 +1,5 @@
+---
+- name: Start Sentry stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ sentry_compose_path }}"
+    state: present

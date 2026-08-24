@@ -1,0 +1,20 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - opensearch
+    - opensearch-prefly
+
+- ansible.builtin.import_tasks: 10-sysctl.yml
+  tags:
+    - opensearch
+    - opensearch-sysctl
+
+- ansible.builtin.import_tasks: 20-config.yml
+  tags:
+    - opensearch
+    - opensearch-config
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - opensearch
+    - opensearch-compose

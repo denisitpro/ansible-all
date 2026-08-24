@@ -1,0 +1,15 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: caddy.rules
+  rules:
+  - alert: Caddy | NotificationsFailing
+    expr: rate(caddy_http_requests_total[1m]) > 10
+    labels:
+      environment: production
+      service: caddy
+      severity: critical
+    annotations:
+      title: Caddy face up with big load
+      description: More than 10 rps last minute
+

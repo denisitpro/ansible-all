@@ -1,5 +1,5 @@
 ---
-grafana_version: "12.2.1"
+grafana_version: "13.0.3"
 # backup_path: /mnt/backup
 
 grafana_compose_path: /opt/docker/grafana

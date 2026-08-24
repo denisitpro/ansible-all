@@ -1,0 +1,40 @@
+---
+- name: Create sentry base directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - /opt/docker
+    - "{{ sentry_compose_path }}"
+    - "{{ sentry_data_path }}"
+
+- name: Create sentry data subdirectories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+    owner: root
+    group: root
+  loop:
+    - "{{ sentry_data_path }}/data"
+    - "{{ sentry_data_path }}/postgres"
+    - "{{ sentry_data_path }}/redis"
+    - "{{ sentry_data_path }}/kafka"
+    - "{{ sentry_data_path }}/kafka-log"
+    - "{{ sentry_data_path }}/kafka-secrets"
+    - "{{ sentry_data_path }}/clickhouse"
+    - "{{ sentry_data_path }}/clickhouse-log"
+    - "{{ sentry_data_path }}/symbolicator"
+    - "{{ sentry_data_path }}/vroom"
+    - "{{ sentry_data_path }}/smtp"
+    - "{{ sentry_data_path }}/smtp-log"
+
+- name: Clone getsentry/self-hosted repository
+  ansible.builtin.git:
+    repo: "{{ sentry_self_hosted_repo }}"
+    dest: "{{ sentry_compose_path }}"
+    version: "{{ sentry_version }}"
+    force: true

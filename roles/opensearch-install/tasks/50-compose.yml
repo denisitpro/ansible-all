@@ -1,0 +1,14 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: docker-compose.opensearch.yml.j2
+    dest: "{{ opensearch_compose_path }}/docker-compose.yml"
+    mode: '0600'
+
+- name: create and start opensearch
+  community.docker.docker_compose_v2:
+    remove_orphans: true
+    project_src: "{{ opensearch_compose_path }}"
+    files:
+      - docker-compose.yml
+    timeout: 120

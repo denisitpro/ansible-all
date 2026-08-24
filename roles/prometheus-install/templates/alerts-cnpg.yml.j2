@@ -1,0 +1,448 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: cloudnative-pg/auto
+  rules:
+    - alert: CNPGClusterDiskUsageOver130GB
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: disk usage {% raw %}{{ $value | humanize1024 }}{% endraw %}B (>130Gi)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" is using {% raw %}{{ $value | humanize1024 }}{% endraw %}B of PVC storage.
+          Check attached PVCs — DEVOPS-6999.
+      # storageclass!="local-path" (DEVOPS-6999): on single-node k3s edge
+      # clusters, local-path-provisioner PVCs are plain directories on the
+      # node's root filesystem, not isolated volumes — kubelet reports the
+      # WHOLE NODE's disk usage/capacity for them, not the cluster's actual
+      # data size. An absolute-GB threshold on that number just tracks node
+      # disk usage, unrelated to this Postgres cluster (confirmed on
+      # wnam-la: cluster data was ~5GiB while the node reported 97GiB used).
+      # Real per-cluster usage is still measured correctly on proper CSI
+      # storage classes (e.g. Longhorn), so this only drops the
+      # not-meaningful-for-local-path case rather than disabling the alert.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            (kubelet_volume_stats_capacity_bytes{job="kubelet"} - kubelet_volume_stats_available_bytes{job="kubelet"})
+            and on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_info{storageclass!="local-path"},
+            "cluster", "$1", "persistentvolumeclaim", "(.+-cluster)-([1-9][0-9]*)(-wal|-tbs.*)?$"
+          )
+        ) > 130 * 1024 * 1024 * 1024
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterHACritical
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: no streaming standby replicas (CRITICAL)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" has no streaming standby replicas. Cluster at severe
+          risk of data loss and downtime if the primary instance fails.
+
+          The primary is still online; connections to the `-ro` endpoint will fail; `-r` endpoint operates at reduced capacity.
+      expr: |
+        (
+          max by (namespace, cluster) (
+            label_replace(
+              cnpg_pg_replication_streaming_replicas - cnpg_pg_replication_is_wal_receiver_up,
+              "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+            )
+          ) < 1
+        )
+        and on(namespace, cluster)
+        (
+          count by (namespace, cluster) (
+            label_replace(last_over_time(cnpg_collector_up[30m]), "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) >= 2
+        )
+      for: 10m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterHAWarning
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: missing standby replicas ({% raw %}{{ $value }}{% endraw %} streaming)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" has fewer streaming standby replicas than recent baseline.
+          Currently streaming: {% raw %}{{ $value }}{% endraw %}. Baseline derived from instances that emitted metrics in the last 30 minutes.
+          Cluster is degraded — at least one expected standby is not streaming.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            cnpg_pg_replication_streaming_replicas - cnpg_pg_replication_is_wal_receiver_up,
+            "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+          )
+        )
+        <
+        (
+          count by (namespace, cluster) (
+            label_replace(last_over_time(cnpg_collector_up[30m]), "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) - 1
+        )
+      for: 10m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterHighConnectionsCritical
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}/{{ $labels.pod }}{% endraw %}: connections {% raw %}{{ $value | printf \"%.1f\" }}{% endraw %}% (CRITICAL >95%)"
+        description: |-
+          CloudNativePG instance "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}/{{ $labels.pod }}{% endraw %}" is using {% raw %}{{ $value | printf "%.1f" }}{% endraw %}% of max_connections.
+      expr: |
+        sum by (namespace, cluster, pod) (
+          label_replace(cnpg_backends_total, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+        )
+        /
+        max by (namespace, cluster, pod) (
+          label_replace(cnpg_pg_settings_setting{name="max_connections"}, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+        )
+        * 100 > 95
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterHighConnectionsOver90
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}/{{ $labels.pod }}{% endraw %}: connections {% raw %}{{ $value | printf \"%.1f\" }}{% endraw %}% (>90%)"
+        description: |-
+          CloudNativePG instance "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}/{{ $labels.pod }}{% endraw %}" is using {% raw %}{{ $value | printf "%.1f" }}{% endraw %}% of max_connections.
+      expr: |
+        sum by (namespace, cluster, pod) (
+          label_replace(cnpg_backends_total{pod!~"{{ excld_pod_cnpg_high_connections_over90 | default([]) | join('|') }}"}, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+        )
+        /
+        max by (namespace, cluster, pod) (
+          label_replace(cnpg_pg_settings_setting{name="max_connections"}, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+        )
+        * 100 > 90
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterHighConnectionsWarning
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}/{{ $labels.pod }}{% endraw %}: connections {% raw %}{{ $value | printf \"%.1f\" }}{% endraw %}% (>80%)"
+        description: |-
+          CloudNativePG instance "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}/{{ $labels.pod }}{% endraw %}" is using {% raw %}{{ $value | printf "%.1f" }}{% endraw %}% of max_connections.
+      expr: |
+        sum by (namespace, cluster, pod) (
+          label_replace(cnpg_backends_total{pod!~"{{ excld_pod_cnpg_high_connections_warning | default([]) | join('|') }}"}, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+        )
+        /
+        max by (namespace, cluster, pod) (
+          label_replace(cnpg_pg_settings_setting{name="max_connections"}, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+        )
+        * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterHighReplicationLag
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: high replication lag {% raw %}{{ $value }}{% endraw %}s"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" replication lag {% raw %}{{ $value }}{% endraw %}s.
+          Indicates network issues, busy instances, slow queries or suboptimal configuration.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            cnpg_pg_replication_lag{namespace!~"{{ cnpg_remote_replica_namespaces | default([]) | join('|') }}"},
+            "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+          )
+        ) > 120
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterInstancesOnSameNode
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: {% raw %}{{ $value }}{% endraw %} instances on node {% raw %}{{ $labels.node }}{% endraw %}"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" has {% raw %}{{ $value }}{% endraw %} instances on the same node {% raw %}{{ $labels.node }}{% endraw %}.
+          A failure of this single node will cause potential service disruption and/or data loss.
+      expr: |
+        count by (namespace, cluster, node) (
+          label_replace(kube_pod_info, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          and on(namespace, pod) cnpg_collector_up
+        ) > 1
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterLogicalReplicationErrorsCritical
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: subscription {% raw %}{{ $labels.subname }}{% endraw %} {% raw %}{{ $value }}{% endraw %} errors/5m (CRITICAL)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" subscription "{% raw %}{{ $labels.subname }}{% endraw %}" has {% raw %}{{ $value }}{% endraw %} errors in the last 5m.
+          High error rate indicates persistent replication issues requiring immediate attention.
+      expr: |
+        increase(
+          max by (namespace, cluster, subname) (
+            label_replace(
+              cnpg_pg_stat_subscription_apply_error_count + cnpg_pg_stat_subscription_sync_error_count,
+              "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+            )
+          )[5m:]
+        ) >= 5
+      for: 0m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterLogicalReplicationErrors
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: subscription {% raw %}{{ $labels.subname }}{% endraw %} {% raw %}{{ $value }}{% endraw %} errors detected"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" subscription "{% raw %}{{ $labels.subname }}{% endraw %}" experienced {% raw %}{{ $value }}{% endraw %} errors.
+          Includes both apply errors and sync errors.
+      expr: |
+        increase(
+          max by (namespace, cluster, subname) (
+            label_replace(
+              cnpg_pg_stat_subscription_apply_error_count + cnpg_pg_stat_subscription_sync_error_count,
+              "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+            )
+          )[5m:]
+        ) > 0
+      for: 1m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterLogicalReplicationLaggingCritical
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: subscription {% raw %}{{ $labels.subname }}{% endraw %} critical replication lag"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" subscription "{% raw %}{{ $labels.subname }}{% endraw %}" has critical replication lag.
+          Current lag value: {% raw %}{{ $value }}{% endraw %}.
+      expr: |
+        (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_receipt_lag_seconds, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) > 300
+        ) or (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_apply_lag_seconds, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) > 300
+        ) or (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_buffered_lag_bytes, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) / 1024^3 > 4
+        )
+      for: 2m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterLogicalReplicationLagging
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: subscription {% raw %}{{ $labels.subname }}{% endraw %} replication lag"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" subscription "{% raw %}{{ $labels.subname }}{% endraw %}" is experiencing replication lag.
+          Current lag value: {% raw %}{{ $value }}{% endraw %}.
+      expr: |
+        (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_receipt_lag_seconds, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) > 60
+        ) or (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_apply_lag_seconds, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) > 60
+        ) or (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_buffered_lag_bytes, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) / 1024^3 > 1
+        )
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterLogicalReplicationStoppedCritical
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: subscription {% raw %}{{ $labels.subname }}{% endraw %} stopped >15m (CRITICAL)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" subscription "{% raw %}{{ $labels.subname }}{% endraw %}" stopped for more than 15 minutes.
+          This will lead to significant data divergence and requires immediate intervention.
+      expr: |
+        (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_enabled, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) == 0
+        ) or (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_enabled, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) == 1
+          and max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_pid, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) == 0
+          and max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_buffered_lag_bytes, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) / 1024^3 > 0.1
+        )
+      for: 15m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterLogicalReplicationStopped
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: subscription {% raw %}{{ $labels.subname }}{% endraw %} stopped"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" subscription "{% raw %}{{ $labels.subname }}{% endraw %}" is stopped — not actively replicating data.
+      expr: |
+        (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_enabled, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) == 0
+        ) or (
+          max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_enabled, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) == 1
+          and max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_pid, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) == 0
+          and max by (namespace, cluster, subname) (
+            label_replace(cnpg_pg_stat_subscription_buffered_lag_bytes, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ) / 1024^3 > 0.1
+        )
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterLowDiskSpaceCritical
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: disk usage {% raw %}{{ $value | printf \"%.1f\" }}{% endraw %}% (CRITICAL >90%)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" running extremely low on disk space ({% raw %}{{ $value | printf "%.1f" }}{% endraw %}% used).
+          Check attached PVCs.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            (1 - kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes),
+            "cluster", "$1", "persistentvolumeclaim", "(.+-cluster)-([1-9][0-9]*)(-wal|-tbs.*)?$"
+          )
+        ) * 100 > 90
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterLowDiskSpaceWarning
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: disk usage {% raw %}{{ $value | printf \"%.1f\" }}{% endraw %}% (>70%)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" running low on disk space ({% raw %}{{ $value | printf "%.1f" }}{% endraw %}% used).
+          Check attached PVCs.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            (1 - kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes),
+            "cluster", "$1", "persistentvolumeclaim", "(.+-cluster)-([1-9][0-9]*)(-wal|-tbs.*)?$"
+          )
+        ) * 100 > 70
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterOffline
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: no running instances (OFFLINE)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" has no ready instances.
+          Applications cannot connect to the database — full outage.
+      expr: |
+        count by (namespace, cluster) (
+          label_replace(cnpg_collector_up, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+        ) == 0
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterPhysicalReplicationLagCritical
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: physical replication lag {% raw %}{{ $value }}{% endraw %}s (CRITICAL)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" has very high physical replication lag of {% raw %}{{ $value }}{% endraw %}s.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            cnpg_pg_replication_lag{namespace!~"{{ excld_ns_cnpg_physical_replication_lag_critical | default([]) | join('|') }}", namespace!~"{{ cnpg_remote_replica_namespaces | default([]) | join('|') }}"},
+            "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+          )
+        ) > 600
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: CNPGClusterPhysicalReplicationLagWarning
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: physical replication lag {% raw %}{{ $value }}{% endraw %}s"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" has high physical replication lag of {% raw %}{{ $value }}{% endraw %}s.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            cnpg_pg_replication_lag{namespace!~"{{ excld_ns_cnpg_physical_replication_lag_warning | default([]) | join('|') }}", namespace!~"{{ cnpg_remote_replica_namespaces | default([]) | join('|') }}"},
+            "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+          )
+        ) > 120
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterPrimaryChanged
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: primary instance changed (failover detected)"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" had more than one primary instance in the last 30 minutes.
+          This indicates a failover occurred — either a deliberate switchover, a pod/node failure, or replication breakdown.
+          Check the CNPG cluster status and Kubernetes events in the namespace.
+      expr: |
+        count by (namespace, cluster) (
+          label_replace(
+            max_over_time(
+              cnpg_collector_is_primary{namespace!~"{{ excld_ns_cnpg_primary_changed | default([]) | join('|') }}"}[30m]
+            ) == 1,
+            "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+          )
+        ) > 1
+      for: 0m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterRemoteReplicaLag
+      annotations:
+        summary: "CNPG remote replica {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: replay lag {% raw %}{{ $value | printf \"%.1f\" }}{% endraw %}s"
+        description: |-
+          CloudNativePG remote-region replica "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" is {% raw %}{{ $value | printf "%.1f" }}{% endraw %}s behind its upstream.
+          Reads served from this location are stale by that much. Check WAL delivery from the upstream archive and the replica's replay progress.
+      expr: |
+        max by (namespace, cluster) (
+          label_replace(
+            cnpg_pg_replication_lag{namespace=~"{{ cnpg_remote_replica_namespaces | default([]) | join('|') }}"},
+            "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$"
+          )
+        ) > {{ alert_cnpg_remote_replica_lag_threshold | default(1) }}
+      for: 5m
+      labels:
+        severity: warning
+
+    - alert: CNPGClusterZoneSpreadWarning
+      annotations:
+        summary: "CNPG {% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}: instances poorly distributed across zones"
+        description: |-
+          CloudNativePG Cluster "{% raw %}{{ $labels.namespace }}/{{ $labels.cluster }}{% endraw %}" has fewer availability zones than instances (capped at 3).
+          A disaster in one AZ will cause service disruption and/or data loss.
+      expr: |
+        count by (namespace, cluster) (
+          count by (namespace, cluster, label_topology_kubernetes_io_zone) (
+            label_replace(kube_pod_info, "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+            * on(node) group_left(label_topology_kubernetes_io_zone) kube_node_labels
+            and on(namespace, pod) cnpg_collector_up
+          )
+        )
+        <
+        clamp_max(
+          count by (namespace, cluster) (
+            label_replace(last_over_time(cnpg_collector_up[30m]), "cluster", "$1", "pod", "(.+-cluster)-([1-9][0-9]*)$")
+          ),
+          3
+        )
+      for: 5m
+      labels:
+        severity: warning

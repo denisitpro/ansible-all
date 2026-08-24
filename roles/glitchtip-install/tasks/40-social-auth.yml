@@ -1,0 +1,9 @@
+---
+- name: configure Google OAuth
+  community.docker.docker_container_exec:
+    container: glitchtip-web
+    command: >-
+      ./manage.py shell -c
+      "from allauth.socialaccount.models import SocialApp;
+      SocialApp.objects.update_or_create(provider='google', defaults={'name': 'Google', 'client_id': '{{ glitchtip_google_client_id }}', 'secret': '{{ glitchtip_google_client_secret }}'})"
+  when: glitchtip_google_oauth_enabled | bool

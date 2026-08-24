@@ -1,0 +1,8 @@
+{{ ansible_managed | comment(decoration='# ') }}
+from glitchtip.settings import *
+
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+DATABASES['default'].setdefault('OPTIONS', {})
+DATABASES['default']['OPTIONS']['pool'] = {'min_size': 5, 'max_size': {{ glitchtip_db_pool_max_size | default(50) }}}

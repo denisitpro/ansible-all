@@ -1,0 +1,25 @@
+---
+opensearch_version: "3.6.0"
+opensearch_image: "opensearchproject/opensearch"
+opensearch_image_name: "{{ opensearch_image }}:{{ opensearch_version }}"
+
+opensearch_compose_path: /opt/docker/opensearch
+
+opensearch_base_path: /opt/opensearch
+opensearch_data_path: "{{ opensearch_base_path }}/data"
+opensearch_conf_path: "{{ opensearch_base_path }}/config"
+opensearch_log_path: "{{ opensearch_base_path }}/logs"
+opensearch_uid: 1000
+opensearch_gid: 1000
+
+opensearch_cluster_name: "opensearch-cluster"
+opensearch_node_name: "{{ inventory_hostname_short }}"
+opensearch_network_host: "0.0.0.0"
+opensearch_http_port: 9200
+opensearch_transport_port: 9300
+
+opensearch_java_opts: "-Xms2g -Xmx2g"
+
+opensearch_disable_security: true
+
+opensearch_restart: "always"

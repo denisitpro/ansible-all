@@ -52,8 +52,6 @@ scripts_path: /opt/scripts
 #   - inotify-metrics.sh
 #  - ping-ipv4.sh
 
-
-
 # consul section
 # Consul installation mode: "docker" or "unit" (systemd)
 consul_install_mode: "docker"

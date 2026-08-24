@@ -1,0 +1,22 @@
+---
+- name: Create postgres-exporter group
+  group:
+    name: "{{ postgres_exporter_group }}"
+    state: present
+    system: yes
+
+- name: Create postgres-exporter user
+  user:
+    name: "{{ postgres_exporter_user }}"
+    group: "{{ postgres_exporter_group }}"
+    system: yes
+    shell: "/usr/sbin/nologin"
+    create_home: no
+
+- name: Create configuration directory
+  file:
+    path: "{{ postgres_exporter_config_dir }}"
+    state: directory
+    owner: "{{ postgres_exporter_user }}"
+    group: "{{ postgres_exporter_group }}"
+    mode: '0755'

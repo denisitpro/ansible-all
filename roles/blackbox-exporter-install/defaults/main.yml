@@ -32,6 +32,23 @@ blackbox_config:
           ca_file: "{{ blackbox_mtls_path }}/blackbox-ca.pem"
           cert_file: "{{ blackbox_mtls_path }}/blackbox-cert.pem"
           key_file: "{{ blackbox_mtls_path }}/blackbox-key.pem"
+    # Like http_200_mtls but VERIFIES the server cert against the system CA
+    # bundle. Use for mTLS-gated endpoints whose server cert is publicly trusted
+    # (e.g. behind a Cloudflare/Let's Encrypt edge) so that
+    # probe_ssl_last_chain_expiry_timestamp_seconds carries a real expiry and the
+    # SslCertificateWillExpireSoon alert works. Still presents the mTLS client
+    # cert; deliberately NO ca_file, otherwise only the internal prom_stack CA
+    # would be trusted and the public server cert would fail verification.
+    http_200_mtls_verify:
+      prober: http
+      timeout: 10s
+      http:
+        valid_status_codes: [200]
+        method: GET
+        tls_config:
+          insecure_skip_verify: false
+          cert_file: "{{ blackbox_mtls_path }}/blackbox-cert.pem"
+          key_file: "{{ blackbox_mtls_path }}/blackbox-key.pem"
     http_200_auth:
       prober: http
       timeout: 5s
@@ -61,6 +78,7 @@ blackbox_config:
       http:
         valid_status_codes: [404]
         method: GET
+        preferred_ip_protocol: "ip4"
     http_404_auth:
       prober: http
       timeout: 5s
@@ -93,7 +111,7 @@ blackbox_config:
         method: GET
         fail_if_body_not_matches_regexp:
           - '(?i)User-agent'
-    # robots.txt: fail if body contains "Disallow: /*" (non-standard; use for zoa)
+    # robots.txt: fail if body contains "Disallow: /*" (non-standard; opt-in per site)
     http_robots_txt_standard_syntax:
       prober: http
       timeout: 5s

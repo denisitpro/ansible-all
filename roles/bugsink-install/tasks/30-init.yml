@@ -1,0 +1,9 @@
+---
+- name: wait for bugsink to become ready
+  ansible.builtin.uri:
+    url: "http://localhost:{{ bugsink_port }}/health/ready"
+    status_code: 200
+  register: bugsink_health
+  retries: 12
+  delay: 5
+  until: bugsink_health.status == 200

@@ -1,0 +1,12 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: docker-compose.bugsink.yml.j2
+    dest: "{{ bugsink_compose_path }}/docker-compose.yml"
+    mode: '0600'
+  notify: recreate-docker bugsink
+
+- name: run docker compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ bugsink_compose_path }}"
+    state: present

@@ -1,0 +1,17 @@
+---
+- name: stop and remove postgres-exporter container
+  community.docker.docker_compose_v2:
+    project_src: "{{ postgres_exporter_compose_path }}"
+    state: absent
+  ignore_errors: true
+
+- name: remove compose directory
+  ansible.builtin.file:
+    path: "{{ postgres_exporter_compose_path }}"
+    state: absent
+
+- name: remove consul service definition
+  ansible.builtin.file:
+    path: /etc/consul.d/postgres-exporter.hcl
+    state: absent
+  notify: reload consul

@@ -30,5 +30,10 @@
     - consul-owner
     - consul-loki
 
+- ansible.builtin.import_tasks: 70-rule.yml
+  tags:
+    - loki
+    - loki-rule
+
 - ansible.builtin.import_tasks: 90-clean.yml
   tags: ['never', 'loki-clean']

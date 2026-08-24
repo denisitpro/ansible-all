@@ -1,0 +1,182 @@
+---
+# P1 Alerts for Front (including LB and Kubernetes Workers)
+# Critical availability issues for frontend, load balancer, and workers
+
+{% set front_tls_instances = (incld_front_ru_c1_prod_urls_p1 | default([])) + (incld_front_kz_c1_prod_urls_p1 | default([])) %}
+
+groups:
+- name: front-p1
+  interval: 30s
+  rules:
+
+{% if incld_lb_c1_prod_p1 is defined and incld_lb_c1_prod_p1|length > 0 %}
+  # 1. LB host itself is down
+  - alert: LbHostDownP1
+    expr: |
+      up{job="node-exporter", instance=~"{{ incld_lb_c1_prod_p1 | map(attribute='instance') | join('|') }}"} == 0
+    for: 1m
+    labels:
+      severity: p1
+      service: lb
+      component: host
+      region: example-prod
+    annotations:
+      summary: "LB: host lb-01 unavailable"
+      description: |
+        Production Load Balancer host is completely unreachable (node_exporter not responding).
+
+        Instance: {% raw %}{{ $labels.instance }}{% endraw %}
+
+        All incoming traffic to the frontend is blocked.
+
+        Actions:
+        1. Check host availability (ping, SSH)
+        2. Check server status in provider console
+        3. On full failure - switch traffic to backup LB (if available)
+        4. Escalate to infrastructure team immediately
+{% endif %}
+
+{% if incld_kube_workers_c1_prod_p1 is defined and incld_kube_workers_c1_prod_p1|length > 0 %}
+  # 2. All Kubernetes workers unreachable (via node_exporter)
+  - alert: KubeAllWorkersDownP1
+    expr: |
+      count(up{job="node-exporter", instance=~"{{ incld_kube_workers_c1_prod_p1 | map(attribute='instance') | join('|') }}"} == 1) < {{ kube_workers_min_healthy_p1 | default(1) }}
+    for: 2m
+    labels:
+      severity: p1
+      service: kubernetes
+      component: workers
+      region: example-prod
+    annotations:
+      summary: "Kubernetes: critical number of workers unavailable"
+      description: |
+        Less than {{ kube_workers_min_healthy_p1 | default(1) }} of {{ incld_kube_workers_c1_prod_p1 | length }} production Kubernetes workers available.
+
+        Available workers: {% raw %}{{ $value }}{% endraw %} / {{ incld_kube_workers_c1_prod_p1 | length }}
+
+        On full failure of all workers:
+        - All containerized applications unavailable
+        - Frontend, API, microservices not working
+        - Critical service degradation
+
+        Actions:
+        1. Check status of all worker-01..04 nodes
+        2. Check k8s control plane: kubectl get nodes
+        3. Check events: kubectl get events --all-namespaces
+        4. If workers are down - restart via provider or manually
+        5. Escalate to platform/kubernetes team
+{% endif %}
+
+{% if incld_kube_workers_c1_prod_p1 is defined and incld_kube_workers_c1_prod_p1|length > 0 %}
+  # 4. All workers NotReady (alternative via kube-state-metrics)
+  # Uncomment if kube-state-metrics is available in Prometheus
+  # - alert: KubeAllWorkersNotReadyP1
+  #   expr: |
+  #     count(kube_node_status_condition{condition="Ready", status="true", node=~"{{ incld_kube_workers_c1_prod_p1 | map(attribute='node') | join('|') }}"} == 1) < {{ kube_workers_min_healthy_p1 | default(1) }}
+  #   for: 2m
+  #   labels:
+  #     severity: p1
+  #     service: kubernetes
+  #     component: workers-ready
+  #     region: example-prod
+  #   annotations:
+  #     summary: "Kubernetes: critical number of workers in NotReady"
+  #     description: |
+  #       Less than {{ kube_workers_min_healthy_p1 | default(1) }} of {{ incld_kube_workers_c1_prod_p1 | length }} production workers in Ready state.
+  #
+  #       Ready workers: {% raw %}{{ $value }}{% endraw %} / {{ incld_kube_workers_c1_prod_p1 | length }}
+  #
+  #       Kubernetes cannot schedule new pods on unavailable nodes.
+  #
+  #       Actions:
+  #       1. kubectl get nodes - check node status
+  #       2. kubectl describe node <node-name> - details of failing nodes
+  #       3. Check kubelet logs on workers
+  #       4. Check network connectivity between nodes
+{% endif %}
+
+{% if incld_front_ru_c1_prod_urls_p1 is defined and incld_front_ru_c1_prod_urls_p1 | length > 0 %}
+  # All frontends for region A unavailable (HTTP 5xx/timeout)
+  - alert: FrontRegionAAllFrontendsUnavailableP1
+    expr: |
+      sum(
+        (probe_http_status_code{job="blackbox_200x_without_auth", instance=~"{{ incld_front_ru_c1_prod_urls_p1 | join('|') }}"} >= 500)
+        or (probe_http_status_code{job="blackbox_200x_without_auth", instance=~"{{ incld_front_ru_c1_prod_urls_p1 | join('|') }}"} == 0)
+      ) == count(probe_http_status_code{job="blackbox_200x_without_auth", instance=~"{{ incld_front_ru_c1_prod_urls_p1 | join('|') }}"})
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: front
+      region: region-a
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "All FRONT Region A endpoints unavailable (P1)"
+      description: >-
+        All frontend URLs for region A ({{ incld_front_ru_c1_prod_urls_p1 | join(', ') }})
+        are returning 5xx/timeout for more than 2 minutes.
+        Users cannot access the website/application.
+{% endif %}
+
+{% if incld_front_kz_c1_prod_urls_p1 is defined and incld_front_kz_c1_prod_urls_p1 | length > 0 %}
+  # All frontends for region B unavailable (HTTP 5xx/timeout)
+  - alert: FrontRegionBAllFrontendsUnavailableP1
+    expr: |
+      sum(
+        (probe_http_status_code{job="blackbox_200x_without_auth", instance=~"{{ incld_front_kz_c1_prod_urls_p1 | join('|') }}"} >= 500)
+        or (probe_http_status_code{job="blackbox_200x_without_auth", instance=~"{{ incld_front_kz_c1_prod_urls_p1 | join('|') }}"} == 0)
+      ) == count(probe_http_status_code{job="blackbox_200x_without_auth", instance=~"{{ incld_front_kz_c1_prod_urls_p1 | join('|') }}"})
+    for: 2m
+    labels:
+      severity: p1
+      team: devops
+      service: front
+      region: region-b
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "All FRONT Region B endpoints unavailable (P1)"
+      description: >-
+        All frontend URLs for region B ({{ incld_front_kz_c1_prod_urls_p1 | join(', ') }})
+        are returning 5xx/timeout for more than 2 minutes.
+        Users cannot access the website/application.
+{% endif %}
+
+  # Nginx/Ingress endpoints unavailable
+  - alert: FrontNginxIngressUnavailableP1
+    expr: |
+      sum(up{job=~"nginx.*exporter", instance=~"{{ incld_front_nginx_c1_prod_p1 | join('|') }}"}) == 0
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      service: front-nginx
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "All FRONT Nginx/Ingress endpoints unavailable (P1)"
+      description: >-
+        All Nginx/Ingress endpoints ({{ incld_front_nginx_c1_prod_p1 | join(', ') }})
+        are unreachable for more than 1 minute.
+        No TCP connectivity or no response from nginx/ingress.
+
+{% if front_tls_instances | length > 0 %}
+  # TLS certificate expires in 7 days or has expired
+  - alert: FrontTlsCertificateExpiringP1
+    expr: |
+      (probe_ssl_last_chain_expiry_timestamp_seconds{instance=~"{{ front_tls_instances | join('|') }}"} - time()) / 86400 < 7
+    for: 1h
+    labels:
+      severity: p1
+      team: devops
+      service: front
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "FRONT TLS certificate expiring in less than 7 days (P1)"
+      description: >-
+        TLS certificate for production domain {{ "{{" }} $labels.instance {{ "}}" }}
+        will expire in {{ "{{" }} $value | humanizeDuration {{ "}}" }}.
+        Users will not be able to access the site/application after expiration.
+{% endif %}

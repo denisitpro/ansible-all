@@ -1,0 +1,38 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: redis alert rules
+  rules:
+  - alert: Critical redis db keys
+    expr: 'redis_db_keys > 1000000'
+    for: '1m'
+    labels:
+      severity: warning
+    annotations:
+      description: "{% raw %}{{ $labels.instance }} redis db keys alert to more 1000000 {% endraw %}"
+      summary: "{% raw %}Instance {{ $labels.instance }} - redis db keys alert to more ({{ humanize $value}}){% endraw %}"
+- name: Redis connections over {{ alert_redis_connections_threshold | default(300) }}
+  rules:
+  - alert: Redis connection count over {{ alert_redis_connections_threshold | default(300) }}
+    expr: |
+      redis_connected_clients{instance!~"{{ excld_inst_redis_connections | default([]) | join('|') }}", tags!~"{{ excld_tags_redis_connections | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"} > {{ alert_redis_connections_threshold | default(300) }}
+    for: 1m
+    labels:
+      severity: warning
+      receiver: slack
+    annotations:
+      identifier: '{% raw %}{{ $labels.project }} - {{ $labels.env }} - {{ $labels.host }} - {{ $labels.location }}{% endraw %}'
+      summary: "{% raw %}{{$labels.service}} on {{ $labels.server }}{% endraw %}"
+      description: "{% raw %}P2P {{$labels.service}} used {{$value}} connections.{% endraw %}"
+# HighRedisAvgTTL — disabled: noisy on caches used as short-TTL key stores.
+# Duplicate in alerts-migrated-redis-g2.yml.j2 is already commented.
+# - name: Redis average TTL over 10k
+#   rules:
+#   - alert: HighRedisAvgTTL
+#     expr: redis_db_avg_ttl_seconds > 100000
+#     for: 5m
+#     labels:
+#       severity: critical
+#     annotations:
+#       summary: "{% raw %} High average redis TTL for {{ $labels.service }} {% endraw %}"
+#       description: "{% raw %}Average TTL in Redis is too high:{% endraw %}"

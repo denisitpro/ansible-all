@@ -6,11 +6,32 @@ loki_dump_interval_sec: 30
 loki_dump_limit: 50000
 
 # Destination path for scripts on remote host
-loki_dump_script_dir: "/usr/local/bin"
+loki_dump_script_dir: "/opt/scripts"
 loki_dump_script_owner: "root"
 loki_dump_script_group: "root"
 loki_dump_script_mode: "0755"
 
-# Deploy loki-1h.sh by default
-loki_dump_deploy_1h: true
-loki_dump_deploy_full: false
+
+# Install Grafana logcli (official Loki CLI for ad-hoc queries / bulk export
+# with native pagination). Recommended on hosts that run dump scripts.
+loki_dump_install_logcli: true
+# Pin to the same version as the Loki server (see roles/loki-docker-install).
+loki_dump_logcli_version: "3.7.1"
+loki_dump_logcli_base_url: "https://github.com/grafana/loki/releases/download"
+loki_dump_logcli_install_path: "/usr/local/bin/logcli"
+loki_dump_logcli_temp_dir: "/tmp/logcli-install"
+
+# Architecture mapping (ansible_facts["architecture"] -> release arch)
+loki_dump_logcli_arch_map:
+  x86_64: "amd64"
+  aarch64: "arm64"
+loki_dump_logcli_arch: "{{ loki_dump_logcli_arch_map[ansible_facts['architecture']] | default('amd64') }}"
+loki_dump_logcli_archive_name: "logcli-linux-{{ loki_dump_logcli_arch }}.zip"
+loki_dump_logcli_binary_name: "logcli-linux-{{ loki_dump_logcli_arch }}"
+loki_dump_logcli_download_url: "{{ loki_dump_logcli_base_url }}/v{{ loki_dump_logcli_version }}/{{ loki_dump_logcli_archive_name }}"
+
+# Defaults baked into loki-dump-logcli.sh template. Override per-host in
+# group_vars / host_vars if heavy app needs different tuning.
+loki_dump_logcli_batch: 5000              # logcli --batch
+loki_dump_logcli_parallel_duration: "15m" # logcli --parallel-duration
+loki_dump_logcli_parallel_workers: 5      # logcli --parallel-max-workers

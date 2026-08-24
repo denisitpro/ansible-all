@@ -362,6 +362,11 @@ data_dir = "{{ vector_data_path | default('/var/lib/vector') }}"
   del(.stream)
   del(.log_format_type)
 
+  # Ensure label fields always exist — non-nginx events may lack these
+  .status = to_string(.status) ?? "-"
+  .server_name = to_string(.server_name) ?? "-"
+  .request_method = to_string(.request_method) ?? "-"
+
   .platform = "{{ tr.platform | default(ansible_facts['hostname']) }}"
   '''
 {% endif %}

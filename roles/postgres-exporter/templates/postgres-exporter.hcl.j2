@@ -1,0 +1,21 @@
+service {
+  name = "{{ consul_postgres_exporter_name }}"
+  port = {{ postgres_exporter_bind_port }}
+  tags = [
+{% for tag in consul_postgres_exporter_tags %}
+    "{{ tag }}",
+{% endfor %}
+  ]
+
+{% if consul_postgres_exporter_token is defined %}
+  token = "{{ consul_postgres_exporter_token }}"
+{% endif %}
+
+  check = {
+    id       = "postgres-exporter-check"
+    name     = "PostgreSQL Exporter Health Check"
+    tcp      = "localhost:{{ postgres_exporter_bind_port }}"
+    interval = "10s"
+    timeout  = "1s"
+  }
+}

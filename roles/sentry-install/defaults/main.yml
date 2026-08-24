@@ -1,0 +1,28 @@
+---
+sentry_self_hosted_repo: "https://github.com/getsentry/self-hosted.git"
+sentry_version: "25.5.0"
+
+sentry_compose_path: "/opt/docker/sentry"
+sentry_data_path: "/opt/sentry"
+
+sentry_url: "https://sentry.example.com"
+sentry_event_retention_days: 90
+sentry_compose_project_name: "sentry-self-hosted"
+
+sentry_secret_key: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_secret_key | default('changeme-replace-with-50-char-secret-key') }}"
+sentry_postgres_password: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_postgres_password | default('changeme-postgres-password') }}"
+
+sentry_mail_host: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_mail_host | default('') }}"
+sentry_mail_port: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_mail_port | default(25) }}"
+sentry_mail_from: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_mail_from | default('sentry@example.com') }}"
+sentry_mail_use_tls: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_mail_use_tls | default('false') }}"
+sentry_mail_username: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_mail_username | default('') }}"
+sentry_mail_password: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_mail_password | default('') }}"
+
+sentry_github_app_id: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_github_app_id | default('') }}"
+sentry_github_api_secret: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_github_api_secret | default('') }}"
+
+sentry_admin_email: "admin@example.com"
+sentry_admin_password: "{{ vault_dict_users_secret_g2.sentry_secrets.sentry_admin_password | default('changeme') }}"
+
+sentry_csrf_trusted_origins: []

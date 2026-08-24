@@ -1,0 +1,78 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: kafka p1 alert rules
+  rules:
+
+  # No alive broker nodes
+  - alert: KafkaNoAliveBrokersP1
+    expr: |
+      sum by () (up{job="kafka-exporter-metrics", instance=~"{{ incld_inst_kafka_c1_prod_p1 | join('|') }}"}) == 0
+    for: 1m
+    labels:
+      severity: p1
+      team: devops
+      service: kafka
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Kafka cluster kafka_example_prod has no alive brokers (P1)"
+      description: >-
+        No reachable Kafka broker exporters in kafka_example_prod
+        (instances matching: {{ incld_inst_kafka_c1_prod_p1 | join(', ') }})
+        for more than 1 minute. Clients cannot connect to Kafka.
+
+  # Partitions without a leader
+  - alert: KafkaLeaderNotAvailableP1
+    expr: |
+      sum by () (kafka_topic_partition_leader{job="kafka-exporter-metrics", instance=~"{{ incld_inst_kafka_c1_prod_p1 | join('|') }}"} < 0) > 0
+    for: 5m
+    labels:
+      severity: p1
+      team: devops
+      service: kafka
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Kafka has partitions without leader in kafka_example_prod (P1)"
+      description: >-
+        One or more partitions have no leader (leader < 0) in kafka_example_prod
+        for more than 5 minutes. Producers and consumers cannot operate.
+
+  # Partitions with empty ISR
+  - alert: KafkaIsrEmptyP1
+    expr: |
+      sum by () (kafka_topic_partition_in_sync_replica{job="kafka-exporter-metrics", instance=~"{{ incld_inst_kafka_c1_prod_p1 | join('|') }}"} < 1) > 0
+    for: 5m
+    labels:
+      severity: p1
+      team: devops
+      service: kafka
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Kafka has partitions with empty ISR in kafka_example_prod (P1)"
+      description: >-
+        One or more partitions have empty ISR (in_sync_replica < 1)
+        in kafka_example_prod for more than 5 minutes. Writes with acks=all will fail.
+
+  # Broker disks full / filesystem read-only
+  - alert: KafkaDiskSpaceCriticalP1
+    expr: |
+      ((node_filesystem_avail_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_kafka_c1_prod_node_p1 | join('|') }}", mountpoint!~"^/run(/.*|$)", fstype!~"(squashfs|fuse.*)"} * 100)
+        / node_filesystem_size_bytes{job=~"node.*exporter", instance=~"{{ incld_inst_kafka_c1_prod_node_p1 | join('|') }}"}) < 5
+      and ON (instance, device, mountpoint) node_filesystem_readonly{job=~"node.*exporter", instance=~"{{ incld_inst_kafka_c1_prod_node_p1 | join('|') }}"} == 0
+    for: 10m
+    labels:
+      severity: p1
+      team: devops
+      service: kafka
+      receiver: slack
+      notify_channel_critical: true
+    annotations:
+      summary: "Disk space on Kafka brokers below 5% in kafka_example_prod (P1)"
+      description: >-
+        Kafka broker filesystems (instances matching:
+        {{ incld_inst_kafka_c1_prod_node_p1 | join(', ') }}) have less than 5% free space
+        for more than 10 minutes (and filesystem is not read-only).
+        This prevents reliable writes and breaks Kafka usage.

@@ -1,0 +1,6 @@
+---
+- name: reload docker prometheus
+  ansible.builtin.uri:
+    url: "http://{{ prometheus_reload_address }}:9090/-/reload"
+    method: "POST"
+    status_code: "200"

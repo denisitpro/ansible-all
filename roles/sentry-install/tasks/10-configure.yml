@@ -1,0 +1,32 @@
+---
+- name: Configure sentry .env
+  ansible.builtin.lineinfile:
+    path: "{{ sentry_compose_path }}/.env"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  loop:
+    - { key: "COMPOSE_PROJECT_NAME", value: "{{ sentry_compose_project_name }}" }
+    - { key: "SENTRY_EVENT_RETENTION_DAYS", value: "{{ sentry_event_retention_days }}" }
+    - { key: "SENTRY_SECRET_KEY", value: "{{ sentry_secret_key }}" }
+    - { key: "POSTGRES_PASSWORD", value: "{{ sentry_postgres_password }}" }
+    - { key: "SENTRY_MAIL_HOST", value: "{{ sentry_mail_from | regex_replace('^.*@', '') }}" }
+
+- name: Deploy docker-compose
+  ansible.builtin.template:
+    src: docker-compose.sentry.yml.j2
+    dest: "{{ sentry_compose_path }}/docker-compose.yml"
+    mode: "0640"
+
+- name: Configure sentry mail settings
+  ansible.builtin.lineinfile:
+    path: "{{ sentry_compose_path }}/.env"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  loop:
+    - { key: "SENTRY_EMAIL_HOST", value: "{{ sentry_mail_host }}" }
+    - { key: "SENTRY_EMAIL_PORT", value: "{{ sentry_mail_port }}" }
+    - { key: "SENTRY_EMAIL_HOST_USER", value: "{{ sentry_mail_username }}" }
+    - { key: "SENTRY_EMAIL_HOST_PASSWORD", value: "{{ sentry_mail_password }}" }
+    - { key: "SENTRY_EMAIL_USE_TLS", value: "{{ sentry_mail_use_tls }}" }
+    - { key: "SENTRY_SERVER_EMAIL", value: "{{ sentry_mail_from }}" }
+  when: sentry_mail_host | length > 0

@@ -1,0 +1,44 @@
+---
+# Install Grafana logcli (official Loki CLI).
+# Used for ad-hoc queries and bulk export — handles pagination natively,
+# avoids "response too large" errors that hit our hand-rolled curl loop.
+
+- name: Ensure unzip is installed
+  ansible.builtin.package:
+    name: unzip
+    state: present
+
+- name: Create temporary directory for logcli installation
+  ansible.builtin.file:
+    path: "{{ loki_dump_logcli_temp_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Download logcli archive
+  ansible.builtin.get_url:
+    url: "{{ loki_dump_logcli_download_url }}"
+    dest: "{{ loki_dump_logcli_temp_dir }}/{{ loki_dump_logcli_archive_name }}"
+    mode: '0644'
+    timeout: 60
+    force: false
+
+- name: Extract logcli binary
+  ansible.builtin.unarchive:
+    src: "{{ loki_dump_logcli_temp_dir }}/{{ loki_dump_logcli_archive_name }}"
+    dest: "{{ loki_dump_logcli_temp_dir }}"
+    remote_src: true
+    creates: "{{ loki_dump_logcli_temp_dir }}/{{ loki_dump_logcli_binary_name }}"
+
+- name: Install logcli binary to {{ loki_dump_logcli_install_path }}
+  ansible.builtin.copy:
+    src: "{{ loki_dump_logcli_temp_dir }}/{{ loki_dump_logcli_binary_name }}"
+    dest: "{{ loki_dump_logcli_install_path }}"
+    owner: "{{ loki_dump_script_owner }}"
+    group: "{{ loki_dump_script_group }}"
+    mode: '0755'
+    remote_src: true
+
+- name: Cleanup logcli temp directory
+  ansible.builtin.file:
+    path: "{{ loki_dump_logcli_temp_dir }}"
+    state: absent

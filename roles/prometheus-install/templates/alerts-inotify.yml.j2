@@ -1,0 +1,22 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: inotify alert rules
+  rules:
+      - alert: InotifyUserWatchesTooHigh
+        expr: node_inotify_instances / node_inotify_max_user_watches > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{% raw %}Inotify watches usage is too high on {{ $labels.instance }}{% endraw %}"
+          description: "{% raw %}Current inotify instances are using more than 90% of max_user_watches ({{ $value | printf \"%.2f\" }}).{% endraw %}"
+
+      - alert: InotifyInstancesTooHigh
+        expr: node_inotify_instances / node_inotify_max_user_instances > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{% raw %}Inotify instance usage is too high on {{ $labels.instance }}{% endraw %}"
+          description: "{% raw %}Current number of inotify instances is nearing the limit ({{ $value | printf \"%.2f\" }} of max_user_instances).{% endraw %}"

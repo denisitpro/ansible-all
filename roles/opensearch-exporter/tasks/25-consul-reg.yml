@@ -1,0 +1,11 @@
+---
+- name: Template Consul service definition for opensearch-exporter
+  ansible.builtin.template:
+    src: opensearch-exporter.hcl.j2
+    dest: /etc/consul.d/opensearch-exporter.hcl
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart consul
+    - restart-docker consul

@@ -1,0 +1,64 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: postgres db health alert rules
+  rules:
+  - alert: PostgreSQL | HighConnectionsUsage
+    expr: |
+      (
+        sum by (instance) (pg_stat_activity_count{datname!~"template.*|postgres",instance!~"{{ excld_inst_pg_high_connections | default([], true) | join('|') }}"})
+        /
+        sum by (instance) (pg_settings_max_connections{instance!~"{{ excld_inst_pg_high_connections | default([], true) | join('|') }}"})
+        * 100 > {{ pg_connections_pct_threshold | default(80) }}
+      )
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}PostgreSQL high connection usage (instance {{ $labels.instance }}){% endraw %}"
+      description: "PostgreSQL connection usage is above {{ pg_connections_pct_threshold | default(80) }}%\n  VALUE = {% raw %}{{ printf \"%.1f\" $value }}{% endraw %}%\n  LABELS: {% raw %}{{ $labels }}{% endraw %}"
+
+  - alert: PostgreSQL | DatabaseSizeGrowthHigh
+    expr: |
+      (
+        rate(pg_database_size_bytes{datname!~"template.*|postgres",instance!~"{{ excld_inst_pg_db_size_growth | default([], true) | join('|') }}"}[24h]) * 86400
+        > {{ pg_db_size_growth_threshold_bytes | default(1073741824) }}
+      )
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}PostgreSQL database growing fast (instance {{ $labels.instance }}, db {{ $labels.datname }}){% endraw %}"
+      description: "{% raw %}Database {{ $labels.datname }}{% endraw %} is growing faster than {{ (pg_db_size_growth_threshold_bytes | default(1073741824) / 1073741824) | round(1) }} GiB/day\n  VALUE = {% raw %}{{ humanize $value }}{% endraw %}B/day\n  LABELS: {% raw %}{{ $labels }}{% endraw %}"
+
+  - alert: PostgreSQL | DeadTuplesHigh
+    expr: |
+      (
+        pg_stat_user_tables_n_dead_tup{instance!~"{{ excld_inst_pg_dead_tuples | default([], true) | join('|') }}"}
+        /
+        (
+          pg_stat_user_tables_n_live_tup{instance!~"{{ excld_inst_pg_dead_tuples | default([], true) | join('|') }}"}
+          + pg_stat_user_tables_n_dead_tup{instance!~"{{ excld_inst_pg_dead_tuples | default([], true) | join('|') }}"}
+          + 1
+        )
+        * 100 > {{ (pg_dead_tuples_ratio_threshold | default(0.1)) * 100 }}
+      )
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}PostgreSQL dead tuples ratio high (instance {{ $labels.instance }}, table {{ $labels.relname }}){% endraw %}"
+      description: "{% raw %}Table {{ $labels.schemaname }}.{{ $labels.relname }}{% endraw %} has more than {{ (pg_dead_tuples_ratio_threshold | default(0.1) * 100) | int }}% dead tuples — autovacuum may be lagging\n  VALUE = {% raw %}{{ printf \"%.1f\" $value }}{% endraw %}%\n  LABELS: {% raw %}{{ $labels }}{% endraw %}"
+
+  - alert: PostgreSQL | LongRunningTransaction
+    expr: |
+      (
+        pg_stat_activity_max_tx_duration{datname!~"template.*|postgres",state!="idle",instance!~"{{ excld_inst_pg_long_tx | default([], true) | join('|') }}"}
+        > {{ pg_long_tx_duration_seconds | default(3600) }}
+      )
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "{% raw %}PostgreSQL long running transaction (instance {{ $labels.instance }}){% endraw %}"
+      description: "{% raw %}Database {{ $labels.datname }}{% endraw %} has a transaction running for more than {{ (pg_long_tx_duration_seconds | default(3600) / 60) | int }} minutes\n  VALUE = {% raw %}{{ humanizeDuration $value }}{% endraw %}\n  LABELS: {% raw %}{{ $labels }}{% endraw %}"

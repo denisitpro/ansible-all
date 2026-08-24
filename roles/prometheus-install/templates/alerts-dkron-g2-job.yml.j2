@@ -1,0 +1,18 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: dkron_exporter.job.alert.rules
+  rules:
+  - alert: ✅ Dkron | Dkron task have failed status
+{% if excld_dkron_job_failed_status is defined and excld_dkron_job_failed_status | length > 0 %}
+    expr: 'dkron_job_active{dkron_job_name!~"{{ excld_dkron_job_failed_status | join("|") }}"} != 1 and dkron_job_enabled{dkron_job_name!~"{{ excld_dkron_job_failed_status | join("|") }}"} == 1'
+{% else %}
+    expr: dkron_job_active != 1 and dkron_job_enabled == 1
+{% endif %}
+    for: 25m
+    labels:
+      environment: production
+      severity: critical
+    annotations:
+      description: "{% raw %}The job `{{$labels.dkron_job_name}}` is failed{% endraw %}"
+      summary: "{% raw %}The job `{{$labels.dkron_job_name}}` is failed{% endraw %}"

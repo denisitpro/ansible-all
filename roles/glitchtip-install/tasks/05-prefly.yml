@@ -1,0 +1,20 @@
+---
+- name: create compose dir
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - /opt/docker
+    - "{{ glitchtip_compose_path }}"
+    - /opt/glitchtip
+
+- name: create uploads dir
+  ansible.builtin.file:
+    path: "{{ glitchtip_uploads_path }}"
+    state: directory
+    mode: '0755'
+    owner: '5000'
+    group: '5000'

@@ -1,0 +1,14 @@
+---
+- name: Find all files in alerts config.d
+  ansible.builtin.find:
+    paths: "{{ prometheus_rules_path }}"
+    file_type: file
+  register: prometheus_alerts_rules_files
+
+- name: Remove found files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ prometheus_alerts_rules_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"

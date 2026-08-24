@@ -1,0 +1,120 @@
+{{ ansible_managed | comment }}
+
+# PersistentVolumeClaim space and inode alerts.
+#
+# Scoping note: these metrics are PVC-scoped, so the useful exclusion axes are
+# `namespace` and `persistentvolumeclaim`, not `instance` — the `instance` label
+# here is the kubelet endpoint (IP:10250), which says nothing about the volume.
+#
+# PVCs backed by the local-path provisioner report the whole node filesystem as
+# capacity, so a percentage is meaningless for them; they are already covered by
+# the node disk-space alerts. Every rule joins on kube_persistentvolumeclaim_info
+# to skip them.
+#
+# The comparison stays inside the parentheses on purpose: in PromQL a comparison
+# binds tighter than `and`, so `expr and info > N` would parse as
+# `expr and (info > N)` and silently match nothing.
+#
+# Alert names carry the default thresholds so the numbers are visible in the
+# notification without opening the rule — same convention as
+# "HighOpenFileDescriptors over 50k". If a pvc_*_threshold_* var is overridden
+# for a stand, update the name to match, otherwise the two disagree.
+#
+# No `job` filter on the kubelet metrics: on some clusters they arrive through
+# the apiserver proxy (job="apiserver") instead of job="kubelet", and filtering
+# would leave those volumes unmonitored.
+
+groups:
+- name: k8s-pvc
+  rules:
+  - alert: PVC almost full - 80% used, 20% left
+    annotations:
+      description: "{% raw %}PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ printf \"%.1f\" $value }}% full and has been for more than 10 minutes. Check whether it needs expanding.{% endraw %}"
+      summary: "{% raw %}PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ printf \"%.1f\" $value }}% full{% endraw %}"
+    expr: |
+      (
+        (
+          1 - (
+            kubelet_volume_stats_available_bytes{
+              namespace!~"{{ excld_ns_pvc_low_disk_space | default([]) | join('|') }}",
+              persistentvolumeclaim!~"{{ excld_pvc_low_disk_space | default([]) | join('|') }}"
+            }
+            / kubelet_volume_stats_capacity_bytes
+          )
+        ) * 100 > {{ pvc_used_threshold_warning | default(80) }}
+      )
+      and ON (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_info{storageclass!="local-path"}
+    for: 10m
+    labels:
+      severity: warning
+
+  - alert: PVC critically full - 90% used, 10% left
+    annotations:
+      description: "{% raw %}PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is critically full ({{ printf \"%.1f\" $value }}%). Expand the volume or free space now — a full volume turns the workload read-only or crashes it.{% endraw %}"
+      summary: "{% raw %}PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ printf \"%.1f\" $value }}% full (CRITICAL){% endraw %}"
+    expr: |
+      (
+        (
+          1 - (
+            kubelet_volume_stats_available_bytes{
+              namespace!~"{{ excld_ns_pvc_low_disk_space | default([]) | join('|') }}",
+              persistentvolumeclaim!~"{{ excld_pvc_low_disk_space | default([]) | join('|') }}"
+            }
+            / kubelet_volume_stats_capacity_bytes
+          )
+        ) * 100 > {{ pvc_used_threshold_critical | default(90) }}
+      )
+      and ON (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_info{storageclass!="local-path"}
+    for: 5m
+    labels:
+      severity: critical
+
+  # Catches slow growth long before the percentage thresholds do: fires when the
+  # trend of the last 6h projects the volume running out within 4 days. Gated on
+  # 70% used so a nearly empty volume growing fast stays quiet.
+  - alert: PVC will fill up within 4 days - 70% used, 30% left
+    annotations:
+      description: "{% raw %}Based on the growth of the last 6 hours, PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} will be full in less than 4 days. Plan an expansion.{% endraw %}"
+      summary: "{% raw %}PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is projected to run out of space within 4 days{% endraw %}"
+    expr: |
+      (
+        predict_linear(kubelet_volume_stats_available_bytes{
+          namespace!~"{{ excld_ns_pvc_predict_fill | default([]) | join('|') }}",
+          persistentvolumeclaim!~"{{ excld_pvc_predict_fill | default([]) | join('|') }}"
+        }[6h], 4 * 24 * 3600) < 0
+        and
+        (
+          1 - (
+            kubelet_volume_stats_available_bytes
+            / kubelet_volume_stats_capacity_bytes
+          )
+        ) * 100 > {{ pvc_predict_min_used | default(70) }}
+      )
+      and ON (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_info{storageclass!="local-path"}
+    for: 1h
+    labels:
+      severity: warning
+
+  # Inode exhaustion fails writes while the space percentage still looks fine —
+  # a separate failure mode, common on volumes holding many small files (caches,
+  # session stores, log spools).
+  - alert: PVC inodes almost exhausted - 85% used, 15% left
+    annotations:
+      description: "{% raw %}PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is running out of inodes ({{ printf \"%.1f\" $value }}% used). Writes will fail with ENOSPC even though free space remains.{% endraw %}"
+      summary: "{% raw %}PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has used {{ printf \"%.1f\" $value }}% of its inodes{% endraw %}"
+    expr: |
+      (
+        (
+          1 - (
+            kubelet_volume_stats_inodes_free{
+              namespace!~"{{ excld_ns_pvc_low_inodes | default([]) | join('|') }}",
+              persistentvolumeclaim!~"{{ excld_pvc_low_inodes | default([]) | join('|') }}"
+            }
+            / kubelet_volume_stats_inodes
+          )
+        ) * 100 > {{ pvc_inodes_threshold_warning | default(85) }}
+      )
+      and ON (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_info{storageclass!="local-path"}
+    for: 10m
+    labels:
+      severity: warning

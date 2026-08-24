@@ -1,0 +1,10 @@
+---
+- name: create scripts folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "{{ version_scripts_path }}"

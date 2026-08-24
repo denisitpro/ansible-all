@@ -1,0 +1,28 @@
+---
+- name: wait for glitchtip to become ready
+  ansible.builtin.uri:
+    url: "http://localhost:{{ glitchtip_port }}/"
+    headers:
+      Host: "{{ glitchtip_allowed_hosts.split(',')[0] }}"
+    status_code: 200
+  register: glitchtip_health
+  retries: 6
+  delay: 5
+  until: glitchtip_health.status == 200
+
+- name: check if superuser exists
+  community.docker.docker_container_exec:
+    container: glitchtip-web
+    command: >-
+      ./manage.py shell -c
+      "from django.contrib.auth import get_user_model; print('exists' if get_user_model().objects.filter(email='{{ glitchtip_admin_email }}').exists() else 'missing')"
+  register: glitchtip_superuser_check
+  changed_when: false
+
+- name: create superuser
+  community.docker.docker_container_exec:
+    container: glitchtip-web
+    command: >-
+      ./manage.py shell -c
+      "from django.contrib.auth import get_user_model; U=get_user_model(); U.objects.create_superuser(email='{{ glitchtip_admin_email }}', password='{{ glitchtip_admin_password }}')"
+  when: "'missing' in glitchtip_superuser_check.stdout"

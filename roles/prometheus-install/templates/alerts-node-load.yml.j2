@@ -1,0 +1,73 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: load average alert rules
+  rules:
+  - alert: NodeLoad5PerCoreOver1x
+    annotations:
+      summary: "{% raw %}{{ $labels.instance }}: load average (5m) per core exceeds 1x cores{% endraw %}"
+      description: |-
+        {% raw %}Instance {{ $labels.instance }}: load average (5m) = {{ printf "%.2f" $value }} ({{ with query (printf "count by (instance) (node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\", instance=\"%s\"})" $labels.instance) }}{{ . | first | value | printf "%.0f" }}{{ end }} cores).{% endraw %}
+        Dashboard: {{ grafana_node_load_dashboard_url | default('') }}
+    expr: |
+      (
+        node_load5{job="node-exporter", instance!~"{{ excld_inst_node_load5_over1x | default([]) | join('|') }}", tags!~"{{ excld_tags_node_load5_over1x | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        > on (instance)
+        (
+          1.0 * count by (instance) (node_cpu_seconds_total{job="node-exporter", mode="idle"})
+        )
+      )
+    for: 10m
+    labels:
+      severity: warning
+  - alert: NodeLoad5PerCoreOver2x
+    annotations:
+      summary: "{% raw %}{{ $labels.instance }}: load average (5m) per core exceeds 2x cores{% endraw %}"
+      description: |-
+        {% raw %}Instance {{ $labels.instance }}: load average (5m) = {{ printf "%.2f" $value }} ({{ with query (printf "count by (instance) (node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\", instance=\"%s\"})" $labels.instance) }}{{ . | first | value | printf "%.0f" }}{{ end }} cores).{% endraw %}
+        Dashboard: {{ grafana_node_load_dashboard_url | default('') }}
+    expr: |
+      (
+        node_load5{job="node-exporter", instance!~"{{ excld_inst_node_load5_over2x | default([]) | join('|') }}", tags!~"{{ excld_tags_node_load5_over2x | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        > on (instance)
+        (
+          2.0 * count by (instance) (node_cpu_seconds_total{job="node-exporter", mode="idle"})
+        )
+      )
+    for: 10m
+    labels:
+      severity: critical
+  - alert: NodeLoad15PerCoreOver1x
+    annotations:
+      summary: "{% raw %}{{ $labels.instance }}: load average (15m) per core exceeds 1x cores{% endraw %}"
+      description: |-
+        {% raw %}Instance {{ $labels.instance }}: load average (15m) = {{ printf "%.2f" $value }} ({{ with query (printf "count by (instance) (node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\", instance=\"%s\"})" $labels.instance) }}{{ . | first | value | printf "%.0f" }}{{ end }} cores).{% endraw %}
+        Dashboard: {{ grafana_node_load_dashboard_url | default('') }}
+    expr: |
+      (
+        node_load15{job="node-exporter", instance!~"{{ excld_inst_node_load15_over1x | default([]) | join('|') }}", tags!~"{{ excld_tags_node_load15_over1x | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        > on (instance)
+        (
+          1.0 * count by (instance) (node_cpu_seconds_total{job="node-exporter", mode="idle"})
+        )
+      )
+    for: 30m
+    labels:
+      severity: warning
+  - alert: NodeLoad15PerCoreOver2x
+    annotations:
+      summary: "{% raw %}{{ $labels.instance }}: load average (15m) per core exceeds 2x cores{% endraw %}"
+      description: |-
+        {% raw %}Instance {{ $labels.instance }}: load average (15m) = {{ printf "%.2f" $value }} ({{ with query (printf "count by (instance) (node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\", instance=\"%s\"})" $labels.instance) }}{{ . | first | value | printf "%.0f" }}{{ end }} cores).{% endraw %}
+        Dashboard: {{ grafana_node_load_dashboard_url | default('') }}
+    expr: |
+      (
+        node_load15{job="node-exporter", instance!~"{{ excld_inst_node_load15_over2x | default([]) | join('|') }}", tags!~"{{ excld_tags_node_load15_over2x | default([]) | map('regex_replace', '^(.*)$', '.*\\1.*') | join('|') }}"}
+        > on (instance)
+        (
+          2.0 * count by (instance) (node_cpu_seconds_total{job="node-exporter", mode="idle"})
+        )
+      )
+    for: 30m
+    labels:
+      severity: critical

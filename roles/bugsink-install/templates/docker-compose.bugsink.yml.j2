@@ -1,0 +1,32 @@
+{{ ansible_managed | comment }}
+
+services:
+  bugsink:
+    image: {{ bugsink_image }}:{{ bugsink_version }}
+    container_name: bugsink
+    restart: {{ bugsink_restart | default('unless-stopped') }}
+    network_mode: host
+    environment:
+      - SECRET_KEY={{ bugsink_secret_key }}
+      - PORT={{ bugsink_port }}
+      - DATABASE_URL=postgresql://{{ bugsink_db_user }}:{{ bugsink_db_password | urlencode }}@{{ bugsink_db_host }}:{{ bugsink_db_port }}/{{ bugsink_db_name }}
+      - BASE_URL={{ bugsink_base_url }}
+      - ALLOWED_HOSTS={{ bugsink_allowed_hosts | default(bugsink_base_url | regex_replace('^https?://', '')) }}
+      - BEHIND_HTTPS_PROXY={{ bugsink_behind_https_proxy | default('false') }}
+      - USE_X_FORWARDED_HOST={{ bugsink_use_x_forwarded_host | default('false') }}
+      - SNAPPEA_NUM_WORKERS={{ bugsink_workers | default(4) }}
+      - MAX_EVENTS_PER_HOUR={{ bugsink_max_events_per_hour | default(100000) }}
+      - CREATE_SUPERUSER={{ bugsink_admin_email }}:{{ bugsink_admin_password }}
+{% if bugsink_email_host | default('') %}
+      - EMAIL_HOST={{ bugsink_email_host }}
+      - EMAIL_PORT={{ bugsink_email_port | default(587) }}
+      - EMAIL_HOST_USER={{ bugsink_email_host_user | default('') }}
+      - EMAIL_HOST_PASSWORD={{ bugsink_email_host_password | default('') }}
+      - EMAIL_USE_TLS={{ bugsink_email_use_tls | default('true') }}
+      - DEFAULT_FROM_EMAIL={{ bugsink_default_from_email | default('bugsink@example.com') }}
+{% endif %}
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+
+groups:
+- name: prometheus metrics alert rules
+  rules:
+    - alert: RemoteWriteStalled
+      expr: |
+        time() - prometheus_remote_storage_highest_timestamp_in_seconds > 300
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Remote write stalled for one or more sources"
+        description: "No remote write samples received in the last 5 minutes from one or more remote endpoints."

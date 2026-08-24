@@ -1,0 +1,19 @@
+---
+bugsink_image: bugsink/bugsink
+bugsink_version: "2.2.2"
+
+bugsink_compose_path: /opt/docker/bugsink
+
+bugsink_port: 8000
+bugsink_hostname: "{{ inventory_hostname }}"
+bugsink_base_url: "http://{{ bugsink_hostname }}:{{ bugsink_port }}"
+
+bugsink_db_host: localhost
+bugsink_db_port: 5432
+bugsink_db_name: bugsink
+bugsink_db_user: bugsink
+bugsink_db_password: "{{ vault_dict_users_secret_g2.bugsink_secrets.db_password | default('changeme') }}"
+
+bugsink_secret_key: "{{ vault_dict_users_secret_g2.bugsink_secrets.secret_key | default('changeme') }}"
+bugsink_admin_email: "{{ vault_dict_users_secret_g2.bugsink_secrets.admin_email | default('admin@example.com') }}"
+bugsink_admin_password: "{{ vault_dict_users_secret_g2.bugsink_secrets.admin_password | default('changeme') }}"

@@ -1,5 +1,5 @@
 ---
-loki_version: 3.6.3
+loki_version: 3.7.1
 
 loki_compose_path: /opt/docker/loki
 loki_data_path: /opt/loki
@@ -18,11 +18,7 @@ loki_s3_secret_access_key: "{{ vault_dict_users_secret_g2.loki_s3_credentials.AW
 loki_consul_discovery: true
 loki_consul_service_name: loki
 
-
 consul_loki_token: "{{ vault_dict_users_secret_g2.consul_all_exporters_token.value | default('set_me') }}"
-
-
 consul_install_mode: "docker"
+
 loki_nginx_alert_group_by: 'app,hostname'
-
-

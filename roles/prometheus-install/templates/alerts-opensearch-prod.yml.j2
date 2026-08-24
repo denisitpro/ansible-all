@@ -1,0 +1,47 @@
+{{ ansible_managed | comment }}
+
+groups:
+  - name: opensearch prod alert rules
+    rules:
+      - alert: OpensearchClusterNotHealthy
+        expr: |
+          elasticsearch_cluster_health_status{color="green",job="consul_opensearch_exporter",instance!~"{{ excld_inst_opensearch_cluster_not_healthy | default([]) | join('|') | default('a^', true) }}"} != 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "{% raw %}OpenSearch cluster status is not green\n VALUE = {{ $value }}\n LABELS: {{ $labels }}{% endraw %}"
+          summary: "{% raw %}OpenSearch cluster not healthy (instance {{ $labels.instance }}){% endraw %}"
+
+      - alert: OpensearchHeapHigh
+        expr: |
+          elasticsearch_jvm_memory_used_bytes{area="heap",job="consul_opensearch_exporter",instance!~"{{ excld_inst_opensearch_heap_high | default([]) | join('|') | default('a^', true) }}"}
+          / elasticsearch_jvm_memory_max_bytes{area="heap",job="consul_opensearch_exporter"} > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          description: "{% raw %}OpenSearch JVM heap usage is above 85% for 10m\n VALUE = {{ $value }}\n LABELS: {{ $labels }}{% endraw %}"
+          summary: "{% raw %}OpenSearch heap high (instance {{ $labels.instance }}){% endraw %}"
+
+      - alert: OpensearchHeapCritical
+        expr: |
+          elasticsearch_jvm_memory_used_bytes{area="heap",job="consul_opensearch_exporter",instance!~"{{ excld_inst_opensearch_heap_critical | default([]) | join('|') | default('a^', true) }}"}
+          / elasticsearch_jvm_memory_max_bytes{area="heap",job="consul_opensearch_exporter"} > 0.9
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          description: "{% raw %}OpenSearch JVM heap usage is above 90% for 5m\n VALUE = {{ $value }}\n LABELS: {{ $labels }}{% endraw %}"
+          summary: "{% raw %}OpenSearch heap critical (instance {{ $labels.instance }}){% endraw %}"
+
+      - alert: OpensearchDiskHigh
+        expr: |
+          100 * (elasticsearch_filesystem_data_size_bytes{job="consul_opensearch_exporter"} - elasticsearch_filesystem_data_free_bytes{job="consul_opensearch_exporter"})
+          / elasticsearch_filesystem_data_size_bytes{job="consul_opensearch_exporter"} > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          description: "{% raw %}OpenSearch disk usage is above 85%\n VALUE = {{ $value }}\n LABELS: {{ $labels }}{% endraw %}"
+          summary: "{% raw %}OpenSearch disk high (instance {{ $labels.instance }}){% endraw %}"

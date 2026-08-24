@@ -1,0 +1,12 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.postgres-exporter.yml.j2"
+    dest: "{{ postgres_exporter_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: recreate-docker postgres-exporter
+
+- name: ensure postgres-exporter is running
+  community.docker.docker_compose_v2:
+    project_src: "{{ postgres_exporter_compose_path }}"
+    state: present
