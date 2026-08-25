@@ -1,6 +1,6 @@
 ---
 tg_notify_bot_image: "denisitpro/tg-bot-kora"
-tg_notify_bot_version: "0.8.0"
+tg_notify_bot_version: "0.8.1"
 
 tg_notify_bot_restart: "always"
 
