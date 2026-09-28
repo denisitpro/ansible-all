@@ -29,7 +29,7 @@
 
 services:
   rate-api:
-    image: {{ _image }}:{{ _version }}-rate-api
+    image: {{ _api_image }}:{{ _version }}
     container_name: {{ _name }}-rate-api
     restart: {{ _restart }}
     network_mode: host
@@ -37,7 +37,7 @@ services:
       - rate-api.remote.env
 
   rate-collector:
-    image: {{ _image }}:{{ _version }}-rate-collector
+    image: {{ _collector_image }}:{{ _version }}
     container_name: {{ _name }}-rate-collector
     restart: {{ _restart }}
     network_mode: host

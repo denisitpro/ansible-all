@@ -10,7 +10,8 @@
   vars:
     _name: "{{ hub.name }}"
     _compose_path: "{{ hub.compose_path | default('/opt/docker/' + hub.name) }}"
-    _image: "{{ hub.rate_hub_image | default(rate_hub_image) }}"
+    _api_image: "{{ hub.rate_hub_api_image | default(rate_hub_api_image) }}"
+    _collector_image: "{{ hub.rate_hub_collector_image | default(rate_hub_collector_image) }}"
     _version: "{{ hub.rate_hub_version | default(rate_hub_version) }}"
     _restart: "{{ hub.rate_hub_restart | default(rate_hub_restart | default('always')) }}"
   register: _compose_template

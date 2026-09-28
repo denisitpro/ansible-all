@@ -1,5 +1,6 @@
 ---
-rate_hub_image: "denisitpro/rate-hub"
+rate_hub_api_image: "denisitpro/rate-api"
+rate_hub_collector_image: "denisitpro/rate-collector"
 rate_hub_version: "0.1.0"
 
 rate_hub_uid: 1006
@@ -16,7 +17,8 @@ rate_hub_instances: []
 # rate_hub_instances:
 #   - name: rate_hub_1
 #     # rate_hub_version: "0.1.0"              # optional override
-#     # rate_hub_image: "denisitpro/rate-hub"
+#     # rate_hub_api_image: "denisitpro/rate-api"
+#     # rate_hub_collector_image: "denisitpro/rate-collector"
 #     # rate_hub_restart: "always"
 #   - name: rate_hub_2
 #     rate_hub_version: "latest"
