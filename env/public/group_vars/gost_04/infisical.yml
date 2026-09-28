@@ -18,3 +18,6 @@ infisical_extend_g1:
   - name: kora_jupiter_api_key
     secret_path: "/"
     secret_name: "KORA_JUPITER_API_KEY"
+  - name: rate_hub_coingecko_api_key
+    secret_path: "/"
+    secret_name: "COINGECKO_API_KEY"
