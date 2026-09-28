@@ -1,0 +1,3 @@
+---
+redis_version: "9.1-alpine3.24"
+redis_image: "valkey/valkey"

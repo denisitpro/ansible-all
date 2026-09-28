@@ -1,12 +1,5 @@
 ---
-# NOTE: With multi-instance support (rate_hub_deploy_instances / rate_hub_instances),
-# compose (re)start is handled directly inside tasks/50-compose.yml.
-# This handler is kept only for backward compatibility with old single-mode notify.
-# It will only work correctly when the legacy single path vars are still in effect.
-
-- name: recreate-docker rate-hub (legacy single)
+- name: restart-docker rate-hub
   community.docker.docker_compose_v2:
-    project_src: "{{ rate_hub_compose_path | default('/opt/docker/rate-hub') }}"
-    state: present
-    recreate: always
-  listen: "recreate-docker rate-hub"
+    project_src: "{{ rate_hub_compose_path }}"
+    state: restarted

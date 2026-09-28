@@ -1,0 +1,18 @@
+---
+- name: copy compose-file - rate-hub
+  ansible.builtin.template:
+    src: "docker-compose.rate-hub.yml.j2"
+    dest: "{{ rate_hub_compose_path }}/docker-compose.yml"
+    mode: "0600"
+
+- name: copy env-file - rate-api
+  ansible.builtin.template:
+    src: "rate-api.remote.env.j2"
+    dest: "{{ rate_hub_compose_path }}/rate-api.remote.env"
+    mode: "0600"
+
+- name: copy env-file - rate-collector
+  ansible.builtin.template:
+    src: "rate-collector.remote.env.j2"
+    dest: "{{ rate_hub_compose_path }}/rate-collector.remote.env"
+    mode: "0600"

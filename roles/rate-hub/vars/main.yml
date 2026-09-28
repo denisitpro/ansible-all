@@ -1,4 +1,0 @@
----
-# Tasks loop over this list — not raw rate_hub_instances.
-# Empty list [] is valid in defaults but must not skip deploy; see expression below.
-rate_hub_deploy_instances: "{{ rate_hub_instances if (rate_hub_instances | length) > 0 else [{'name': 'rate-hub', 'compose_path': rate_hub_compose_path, 'base_path': rate_hub_base_path}] }}"
