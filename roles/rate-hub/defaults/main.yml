@@ -24,8 +24,9 @@ rate_hub_instances: []
 #     rate_hub_version: "latest"
 
 # Legacy single-instance paths (kept for backward compatibility).
-# When rate_hub_instances is empty, the role synthesizes one instance
-# using name "rate-hub" which resolves to these locations.
+# When rate_hub_instances is [] (empty), tasks use rate_hub_deploy_instances
+# (vars/main.yml): one synthetic instance with name rate-hub and these paths.
+# Do not use | default([...]) on rate_hub_instances — default() ignores empty lists.
 rate_hub_base_path: "/opt/rate-hub"
 rate_hub_compose_path: "/opt/docker/rate-hub"
 

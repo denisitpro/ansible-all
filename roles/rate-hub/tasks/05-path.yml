@@ -14,7 +14,7 @@
     mode: '0755'
     owner: root
     group: root
-  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop: "{{ rate_hub_deploy_instances }}"
   loop_control:
     loop_var: hub
   vars:
@@ -27,7 +27,7 @@
     mode: '0755'
     owner: "{{ rate_hub_uid }}"
     group: "{{ rate_hub_gid }}"
-  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop: "{{ rate_hub_deploy_instances }}"
   loop_control:
     loop_var: hub
   vars:

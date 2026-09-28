@@ -4,7 +4,7 @@
     src: "docker-compose.rate-hub.yml.j2"
     dest: "{{ _compose_path }}/docker-compose.yml"
     mode: "0640"
-  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop: "{{ rate_hub_deploy_instances }}"
   loop_control:
     loop_var: hub
   vars:
@@ -29,7 +29,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ _compose_path }}"
     state: present
-  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop: "{{ rate_hub_deploy_instances }}"
   loop_control:
     loop_var: hub
   vars:

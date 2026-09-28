@@ -3,7 +3,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ _compose_path }}"
     state: absent
-  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop: "{{ rate_hub_deploy_instances }}"
   loop_control:
     loop_var: hub
   vars:
@@ -14,7 +14,7 @@
   ansible.builtin.file:
     path: "{{ _compose_path }}/docker-compose.yml"
     state: absent
-  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop: "{{ rate_hub_deploy_instances }}"
   loop_control:
     loop_var: hub
   vars:

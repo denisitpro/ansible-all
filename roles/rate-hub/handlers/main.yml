@@ -1,5 +1,5 @@
 ---
-# NOTE: With multi-instance support (rate_hub_instances list),
+# NOTE: With multi-instance support (rate_hub_deploy_instances / rate_hub_instances),
 # compose (re)start is handled directly inside tasks/50-compose.yml.
 # This handler is kept only for backward compatibility with old single-mode notify.
 # It will only work correctly when the legacy single path vars are still in effect.
