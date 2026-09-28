@@ -1,6 +1,6 @@
 services:
   rate-api:
-    image: {{ rate_hub_api_image }}:{{ rate_hub_version }}
+    image: {{ rate_hub_api_image }}:{{ rate_hub_api_version }}
     container_name: rate-api
     network_mode: host
     env_file:
@@ -13,7 +13,7 @@ services:
         max-file: '2'
 
   rate-collector:
-    image: {{ rate_hub_collector_image }}:{{ rate_hub_version }}
+    image: {{ rate_hub_collector_image }}:{{ rate_hub_collector_version }}
     container_name: rate-collector
     network_mode: host
     env_file:
