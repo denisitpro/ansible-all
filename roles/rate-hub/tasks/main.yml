@@ -1,0 +1,13 @@
+---
+- ansible.builtin.import_tasks: 05-path.yml
+  tags:
+    - rate-hub
+    - rate-hub-prefly
+
+- ansible.builtin.import_tasks: 50-compose.yml
+  tags:
+    - rate-hub
+    - rate-hub-compose
+
+- ansible.builtin.import_tasks: 99-clean.yml
+  tags: ['never', 'rate-hub-clean']

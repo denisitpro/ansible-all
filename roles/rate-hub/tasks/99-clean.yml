@@ -1,0 +1,32 @@
+---
+- name: stop rate-hub compose project for instance
+  community.docker.docker_compose_v2:
+    project_src: "{{ _compose_path }}"
+    state: absent
+  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop_control:
+    loop_var: hub
+  vars:
+    _compose_path: "{{ hub.compose_path | default('/opt/docker/' + hub.name) }}"
+  ignore_errors: true # noqa: ignore-errors
+
+- name: remove generated compose file for instance
+  ansible.builtin.file:
+    path: "{{ _compose_path }}/docker-compose.yml"
+    state: absent
+  loop: "{{ rate_hub_instances | default([{'name': 'rate-hub'}]) }}"
+  loop_control:
+    loop_var: hub
+  vars:
+    _compose_path: "{{ hub.compose_path | default('/opt/docker/' + hub.name) }}"
+
+# Note: instance base dir lives under /opt/<name>/ (currently unused by compose).
+# Clean stops the project. By default only removes the compose file (data preserved).
+# Uncomment below for full dir removal (destructive).
+# - name: remove rate-hub project dir (DESTRUCTIVE)
+#   ansible.builtin.file:
+#     path: "{{ _base_path }}"
+#     state: absent
+#   loop: ...
+#   vars:
+#     _base_path: "{{ hub.base_path | default('/opt/' + hub.name) }}"
