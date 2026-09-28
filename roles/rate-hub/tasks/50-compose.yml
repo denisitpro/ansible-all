@@ -1,0 +1,36 @@
+---
+- name: copy compose file for rate-hub instance
+  ansible.builtin.template:
+    src: "docker-compose.rate-hub.yml.j2"
+    dest: "{{ _compose_path }}/docker-compose.yml"
+    mode: "0640"
+  loop: "{{ rate_hub_deploy_instances }}"
+  loop_control:
+    loop_var: hub
+  vars:
+    _name: "{{ hub.name }}"
+    _compose_path: "{{ hub.compose_path | default('/opt/docker/' + hub.name) }}"
+    _api_image: "{{ hub.rate_hub_api_image | default(rate_hub_api_image) }}"
+    _collector_image: "{{ hub.rate_hub_collector_image | default(rate_hub_collector_image) }}"
+    _version: "{{ hub.rate_hub_version | default(rate_hub_version) }}"
+    _restart: "{{ hub.rate_hub_restart | default(rate_hub_restart | default('always')) }}"
+  register: _compose_template
+
+- name: ensure compose project is up (recreate only when compose file changed)
+  community.docker.docker_compose_v2:
+    project_src: "{{ item.hub.compose_path | default('/opt/docker/' + item.hub.name) }}"
+    state: present
+    recreate: always
+  loop: "{{ _compose_template.results }}"
+  when: item.changed
+  # noqa: no-handler  # intentional: per-instance conditional recreate after template change
+
+- name: ensure compose project is present and running
+  community.docker.docker_compose_v2:
+    project_src: "{{ _compose_path }}"
+    state: present
+  loop: "{{ rate_hub_deploy_instances }}"
+  loop_control:
+    loop_var: hub
+  vars:
+    _compose_path: "{{ hub.compose_path | default('/opt/docker/' + hub.name) }}"

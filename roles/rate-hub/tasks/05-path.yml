@@ -1,0 +1,34 @@
+---
+- name: ensure /opt/docker exists
+  ansible.builtin.file:
+    path: /opt/docker
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: create compose directory for each rate-hub instance
+  ansible.builtin.file:
+    path: "{{ _compose_path }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop: "{{ rate_hub_deploy_instances }}"
+  loop_control:
+    loop_var: hub
+  vars:
+    _compose_path: "{{ hub.compose_path | default('/opt/docker/' + hub.name) }}"
+
+- name: create base directory for each rate-hub instance
+  ansible.builtin.file:
+    path: "{{ _base_path }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ rate_hub_uid }}"
+    group: "{{ rate_hub_gid }}"
+  loop: "{{ rate_hub_deploy_instances }}"
+  loop_control:
+    loop_var: hub
+  vars:
+    _base_path: "{{ hub.base_path | default('/opt/' + hub.name) }}"

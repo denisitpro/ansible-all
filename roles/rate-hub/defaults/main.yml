@@ -1,0 +1,39 @@
+---
+rate_hub_api_image: "denisitpro/rate-api"
+rate_hub_collector_image: "denisitpro/rate-collector"
+rate_hub_version: "0.1.0"
+
+rate_hub_uid: 1006
+rate_hub_gid: 1006
+
+# Multi-instance support.
+# Define one or more named deployments. Each gets its own:
+#   /opt/<name>/                 (optional instance data; no role-managed volumes today)
+#   /opt/docker/<name>/          (docker-compose.yml + your *.remote.env files)
+#
+# The 'name' is fully controlled by you (e.g. rate_hub_1, rate_hub_prod etc).
+rate_hub_instances: []
+# Example:
+# rate_hub_instances:
+#   - name: rate_hub_1
+#     # rate_hub_version: "0.1.0"              # optional override
+#     # rate_hub_api_image: "denisitpro/rate-api"
+#     # rate_hub_collector_image: "denisitpro/rate-collector"
+#     # rate_hub_restart: "always"
+#   - name: rate_hub_2
+#     rate_hub_version: "latest"
+
+# Legacy single-instance paths (kept for backward compatibility).
+# When rate_hub_instances is [] (empty), tasks use rate_hub_deploy_instances
+# (vars/main.yml): one synthetic instance with name rate-hub and these paths.
+# Do not use | default([...]) on rate_hub_instances — default() ignores empty lists.
+rate_hub_base_path: "/opt/rate-hub"
+rate_hub_compose_path: "/opt/docker/rate-hub"
+
+# Optional overrides (uncomment and set as needed)
+# rate_hub_restart: "always"
+
+# Secrets and runtime config live in env files next to compose (you place them):
+#   rate-api.remote.env       — HTTP_ADDR, VALKEY_ADDR, API keys, auth, rate limits, etc.
+#   rate-collector.remote.env — VALKEY_ADDR, collector intervals, upstream keys, etc.
+# Valkey/Redis is deployed separately; point VALKEY_ADDR in those files at your instance.
