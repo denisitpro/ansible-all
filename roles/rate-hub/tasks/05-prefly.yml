@@ -1,0 +1,21 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ rate_hub_compose_path }}"
+
+- name: create folder rate-hub
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ rate_hub_uid }}"
+    group: "{{ rate_hub_gid }}"
+  with_items:
+    - "{{ rate_hub_base_path }}"
