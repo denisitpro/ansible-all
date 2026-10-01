@@ -1,0 +1,14 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.tracker-api.yml.j2"
+    dest: "{{ tracker_api_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: restart-docker tracker-api
+
+- name: Ensure docker-compose is applied and containers are recreated if needed
+  community.docker.docker_compose_v2:
+    project_src: "{{ tracker_api_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
