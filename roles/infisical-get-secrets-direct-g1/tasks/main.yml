@@ -29,10 +29,10 @@
     ansible_skip_facts: true
   block:
     - ansible.builtin.import_tasks: 10-prefly.yml
-      tags: ['always', 'infisical']
+      tags: ['always', 'infisical', 'vault']
 
     - ansible.builtin.import_tasks: 12-auth.yml
-      tags: ['always', 'infisical', 'infisical-check']
+      tags: ['always', 'infisical', 'infisical-check', 'vault']
 
     - ansible.builtin.import_tasks: 15-get-secrets.yml
-      tags: ['always', 'infisical']
+      tags: ['always', 'infisical', 'vault']
