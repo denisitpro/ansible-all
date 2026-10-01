@@ -1,0 +1,31 @@
+services:
+  # One-shot: applies /app/migrations, then exits. tracker-api starts only after it succeeded.
+  tracker-api-migrate:
+    image: {{ tracker_api_image }}:{{ tracker_api_version }}
+    container_name: tracker-api-migrate
+    network_mode: host
+    command: ["/app/migrate.sh"]
+    env_file:
+      - tracker-api.remote.env
+    restart: "no"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+  tracker-api:
+    image: {{ tracker_api_image }}:{{ tracker_api_version }}
+    container_name: tracker-api
+    network_mode: host
+    depends_on:
+      tracker-api-migrate:
+        condition: service_completed_successfully
+    env_file:
+      - tracker-api.remote.env
+    restart: "{{ tracker_api_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

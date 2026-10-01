@@ -1,0 +1,5 @@
+---
+- name: restart-docker tracker-api
+  community.docker.docker_compose_v2:
+    project_src: "{{ tracker_api_compose_path }}"
+    state: restarted

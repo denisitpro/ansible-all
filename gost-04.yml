@@ -12,4 +12,5 @@
     - tg-notify-bot
     - redis-docker-install
     - rate-hub
+    - tracker-api
     - angie-install-g2

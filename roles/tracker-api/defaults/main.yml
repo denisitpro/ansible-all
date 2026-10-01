@@ -1,0 +1,17 @@
+---
+tracker_api_image: "denisitpro/tracker-api"
+tracker_api_version: "0.1.1"
+
+tracker_api_compose_path: "/opt/docker/tracker-api"
+
+tracker_api_port: 8788
+
+# Extra KEY=value pairs appended to the env file (server defaults apply otherwise).
+tracker_api_env_extra: {}
+
+# Mandatory: must be overridden.
+tracker_api_database_url: "set_me"
+tracker_api_apns_key_id: "set_me"
+tracker_api_apns_p8: "set_me"
+tracker_api_apns_team_id: "set_me"
+tracker_api_rate_hub_api_key: "set_me"

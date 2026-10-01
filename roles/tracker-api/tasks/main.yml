@@ -1,0 +1,17 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - tracker-api
+    - tracker-api-prefly
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - tracker-api
+    - tracker-api-config
+    - tracker-api-compose
+
+- ansible.builtin.import_tasks: 15-launch.yml
+  tags:
+    - tracker-api
+    - tracker-api-config
+    - tracker-api-compose
