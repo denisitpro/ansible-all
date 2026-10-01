@@ -4,10 +4,10 @@ tracker_api_port: 18788
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
 tracker_api_database_url: "{{ infisical_dict_users_secret_g1.tracker_api_database_url }}"
-# tracker_api_apns_key_id: "{{ infisical_dict_users_secret_g1.tracker_api_apns_key_id }}"
-# tracker_api_apns_p8: "{{ infisical_dict_users_secret_g1.tracker_api_apns_p8 }}"
-# tracker_api_apns_team_id: "{{ infisical_dict_users_secret_g1.tracker_api_apns_team_id }}"
-# tracker_api_rate_hub_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_rate_hub_api_key }}"
+tracker_api_apns_key_id: "{{ infisical_dict_users_secret_g1.tracker_api_apns_key_id }}"
+tracker_api_apns_p8: "{{ infisical_dict_users_secret_g1.tracker_api_apns_p8 }}"
+tracker_api_apns_team_id: "{{ infisical_dict_users_secret_g1.tracker_api_apns_team_id }}"
+tracker_api_rate_hub_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_rate_hub_api_key }}"
 
 tracker_api_env_extra:
   # angie in front: one proxy hop rewrites X-Forwarded-For.

@@ -62,6 +62,12 @@ Each secret entry must contain:
 - `secret_path`: Infisical folder path where the secret lives (e.g. `/consul`)
 - `secret_name`: The actual secret name/key in Infisical
 
+Optional per-entry fields, for secrets living in another Infisical project:
+- `project_id`: Infisical project ID (defaults to `infisical_project_id`)
+- `environment`: environment slug in that project (defaults to `infisical_environment`)
+
+The machine identity must be added to every project referenced. `name` must stay unique across all projects, since all secrets land in one dict.
+
 ## Output Variables
 
 The role creates two main output variables:
