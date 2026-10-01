@@ -26,16 +26,16 @@ infisical_extend_g1:
     secret_name: "RATE_HUB_API_KEYS"
   - name: tracker_api_database_url
     secret_path: "/"
-    secret_name: "TRACKER_API_DATABASE_URL"
-  - name: tracker_api_apns_key_id
-    secret_path: "/"
-    secret_name: "TRACKER_API_APNS_KEY_ID"
-  - name: tracker_api_apns_p8
-    secret_path: "/"
-    secret_name: "TRACKER_API_APNS_P8"
-  - name: tracker_api_apns_team_id
-    secret_path: "/"
-    secret_name: "TRACKER_API_APNS_TEAM_ID"
-  - name: tracker_api_rate_hub_api_key
-    secret_path: "/"
-    secret_name: "TRACKER_API_RATE_HUB_API_KEY"
+    secret_name: "SIGMA_TRACKER_API_DATABASE_URL"
+  # - name: tracker_api_apns_key_id
+  #   secret_path: "/"
+  #   secret_name: "SIGMA_TRACKER_API_APNS_KEY_ID"
+  # - name: tracker_api_apns_p8
+  #   secret_path: "/"
+  #   secret_name: "SIGMA_TRACKER_API_APNS_P8"
+  # - name: tracker_api_apns_team_id
+  #   secret_path: "/"
+  #   secret_name: "SIGMA_TRACKER_API_APNS_TEAM_ID"
+  # - name: tracker_api_rate_hub_api_key
+  #   secret_path: "/"
+  #   secret_name: "SIGMA_TRACKER_API_RATE_HUB_API_KEY"
