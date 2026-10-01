@@ -24,18 +24,30 @@ infisical_extend_g1:
   - name: rate_hub_api_keys
     secret_path: "/"
     secret_name: "RATE_HUB_API_KEYS"
+
+#### Sigma Tracker API secrets
   - name: tracker_api_database_url
+    project_id: "9f303575-7a4d-4d7e-ac90-7a72cda2c7f1"  # sigma-tracker
+    environment: "prod"
     secret_path: "/"
     secret_name: "SIGMA_TRACKER_API_DATABASE_URL"
-  # - name: tracker_api_apns_key_id
-  #   secret_path: "/"
-  #   secret_name: "SIGMA_TRACKER_API_APNS_KEY_ID"
-  # - name: tracker_api_apns_p8
-  #   secret_path: "/"
-  #   secret_name: "SIGMA_TRACKER_API_APNS_P8"
-  # - name: tracker_api_apns_team_id
-  #   secret_path: "/"
-  #   secret_name: "SIGMA_TRACKER_API_APNS_TEAM_ID"
-  # - name: tracker_api_rate_hub_api_key
-  #   secret_path: "/"
-  #   secret_name: "SIGMA_TRACKER_API_RATE_HUB_API_KEY"
+  - name: tracker_api_apns_key_id
+    project_id: "9f303575-7a4d-4d7e-ac90-7a72cda2c7f1"  # sigma-tracker
+    environment: "prod"
+    secret_path: "/"
+    secret_name: "SIGMA_TRACKER_API_APNS_KEY_ID"
+  - name: tracker_api_apns_p8
+    project_id: "9f303575-7a4d-4d7e-ac90-7a72cda2c7f1"  # sigma-tracker
+    environment: "prod"
+    secret_path: "/"
+    secret_name: "SIGMA_TRACKER_API_APNS_P8"
+  - name: tracker_api_apns_team_id
+    project_id: "9f303575-7a4d-4d7e-ac90-7a72cda2c7f1"  # sigma-tracker
+    environment: "prod"
+    secret_path: "/"
+    secret_name: "APNS_TEAM_ID"
+  - name: tracker_api_rate_hub_api_key
+    project_id: "9f303575-7a4d-4d7e-ac90-7a72cda2c7f1"  # sigma-tracker
+    environment: "prod"
+    secret_path: "/"
+    secret_name: "SIGMA_TRACKER_API_RATE_HUB_API_KEY"
