@@ -5,4 +5,4 @@ rate_hub_coingecko_api_key: "{{ infisical_dict_users_secret_g1.rate_hub_coingeck
 # Put RATE_HUB_API_KEYS at secret path / in the g1 Infisical project before deploying.
 rate_hub_api_keys: "{{ infisical_dict_users_secret_g1.rate_hub_api_keys }}"
 
-rate_hub_version: "0.6.0"
+rate_hub_version: "0.7.1"
