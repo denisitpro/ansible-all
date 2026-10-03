@@ -10,3 +10,5 @@ rate_hub_gid: 1006
 
 rate_hub_compose_path: "/opt/docker/rate-hub"
 rate_hub_base_path: "/opt/rate-hub"
+
+rate_hub_x402_enabled: false
