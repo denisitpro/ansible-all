@@ -12,6 +12,21 @@ services:
         max-size: 100m
         max-file: '2'
 
+{% if rate_hub_x402_enabled %}
+  rate-api-x402:
+    image: {{ rate_hub_api_image }}:{{ rate_hub_api_version }}
+    container_name: rate-api-x402
+    network_mode: host
+    env_file:
+      - rate-api-x402.remote.env
+    restart: "{{ rate_hub_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+{% endif %}
+
   rate-collector:
     image: {{ rate_hub_collector_image }}:{{ rate_hub_collector_version }}
     container_name: rate-collector
