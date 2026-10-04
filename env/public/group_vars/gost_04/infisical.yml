@@ -21,12 +21,21 @@ infisical_extend_g1:
   - name: rate_hub_coingecko_api_key
     secret_path: "/"
     secret_name: "COINGECKO_API_KEY"
+
+
+### rate hub API
   - name: rate_hub_api_keys
+    project_id: "5df29da8-f050-4b03-9e68-2ec39fc6567c"
+    environment: "prod"
     secret_path: "/"
     secret_name: "RATE_HUB_API_KEYS"
   - name: rate_hub_x402_database_url
+    project_id: "5df29da8-f050-4b03-9e68-2ec39fc6567c"
+    environment: "prod"
     secret_path: "/"
     secret_name: "RATE_HUB_X402_DATABASE_URL"
+
+
 
 #### Sigma Tracker API secrets
   - name: tracker_api_database_url
