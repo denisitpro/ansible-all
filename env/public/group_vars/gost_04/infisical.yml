@@ -24,6 +24,9 @@ infisical_extend_g1:
   - name: rate_hub_api_keys
     secret_path: "/"
     secret_name: "RATE_HUB_API_KEYS"
+  - name: rate_hub_x402_database_url
+    secret_path: "/"
+    secret_name: "RATE_HUB_X402_DATABASE_URL"
 
 #### Sigma Tracker API secrets
   - name: tracker_api_database_url
