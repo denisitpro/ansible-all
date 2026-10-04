@@ -68,3 +68,18 @@ infisical_extend_g1:
     environment: "prod"
     secret_path: "/"
     secret_name: "SIGMA_TRACKER_API_ADMIN_TOKEN"
+
+
+#### Notixy API secrets (default project of this host, path "/")
+  - name: notixy_api_send_token
+    secret_path: "/"
+    secret_name: "NOTIXY_API_SEND_TOKEN"
+  - name: notixy_api_apns_key_id
+    secret_path: "/"
+    secret_name: "NOTIXY_API_APNS_KEY_ID"
+  - name: notixy_api_apns_p8
+    secret_path: "/"
+    secret_name: "NOTIXY_API_APNS_P8"
+  - name: notixy_api_apns_team_id
+    secret_path: "/"
+    secret_name: "NOTIXY_API_APNS_TEAM_ID"

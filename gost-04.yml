@@ -13,4 +13,5 @@
     - redis-docker-install
     - rate-hub
     - tracker-api
+    - notixy-api
     - angie-install-g2

@@ -1,0 +1,19 @@
+---
+- name: create docker folder
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0775'
+    owner: root
+    group: root
+  with_items:
+    - "/opt/docker"
+    - "{{ notixy_api_compose_path }}"
+
+- name: create data folder notixy-api (SQLite)
+  ansible.builtin.file:
+    path: "{{ notixy_api_base_path }}"
+    state: directory
+    mode: '0750'
+    owner: "{{ notixy_api_uid }}"
+    group: "{{ notixy_api_gid }}"
