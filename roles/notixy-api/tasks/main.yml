@@ -1,0 +1,17 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - notixy-api
+    - notixy-api-prefly
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - notixy-api
+    - notixy-api-config
+    - notixy-api-compose
+
+- ansible.builtin.import_tasks: 15-launch.yml
+  tags:
+    - notixy-api
+    - notixy-api-config
+    - notixy-api-compose

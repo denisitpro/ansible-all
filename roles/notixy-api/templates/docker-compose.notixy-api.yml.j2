@@ -1,0 +1,15 @@
+services:
+  notixy-api:
+    image: {{ notixy_api_image }}:{{ notixy_api_version }}
+    container_name: notixy-api
+    network_mode: host
+    env_file:
+      - notixy-api.remote.env
+    volumes:
+      - {{ notixy_api_base_path }}:/data
+    restart: "{{ notixy_api_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

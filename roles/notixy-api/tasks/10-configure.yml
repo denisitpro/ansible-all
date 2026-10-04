@@ -1,0 +1,13 @@
+---
+- name: copy compose-file - notixy-api
+  ansible.builtin.template:
+    src: "docker-compose.notixy-api.yml.j2"
+    dest: "{{ notixy_api_compose_path }}/docker-compose.yml"
+    mode: "0600"
+
+- name: copy env-file - notixy-api
+  ansible.builtin.template:
+    src: "notixy-api.remote.env.j2"
+    dest: "{{ notixy_api_compose_path }}/notixy-api.remote.env"
+    mode: "0600"
+  notify: restart-docker notixy-api

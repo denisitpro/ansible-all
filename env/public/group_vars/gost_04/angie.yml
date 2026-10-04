@@ -11,6 +11,7 @@ upstream_multi:
     - { name: "rate_hub", server: "127.0.0.1", port: 18080, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32 }
     - { name: "rate_hub_x402", server: "127.0.0.1", port: 18081, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32 }
     - { name: "tracker_api", server: "127.0.0.1", port: 18788, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32 }
+    - { name: "notixy_api", server: "127.0.0.1", port: 18789, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32 }
 
 nginx_access_log_format: extend_json
 nginx_logs_stdout: true
