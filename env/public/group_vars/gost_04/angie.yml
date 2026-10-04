@@ -60,3 +60,9 @@ nginx:
       upstream_protocol: http
       upstream_name: "tracker_api"
       client_max_body_size: 50M
+    - servername: "notixy-ios-api.sky-1.org"
+      domain: "selfsign"
+      config_file: "angie2-general-g4.conf.j2"
+      upstream_protocol: http
+      upstream_name: "notixy_api"
+      client_max_body_size: 50M
