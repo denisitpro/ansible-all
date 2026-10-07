@@ -54,6 +54,9 @@ infisical_extend_g1:
 
 
 #### Notixy API secrets (default project of this host, path "/")
+  - name: notixy_api_database_url
+    project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+    secret_name: "NOTIXY_API_DATABASE_URL"
   - name: notixy_api_send_token
     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
     secret_name: "NOTIXY_API_SEND_TOKEN"
