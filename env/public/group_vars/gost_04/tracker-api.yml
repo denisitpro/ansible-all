@@ -1,5 +1,5 @@
 ---
-tracker_api_version: "0.2.0"
+tracker_api_version: "0.3.0"
 tracker_api_port: 18788
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
@@ -13,5 +13,5 @@ tracker_api_admin_token: "{{ infisical_dict_users_secret_g1.tracker_api_admin_to
 tracker_api_env_extra:
   # angie in front: one proxy hop rewrites X-Forwarded-For.
   AUTH_TRUSTED_PROXY_HOPS: 1
-  # first test only, set false after — README Deploy step 7.
-  AUTH_ALLOW_UNATTESTED: "true"
+  # # first test only, set false after — README Deploy step 7.
+  # AUTH_ALLOW_UNATTESTED: "true"
