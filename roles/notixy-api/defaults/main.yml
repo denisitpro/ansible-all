@@ -2,16 +2,12 @@
 notixy_api_image: "denisitpro/notixy-api"
 notixy_api_version: "latest"
 
-# distroless static:nonroot runs as 65532; the SQLite volume must be writable by it.
-notixy_api_uid: 65532
-notixy_api_gid: 65532
-
 notixy_api_compose_path: "/opt/docker/notixy-api"
-notixy_api_base_path: "/opt/notixy-api"
 
 notixy_api_listen_addr: "127.0.0.1:8080"
 
 # Mandatory: must be overridden.
+notixy_api_database_url: "set_me"
 notixy_api_send_token: "set_me"
 notixy_api_apns_key_id: "set_me"
 notixy_api_apns_p8: "set_me"

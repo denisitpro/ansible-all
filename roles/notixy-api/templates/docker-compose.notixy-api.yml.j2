@@ -5,8 +5,6 @@ services:
     network_mode: host
     env_file:
       - notixy-api.remote.env
-    volumes:
-      - {{ notixy_api_base_path }}:/data
     restart: "{{ notixy_api_restart | default('always') }}"
     logging:
       driver: json-file

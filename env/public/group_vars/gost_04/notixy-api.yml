@@ -1,9 +1,10 @@
 ---
-notixy_api_version: "0.5.0"
+notixy_api_version: "0.6.0"
 # 8080 is taken by kora_devnet on this host; angie upstream notixy_api points here.
 notixy_api_listen_addr: "127.0.0.1:18789"
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
+notixy_api_database_url: "{{ infisical_dict_users_secret_g1.notixy_api_database_url }}"
 notixy_api_send_token: "{{ infisical_dict_users_secret_g1.notixy_api_send_token }}"
 notixy_api_apns_key_id: "{{ infisical_dict_users_secret_g1.notixy_api_apns_key_id }}"
 notixy_api_apns_p8: "{{ infisical_dict_users_secret_g1.notixy_api_apns_p8 }}"
