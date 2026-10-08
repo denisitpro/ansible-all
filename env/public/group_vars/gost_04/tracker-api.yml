@@ -10,6 +10,13 @@ tracker_api_apns_team_id: "{{ infisical_dict_users_secret_g1.tracker_api_apns_te
 tracker_api_rate_hub_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_rate_hub_api_key }}"
 tracker_api_admin_token: "{{ infisical_dict_users_secret_g1.tracker_api_admin_token }}"
 
+# Notixy delivery of price-target alerts (sigma-tracker-api #933). notixy-api runs on this same host
+# (notixy_api_listen_addr in notixy-api.yml) and both containers use host networking, so loopback.
+tracker_api_notixy_api_url: "http://127.0.0.1:18789"
+# Sender key issued by the Notixy operator FOR sender_id (not the operator NOTIXY_API_SEND_TOKEN).
+tracker_api_notixy_send_key: "{{ infisical_dict_users_secret_g1.tracker_api_notixy_send_key }}"
+tracker_api_notixy_sender_id: "sigma-tracker"
+
 tracker_api_env_extra:
   # angie in front: one proxy hop rewrites X-Forwarded-For.
   AUTH_TRUSTED_PROXY_HOPS: 1
