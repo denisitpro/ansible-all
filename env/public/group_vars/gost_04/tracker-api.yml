@@ -1,5 +1,5 @@
 ---
-tracker_api_version: "0.4.1"
+tracker_api_version: "0.6.0"
 tracker_api_port: 18788
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
@@ -16,6 +16,10 @@ tracker_api_notixy_api_url: "http://127.0.0.1:18789"
 # Sender key issued by the Notixy operator FOR sender_id (not the operator NOTIXY_API_SEND_TOKEN).
 tracker_api_notixy_send_key: "{{ infisical_dict_users_secret_g1.tracker_api_notixy_send_key }}"
 tracker_api_notixy_sender_id: "sigma-tracker"
+# Optional RPC keys. Omitted from the env file when the Infisical value is empty.
+# Put ANKR_API_KEY and HELIUS_API_KEY at secret path / in the sigma-tracker project.
+tracker_api_ankr_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_ankr_api_key }}"
+tracker_api_helius_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_helius_api_key }}"
 
 tracker_api_env_extra:
   # angie in front: one proxy hop rewrites X-Forwarded-For.

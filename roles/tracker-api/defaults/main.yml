@@ -21,3 +21,7 @@ tracker_api_rate_hub_api_key: "set_me"
 tracker_api_notixy_api_url: ""
 tracker_api_notixy_send_key: ""
 tracker_api_notixy_sender_id: "sigma-tracker"
+
+# Optional RPC provider keys. Written to the env file only when non-empty.
+tracker_api_ankr_api_key: ""
+tracker_api_helius_api_key: ""
