@@ -32,5 +32,5 @@
   community.docker.docker_compose_v2:
     project_src: "{{ rate_hub_compose_path }}"
     state: present
-    recreate: always
+    recreate: auto
     pull: always
