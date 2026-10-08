@@ -5,10 +5,11 @@ rate_hub_coingecko_api_key: "{{ infisical_dict_users_secret_g1.rate_hub_coingeck
 # Put RATE_HUB_API_KEYS at secret path / in the g1 Infisical project before deploying.
 rate_hub_api_keys: "{{ infisical_dict_users_secret_g1.rate_hub_api_keys }}"
 
-rate_hub_version: "0.12.0"
+rate_hub_version: "0.13.0"
 
 rate_hub_x402_enabled: true
 rate_hub_x402_http_addr: "127.0.0.1:18081"
 rate_hub_x402_pay_to: "0x97837b167517FaD8d55be4B4cb0b7F98Aa6c1446"
 # Put RATE_HUB_X402_DATABASE_URL at secret path / in the g1 Infisical project before deploying.
 rate_hub_x402_database_url: "{{ infisical_dict_users_secret_g1.rate_hub_x402_database_url }}"
+rate_hub_database_url: "{{ rate_hub_x402_database_url }}"
