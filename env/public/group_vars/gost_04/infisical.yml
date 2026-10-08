@@ -51,6 +51,9 @@ infisical_extend_g1:
   - name: tracker_api_admin_token
     project_id: "9f303575-7a4d-4d7e-ac90-7a72cda2c7f1"  # sigma-tracker
     secret_name: "SIGMA_TRACKER_API_ADMIN_TOKEN"
+  - name: tracker_api_notixy_send_key
+    project_id: "9f303575-7a4d-4d7e-ac90-7a72cda2c7f1"  # sigma-tracker
+    secret_name: "SIGMA_TRACKER_API_NOTIXY_SEND_KEY"
 
 
 #### Notixy API secrets (default project of this host, path "/")
