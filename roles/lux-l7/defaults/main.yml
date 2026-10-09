@@ -8,6 +8,9 @@ lux_l7_compose_path: "/opt/docker/lux-l7"
 lux_l7_http_addr: "127.0.0.1:8080"
 lux_l7_tunnel_addr: ":8443"
 lux_l7_tunnel_allow_ports: "443"
+# in-container paths; host files are {{ lux_l7_compose_path }}/certs/
+lux_l7_tunnel_tls_cert_file: "/certs/tls.crt"
+lux_l7_tunnel_tls_key_file: "/certs/tls.key"
 lux_l7_log_level: "info"
 
 # placeholder, replace before deploy (generate with: openssl rand -hex 32)

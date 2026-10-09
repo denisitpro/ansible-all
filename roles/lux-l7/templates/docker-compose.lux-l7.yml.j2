@@ -1,14 +1,21 @@
 services:
   lux-l7:
-    image: {{ lux_l7_image }}:{{ lux_l7_version }}
+    image: "{{ lux_l7_image }}:{{ lux_l7_version }}"
     container_name: lux-l7
-    network_mode: host
+    # network_mode: host
+    ports:
+      - "443:8443"
     environment:
       HTTP_ADDR: "{{ lux_l7_http_addr }}"
       TUNNEL_ADDR: "{{ lux_l7_tunnel_addr }}"
       PROXY_AUTH_TOKEN: "{{ lux_l7_auth_token }}"
       TUNNEL_ALLOW_PORTS: "{{ lux_l7_tunnel_allow_ports }}"
+      TUNNEL_TLS_CERT_FILE: "{{ lux_l7_tunnel_tls_cert_file }}"
+      TUNNEL_TLS_KEY_FILE: "{{ lux_l7_tunnel_tls_key_file }}"
       LOG_LEVEL: "{{ lux_l7_log_level }}"
+    volumes:
+      - "{{ lux_l7_compose_path }}/certs/tls.crt:{{ lux_l7_tunnel_tls_cert_file }}:ro"
+      - "{{ lux_l7_compose_path }}/certs/tls.key:{{ lux_l7_tunnel_tls_key_file }}:ro"
     restart: "{{ lux_l7_restart | default('always') }}"
     logging:
       driver: json-file

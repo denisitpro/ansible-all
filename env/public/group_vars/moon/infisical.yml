@@ -1,0 +1,6 @@
+---
+infisical_project_id: "ab4ae4dc-02a7-43af-948d-3db3b66d942a"
+
+infisical_extend_g1:
+  - name: lux_l7_auth_token
+    secret_name: "LUX_L7_AUTH_TOKEN"
