@@ -1,6 +1,6 @@
 ---
-lux_l7_version: "0.2.15"
-lux_l7_tunnel_addr: ":8443"
+lux_l7_version: "0.2.17-host"
+lux_l7_tunnel_addr: ":443"
 
 # Token lives in the moon Infisical project (mapped in infisical.yml).
 lux_l7_auth_token: "{{ infisical_dict_users_secret_g1.lux_l7_auth_token }}"

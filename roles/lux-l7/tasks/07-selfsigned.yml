@@ -11,9 +11,9 @@
 - name: create self-signed tunnel certificate
   ansible.builtin.command:
     cmd: >-
-      openssl req -x509 -nodes -days 3650 -newkey ed25519
-      -subj "/CN={{ ansible_fqdn }}"
-      -addext "subjectAltName=DNS:{{ ansible_fqdn }}"
+      openssl req -x509 -nodes -days 3650 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1
+      -subj "/CN={{ ansible_facts['fqdn'] }}"
+      -addext "subjectAltName=DNS:{{ ansible_facts['fqdn'] }}"
       -keyout {{ lux_l7_compose_path }}/certs/tls.key
       -out {{ lux_l7_compose_path }}/certs/tls.crt
     creates: "{{ lux_l7_compose_path }}/certs/tls.crt"
