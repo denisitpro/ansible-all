@@ -1,0 +1,9 @@
+---
+- hosts: moon
+  become: true
+  roles:
+    - 0010-common-v5
+    - docker-install
+    - ufw-base-configure
+    - ufw-rules-tf-g2
+    - lux-l7

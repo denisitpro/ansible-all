@@ -1,0 +1,7 @@
+---
+- name: copy compose file - lux-l7
+  ansible.builtin.template:
+    src: "docker-compose.lux-l7.yml.j2"
+    dest: "{{ lux_l7_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: restart-docker lux-l7

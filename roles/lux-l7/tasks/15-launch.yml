@@ -1,0 +1,7 @@
+---
+- name: Ensure docker-compose is applied and containers are recreated if needed
+  community.docker.docker_compose_v2:
+    project_src: "{{ lux_l7_compose_path }}"
+    state: present
+    recreate: auto
+    pull: always
