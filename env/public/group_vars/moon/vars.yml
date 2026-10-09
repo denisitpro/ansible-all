@@ -1,0 +1,7 @@
+iptables_rule_g2:
+  ipv4:
+    - { name: "ssh", protocol: "tcp", port: "22" }
+    - { name: "lux-l7-tunnel", protocol: "tcp", port: "8443" }
+  ipv6:
+    - { name: "ssh", protocol: "tcp", port: "22" }
+    - { name: "lux-l7-tunnel", protocol: "tcp", port: "8443" }

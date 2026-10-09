@@ -1,0 +1,17 @@
+services:
+  lux-l7:
+    image: {{ lux_l7_image }}:{{ lux_l7_version }}
+    container_name: lux-l7
+    network_mode: host
+    environment:
+      HTTP_ADDR: "{{ lux_l7_http_addr }}"
+      TUNNEL_ADDR: "{{ lux_l7_tunnel_addr }}"
+      PROXY_AUTH_TOKEN: "{{ lux_l7_auth_token }}"
+      TUNNEL_ALLOW_PORTS: "{{ lux_l7_tunnel_allow_ports }}"
+      LOG_LEVEL: "{{ lux_l7_log_level }}"
+    restart: "{{ lux_l7_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

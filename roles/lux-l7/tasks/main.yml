@@ -1,0 +1,17 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - lux-l7
+    - lux-l7-prefly
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - lux-l7
+    - lux-l7-config
+    - lux-l7-compose
+
+- ansible.builtin.import_tasks: 15-launch.yml
+  tags:
+    - lux-l7
+    - lux-l7-config
+    - lux-l7-compose
