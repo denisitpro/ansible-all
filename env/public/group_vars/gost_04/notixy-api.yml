@@ -1,5 +1,5 @@
 ---
-notixy_api_version: "0.9.0-83ba2b6"
+notixy_api_version: "0.10.0"
 # 8080 is taken by kora_devnet on this host; angie upstream notixy_api points here.
 notixy_api_listen_addr: "127.0.0.1:18789"
 

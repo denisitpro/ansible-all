@@ -1,0 +1,28 @@
+# Debug-only self-signed cert for the tunnel listener.
+# Refactor later onto roles/ssl-selfsigned-standalone; do not grow this task.
+- name: create tunnel cert directory
+  ansible.builtin.file:
+    path: "{{ lux_l7_compose_path }}/certs"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: create self-signed tunnel certificate
+  ansible.builtin.command:
+    cmd: >-
+      openssl req -x509 -nodes -days 3650 -newkey ed25519
+      -subj "/CN={{ ansible_fqdn }}"
+      -addext "subjectAltName=DNS:{{ ansible_fqdn }}"
+      -keyout {{ lux_l7_compose_path }}/certs/tls.key
+      -out {{ lux_l7_compose_path }}/certs/tls.crt
+    creates: "{{ lux_l7_compose_path }}/certs/tls.crt"
+
+# distroless runs as nonroot and cannot read a 0600 key owned by root
+- name: make tunnel certificate readable by the container user
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0644"
+  loop:
+    - "{{ lux_l7_compose_path }}/certs/tls.crt"
+    - "{{ lux_l7_compose_path }}/certs/tls.key"
