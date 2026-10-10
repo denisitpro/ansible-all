@@ -1,10 +1,40 @@
 services:
+{% if rate_hub_postgres_enabled %}
+  postgres:
+    image: {{ rate_hub_postgres_image }}
+    container_name: rate-hub-postgres
+    environment:
+      POSTGRES_USER: "{{ rate_hub_postgres_user }}"
+      POSTGRES_PASSWORD: "{{ rate_hub_postgres_password }}"
+      POSTGRES_DB: "{{ rate_hub_postgres_db }}"
+    ports:
+      - "127.0.0.1:{{ rate_hub_postgres_port }}:5432"
+    volumes:
+      - {{ rate_hub_postgres_volume }}:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ rate_hub_postgres_user }} -d {{ rate_hub_postgres_db }}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: "{{ rate_hub_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
+{% endif %}
   rate-api:
     image: {{ rate_hub_api_image }}:{{ rate_hub_api_version }}
     container_name: rate-api
     network_mode: host
     env_file:
       - rate-api.remote.env
+{% if rate_hub_postgres_enabled %}
+    depends_on:
+      postgres:
+        condition: service_healthy
+{% endif %}
     restart: "{{ rate_hub_restart | default('always') }}"
     logging:
       driver: json-file
@@ -19,6 +49,11 @@ services:
     network_mode: host
     env_file:
       - rate-api-x402.remote.env
+{% if rate_hub_postgres_enabled %}
+    depends_on:
+      postgres:
+        condition: service_healthy
+{% endif %}
     restart: "{{ rate_hub_restart | default('always') }}"
     logging:
       driver: json-file
@@ -33,9 +68,19 @@ services:
     network_mode: host
     env_file:
       - rate-collector.remote.env
+{% if rate_hub_postgres_enabled %}
+    depends_on:
+      postgres:
+        condition: service_healthy
+{% endif %}
     restart: "{{ rate_hub_restart | default('always') }}"
     logging:
       driver: json-file
       options:
         max-size: 100m
         max-file: '2'
+{% if rate_hub_postgres_enabled %}
+
+volumes:
+  {{ rate_hub_postgres_volume }}:
+{% endif %}
