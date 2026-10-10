@@ -1,18 +1,20 @@
+## {{ ansible_managed }} ##
+
 services:
 {% if rate_hub_postgres_enabled %}
   postgres:
-    image: {{ rate_hub_postgres_image }}
+    image: {{ rate_hub_postgres_image | default('postgres:18-alpine') }}
     container_name: rate-hub-postgres
     environment:
-      POSTGRES_USER: "{{ rate_hub_postgres_user }}"
+      POSTGRES_USER: "{{ rate_hub_postgres_user | default('ratehub') }}"
       POSTGRES_PASSWORD: "{{ rate_hub_postgres_password }}"
-      POSTGRES_DB: "{{ rate_hub_postgres_db }}"
+      POSTGRES_DB: "{{ rate_hub_postgres_db | default('ratehub') }}"
     ports:
-      - "127.0.0.1:{{ rate_hub_postgres_port }}:5432"
+      - "127.0.0.1:{{ rate_hub_postgres_port | default('5432') }}:5432"
     volumes:
-      - {{ rate_hub_postgres_volume }}:/var/lib/postgresql
+      - {{ rate_hub_postgres_data_path }}:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U {{ rate_hub_postgres_user }} -d {{ rate_hub_postgres_db }}"]
+      test: ["CMD-SHELL", "pg_isready -U {{ rate_hub_postgres_user | default('ratehub') }} -d {{ rate_hub_postgres_db | default('ratehub') }}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -74,8 +76,3 @@ services:
       options:
         max-size: 100m
         max-file: '2'
-{% if rate_hub_postgres_enabled %}
-
-volumes:
-  {{ rate_hub_postgres_volume }}:
-{% endif %}

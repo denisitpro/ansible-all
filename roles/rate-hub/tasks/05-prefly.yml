@@ -19,3 +19,12 @@
     group: "{{ rate_hub_gid }}"
   with_items:
     - "{{ rate_hub_base_path }}"
+
+- name: create folder rate-hub postgres data
+  ansible.builtin.file:
+    path: "{{ rate_hub_postgres_data_path }}"
+    state: directory
+    mode: '0700'
+    owner: "{{ rate_hub_postgres_uid }}"
+    group: "{{ rate_hub_postgres_gid }}"
+  when: rate_hub_postgres_enabled
