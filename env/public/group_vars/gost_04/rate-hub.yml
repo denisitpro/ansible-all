@@ -10,6 +10,7 @@ rate_hub_version: "0.19.0-bc856dd"
 rate_hub_x402_enabled: true
 rate_hub_x402_http_addr: "127.0.0.1:18081"
 rate_hub_x402_pay_to: "0x97837b167517FaD8d55be4B4cb0b7F98Aa6c1446"
-# Put RATE_HUB_X402_DATABASE_URL at secret path / in the g1 Infisical project before deploying.
-rate_hub_x402_database_url: "{{ infisical_dict_users_secret_g1.rate_hub_x402_database_url }}"
-rate_hub_database_url: "{{ rate_hub_x402_database_url }}"
+
+# Local Postgres. Put RATE_HUB_POSTGRES_PASSWORD at secret path / in the g1 Infisical project before deploying.
+rate_hub_postgres_password: "{{ infisical_dict_users_secret_g1.rate_hub_postgres_password }}"
+rate_hub_database_url: "postgres://ratehub:{{ rate_hub_postgres_password | urlencode }}@127.0.0.1:5432/ratehub?sslmode=disable"
