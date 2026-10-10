@@ -1,10 +1,4 @@
 ---
-- name: copy compose-file - tracker-api
-  ansible.builtin.template:
-    src: "docker-compose.tracker-api.yml.j2"
-    dest: "{{ tracker_api_compose_path }}/docker-compose.yml"
-    mode: "0600"
-
 - name: copy env-file - tracker-api
   ansible.builtin.template:
     src: "tracker-api.remote.env.j2"
