@@ -33,7 +33,7 @@ services:
 {% if rate_hub_postgres_enabled %}
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
 {% endif %}
     restart: "{{ rate_hub_restart | default('always') }}"
     logging:
@@ -52,7 +52,7 @@ services:
 {% if rate_hub_postgres_enabled %}
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
 {% endif %}
     restart: "{{ rate_hub_restart | default('always') }}"
     logging:
@@ -68,11 +68,6 @@ services:
     network_mode: host
     env_file:
       - rate-collector.remote.env
-{% if rate_hub_postgres_enabled %}
-    depends_on:
-      postgres:
-        condition: service_healthy
-{% endif %}
     restart: "{{ rate_hub_restart | default('always') }}"
     logging:
       driver: json-file

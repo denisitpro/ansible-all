@@ -19,7 +19,9 @@ rate_hub_postgres_enabled: true
 rate_hub_postgres_image: "postgres:18-alpine"
 rate_hub_postgres_user: "ratehub"
 rate_hub_postgres_db: "ratehub"
-# rate_hub_postgres_password: no default, must be set (vault) when rate_hub_postgres_enabled
+# Vault key the owner must add: vault_dict_users_secret_g2.rate_hub_postgres.password
+# No default on purpose: a missing key must fail the render.
+rate_hub_postgres_password: "{{ vault_dict_users_secret_g2.rate_hub_postgres.password }}"
 rate_hub_postgres_port: 5432
 rate_hub_postgres_volume: "rate-hub-postgres"
 rate_hub_postgres_url: >-
