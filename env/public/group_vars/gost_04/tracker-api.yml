@@ -1,5 +1,5 @@
 ---
-tracker_api_version: "0.9.0"
+tracker_api_version: "0.11.0"
 tracker_api_port: 18788
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
@@ -20,6 +20,15 @@ tracker_api_notixy_sender_id: "sigma-tracker"
 # Put ANKR_API_KEY and HELIUS_API_KEY at secret path / in the sigma-tracker project.
 tracker_api_ankr_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_ankr_api_key }}"
 tracker_api_helius_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_helius_api_key }}"
+
+# Backend-served app settings (GET /v1/app/settings, sigma-tracker-api >= 0.11.0). Overrides the app's
+# compiled-in rate-hub hosts without an app release. Fill in the real reserve/regional hosts.
+# tracker_api_app_settings:
+#   rateHub:
+#     global: "https://rate-global.sky-1.org"
+#     reserve: "https://<reserve-host>"
+#     regional:
+#       RU: "https://<ru-host>"
 
 tracker_api_env_extra:
   # angie in front: one proxy hop rewrites X-Forwarded-For.
