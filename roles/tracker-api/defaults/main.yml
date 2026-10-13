@@ -25,3 +25,10 @@ tracker_api_notixy_sender_id: "sigma-tracker"
 # Optional RPC provider keys. Written to the env file only when non-empty.
 tracker_api_ankr_api_key: ""
 tracker_api_helius_api_key: ""
+
+# Optional: backend-served app settings (sigma-tracker-api >= 0.11.0, GET /v1/app/settings, #1160).
+# A dict rendered as APP_SETTINGS_JSON; written only when non-empty. Empty → the endpoint serves
+# `settings: null` and the app keeps its compiled-in rate-hub hosts. Shape:
+#   rateHub: { global: "https://…", reserve: "https://…", regional: { RU: "https://…" } }
+# Absolute https hosts only; one invalid member drops the whole value (logged, fail open).
+tracker_api_app_settings: {}
