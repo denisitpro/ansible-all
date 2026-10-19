@@ -12,6 +12,7 @@
     - tg-notify-bot
     - redis-docker-install
     - rate-hub
+    - psql-compose-install
     - tracker-api
     - notixy-api
     - sender-api

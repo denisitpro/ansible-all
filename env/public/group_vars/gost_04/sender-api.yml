@@ -2,7 +2,9 @@
 sender_api_version: "0.2.2-d67025a"
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
-sender_api_database_url: "{{ infisical_dict_users_secret_g1.sender_api_database_url | default('changeme') }}"
+# Shared local Postgres (psql.yml).
+sender_api_postgres_password: "{{ infisical_dict_users_secret_g1.sender_api_postgres_password | default('changeme') }}"
+sender_api_database_url: "postgres://sender:{{ sender_api_postgres_password | urlencode }}@127.0.0.1:5432/sender?sslmode=disable"
 # The notixy-api operator token, i.e. its NOTIXY_SEND_TOKEN.
 sender_api_notixy_token: "{{ infisical_dict_users_secret_g1.notixy_api_send_token | default('changeme') }}"
 sender_api_bootstrap_operator_login: "{{ infisical_dict_users_secret_g1.sender_api_bootstrap_operator_login | default('') }}"

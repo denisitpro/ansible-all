@@ -13,4 +13,6 @@ rate_hub_x402_pay_to: "0x97837b167517FaD8d55be4B4cb0b7F98Aa6c1446"
 
 # Local Postgres. Put RATE_HUB_POSTGRES_PASSWORD at secret path / in the g1 Infisical project before deploying.
 rate_hub_postgres_password: "{{ infisical_dict_users_secret_g1.rate_hub_postgres_password }}"
-rate_hub_database_url: "postgres://ratehub:{{ rate_hub_postgres_password | urlencode }}@127.0.0.1:5432/ratehub?sslmode=disable"
+# 5432 belongs to the shared Postgres (psql.yml).
+rate_hub_postgres_port: 5433
+rate_hub_database_url: "postgres://ratehub:{{ rate_hub_postgres_password | urlencode }}@127.0.0.1:{{ rate_hub_postgres_port }}/ratehub?sslmode=disable"
