@@ -1,0 +1,17 @@
+---
+sender_api_image: "denisitpro/sender-api"
+sender_api_version: "latest"
+
+sender_api_compose_path: "/opt/docker/sender-api"
+
+# Host networking behind angie: listen on loopback only.
+sender_api_listen_addr: "127.0.0.1:8091"
+sender_api_notixy_url: "https://notixy-ios-api.sky-1.org"
+
+# Mandatory: must be overridden.
+sender_api_database_url: "set_me"
+sender_api_notixy_token: "set_me"
+
+# Optional: global operator created at startup when the login is unused.
+sender_api_bootstrap_operator_login: ""
+sender_api_bootstrap_operator_password: ""

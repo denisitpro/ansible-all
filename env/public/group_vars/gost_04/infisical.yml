@@ -80,3 +80,15 @@ infisical_extend_g1:
   - name: notixy_api_apns_team_id
     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
     secret_name: "NOTIXY_API_APNS_TEAM_ID"
+
+# 
+# #### Sender API secrets (same project as Notixy API; the notixy token reuses notixy_api_send_token)
+#   - name: sender_api_database_url
+#     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+#     secret_name: "SENDER_API_DATABASE_URL"
+#   - name: sender_api_bootstrap_operator_login
+#     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+#     secret_name: "SENDER_API_BOOTSTRAP_OPERATOR_LOGIN"
+#   - name: sender_api_bootstrap_operator_password
+#     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+#     secret_name: "SENDER_API_BOOTSTRAP_OPERATOR_PASSWORD"

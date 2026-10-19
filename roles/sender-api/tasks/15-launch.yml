@@ -1,0 +1,14 @@
+---
+- name: copy compose file
+  ansible.builtin.template:
+    src: "docker-compose.sender-api.yml.j2"
+    dest: "{{ sender_api_compose_path }}/docker-compose.yml"
+    mode: "0600"
+  notify: restart-docker sender-api
+
+- name: Ensure docker-compose is applied and containers are recreated if needed
+  community.docker.docker_compose_v2:
+    project_src: "{{ sender_api_compose_path }}"
+    state: present
+    recreate: always
+    pull: always
