@@ -1,0 +1,24 @@
+---
+# Shared Postgres for the apps on this host (host networking, loopback only, port 5432).
+# rate-hub keeps its own Postgres, moved to 5433 (rate-hub.yml).
+
+# PostgreSQL 18 data layout (see role defaults).
+psql_main_version: 18
+psql_node_data_path: "{{ psql_base_path }}/db/{{ psql_main_version }}"
+psql_docker_data_path: "/var/lib/postgresql/{{ psql_main_version }}/docker"
+# postgres alpine image user
+psql_docker_user_uid: 70
+psql_docker_user_gid: 70
+
+# Passwords are defined next to each app's connection string (sender-api.yml, notixy-api.yml).
+psql_users:
+  - name: "sender"
+    password: "{{ sender_api_postgres_password }}"
+  - name: "notixy"
+    password: "{{ notixy_api_postgres_password }}"
+
+psql_db:
+  - name: "sender"
+    owner: "sender"
+  - name: "notixy"
+    owner: "notixy"

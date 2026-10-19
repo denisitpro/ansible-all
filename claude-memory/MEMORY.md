@@ -3,3 +3,4 @@
 - [Agents on current branch](agent-current-branch.md) — ansible-all: no worktree isolation; work on checked-out branch, new branch if on main
 - [Roles work on defaults](roles-work-on-defaults.md) — vault vars always | default('changeme'); no risk lectures in reports
 - [Env only overrides](env-only-overrides.md) — role sets only env that differs from app code defaults; compose templated once
+- [Owner commits](owner-commits.md) — ansible-all: leave changes uncommitted, never ask "commit?"
