@@ -81,7 +81,10 @@ infisical_extend_g1:
     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
     secret_name: "NOTIXY_API_APNS_TEAM_ID"
 
-#### Sender API secrets (same project as Notixy API; the notixy token reuses notixy_api_send_token)
+#### Sender API secrets (same project as Notixy API)
+  - name: sender_api_notixy_token
+    project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+    secret_name: "SENDER_API_NOTIXY_TOKEN"
   - name: sender_api_postgres_password
     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
     secret_name: "SENDER_API_POSTGRES_PASSWORD"
