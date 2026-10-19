@@ -1,0 +1,17 @@
+---
+- ansible.builtin.import_tasks: 05-prefly.yml
+  tags:
+    - sender-api
+    - sender-api-prefly
+
+- ansible.builtin.import_tasks: 10-configure.yml
+  tags:
+    - sender-api
+    - sender-api-config
+    - sender-api-compose
+
+- ansible.builtin.import_tasks: 15-launch.yml
+  tags:
+    - sender-api
+    - sender-api-config
+    - sender-api-compose

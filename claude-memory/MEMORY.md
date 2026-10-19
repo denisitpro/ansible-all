@@ -2,3 +2,4 @@
 - [No unrequested guards](no-unrequested-guards.md) — no asserts/safety checks in roles unless asked; mirror sibling role
 - [Agents on current branch](agent-current-branch.md) — ansible-all: no worktree isolation; work on checked-out branch, new branch if on main
 - [Roles work on defaults](roles-work-on-defaults.md) — vault vars always | default('changeme'); no risk lectures in reports
+- [Env only overrides](env-only-overrides.md) — role sets only env that differs from app code defaults; compose templated once

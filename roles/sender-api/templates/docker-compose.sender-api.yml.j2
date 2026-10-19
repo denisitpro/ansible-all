@@ -1,0 +1,13 @@
+services:
+  sender-api:
+    image: {{ sender_api_image }}:{{ sender_api_version }}
+    container_name: sender-api
+    network_mode: host
+    env_file:
+      - sender-api.remote.env
+    restart: "{{ sender_api_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
