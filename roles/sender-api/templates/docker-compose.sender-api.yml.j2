@@ -31,7 +31,7 @@ services:
       - --maxmemory
       - "{{ sender_api_valkey_maxmemory | default('128mb') }}"
       - --maxmemory-policy
-      - allkeys-lru
+      - noeviction # need for loudly FAIL
     restart: "{{ sender_api_restart | default('always') }}"
     logging:
       driver: json-file
