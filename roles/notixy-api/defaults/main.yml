@@ -13,6 +13,13 @@ notixy_api_apns_key_id: "set_me"
 notixy_api_apns_p8: "set_me"
 notixy_api_apns_team_id: "set_me"
 notixy_api_apns_topic: "set_me"
+# sender-api origin (no path) and the token notixy-api presents to its /internal/v1.
+notixy_api_sender_api_url: "set_me"
+notixy_api_sender_api_token: "set_me"
+
+# Optional: operator token(s) for /v1/admin/deliveries and /v1/admin/reports only (cannot send);
+# must differ from every NOTIXY_SEND_TOKEN value. Empty = admin reads disabled.
+notixy_api_operator_token: ""
 
 # Optional: public https origin of notixy-api; enables the QR code on the join page (empty = no QR).
 notixy_api_public_base_url: ""
