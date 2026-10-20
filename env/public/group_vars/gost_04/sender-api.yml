@@ -9,7 +9,5 @@ sender_api_database_url: "postgres://sender:{{ sender_api_postgres_password | ur
 sender_api_notixy_token: "{{ infisical_dict_users_secret_g1.sender_api_notixy_token | default('changeme') }}"
 # notixy-api calls sender-api /internal/v1 with this token: the same value as its NOTIXY_SENDER_API_TOKEN (notixy-api.yml).
 sender_api_internal_token: "{{ notixy_api_sender_api_token }}"
-# sender-api's own Valkey (#414): the password of its own container, never another service's.
-sender_api_valkey_password: "{{ infisical_dict_users_secret_g1.sender_api_valkey_password }}"
 sender_api_bootstrap_operator_login: "{{ infisical_dict_users_secret_g1.sender_api_bootstrap_operator_login | default('') }}"
 sender_api_bootstrap_operator_password: "{{ infisical_dict_users_secret_g1.sender_api_bootstrap_operator_password | default('') }}"
