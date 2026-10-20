@@ -10,6 +10,9 @@ psql_docker_data_path: "/var/lib/postgresql/{{ psql_main_version }}/docker"
 psql_docker_user_uid: 70
 psql_docker_user_gid: 70
 
+# Superuser (POSTGRES_USER=postgres). Applied only on first init of the data dir.
+psql_default_db_password: "{{ infisical_dict_users_secret_g1.psql_postgres_password }}"
+
 # Passwords are defined next to each app's connection string (sender-api.yml, notixy-api.yml).
 psql_users:
   - name: "sender"
