@@ -18,6 +18,8 @@ infisical_extend_g1:
   - name: kora_jupiter_api_key
     environment: "dev"
     secret_name: "KORA_JUPITER_API_KEY"
+  # Shared Postgres superuser (postgres) on this host. Environment prod, path /.
+
 
 # ### rate hub API
   - name: rate_hub_coingecko_api_key
@@ -85,6 +87,9 @@ infisical_extend_g1:
     secret_name: "NOTIXY_API_SENDER_API_TOKEN"
 
 #### Sender API secrets (same project as Notixy API)
+  - name: psql_postgres_password
+    project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+    secret_name: "PSQL_POSTGRES_PASSWORD"
   - name: sender_api_notixy_token
     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
     secret_name: "SENDER_API_NOTIXY_TOKEN"
