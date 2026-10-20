@@ -18,13 +18,16 @@ sender_api_internal_token: "set_me"
 sender_api_bootstrap_operator_login: ""
 sender_api_bootstrap_operator_password: ""
 
-# Subscriber-read cache (sender-api#142). Shared host Valkey (redis-docker-install), own logical DB.
-# Empty address turns the cache off; sender-api then reads notixy-api live.
-# Credentials are sender-api's own, never another service's. gost_04's Valkey has no
-# requirepass/ACL today (redis_password unset), so both stay empty. If auth is turned on,
-# sender-api needs its own ACL user (owner decision), set from Infisical like the other secrets.
-sender_api_valkey_addr: "127.0.0.1:6379"
-sender_api_valkey_db: 1
+# Subscriber-read cache (sender-api#142): sender-api's own Valkey container in this compose
+# (#414), never the host Valkey other services use. Cache only: no persistence. The password is
+# mandatory (protection is the credential, not the network).
+sender_api_valkey_image: "valkey/valkey"
+sender_api_valkey_version: "9.1-alpine3.24"
+sender_api_valkey_bind: "127.0.0.1"
+sender_api_valkey_port: 6380
+sender_api_valkey_maxmemory: "128mb"
+sender_api_valkey_password: "set_me"
+sender_api_valkey_addr: "{{ sender_api_valkey_bind }}:{{ sender_api_valkey_port }}"
+sender_api_valkey_db: 0
 sender_api_valkey_username: ""
-sender_api_valkey_password: ""
 sender_api_cache_ttl: "15s"

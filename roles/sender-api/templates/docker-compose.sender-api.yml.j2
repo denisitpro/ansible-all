@@ -11,3 +11,18 @@ services:
       options:
         max-size: 100m
         max-file: '2'
+
+  # sender-api's own Valkey (cache only), never the host Valkey other services use.
+  sender-api-valkey:
+    image: {{ sender_api_valkey_image }}:{{ sender_api_valkey_version }}
+    container_name: sender-api-valkey
+    network_mode: host
+    volumes:
+      - ./valkey.conf:/etc/valkey/valkey.conf:ro
+    command: ["valkey-server", "/etc/valkey/valkey.conf"]
+    restart: "{{ sender_api_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
