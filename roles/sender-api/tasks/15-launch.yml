@@ -6,6 +6,16 @@
     mode: "0600"
   notify: restart-docker sender-api
 
+- name: copy valkey config
+  ansible.builtin.template:
+    src: "valkey.conf.j2"
+    dest: "{{ sender_api_compose_path }}/valkey.conf"
+    mode: "0600"
+    # uid/gid of the valkey user in the valkey/valkey alpine image (checked with `id valkey`).
+    owner: "999"
+    group: "1000"
+  notify: restart-docker sender-api
+
 - name: Ensure docker-compose is applied and containers are recreated if needed
   community.docker.docker_compose_v2:
     project_src: "{{ sender_api_compose_path }}"

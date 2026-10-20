@@ -102,3 +102,6 @@ infisical_extend_g1:
   - name: sender_api_bootstrap_operator_password
     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
     secret_name: "SENDER_API_BOOTSTRAP_OPERATOR_PASSWORD"
+  - name: sender_api_valkey_password
+    project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+    secret_name: "SENDER_API_VALKEY_PASSWORD"
