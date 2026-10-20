@@ -1,5 +1,5 @@
 ---
-notixy_api_version: "0.14.2-3bba388"
+notixy_api_version: "0.14.3-b8e4d78"
 # 8080 is taken by kora_devnet on this host; angie upstream notixy_api points here.
 notixy_api_listen_addr: "127.0.0.1:18789"
 # Public origin for the join page QR (the host sender-api uses as SENDER_NOTIXY_URL).

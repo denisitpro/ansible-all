@@ -11,3 +11,30 @@ services:
       options:
         max-size: 100m
         max-file: '2'
+
+  # sender-api's own Valkey (cache only), never the host Valkey other services use.
+  sender-api-valkey:
+    image: {{ sender_api_valkey_image | default('valkey/valkey') }}:{{ sender_api_valkey_version | default('9.1-alpine3.24') }}
+    container_name: sender-api-valkey
+    network_mode: host
+    # Cache only: nothing is written to disk (no RDB, no AOF, no volume).
+    command:
+      - valkey-server
+      - --bind
+      - "{{ sender_api_valkey_bind | default('127.0.0.1') }}"
+      - --port
+      - "{{ sender_api_valkey_port | default(6380) }}"
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - "{{ sender_api_valkey_maxmemory | default('128mb') }}"
+      - --maxmemory-policy
+      - allkeys-lru
+    restart: "{{ sender_api_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
