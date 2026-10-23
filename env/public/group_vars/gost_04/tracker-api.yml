@@ -1,5 +1,5 @@
 ---
-tracker_api_version: "0.11.0"
+tracker_api_version: "0.12.1"
 tracker_api_port: 18788
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
@@ -10,20 +10,24 @@ tracker_api_apns_team_id: "{{ infisical_dict_users_secret_g1.tracker_api_apns_te
 tracker_api_rate_hub_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_rate_hub_api_key }}"
 tracker_api_admin_token: "{{ infisical_dict_users_secret_g1.tracker_api_admin_token }}"
 
-# Notixy delivery of price-target alerts (sigma-tracker-api #933). notixy-api runs on this same host
-# (notixy_api_listen_addr in notixy-api.yml) and both containers use host networking, so loopback.
-# tracker_api_notixy_api_url: "http://127.0.0.1:18789"
+# Notixy delivery of price-target alerts (sigma-tracker-api >= 0.12.0, sigma-tracker #1230): through
+# sender-api's partner surface on this host (sender-api role listen addr 127.0.0.1:8091, host
+# networking, so loopback). The client appends /v1/messages to this URL.
 tracker_api_notixy_api_url: "http://127.0.0.1:8091/partner"
 
-# Sender key issued by the Notixy operator FOR sender_id (not the operator NOTIXY_API_SEND_TOKEN).
+# Partner key issued by sender-api for the SigmaTracker sender (POST /admin/v1/senders/{id}/keys, shown once).
 tracker_api_notixy_send_key: "{{ infisical_dict_users_secret_g1.tracker_api_notixy_send_key }}"
-# tracker_api_notixy_sender_id: "sigma-tracker"
+# SigmaTracker's sender id on sender-api: a lowercase uuid. A missing or non-uuid value turns Notixy
+# sending off with one ERROR log; the API still starts.
 tracker_api_notixy_sender_id: "116490da-2863-498b-bfb1-e623f4674c4d"
 
 
 
 # Optional RPC keys. Omitted from the env file when the Infisical value is empty.
 # Put ANKR_API_KEY and HELIUS_API_KEY at secret path / in the sigma-tracker project.
+# ANKR_API_KEY is the 64-hex key from the endpoint URL (https://rpc.ankr.com/<chain>/<key>); since
+# 0.12.0 it also drives GET /v1/wallet/tokens and EVM wallet history (Ankr multichain). Without it
+# those answer 503 and the app falls back.
 tracker_api_ankr_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_ankr_api_key }}"
 tracker_api_helius_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_helius_api_key }}"
 
