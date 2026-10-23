@@ -16,11 +16,14 @@ tracker_api_apns_p8: "set_me"
 tracker_api_apns_team_id: "set_me"
 tracker_api_rate_hub_api_key: "set_me"
 
-# Optional: Notixy delivery of price-target alerts (sigma-tracker-api #933, experimental).
-# Feature is off unless BOTH url and send key are non-empty. The send key is a secret.
+# Optional: Notixy delivery of price-target alerts through sender-api's partner surface
+# (sigma-tracker-api >= 0.12.0). Off unless BOTH url and send key are non-empty. The send key is a
+# secret. The url ends in /partner (the client appends /v1/messages). The sender id is the sender's
+# lowercase uuid on sender-api: no usable default exists (the old "sigma-tracker" slug is gone), and
+# an empty or non-uuid value turns sending off with one ERROR log.
 tracker_api_notixy_api_url: ""
 tracker_api_notixy_send_key: ""
-tracker_api_notixy_sender_id: "sigma-tracker"
+tracker_api_notixy_sender_id: ""
 
 # Optional RPC provider keys. Written to the env file only when non-empty.
 tracker_api_ankr_api_key: ""
