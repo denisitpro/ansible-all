@@ -4,3 +4,4 @@
 - [Roles work on defaults](roles-work-on-defaults.md) — vault vars always | default('changeme'); no risk lectures in reports
 - [Env only overrides](env-only-overrides.md) — role sets only env that differs from app code defaults; compose templated once
 - [Owner commits](owner-commits.md) — ansible-all: leave changes uncommitted, never ask "commit?"
+- [No interpreter workarounds](no-interpreter-workarounds.md) — no localhost python pin; fail loudly, rewrite role to raw+curl

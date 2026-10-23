@@ -19,3 +19,4 @@ notixy_api_apns_p8: "{{ infisical_dict_users_secret_g1.notixy_api_apns_p8 }}"
 notixy_api_apns_team_id: "{{ infisical_dict_users_secret_g1.notixy_api_apns_team_id }}"
 # Bundle id of the iOS app (notixy-ios project.yml); not a secret.
 notixy_api_apns_topic: "app.heaven8.notixy"
+

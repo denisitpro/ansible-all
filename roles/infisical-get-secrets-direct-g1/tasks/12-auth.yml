@@ -1,6 +1,6 @@
 ---
-- name: Authenticate to Infisical via Universal Auth  # noqa: command-instead-of-module
-  ansible.builtin.command: >
+- name: Authenticate to Infisical via Universal Auth
+  ansible.builtin.raw: >
     curl --silent --show-error
     --header "Content-Type: application/json"
     --request POST
@@ -13,7 +13,7 @@
 
 - name: Fail if Infisical is unreachable
   ansible.builtin.fail:
-    msg: "Infisical is unreachable or connection failed. Error: {{ infisical_auth_response.stderr }}"
+    msg: "Infisical is unreachable or connection failed. Error: {{ infisical_auth_response.stderr | default(infisical_auth_response.msg) }}"
   when: infisical_auth_response.rc != 0
 
 - name: Extract HTTP code and response body
