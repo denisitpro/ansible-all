@@ -12,10 +12,16 @@ tracker_api_admin_token: "{{ infisical_dict_users_secret_g1.tracker_api_admin_to
 
 # Notixy delivery of price-target alerts (sigma-tracker-api #933). notixy-api runs on this same host
 # (notixy_api_listen_addr in notixy-api.yml) and both containers use host networking, so loopback.
-tracker_api_notixy_api_url: "http://127.0.0.1:18789"
+# tracker_api_notixy_api_url: "http://127.0.0.1:18789"
+tracker_api_notixy_api_url: "http://127.0.0.1:8091/partner"
+
 # Sender key issued by the Notixy operator FOR sender_id (not the operator NOTIXY_API_SEND_TOKEN).
 tracker_api_notixy_send_key: "{{ infisical_dict_users_secret_g1.tracker_api_notixy_send_key }}"
-tracker_api_notixy_sender_id: "sigma-tracker"
+# tracker_api_notixy_sender_id: "sigma-tracker"
+tracker_api_notixy_sender_id: "116490da-2863-498b-bfb1-e623f4674c4d"
+
+
+
 # Optional RPC keys. Omitted from the env file when the Infisical value is empty.
 # Put ANKR_API_KEY and HELIUS_API_KEY at secret path / in the sigma-tracker project.
 tracker_api_ankr_api_key: "{{ infisical_dict_users_secret_g1.tracker_api_ankr_api_key }}"
