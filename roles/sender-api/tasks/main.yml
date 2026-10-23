@@ -8,7 +8,6 @@
   tags:
     - sender-api
     - sender-api-config
-    - sender-api-compose
 
 - ansible.builtin.import_tasks: 15-launch.yml
   tags:
