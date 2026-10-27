@@ -1,5 +1,5 @@
 ---
-sender_api_version: "0.2.16-47ddaca"
+sender_api_version: "0.2.19-e03ec32"
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
 # Shared local Postgres (psql.yml).
