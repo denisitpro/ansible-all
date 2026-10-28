@@ -22,9 +22,10 @@ infisical_extend_g1:
 
 
 # ### rate hub API
-  - name: rate_hub_coingecko_api_key
-    project_id: "5df29da8-f050-4b03-9e68-2ec39fc6567c"
-    secret_name: "COINGECKO_API_KEY"
+  # Keyless CoinGecko on this host (2026-10-28), see rate-hub.yml.
+  # - name: rate_hub_coingecko_api_key
+  #   project_id: "5df29da8-f050-4b03-9e68-2ec39fc6567c"
+  #   secret_name: "COINGECKO_API_KEY"
   - name: rate_hub_api_keys
     project_id: "5df29da8-f050-4b03-9e68-2ec39fc6567c"
     secret_name: "RATE_HUB_API_KEYS"
