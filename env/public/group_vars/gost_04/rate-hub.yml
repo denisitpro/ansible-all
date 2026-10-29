@@ -13,7 +13,7 @@ rate_hub_api_http_addr: "127.0.0.1:18080"
 # 
 rate_hub_api_keys: "{{ infisical_dict_users_secret_g1.rate_hub_api_keys }}"
 
-rate_hub_version: "0.21.2-80e1cef"
+rate_hub_version: "0.22.1-594af12"
 
 rate_hub_x402_enabled: true
 rate_hub_x402_http_addr: "127.0.0.1:18081"
