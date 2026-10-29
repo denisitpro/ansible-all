@@ -1,4 +1,5 @@
 ---
+redis_image: "redis"
 redis_version: "8.0.5-alpine"
 
 redis_compose_path: "/opt/docker/redis"
@@ -13,16 +14,13 @@ redis_user_uid: '999'
 redis_user_gid: '999'
 redis_bind_addr: "* -::*"
 redis_port: 6379
-redis_image: "redis"
 redis_container_name: "redis"
+redis_restart: "always"
 redis_password: ""
 
 redis_client_output_buffer_limit_pubsub: "32mb 8mb 60"
 redis_hz: 10
 redis_aof_rewrite_incremental_fsync: "yes"
-
-
-
 
 
 #redis_exporter_port: 9121
