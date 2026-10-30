@@ -1,5 +1,5 @@
 ---
-tracker_api_version: "0.13.0"
+tracker_api_version: "0.14.1-a49a3a1ad108"
 tracker_api_port: 18788
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
