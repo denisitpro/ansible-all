@@ -12,7 +12,7 @@ services:
     volumes:
       - {{ redis_base_path }}:{{ redis_base_path }}
     command: {{ redis_server_binary | default('redis-server') }} {{redis_conf_path}}/redis.conf
-    restart: "{{ redis_restart }}"
+    restart: {{ redis_restart | default('always') }}
     logging:
 {% if vector is defined %}
       driver: fluentd

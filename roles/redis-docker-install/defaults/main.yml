@@ -15,7 +15,6 @@ redis_user_gid: '999'
 redis_bind_addr: "* -::*"
 redis_port: 6379
 redis_container_name: "redis"
-redis_restart: "always"
 redis_password: ""
 
 redis_client_output_buffer_limit_pubsub: "32mb 8mb 60"
