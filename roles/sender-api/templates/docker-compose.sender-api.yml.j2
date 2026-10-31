@@ -12,6 +12,19 @@ services:
         max-size: 100m
         max-file: '2'
 
+  sender-web:
+    image: {{ sender_web_image }}:{{ sender_web_version }}
+    container_name: sender-web
+    network_mode: host
+    env_file:
+      - sender-web.remote.env
+    restart: "{{ sender_api_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'
+
   # sender-api's own Valkey (cache only), never the host Valkey other services use.
   sender-api-valkey:
     image: {{ sender_api_valkey_image | default('valkey/valkey') }}:{{ sender_api_valkey_version | default('9.1-alpine3.24') }}
