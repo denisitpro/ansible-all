@@ -1,5 +1,10 @@
 ---
-sender_api_version: "0.2.20-0e62070"
+sender_api_version: "0.2.21-1e5b11c"
+# Replaces the code default. Keep the native app origin or iOS passkeys stop working.
+sender_api_webauthn_origins: "https://notixy.app,https://desk.notixy.app"
+# Loopback port of the sender-web container. Angie upstream sender_web points here.
+sender_web_port: 8092
+sender_web_api_url: "http://127.0.0.1:8091"
 
 # Secrets live in the g1 Infisical project (mapped in infisical.yml).
 # Shared local Postgres (psql.yml).

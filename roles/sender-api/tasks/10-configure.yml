@@ -5,3 +5,10 @@
     dest: "{{ sender_api_compose_path }}/sender-api.remote.env"
     mode: "0600"
   notify: restart-docker sender-api
+
+- name: copy env-file - sender-web
+  ansible.builtin.template:
+    src: "sender-web.remote.env.j2"
+    dest: "{{ sender_api_compose_path }}/sender-web.remote.env"
+    mode: "0600"
+  notify: restart-docker sender-api

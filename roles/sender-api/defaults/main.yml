@@ -18,6 +18,16 @@ sender_api_internal_token: "set_me"
 sender_api_bootstrap_operator_login: ""
 sender_api_bootstrap_operator_password: ""
 
+# A set value replaces the code default list, so name every origin the browsers use.
+# Example only; the real host sets this in inventory.
+sender_api_webauthn_origins: "https://desk.example.com"
+
+# Browser cabinet. Same compose as sender-api, host network, loopback only via the port angie uses.
+sender_web_image: "denisitpro/sender-web"
+sender_web_version: "latest"
+sender_web_port: 8092
+sender_web_api_url: "http://127.0.0.1:8091"
+
 # Subscriber-read cache (sender-api#142): sender-api's own cache-only Valkey container in its
 # compose (#414; image, bind and port defaults live in the compose template).
 sender_api_valkey_addr: "127.0.0.1:6380"
