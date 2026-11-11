@@ -1,5 +1,5 @@
 ---
-sender_api_version: "0.3.3-af77e07"
+sender_api_version: "0.3.5-346fe80 "
 # Replaces the code default. Keep the native app origin or iOS passkeys stop working.
 sender_api_webauthn_origins: "https://notixy.app,https://desk.notixy.app"
 # Loopback port of the sender-web container. Angie upstream sender_web points here.
