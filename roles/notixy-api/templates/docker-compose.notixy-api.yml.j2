@@ -11,3 +11,16 @@ services:
       options:
         max-size: 100m
         max-file: '2'
+
+  notixy-pwa:
+    image: {{ notixy_pwa_image }}:{{ notixy_pwa_version }}
+    container_name: notixy-pwa
+    network_mode: host
+    env_file:
+      - notixy-pwa.remote.env
+    restart: "{{ notixy_api_restart | default('always') }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: '2'

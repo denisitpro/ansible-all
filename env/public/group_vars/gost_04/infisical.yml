@@ -86,6 +86,12 @@ infisical_extend_g1:
   - name: notixy_api_sender_api_token
     project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
     secret_name: "NOTIXY_API_SENDER_API_TOKEN"
+  - name: notixy_api_webpush_vapid_public_key
+    project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+    secret_name: "NOTIXY_API_WEBPUSH_VAPID_PUBLIC_KEY"
+  - name: notixy_api_webpush_vapid_private_key
+    project_id: "7e8540ce-b062-4a06-8e3a-1531ccafdfa7"
+    secret_name: "NOTIXY_API_WEBPUSH_VAPID_PRIVATE_KEY"
 
 #### Sender API secrets (same project as Notixy API)
   - name: psql_postgres_password
