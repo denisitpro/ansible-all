@@ -11,3 +11,10 @@
     dest: "{{ notixy_api_compose_path }}/notixy-api.remote.env"
     mode: "0600"
   notify: restart-docker notixy-api
+
+- name: copy env-file - notixy-pwa
+  ansible.builtin.template:
+    src: "notixy-pwa.remote.env.j2"
+    dest: "{{ notixy_api_compose_path }}/notixy-pwa.remote.env"
+    mode: "0600"
+  notify: restart-docker notixy-api

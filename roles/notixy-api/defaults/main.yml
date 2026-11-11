@@ -3,3 +3,9 @@ notixy_api_image: "denisitpro/notixy-api"
 notixy_api_version: "latest"
 
 notixy_api_compose_path: "/opt/docker/notixy-api"
+
+# Browser subscriber client. Same compose as notixy-api, host network, loopback only via the port angie uses.
+notixy_pwa_image: "denisitpro/notixy-pwa"
+notixy_pwa_version: "latest"
+notixy_pwa_port: 8093
+notixy_pwa_api_url: "http://127.0.0.1:8080"
