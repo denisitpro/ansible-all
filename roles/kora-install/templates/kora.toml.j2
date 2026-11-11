@@ -27,19 +27,19 @@ liveness = true
 estimate_transaction_fee = true
 get_supported_tokens = true
 get_payer_signer = true
-sign_transaction = true
+# OFF: signTransaction returns a signed tx WITHOUT sending it, so the caller picks when it lands
+# (abused 2026-11-11, kora-infra docs/incident-2026-11-11-fee-payer-drain.md). Our clients
+# (wallet-sigma9, sigma9-extension) call only signAndSendTransaction.
+sign_transaction = false
 sign_and_send_transaction = true
 transfer_transaction = false
 get_blockhash = true
 get_config = true
 
-# Per-wallet usage cap. In PAID pricing mode (fixed OR margin — both paid, NOT Free) kora
-# derives the limiter key ON-CHAIN from the owner/authority of the token account paying our
-# fee — so it is NOT client-spoofable (Free mode instead trusts a caller-supplied user_id).
-# This caps how many sponsored txs one paying wallet can push per window, closing the "spam
-# the relayer" hole alongside the fee-payer policy. In-memory store (no cache_url) → counters
-# are per-process and reset on restart; for persistent / multi-instance enforcement point
-# cache_url at Redis. Tune max/window_seconds.
+# Per-key usage cap. Limiter key = request `user_id` if the client sends one (client-controlled),
+# else the owner of the SPL transfer paying our fee (kora usage_limit/usage_tracker.rs:355-370).
+# A rate cap, not a security boundary: 2026-11-11 the attacker paced ~80/h under 100/h.
+# In-memory store (no cache_url): counters are per-process and reset on restart.
 [kora.usage_limit]
 enabled = true
 # cache_url = "redis://127.0.0.1:6379"   # uncomment for shared/persistent counters
@@ -49,6 +49,18 @@ fallback_if_unavailable = false           # deny if the store is unreachable (Re
 type = "transaction"
 max = 100
 window_seconds = 3600
+
+# Deny any tx where the fee-payer funds an ATA CreateIdempotent (data [1]); plain Create (data []
+# or [0]) is a different name and is not matched (usage_limit/rules/instruction.rs:174-180,240-246).
+# CreateIdempotent on an ATA that exists at sign-time simulation is priced 0, then the caller closes
+# it before landing and the fee-payer pays the rent (2026-11-11). Our clients use plain Create.
+# max = 0 denies the first match; no window_seconds = lifetime. Kora does NOT validate the
+# instruction name: a typo silently disables this rule — verify only with a live request.
+[[kora.usage_limit.rules]]
+type = "instruction"
+program = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+instruction = "CreateIdempotent"
+max = 0
 
 [validation]
 max_allowed_lamports = 10000000
@@ -114,27 +126,29 @@ blocked_account_extensions = []   # required field even if empty (kora rejects t
 allow_transfer = false
 allow_assign = false
 allow_create_account = true   # required: ATA rent + CCTP MessageSent account creation
-allow_allocate = true         # kept on (CCTP path unverified); candidate to disable after a devnet dry-run
+allow_allocate = false        # kora checks the ALLOCATED account (transaction_validator.rs:191-193): ON lets a caller allocate data on the fee-payer itself; CCTP/ATA allocate the new account
 
+# Each flag = "may the fee-payer be the owner/authority of this instruction" (kora validator/macros.rs:28,
+# inner CPIs included). No flow of ours needs it: in payments and the CCTP burn the USER is the authority.
+# transfer/burn/close ON let callers move, burn and close our fee-revenue ATAs (2026-10-03, 2026-11-11).
 [validation.fee_payer_policy.spl_token]
-allow_transfer = true
-allow_burn = true # allow burn for gasless
-allow_close_account = true
+allow_transfer = false
+allow_burn = false
+allow_close_account = false
 allow_approve = false
 allow_revoke = false
 allow_set_authority = false
 allow_mint_to = false
 allow_initialize_mint = false
-allow_initialize_account = true
+allow_initialize_account = false   # kora checks the new account's OWNER: only fee-payer-owned token accounts; recipient ATAs unaffected
 allow_initialize_multisig = false
 allow_freeze_account = false
 allow_thaw_account = false
 
 {% if _mode == 'mainnet' %}
-# MAINNET: margin model — charge = REAL tx cost (base + priority + fee-payer outflow +
-# Account Creation Fee for a new recipient ATA) × (1 + margin). This is the ONLY model that
-# passes recipient-ATA rent (~0.00204 SOL) on to the SENDER, so the relayer is not drained by
-# first-time recipients; it also absorbs priority-fee spikes. margin is our profit markup.
+# MAINNET: margin model — charge = REAL tx cost (base + priority + fee-payer outflow) × (1 + margin).
+# Outflow is taken from the SIMULATION AT SIGN TIME (kora fee/fee.rs:381-471): a new recipient ATA's
+# rent is passed on to the sender only if that ATA does not exist at sign time. margin is our markup.
 [validation.price]
 type = "margin"
 margin = {{ kora.price_margin | default(0.5) }}   # 0.5 = +50% over real tx cost (MVP prod default)
