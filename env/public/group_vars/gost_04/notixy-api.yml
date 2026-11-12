@@ -1,5 +1,12 @@
 ---
-notixy_api_version: "0.19.1-f244fa0"
+# API
+notixy_api_version: "0.20.1-daf4b56"
+
+# PWA
+notixy_pwa_version: "0.1.3-b383391"
+
+
+
 # 8080 is taken by kora_devnet on this host; angie upstream notixy_api points here.
 notixy_api_listen_addr: "127.0.0.1:18789"
 # Public origin for the join page QR (the host sender-api uses as SENDER_NOTIXY_URL).
@@ -24,7 +31,9 @@ notixy_api_webpush_vapid_public_key: "{{ infisical_dict_users_secret_g1.notixy_a
 notixy_api_webpush_vapid_private_key: "{{ infisical_dict_users_secret_g1.notixy_api_webpush_vapid_private_key }}"
 notixy_api_webpush_subject: "https://notixy.app"
 
-notixy_pwa_version: "0.1.0-3a79efc"
+
+
+
 # Loopback port of the notixy-pwa container. Angie upstream notixy_pwa points here.
 notixy_pwa_port: 8093
 # notixy-api listens on notixy_api_listen_addr (host network).
