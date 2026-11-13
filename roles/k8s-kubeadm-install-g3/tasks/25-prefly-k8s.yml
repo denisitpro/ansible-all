@@ -23,7 +23,7 @@
 # instead of fetching it from pkgs.k8s.io (kept for parity with the old apt_key flow).
 - name: Add k8s GPG key from local file - Ubuntu
   ansible.builtin.copy:
-    content: "{{ lookup('file', 'Release.' + k8s_cluster_minor_version + '.key') }}"
+    content: "{{ lookup('file', 'release-' + k8s_cluster_minor_version + '.key') }}"
     dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
     owner: root
     group: root

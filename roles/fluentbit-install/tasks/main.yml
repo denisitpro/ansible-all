@@ -1,5 +1,5 @@
 ---
-- import_tasks: "install-Debian.yml"
+- import_tasks: "install-debian.yml"
   when: ansible_distribution == 'Ubuntu'
   tags:
     - fluentbit
