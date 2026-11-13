@@ -13,7 +13,7 @@
 
 - name: Add Wazuh GPG key ubuntu use file
   ansible.builtin.apt_key:
-    data: "{{ lookup('ansible.builtin.file', 'GPG-KEY-WAZUH') }}"
+    data: "{{ lookup('ansible.builtin.file', 'gpg-key-wazuh') }}"
     state: present
   when: wazuh_gpg_key_use_local is defined
 
