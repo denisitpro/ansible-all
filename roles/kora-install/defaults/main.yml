@@ -8,7 +8,8 @@ kora_version: "v2.2.0-beta.7"
 # role readable. Override per instance via kora_instances[].kora_mode.
 #   devnet  -> fixed price, Mock oracle, devnet USDC
 #   mainnet -> margin price, Jupiter oracle (needs kora_jupiter_api_key), mainnet USDC + USDT
-# Per-instance template overrides: allowed_tokens, price_source, price_amount, price_margin.
+# Per-instance template overrides: allowed_tokens, price_source, price_amount, price_margin,
+# payment_address (fee revenue owner; unset -> fee-payer signer).
 kora_mode: "devnet"
 
 # HTTP listen port for the kora RPC server (`rpc start --port`; kora has NO env var for it).

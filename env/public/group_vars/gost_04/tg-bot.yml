@@ -11,4 +11,5 @@ tg_notify_bot_instances:
     tg_notify_bot_chat_id: "{{ infisical_dict_users_secret_g1.tg_notify_bot_chat_id }}"
     tg_notify_bot_env:
       WATCH_MAINNET_TREASURY_ADDRESS: "Hejav6DnaNd7XeAbV7Muu7PiifgYHPzXpZQDcqYNSNNg"
-      WATCH_MAINNET_FEE_TOKENS: "BHLNEsoCbtgHDUNd5qB1jeD2tRRF88676HGHrSJMd1Ly:USDC,FAMoURNLr9aigk7JrkmUZpTXomXwZTxDCVxB6Nc6skFi:USDT"
+      # Fee revenue ATAs of the cold payment_address ErFpyw… (kora.yml, kora-infra#66), not the fee-payer's.
+      WATCH_MAINNET_FEE_TOKENS: "7o8p3AdPL133F6SY97xeeruGsqbW8DW9ctPeDSsj23ze:USDC,7UyfrFrE2ARc4WPzunphgRQoSWQEVnNXKLt6XR5a2jEc:USDT"

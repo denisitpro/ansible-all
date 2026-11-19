@@ -19,3 +19,7 @@ kora_instances:
     # Add the "kora_jupiter_api_key" key to the g1 Infisical secret before deploying.
     kora_jupiter_api_key: "{{ infisical_dict_users_secret_g1.kora_jupiter_api_key }}"
     # price_margin: 0.5   # role default is already 0.5 (+50% over real tx cost); override only if needed
+    # Cold treasury (owner's wallet, key NOT on this host): fee revenue lands in its USDC ATA
+    # 7o8p3AdPL133F6SY97xeeruGsqbW8DW9ctPeDSsj23ze and USDT ATA 7UyfrFrE2ARc4WPzunphgRQoSWQEVnNXKLt6XR5a2jEc.
+    # Both ATAs must exist before applying (kora-infra#66). Fee-payer Hejav6… keeps only SOL for gas.
+    payment_address: "ErFpywaYMG6ppAE75wjBb6pAzsTvACJzGrZHL39EwNKe"
