@@ -17,10 +17,18 @@
 #   devnet  (default) -> fixed price, Mock oracle, devnet USDC
 #   mainnet           -> margin price, Jupiter oracle, mainnet USDC + USDT
 # Per-instance overrides (in kora_instances[]): allowed_tokens, price_source,
-# price_amount (fixed), price_margin (margin), kora_rate_limit. Use them for testnet / custom clusters.
+# price_amount (fixed), price_margin (margin), kora_rate_limit, payment_address. Use them for testnet / custom clusters.
 
 [kora]
 rate_limit = {{ kora.kora_rate_limit | default(100) }}
+{% if kora.payment_address | default('') %}
+# Fee revenue destination OWNER (kora config.rs:501). Kora counts a fee transfer only into a token
+# account owned by this address (token/token.rs:699-702); unset -> the fee-payer signer. Its ATA for
+# every allowed_spl_paid_tokens mint must exist on-chain first: config validation errors with
+# "Missing ATAs for payment address" (validator/config_validator.rs:620-636) and Kora never creates it.
+# Clients read it from getPayerSigner.payment_address (getConfig does not expose it).
+payment_address = "{{ kora.payment_address }}"
+{% endif %}
 
 [kora.enabled_methods]
 liveness = true
