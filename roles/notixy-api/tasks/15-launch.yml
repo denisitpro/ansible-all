@@ -5,10 +5,3 @@
     dest: "{{ notixy_api_compose_path }}/docker-compose.yml"
     mode: "0600"
   notify: restart-docker notixy-api
-
-- name: Ensure docker-compose is applied and containers are recreated if needed
-  community.docker.docker_compose_v2:
-    project_src: "{{ notixy_api_compose_path }}"
-    state: present
-    recreate: always
-    pull: always
