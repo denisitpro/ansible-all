@@ -8,7 +8,6 @@
   tags:
     - notixy-api
     - notixy-api-config
-    - notixy-api-compose
 
 - ansible.builtin.import_tasks: 15-launch.yml
   tags:
