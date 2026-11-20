@@ -4,4 +4,4 @@
     src: "docker-compose.sender-api.yml.j2"
     dest: "{{ sender_api_compose_path }}/docker-compose.yml"
     mode: "0600"
-  notify: restart-docker sender-api
+  notify: recreate-docker sender-api

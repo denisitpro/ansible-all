@@ -1,9 +1,9 @@
 ---
 # API
-notixy_api_version: "0.27.0-abe7341"
+notixy_api_version: "0.28.1-3683d5c"
 
 # PWA
-notixy_pwa_version: "0.2.0-fa729f5"
+notixy_pwa_version: "0.3.0-fb49712"
 
 
 

@@ -1,5 +1,2 @@
 ---
-- name: restart-docker rate-hub
-  community.docker.docker_compose_v2:
-    project_src: "{{ rate_hub_compose_path }}"
-    state: restarted
+- ansible.builtin.import_tasks: shared/handlers/rate-hub.yml
