@@ -4,4 +4,4 @@
     src: "docker-compose.notixy-api.yml.j2"
     dest: "{{ notixy_api_compose_path }}/docker-compose.yml"
     mode: "0600"
-  notify: restart-docker notixy-api
+  notify: recreate-docker notixy-api

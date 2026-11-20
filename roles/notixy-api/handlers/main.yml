@@ -1,5 +1,2 @@
 ---
-- name: restart-docker notixy-api
-  community.docker.docker_compose_v2:
-    project_src: "{{ notixy_api_compose_path }}"
-    state: restarted
+- ansible.builtin.import_tasks: shared/handlers/notixy-api.yml
