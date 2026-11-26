@@ -2,6 +2,8 @@
 ssl_selfsign_type: "rsa"
 nginx_logs_disabled: true
 
+angie_version: 1.12.5
+
 upstream_multi:
   upstream:
     - { name: "backend_beta", server: "127.0.0.1", port: 8787, fail_timeout: 30, max_fails: 30, conf: "nginx-multi-g3.conf.j2", keepalive: 32 }
